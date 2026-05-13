@@ -1,10 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import InputField from "../common/InputField";
 import { Mail, Lock, Book } from "lucide-react";
 import PrimaryButton from "../common/PrimaryButton";
 import { Link } from "react-router";
 
 const LoginForm = () => {
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        console.log("Dữ liệu gửi lên Backend: ", formData);
+        // Sau này bạn sẽ gọi API Axios ở đây:
+        // axios.post("http://localhost:8080/api/v1/auth/login", formData)
+        //     .then(res => console.log(res))
+        //     .catch(err => console.error(err));
+    };
+
     return (
         <div className="p-8">
             <div>
@@ -21,11 +44,14 @@ const LoginForm = () => {
                     Đăng nhập vào tài khoản của bạn để tiếp tục các bài học
                 </p>
             </div>
-            <form className="mt-4">
+            <form className="mt-4" onSubmit={handleSubmit}>
                 <div className="mb-2 font-bold">Địa chỉ Email</div>
                 <InputField
                     icon={Mail}
                     inputType="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="nguyenVanA@gmail.com"
                 />
 
@@ -33,11 +59,14 @@ const LoginForm = () => {
                 <InputField
                     icon={Lock}
                     inputType="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     placeholder="Nhập mật khẩu"
                 />
 
                 <div className="mt-8">
-                    <PrimaryButton buttonText="Đăng nhập" />
+                    <PrimaryButton type="submit" buttonText="Đăng nhập" />
                 </div>
 
                 <div className="mt-8 font-semibold text-center">
