@@ -1,8 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import HomePage from "./pages/HomePage";
-import AuthPage from "./pages/AuthPage";
-import RegisterForm from "./components/auth/RegisterForm";
-import LoginForm from "./components/auth/LoginForm";
+import RegisterForm from "./pages/auth/RegisterPage";
+import LoginForm from "./pages/auth/LoginPage";
 
 function App() {
     return (
@@ -10,7 +9,6 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<HomePage />}></Route>
-                    {/* <Route path="/auth" element={<AuthPage />}></Route> */}
                     <Route path="/signup" element={<RegisterForm />}></Route>
                     <Route path="/login" element={<LoginForm />}></Route>
                 </Routes>
