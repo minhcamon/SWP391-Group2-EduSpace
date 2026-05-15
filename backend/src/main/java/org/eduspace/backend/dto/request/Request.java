@@ -1,4 +1,4 @@
-package org.example.backend.dto.request;
+package org.eduspace.backend.dto.request;
 
 public class Request {
 }

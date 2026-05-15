@@ -1,4 +1,4 @@
-package org.example.backend.exception;
+package org.eduspace.backend.exception;
 
 public class Exception {
 }

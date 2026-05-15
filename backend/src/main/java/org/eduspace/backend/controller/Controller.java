@@ -1,4 +1,4 @@
-package org.example.backend.controller;
+package org.eduspace.backend.controller;
 
 public class Controller {
 }

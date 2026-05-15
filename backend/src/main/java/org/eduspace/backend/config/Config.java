@@ -1,4 +1,4 @@
-package org.example.backend.config;
+package org.eduspace.backend.config;
 
 public class Config {
 }

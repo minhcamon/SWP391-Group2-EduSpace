@@ -1,4 +1,4 @@
-package org.example.backend.enums;
+package org.eduspace.backend.enums;
 
 public class Enums {
 }

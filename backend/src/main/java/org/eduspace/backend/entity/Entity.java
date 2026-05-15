@@ -1,4 +1,4 @@
-package org.example.backend.entity;
+package org.eduspace.backend.entity;
 
 public class Entity {
 }
