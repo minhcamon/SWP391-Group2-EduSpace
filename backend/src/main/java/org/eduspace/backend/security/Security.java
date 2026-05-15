@@ -1,4 +1,4 @@
-package org.example.backend.security;
+package org.eduspace.backend.security;
 
 public class Security {
 }

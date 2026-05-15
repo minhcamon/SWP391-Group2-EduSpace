@@ -1,4 +1,4 @@
-package org.example.backend.service;
+package org.eduspace.backend.service;
 
 public class Service {
 }

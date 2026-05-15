@@ -1,4 +1,4 @@
-package org.example.backend.dto.response;
+package org.eduspace.backend.dto.response;
 
 public class Response {
 }

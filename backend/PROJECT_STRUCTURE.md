@@ -9,7 +9,7 @@ backend/
 ├── pom.xml                        # Nơi khai báo các thư viện (dependencies) và cấu hình build của Maven
 ├── src/
 │   ├── main/
-│   │   ├── java/org/example/backend/
+│   │   ├── java/org/eduspace/backend/
 │   │   │   ├── BackendApplication.java # File gốc chứa hàm main để chạy ứng dụng Spring Boot
 │   │   │   │
 │   │   │   ├── config/            # Chứa các file cấu hình ứng dụng (VD: cấu hình CORS, cấu hình chung)
@@ -29,7 +29,7 @@ backend/
 │   │       └── templates/         # Chứa các file HTML templates nếu dùng Thymeleaf (Ít dùng cho REST API)
 │   │
 │   └── test/                      # Thư mục chứa các file kiểm thử tự động (Unit Test, Integration Test)
-│       └── java/org/example/backend/
+│       └── java/org/eduspace/backend/
 │           └── BackendApplicationTests.java
 ```
 

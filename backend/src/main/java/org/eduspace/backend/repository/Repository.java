@@ -1,4 +1,4 @@
-package org.example.backend.repository;
+package org.eduspace.backend.repository;
 
 public class Repository {
 }
