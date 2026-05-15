@@ -6,7 +6,7 @@ import { Link } from "react-router";
 const Header = () => {
     return (
         <div className="flex min-w-screen justify-around">
-            <div>
+            <div className="w-96">
                 <InputField
                     icon={Search}
                     inputType="text"

@@ -71,10 +71,17 @@ const LoginForm = () => {
                     </div>
 
                     <div className="mt-8 font-semibold text-center">
-                        Chưa có tài khoản?{" "}
-                        <Link to="/signup" className="text-indigo-700">
-                            Đăng ký ngay
-                        </Link>
+                        <div className="flex justify-around">
+                            <div className="text-indigo-700">
+                                <Link to="/">Quay về trang chủ</Link>
+                            </div>
+                            <div>
+                                Chưa có tài khoản?{" "}
+                                <Link to="/signup" className="text-indigo-700">
+                                    Đăng ký ngay
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

@@ -93,10 +93,17 @@ const RegisterForm = () => {
                 </form>
 
                 <div className="mt-8 font-semibold text-center">
-                    Đã có tài khoản?{" "}
-                    <Link to="/login" className="text-indigo-700">
-                        Đăng nhập
-                    </Link>
+                    <div className="flex justify-around">
+                        <div className="text-indigo-700">
+                            <Link to="/">Quay về trang chủ</Link>
+                        </div>
+                        <div>
+                            Đã có tài khoản?{" "}
+                            <Link to="/login" className="text-indigo-700">
+                                Đăng nhập
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
