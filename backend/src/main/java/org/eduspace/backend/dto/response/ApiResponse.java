@@ -16,7 +16,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true,200,message,data);
     }
 
-    private static <T> ApiResponse<T> error(int code, String message, T data){
+    public static <T> ApiResponse<T> error(int code, String message, T data){
         return new ApiResponse<>(false,code,message,data);
     }
 }
