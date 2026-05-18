@@ -1,7 +1,6 @@
 import React from "react";
 import InputField from "./InputField";
 import { Search, Bell } from "lucide-react";
-import PrimaryButton from "./PrimaryButton";
 import { Link } from "react-router";
 const Header = () => {
     return (
@@ -21,8 +20,8 @@ const Header = () => {
                     />
                 } */}
                 <div className="flex gap-4">
-                    <div className="bg-secondary text-white font-semibold text-md rounded-xl p-4 hover:cursor-pointer hover:opacity-90"><Link to="/login">Đăng nhập</Link></div>
-                    <div className="bg-gray-200 text-black font-semibold text-md rounded-xl p-4 hover:cursor-pointer hover:opacity-90"><Link to="/signup">Đăng ký</Link></div>
+                    <div className="bg-secondary text-white font-semibold text-md rounded-xl px-4 py-2 hover:cursor-pointer hover:opacity-90"><Link to="/login">Đăng nhập</Link></div>
+                    <div className="bg-gray-200 text-black font-semibold text-md rounded-xl px-4 py-2 hover:cursor-pointer hover:opacity-90"><Link to="/signup">Đăng ký</Link></div>
                 </div>
             </div>
         </div>

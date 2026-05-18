@@ -49,8 +49,13 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new BadCredentialsException("Invalid username or password."));
+        User user = userRepository.findByUsername(request.getUsernameOrEmail())
+                .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
+                        .orElseThrow(() -> new BadCredentialsException("Invalid username or password.")));
+
+        if(user.getPassword().isBlank()){
+            throw new BadCredentialsException("Invalid username or password");
+        }
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
@@ -61,10 +66,6 @@ public class AuthService {
         // CHECK STATUS
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new RuntimeException("Account disabled");
-        }
-
-        if (user.getAuthProvider() != null && user.getAuthProvider() == AuthProvider.GOOGLE) {
-            throw new BadCredentialsException("This account was registered with Google. Please login via Google.");
         }
 
         String token = jwtUtil.generateToken(user);

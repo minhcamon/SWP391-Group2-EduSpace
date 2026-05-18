@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoginRequest {
     @NotBlank(message = "Do not be left blank!")
-    private String username;
+    private String usernameOrEmail;
 
     @NotBlank(message = "Do not be left blank")
     private String password;

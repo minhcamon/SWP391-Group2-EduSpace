@@ -42,8 +42,8 @@ const LoginForm = () => {
             <div className="p-8 border border-blue-500 rounded-2xl shadow shadow-gray-700">
                 <div>
                     <div className="flex">
-                        <Book className=" text-indigo-700" size={70} />
-                        <h1 className="ml-2 font-bold text-6xl text-indigo-700">
+                        <Book className=" text-primary" size={70} />
+                        <h1 className="ml-2 font-bold text-6xl text-primary">
                             EduSpace
                         </h1>
                     </div>
@@ -81,12 +81,12 @@ const LoginForm = () => {
 
                     <div className="mt-8 font-semibold text-center">
                         <div className="flex justify-around">
-                            <div className="text-indigo-700">
+                            <div className="text-primary">
                                 <Link to="/">Quay về trang chủ</Link>
                             </div>
                             <div>
                                 Chưa có tài khoản?{" "}
-                                <Link to="/signup" className="text-indigo-700">
+                                <Link to="/signup" className="text-primary">
                                     Đăng ký ngay
                                 </Link>
                             </div>
