@@ -39,7 +39,6 @@ const RegisterForm = () => {
             // 3. UI Flow khi thành công
             alert(successMessage);
             navigate("/login"); // Chuyển hướng sang trang đăng nhập
-            
         } catch (error) {
             console.error("Transaction failed: ", error);
             // 4. UI Flow khi thất bại

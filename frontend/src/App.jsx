@@ -13,13 +13,11 @@ function App() {
                     <Route path="/" element={<HomePage />}></Route>
                     <Route path="/signup" element={<RegisterForm />}></Route>
                     <Route path="/login" element={<LoginForm />}></Route>
-                
+
                     <Route element={<ProtectedRoute />}>
                         {/* Define protected routes here */}
                     </Route>
-                
                 </Routes>
-
             </AuthProvider>
         </BrowserRouter>
     );

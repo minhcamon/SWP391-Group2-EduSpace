@@ -1,21 +1,15 @@
 import React from "react";
-import Herobar from "../components/Herobar";
-import CourseContainer from "../components/CourseContainer";
+import CourseContainer from "../components/course/CourseContainer";
 import Header from "../components/common/Header";
-import { Sidebar } from "../components/common/Sidebar";
+import RoadmapContainer from "../components/roadmap/RoadmapContainer";
 
 const HomePage = () => {
     return (
         <>
-            <div className="flex mt-4">
-                <div>
-                    <Sidebar />
-                </div>
-                <div>
-                    <Header />
-                    <Herobar />
-                    <CourseContainer />
-                </div>
+            <div className="my-4">
+                <Header />
+                <RoadmapContainer />
+                <CourseContainer />
             </div>
         </>
     );
