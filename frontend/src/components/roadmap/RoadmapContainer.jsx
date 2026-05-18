@@ -1,4 +1,3 @@
-import React from "react";
 import { MoveRight } from "lucide-react";
 import { Link } from "react-router";
 import RoadmapItem from "./RoadmapItem";
@@ -20,11 +19,11 @@ const RoadmapContainer = () => {
                     </div>
                 </Link>
             </div>
-            <div className="flex gap-4 mt-4">
-                <RoadmapItem actionText="Bắt đầu ngay"/>
-                <RoadmapItem actionText="Bắt đầu ngay"/>
-                <RoadmapItem actionText="Bắt đầu ngay"/>
-                <RoadmapItem actionText="Bắt đầu ngay"/>
+            <div className="flex mt-4 gap-6 pb-2">
+                <RoadmapItem actionText="Bắt đầu ngay" />
+                <RoadmapItem actionText="Bắt đầu ngay" />
+                <RoadmapItem actionText="Bắt đầu ngay" />
+                <RoadmapItem actionText="Bắt đầu ngay" />
             </div>
         </div>
     );

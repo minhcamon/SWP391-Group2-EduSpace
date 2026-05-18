@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useState } from "react";
 import { Book, Lock, Mail } from "lucide-react";
 import InputField from "../../components/common/InputField";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { Link, useNavigate } from "react-router";
 import AuthService from "../../services/AuthService";
+import SecondaryButton from "../../components/common/SecondaryButton";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -101,7 +100,7 @@ const RegisterForm = () => {
                         placeholder="Nhập lại mật khẩu"
                     />
                     <div className="mt-8">
-                        <PrimaryButton
+                        <SecondaryButton
                             buttonText="Tạo tài khoản"
                             type="submit"
                         />

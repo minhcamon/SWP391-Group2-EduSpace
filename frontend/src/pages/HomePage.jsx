@@ -1,4 +1,3 @@
-import React from "react";
 import CourseContainer from "../components/course/CourseContainer";
 import Header from "../components/common/Header";
 import RoadmapContainer from "../components/roadmap/RoadmapContainer";
@@ -6,7 +5,7 @@ import RoadmapContainer from "../components/roadmap/RoadmapContainer";
 const HomePage = () => {
     return (
         <>
-            <div className="my-4">
+            <div>
                 <Header />
                 <RoadmapContainer />
                 <CourseContainer />

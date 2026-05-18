@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import InputField from "../../components/common/InputField";
 import { Mail, Lock, Book } from "lucide-react";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { Link, useNavigate } from "react-router";
+import SecondaryButton from "../../components/common/SecondaryButton";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -76,7 +76,7 @@ const LoginForm = () => {
                     />
 
                     <div className="mt-8">
-                        <PrimaryButton type="submit" buttonText="Đăng nhập" />
+                        <SecondaryButton type="submit" buttonText="Đăng nhập" />
                     </div>
 
                     <div className="mt-8 font-semibold text-center">
