@@ -34,7 +34,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
 
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        AuthProvider provider = AuthProvider.valueOf(registrationId);
+        AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
 
         String email = oAuth2User.getAttribute("email");
         if (email == null) {
@@ -49,11 +49,6 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
 
         if (userOptional.isPresent()) {
             user = userOptional.get();
-            // Luôn cập nhật thông tin mới nhất từ nhà cung cấp (Google)
-            user.setFullName(name != null ? name : user.getFullName());
-            user.setAvatarUrl(pUrl != null ? pUrl : user.getAvatarUrl());
-            user.setAuthProvider(provider);
-            user = userRepository.save(user);
         } else {
             user = User.builder()
                     .email(email)
