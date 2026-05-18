@@ -3,6 +3,7 @@ import { Book, Lock, Mail } from "lucide-react";
 import InputField from "../../components/common/InputField";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { Link } from "react-router";
+import api from "../../lib/axios.js";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -20,14 +21,30 @@ const RegisterForm = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         console.log("Dữ liệu gửi lên Backend: ", formData);
-        // Sau này bạn sẽ gọi API Axios ở đây:
-        // axios.post("http://localhost:8080/api/v1/auth/login", formData)
-        //     .then(res => console.log(res))
-        //     .catch(err => console.error(err));
+
+        try {
+            const response = await api.post("/auth/register", formData);
+            console.log("Phản hồi từ Backend: ", response.data);
+            const res = response.data;
+
+            const resMsg = res.message;
+            alert(resMsg);
+
+            // toast("success", apiResponse.message);
+        } catch (error) {
+            console.log("Loi: ", error);
+
+            const errorMsg = error.response?.data?.message || "LOI";
+
+            alert(errorMsg);
+            // toast("error", error.response?.data?.message);
+        }
+
+
     };
 
     return (

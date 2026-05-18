@@ -3,6 +3,8 @@ import InputField from "../../components/common/InputField";
 import { Mail, Lock, Book } from "lucide-react";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { Link } from "react-router";
+import api from "../../lib/axios.js";
+import AuthService from "../../context/AuthContext.jsx"
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -18,14 +20,21 @@ const LoginForm = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
+        
+        const result = await AuthService.login(formData);
 
-        console.log("Dữ liệu gửi lên Backend: ", formData);
-        // Sau này bạn sẽ gọi API Axios ở đây:
-        // axios.post("http://localhost:8080/api/v1/auth/login", formData)
-        //     .then(res => console.log(res))
-        //     .catch(err => console.error(err));
+        if (result.success) {
+            console.log("Login successful:", result);
+            alert("Đăng nhập thành công!");
+            // toast("success", "Đăng nhập thành công!");
+        } else {
+            console.error("Login failed at LoginForm:", result);
+            alert(result.message);
+            // toast("error", result.message);
+        }
+
     };
 
     return (
