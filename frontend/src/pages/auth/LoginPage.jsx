@@ -1,10 +1,9 @@
 import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import InputField from "../../components/common/InputField";
 import { Mail, Lock, Book } from "lucide-react";
 import PrimaryButton from "../../components/common/PrimaryButton";
-import { Link } from "react-router";
-import api from "../../lib/axios.js";
-import AuthService from "../../context/AuthContext.jsx"
+import { Link, useNavigate } from "react-router";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -20,21 +19,22 @@ const LoginForm = () => {
         });
     };
 
-    const handleSubmit = async(e) => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        const { email, password } = formData;
         
-        const result = await AuthService.login(formData);
-
-        if (result.success) {
-            console.log("Login successful:", result);
+        try {
+            await login(email, password);
+            console.log("Login successful");
             alert("Đăng nhập thành công!");
-            // toast("success", "Đăng nhập thành công!");
-        } else {
-            console.error("Login failed at LoginForm:", result);
-            alert(result.message);
-            // toast("error", result.message);
+            navigate("/"); // Chuyển hướng về trang chủ
+        } catch (error) {
+            console.error("Login failed at LoginForm:", error);
+            alert(error.message);
         }
-
     };
 
     return (

@@ -1,27 +1,31 @@
 import api from '../lib/axios';
 
+
 const AuthService = {
-    login: async(username, password) => {
+    login: async (email, password) => {
         try {
-            const response = await api.post('/login', { username, password });
-            console.log('Login response:', response.data);
-            return response.data;
+            const response = await api.post('/login', { email, password });
+            // Trả về trực tiếp object chứa { token, user }
+            return response.data.data; 
         } catch (error) {
             console.error('Login error at AuthService:', error);
-            throw error;
+            // Chuẩn hóa lỗi Axios thành JS Error
+            const errorMsg = error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
         }
     },
 
-    register: async(username, password, email, phone, fullname) => {
+    register: async (userData) => {
         try {
-            const response = await api.post('/register', { username, password, email, phone, fullname });
-            console.log('Register response:', response.data);
-            return response.data;
+            const response = await api.post('/register', userData);
+            // Trả về chuỗi message thành công
+            return response.data.message || 'Đăng ký thành công!';
         } catch (error) {
             console.error('Registration error at AuthService:', error);
-            throw error;
+            const errorMsg = error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
         }
     }
-}
+};
 
 export default AuthService;

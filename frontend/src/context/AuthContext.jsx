@@ -1,5 +1,6 @@
 import React, { createContext } from 'react'
 import { setTokens, clearTokens } from '../lib/utils';
+import AuthService from '../services/AuthService';
 
 // Luu thong tin nguoi dung vao context de cac component con co the truy cap duoc
 const AuthContext = createContext();
@@ -12,23 +13,14 @@ export const AuthProvider = ({ children }) => {
     //     const checkAuth = 
     // })
 
-    const login = async (username, password) => {
+    const login = async (email, password) => {
         setIsLoading(true);
         try {
-            const response = await AuthService.login(username, password);
-            const { token, user } = response.data;
-
+            // AuthService đã tự chuẩn hóa data và ném Error nếu có lỗi
+            const { token, user } = await AuthService.login(email, password);
+            
             setTokens(token);
             setUser(user);
-
-            return { success: true };
-
-        } catch (error) {
-            console.error('Login error at AuthContext:', error);
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Login failed'
-            };
         } finally {
             setIsLoading(false);
         }

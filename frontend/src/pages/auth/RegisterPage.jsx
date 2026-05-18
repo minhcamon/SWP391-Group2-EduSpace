@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { Book, Lock, Mail } from "lucide-react";
 import InputField from "../../components/common/InputField";
 import PrimaryButton from "../../components/common/PrimaryButton";
-import { Link } from "react-router";
-import api from "../../lib/axios.js";
+import { Link, useNavigate } from "react-router";
+import AuthService from "../../services/AuthService";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -21,30 +22,29 @@ const RegisterForm = () => {
         });
     };
 
+    const navigate = useNavigate();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log("Dữ liệu gửi lên Backend: ", formData);
-
-        try {
-            const response = await api.post("/auth/register", formData);
-            console.log("Phản hồi từ Backend: ", response.data);
-            const res = response.data;
-
-            const resMsg = res.message;
-            alert(resMsg);
-
-            // toast("success", apiResponse.message);
-        } catch (error) {
-            console.log("Loi: ", error);
-
-            const errorMsg = error.response?.data?.message || "LOI";
-
-            alert(errorMsg);
-            // toast("error", error.response?.data?.message);
+        // 1. Validation tầng UI
+        if (formData.password !== formData.confirmPassword) {
+            return alert("Mật khẩu xác nhận không khớp!");
         }
 
+        try {
+            // 2. Gọi Service
+            const successMessage = await AuthService.register(formData);
 
+            // 3. UI Flow khi thành công
+            alert(successMessage);
+            navigate("/login"); // Chuyển hướng sang trang đăng nhập
+            
+        } catch (error) {
+            console.error("Transaction failed: ", error);
+            // 4. UI Flow khi thất bại
+            alert(error.message);
+        }
     };
 
     return (

@@ -7,16 +7,16 @@ const api = axios.create({
 
 // Interceptor
 // use() can 2 bien: onFullfilled va onRejected
-api.interceptors.request.use(
-    (config) => {
-        const token = getTokens();
-        if (token) {
-            config.headers.Authorization = `Bearer` + token;
-        }
-        return config;
-    },
-(error) => Promise.reject(error)
-);
+// api.interceptors.request.use(
+//     (config) => {
+//         const token = getTokens();
+//         if (token) {
+//             config.headers.Authorization = `Bearer` + token;
+//         }
+//         return config;
+//     },
+// (error) => Promise.reject(error)
+// );
 
 
 export default api;
