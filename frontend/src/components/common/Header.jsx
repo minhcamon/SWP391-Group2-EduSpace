@@ -3,7 +3,7 @@ import { Link } from "react-router";
 const Header = () => {
     return (
         <div className="bg-white p-4">
-            <div className="container flex justify-around mx-auto ">
+            <div className="flex justify-between mx-auto ">
                 <Link to="/">
                     <div className="flex">
                         <Book className=" text-primary" size={36} />

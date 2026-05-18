@@ -4,6 +4,7 @@ import InputField from "../../components/common/InputField";
 import { Link, useNavigate } from "react-router";
 import AuthService from "../../services/AuthService";
 import SecondaryButton from "../../components/common/SecondaryButton";
+import { toast } from "sonner";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const RegisterForm = () => {
 
         // 1. Validation tầng UI
         if (formData.password !== formData.confirmPassword) {
-            return alert("Mật khẩu xác nhận không khớp!");
+            return toast.error("Mật khẩu xác nhận không khớp!");
         }
 
         try {
@@ -36,12 +37,12 @@ const RegisterForm = () => {
             const successMessage = await AuthService.register(formData);
 
             // 3. UI Flow khi thành công
-            alert(successMessage);
+            toast.success(successMessage);
             navigate("/login"); // Chuyển hướng sang trang đăng nhập
         } catch (error) {
             console.error("Transaction failed: ", error);
             // 4. UI Flow khi thất bại
-            alert(error.message);
+            toast.error(error.message);
         }
     };
 

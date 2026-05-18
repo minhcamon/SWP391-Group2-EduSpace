@@ -4,7 +4,7 @@ import RoadmapItem from "./RoadmapItem";
 
 const RoadmapContainer = () => {
     return (
-        <div className="container mx-auto my-4">
+        <div className="container mx-auto px-4 my-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Lộ trình đề xuất</h1>
                 <Link to="/roadmaps">

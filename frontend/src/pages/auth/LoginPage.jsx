@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import InputField from "../../components/common/InputField";
+import SecondaryButton from "../../components/common/SecondaryButton";
 import { Mail, Lock, Book } from "lucide-react";
 import { Link, useNavigate } from "react-router";
-import SecondaryButton from "../../components/common/SecondaryButton";
+import { toast } from "sonner";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -29,11 +30,11 @@ const LoginForm = () => {
         try {
             await login(email, password);
             console.log("Login successful");
-            alert("Đăng nhập thành công!");
+            toast.success("Đăng nhập thành công!");
             navigate("/"); // Chuyển hướng về trang chủ
         } catch (error) {
             console.error("Login failed at LoginForm:", error);
-            alert(error.message);
+            toast.error(error.message);
         }
     };
 
