@@ -53,7 +53,7 @@ public class AuthService {
                 .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
                         .orElseThrow(() -> new BadCredentialsException("Invalid username or password.")));
 
-        if(user.getPassword().isBlank()){
+        if (user.getPassword().isBlank()) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
@@ -93,6 +93,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found or not authenticated"));
 
         UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())

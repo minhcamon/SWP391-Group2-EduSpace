@@ -39,7 +39,7 @@ public class OtpService {
 
             if (timeSinceLastSent < COOLDOWN_MILLIS) {
                 long secondsLeft = (COOLDOWN_MILLIS - timeSinceLastSent) / 1000;
-                throw new RuntimeException("Vui lòng đợi " + secondsLeft + " giây nữa trước khi yêu cầu gửi lại OTP.");
+                throw new RuntimeException("Please wait for " + secondsLeft + " seconds before requesting OTP again.");
             }
         }
         // Sinh mã mới và lưu đè
@@ -50,7 +50,7 @@ public class OtpService {
         return otp;
     }
 
-    // 2. Xác thực OTP (Chỉ trả về true / false)
+    // 2. Xác thực OTP
     public boolean validateOTP(String email, String otpInput) {
         if (otpStorage.containsKey(email)) {
             OtpData otpData = otpStorage.get(email);

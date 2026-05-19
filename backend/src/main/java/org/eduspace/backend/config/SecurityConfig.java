@@ -63,7 +63,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public JwtDecoder jwtDecoder() {
         SecretKey secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
@@ -89,6 +88,7 @@ public class SecurityConfig {
 
         return converter;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
