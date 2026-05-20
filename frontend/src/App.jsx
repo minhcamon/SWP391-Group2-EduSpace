@@ -7,6 +7,10 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import { Toaster } from "sonner";
 import AdminHomePage from "@/pages/admin/AdminHomePage";
 import CreatorHomePage from "@/pages/creator/CreatorHomePage";
+import UserProfile from "@/pages/UserProfile";
+import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
+import CoursesPage from "@/pages/course/CoursesPage";
+import Leaderboard from "@/pages/Leaderboard";
 
 function App() {
     return (
@@ -18,6 +22,13 @@ function App() {
                     <Route path="/" element={<HomePage />}></Route>
                     <Route path="/signup" element={<RegisterForm />}></Route>
                     <Route path="/login" element={<LoginForm />}></Route>
+                    <Route path="/profile" element={<UserProfile />}></Route>
+                    <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
+                    <Route path="/courses" element={<CoursesPage />}></Route>
+                    <Route
+                        path="/leaderboard"
+                        element={<Leaderboard />}
+                    ></Route>
 
                     {/* admin route */}
                     <Route path="/admin" element={<AdminHomePage />}></Route>
@@ -27,6 +38,9 @@ function App() {
                         path="/creator"
                         element={<CreatorHomePage />}
                     ></Route>
+
+                    {/* Protected Route */}
+                    <Route element={<ProtectedRoute />}></Route>
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

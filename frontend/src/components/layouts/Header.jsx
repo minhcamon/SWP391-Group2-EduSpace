@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import DropDown from "../common/DropDown";
 const Header = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     const [showDropDown, setShowDropDown] = useState(false);
     return (
