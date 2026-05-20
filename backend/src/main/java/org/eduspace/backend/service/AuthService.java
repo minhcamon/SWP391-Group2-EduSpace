@@ -6,16 +6,12 @@ import org.eduspace.backend.dto.request.RegisterRequest;
 import org.eduspace.backend.dto.response.AuthResponse;
 import org.eduspace.backend.dto.response.UserResponse;
 import org.eduspace.backend.entity.User;
-import org.eduspace.backend.enums.AuthProvider;
 import org.eduspace.backend.enums.UserStatus;
 import org.eduspace.backend.repository.UserRepository;
 import org.eduspace.backend.security.JwtUtil;
 import org.eduspace.backend.security.SecurityUtil;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -53,7 +49,7 @@ public class AuthService {
                 .orElseGet(() -> userRepository.findByEmail(request.getUsernameOrEmail())
                         .orElseThrow(() -> new BadCredentialsException("Invalid username or password.")));
 
-        if (user.getPassword().isBlank()) {
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
             throw new BadCredentialsException("Invalid username or password");
         }
 

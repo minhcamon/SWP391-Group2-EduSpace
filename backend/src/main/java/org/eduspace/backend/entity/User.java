@@ -8,13 +8,8 @@ import lombok.NoArgsConstructor;
 import org.eduspace.backend.enums.AuthProvider;
 import org.eduspace.backend.enums.Role;
 import org.eduspace.backend.enums.UserStatus;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 @Entity
 @Table(name = "users")

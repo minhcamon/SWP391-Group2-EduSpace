@@ -1,5 +1,6 @@
 package org.eduspace.backend.config;
 
+import org.eduspace.backend.security.AuthenticationFilter;
 import org.eduspace.backend.service.CustomOauth2UserService;
 import org.eduspace.backend.service.Oauth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
@@ -36,11 +38,12 @@ public class SecurityConfig {
     @Value("${jwt.secret}")
     private String secret;
 
-    private final CustomOauth2UserService customOauth2UserService;
-    private final Oauth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
-
     @Value("${app.frontend.url}")
     private String frontendUrl;
+
+    private final CustomOauth2UserService customOauth2UserService;
+    private final Oauth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+    private final AuthenticationFilter authenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -56,6 +59,7 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .addFilterAfter(authenticationFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOauth2UserService))

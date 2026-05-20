@@ -12,12 +12,12 @@ public class SecurityUtil {
             throw new RuntimeException("User is not authenticated");
         }
 
-        // Kiểm tra xem Principal có đúng là JWT không
         if (authentication.getPrincipal() instanceof Jwt jwt) {
-            // Vì json có thể parse về Integer
             Object userIdObj = jwt.getClaim("userId");
             if (userIdObj instanceof Number number) {
                 return number.longValue();
+            } else if (userIdObj instanceof String str) {
+                return Long.parseLong(str);
             }
             throw new RuntimeException("userId claim is missing or invalid in JWT");
         }
