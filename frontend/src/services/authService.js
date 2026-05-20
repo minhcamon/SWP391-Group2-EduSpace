@@ -1,6 +1,5 @@
 import api from '@/lib/axios';
 
-
 const AuthService = {
     login: async (email, password) => {
         try {
