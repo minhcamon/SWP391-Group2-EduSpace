@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Book, Lock, Mail, Users, Phone } from "lucide-react";
-import InputField from "../../components/common/InputField";
+import InputField from "../../components/UI/InputField";
 import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
-import SecondaryButton from "@/components/common/SecondaryButton";
+import SecondaryButton from "@/components/UI/SecondaryButton";
 import { toast } from "sonner";
 
 const RegisterForm = () => {
@@ -53,12 +53,12 @@ const RegisterForm = () => {
             <div className="p-8 border border-blue-500 rounded-2xl shadow shadow-gray-700">
                 <div>
                     <div className="flex">
-                        <Book className=" text-primary" size={70} />
-                        <h1 className="ml-2 font-bold text-6xl text-primary">
+                        <Book className=" text-primary" size={44} />
+                        <h1 className="ml-2 font-bold text-4xl text-primary">
                             EduSpace
                         </h1>
                     </div>
-                    <h1 className="my-4 text-black font-bold text-6xl">
+                    <h1 className="my-4 text-black font-bold text-4xl">
                         Tạo tài khoản
                     </h1>
                     <p className="text-gray-500 font-m">

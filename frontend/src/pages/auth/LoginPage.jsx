@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import InputField from "@/components/common/InputField";
-import SecondaryButton from "@/components/common/SecondaryButton";
+import InputField from "@/components/UI/InputField";
+import SecondaryButton from "@/components/UI/SecondaryButton";
 import { Mail, Lock, Book } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ const LoginForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { email, password } = formData;
-        
+
         try {
             await login(email, password);
             console.log("Login successful");
@@ -43,15 +43,15 @@ const LoginForm = () => {
             <div className="p-8 border border-blue-500 rounded-2xl shadow shadow-gray-700">
                 <div>
                     <div className="flex">
-                        <Book className=" text-primary" size={70} />
-                        <h1 className="ml-2 font-bold text-6xl text-primary">
+                        <Book className=" text-primary" size={44} />
+                        <h1 className="ml-2 font-bold text-4xl text-primary">
                             EduSpace
                         </h1>
                     </div>
-                    <h1 className="my-4 text-black font-bold text-6xl">
+                    <h1 className="my-4 text-black font-bold text-4xl">
                         Chào mừng trở lại
                     </h1>
-                    <p className="text-gray-500 font-m">
+                    <p className="text-gray-500 font-m pr-20">
                         Đăng nhập vào tài khoản của bạn để tiếp tục các bài học
                     </p>
                 </div>

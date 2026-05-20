@@ -1,5 +1,5 @@
 import { Users } from "lucide-react";
-import SecondaryButton from "@/components/common/SecondaryButton";
+import SecondaryButton from "@/components/UI/SecondaryButton";
 const CourseItem = () => {
     return (
         <div className="flex flex-col justify-between shadow-sm flex-1 min-w-200px max-w-300px bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all overflow-hidden">
