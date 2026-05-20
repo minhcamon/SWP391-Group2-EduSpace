@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Book, Lock, Mail } from "lucide-react";
-import InputField from "@/components/common/InputField";
+import { Book, Lock, Mail, Users } from "lucide-react";
+import InputField from "../../components/common/InputField";
 import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
 import SecondaryButton from "@/components/common/SecondaryButton";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
         fullname: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -67,18 +68,30 @@ const RegisterForm = () => {
                 <form className="mt-4" onSubmit={handleSubmit}>
                     <div className="mb-2 font-bold">Họ Và Tên</div>
                     <InputField
-                        icon={Mail}
+                        icon={Users}
                         inputType="text"
                         name="fullname"
+                        value={formData.fullname}
                         onChange={handleChange}
                         placeholder="Nguyen Van A"
+                    />
+
+                    <div className="mt-4 mb-2 font-bold">Tên đăng nhập</div>
+                    <InputField
+                        icon={Users}
+                        inputType="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        placeholder="Tên đăng nhập"
                     />
 
                     <div className="mt-4 mb-2 font-bold">Địa chỉ Email</div>
                     <InputField
                         icon={Mail}
-                        inputType="email"
+                        inputType="text"
                         name="email"
+                        value={formData.email}
                         onChange={handleChange}
                         placeholder="nguyenVanA@gmail.com"
                     />
@@ -88,6 +101,7 @@ const RegisterForm = () => {
                         icon={Lock}
                         inputType="password"
                         name="password"
+                        value={formData.password}
                         onChange={handleChange}
                         placeholder="Nhập mật khẩu"
                     />
@@ -97,6 +111,7 @@ const RegisterForm = () => {
                         icon={Lock}
                         inputType="password"
                         name="confirmPassword"
+                        value={formData.confirmPassword}
                         onChange={handleChange}
                         placeholder="Nhập lại mật khẩu"
                     />

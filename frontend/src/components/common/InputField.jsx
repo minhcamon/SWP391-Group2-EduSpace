@@ -1,9 +1,19 @@
-import React from "react";
-
-const InputField = ({ icon: Icon, inputType, placeholder, name, value, onChange }) => {
+const InputField = ({
+    icon: Icon,
+    inputType,
+    placeholder,
+    name,
+    value,
+    onChange,
+}) => {
     return (
         <div className="relative">
-            {<Icon className="absolute left-3.5 top-2.5 text-gray-400" size={20} />}
+            {
+                <Icon
+                    className="absolute left-3.5 top-2.5 text-gray-400"
+                    size={20}
+                />
+            }
             <input
                 type={inputType}
                 placeholder={placeholder}
