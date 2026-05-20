@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Book, Lock, Mail, Users } from "lucide-react";
+import { Book, Lock, Mail, Users, Phone } from "lucide-react";
 import InputField from "../../components/common/InputField";
 import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
@@ -11,6 +11,7 @@ const RegisterForm = () => {
         fullname: "",
         username: "",
         email: "",
+        phone: "",
         password: "",
         confirmPassword: "",
     });
@@ -66,15 +67,33 @@ const RegisterForm = () => {
                     </p>
                 </div>
                 <form className="mt-4" onSubmit={handleSubmit}>
-                    <div className="mb-2 font-bold">Họ Và Tên</div>
-                    <InputField
-                        icon={Users}
-                        inputType="text"
-                        name="fullname"
-                        value={formData.fullname}
-                        onChange={handleChange}
-                        placeholder="Nguyen Van A"
-                    />
+                    <div className="flex">
+                        <div>
+                            <div className="mb-2 font-bold">Họ Và Tên</div>
+                            <InputField
+                                icon={Users}
+                                inputType="text"
+                                name="fullname"
+                                value={formData.fullname}
+                                onChange={handleChange}
+                                placeholder="Nguyen Van A"
+                            />
+                        </div>
+
+                        <div className="ml-5">
+                            <div className="mb-2 font-bold">
+                                Số điện thoại
+                            </div>
+                            <InputField
+                                icon={Phone}
+                                inputType="text"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="0123456789"
+                            />
+                        </div>
+                    </div>
 
                     <div className="mt-4 mb-2 font-bold">Tên đăng nhập</div>
                     <InputField

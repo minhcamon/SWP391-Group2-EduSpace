@@ -26,7 +26,7 @@ const LoginForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { email, password } = formData;
-
+        
         try {
             await login(email, password);
             console.log("Login successful");

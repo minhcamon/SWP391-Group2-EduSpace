@@ -8,8 +8,8 @@ import { Toaster } from "sonner";
 
 function App() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
+        <AuthProvider>
+            <BrowserRouter>
                 <Toaster position="bottom-right" richColors />
                 <Routes>
                     <Route path="/" element={<HomePage />}></Route>
@@ -20,8 +20,8 @@ function App() {
                         {/* Define protected routes here */}
                     </Route>
                 </Routes>
-            </AuthProvider>
-        </BrowserRouter>
+            </BrowserRouter>
+        </AuthProvider>
     );
 }
 

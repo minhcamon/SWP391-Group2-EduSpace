@@ -3,9 +3,11 @@ import api from '@/lib/axios';
 const AuthService = {
     login: async (email, password) => {
         try {
-            const response = await api.post('/login', { email, password });
+            const usernameOrEmail = email;
+
+            const response = await api.post('/auth/login', { usernameOrEmail, password });
             // Trả về trực tiếp object chứa { token, user }
-            return response.data.data; 
+            return response.data.data;
         } catch (error) {
             console.error('Login error at AuthService:', error);
             // Chuẩn hóa lỗi Axios thành JS Error
@@ -16,7 +18,7 @@ const AuthService = {
 
     register: async (userData) => {
         try {
-            const response = await api.post('/register', userData);
+            const response = await api.post('/auth/register', userData);
             // Trả về chuỗi message thành công
             return response.data.message || 'Đăng ký thành công!';
         } catch (error) {
