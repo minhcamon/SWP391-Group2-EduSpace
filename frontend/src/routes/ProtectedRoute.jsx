@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate } from 'react-router';
-import { useAuth } from '@/contexts/AuthContext';
-import { Outlet } from 'react-router';
+import React from "react";
+import { Navigate } from "react-router";
+import { useAuth } from "@/contexts/AuthContext";
+import { Outlet } from "react-router";
 
 const ProtectedRoute = ({ children }) => {
     const { user, isLoading } = useAuth();
@@ -14,6 +14,6 @@ const ProtectedRoute = ({ children }) => {
     }
 
     return <Outlet />;
-}
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

@@ -59,8 +59,8 @@ const LoginForm = () => {
                     <div className="mb-2 font-bold">Địa chỉ Email</div>
                     <InputField
                         icon={Mail}
-                        inputType="email"
-                        name="text"
+                        inputType="text"
+                        name="email"
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="nguyenVanA@gmail.com"
