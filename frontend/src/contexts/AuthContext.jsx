@@ -1,6 +1,6 @@
 import React, { createContext } from 'react'
-import { setTokens, clearTokens } from '../lib/utils';
-import AuthService from '../services/AuthService';
+import { setTokens, clearTokens } from '@/utils/utils';
+import AuthService from '@/services/authService';
 
 // Luu thong tin nguoi dung vao context de cac component con co the truy cap duoc
 const AuthContext = createContext();

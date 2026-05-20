@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import InputField from "../../components/common/InputField";
-import SecondaryButton from "../../components/common/SecondaryButton";
+import { useAuth } from "@/contexts/AuthContext";
+import InputField from "@/components/common/InputField";
+import SecondaryButton from "@/components/common/SecondaryButton";
 import { Mail, Lock, Book } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";

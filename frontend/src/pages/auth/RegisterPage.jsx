@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Book, Lock, Mail } from "lucide-react";
-import InputField from "../../components/common/InputField";
+import InputField from "@/components/common/InputField";
 import { Link, useNavigate } from "react-router";
-import AuthService from "../../services/AuthService";
-import SecondaryButton from "../../components/common/SecondaryButton";
+import AuthService from "@/services/authService";
+import SecondaryButton from "@/components/common/SecondaryButton";
 import { toast } from "sonner";
 
 const RegisterForm = () => {
