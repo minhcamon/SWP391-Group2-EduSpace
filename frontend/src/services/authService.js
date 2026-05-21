@@ -3,9 +3,9 @@ import api from '@/lib/axios';
 const AuthService = {
     login: async (email, password) => {
         try {
-            const usernameOrEmail = email;
+            const payload = { usernameOrEmail: email, password };
 
-            const response = await api.post('/auth/login', { usernameOrEmail, password });
+            const response = await api.post('/auth/login', payload);
             // Trả về trực tiếp object chứa { token, user }
             return response.data.data;
         } catch (error) {
@@ -17,8 +17,15 @@ const AuthService = {
     },
 
     register: async (userData) => {
+        
+        // const { username, email, password, fullname, phone } = userData;
+        // const fullName = fullname;
+
+        const payload = ({ username, email, password, fullName, phone }) => {
+            return { userData: { username, email, password, fullName, phone } };
+        };
         try {
-            const response = await api.post('/auth/register', userData);
+            const response = await api.post('/auth/register', payload(userData));
             // Trả về chuỗi message thành công
             return response.data.message || 'Đăng ký thành công!';
         } catch (error) {
@@ -26,7 +33,31 @@ const AuthService = {
             const errorMsg = error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại!';
             throw new Error(errorMsg);
         }
+    },
+
+    getUserProfile: async () => {
+        try {
+            const response = await api.get('/user/profile');
+            return response.data.data;
+        } catch (error) {
+            console.error('Get profile error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể lấy thông tin người dùng!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    getGoogleAuthUrl: () => {
+        try {
+            const apiUrl =  api.defaults.baseURL;
+            const rootUrl = apiUrl.replace(/\/api$/, '');
+            return `${rootUrl}/oauth2/authorization/google`;
+        } catch (error) {
+            console.error('Get Google auth URL error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể lấy URL đăng nhập Google!';
+            throw new Error(errorMsg);
+        }
     }
+
 };
 
 export default AuthService;

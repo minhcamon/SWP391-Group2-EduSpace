@@ -10,7 +10,7 @@ const DropDown = () => {
             <div className="flex">
                 <img
                     src={
-                        "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                        user?.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
                     }
                     alt="User Avatar"
                     className="ml-3 mt-1.5 w-9 h-9 rounded-full object-cover border border-gray-500"

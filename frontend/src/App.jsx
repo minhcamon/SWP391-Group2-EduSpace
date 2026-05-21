@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import HomePage from "@/pages/HomePage";
 import RegisterForm from "@/pages/auth/RegisterPage";
 import LoginForm from "@/pages/auth/LoginPage";
+import OAuth2RedirectHandler from "@/pages/auth/OAuth2RedirectHandler";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { Toaster } from "sonner";
@@ -22,6 +23,7 @@ function App() {
                     <Route path="/" element={<HomePage />}></Route>
                     <Route path="/signup" element={<RegisterForm />}></Route>
                     <Route path="/login" element={<LoginForm />}></Route>
+                    <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />}></Route>
                     <Route path="/profile" element={<UserProfile />}></Route>
                     <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
                     <Route path="/courses" element={<CoursesPage />}></Route>

@@ -5,6 +5,8 @@ import SecondaryButton from "@/components/UI/SecondaryButton";
 import { Mail, Lock, Book } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
+import authService from "@/services/authService";
+import GoogleIcon from "@/assets/google-icon-logo.svg"
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -20,8 +22,13 @@ const LoginForm = () => {
         });
     };
 
-    const { login } = useAuth();
+    const { login, isLoading } = useAuth();
     const navigate = useNavigate();
+
+    const handleGoogleLogin = () => {
+        if (isLoading) return;
+        window.location.href = authService.getGoogleAuthUrl();
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +38,7 @@ const LoginForm = () => {
             await login(email, password);
             console.log("Login successful");
             toast.success("Đăng nhập thành công!");
-            navigate("/"); // Chuyển hướng về trang chủ
+            navigate("/");
         } catch (error) {
             console.error("Login failed at LoginForm:", error);
             toast.error(error.message);
@@ -77,8 +84,31 @@ const LoginForm = () => {
                     />
 
                     <div className="mt-8">
-                        <SecondaryButton type="submit" buttonText="Đăng nhập" />
+                        <SecondaryButton
+                            type="submit"
+                            disabled={isLoading} 
+                            buttonText={isLoading ? "Đang xử lý..." : "Đăng nhập"} />
                     </div>
+
+                    <div className="flex items-center my-6">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="mx-4 text-gray-400 text-sm font-semibold select-none">Hoặc</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-3 w-full bg-white hover:bg-slate-50 text-slate-700 font-bold border border-slate-200 rounded-xl py-2.5 px-4 shadow-sm hover:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                    >
+                        <img
+                            src={GoogleIcon}
+                            alt="Google Logo"
+                            className="w-5 h-5 object-contain"
+                        />
+                        <span>Đăng nhập với Google</span>
+                    </button>
 
                     <div className="mt-8 font-semibold text-center">
                         <div className="flex justify-around">
