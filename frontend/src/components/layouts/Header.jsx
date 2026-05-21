@@ -8,7 +8,7 @@ const Header = () => {
 
     const [showDropDown, setShowDropDown] = useState(false);
     return (
-        <div className="bg-white p-3 shadow-sm border-b border-gray-100">
+        <header className="bg-white p-3 shadow-sm border-b border-gray-100">
             <div className="flex justify-between mx-auto">
                 <Link to="/">
                     <div className="flex">
@@ -19,7 +19,7 @@ const Header = () => {
                     </div>
                 </Link>
 
-                <div className="flex gap-4 my-auto">
+                <div className="md:flex hidden gap-4 my-auto">
                     <Link to="/roadmaps">
                         <span className="hover:text-primary font-semibold">
                             Lộ trình
@@ -91,7 +91,7 @@ const Header = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </header>
     );
 };
 
