@@ -3,6 +3,7 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.request.LoginRequest;
 import org.eduspace.backend.dto.request.RegisterRequest;
+import org.eduspace.backend.dto.request.VerifyOtpRequest;
 import org.eduspace.backend.dto.response.AuthResponse;
 import org.eduspace.backend.dto.response.UserResponse;
 import org.eduspace.backend.entity.User;
@@ -20,6 +21,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OtpService otpService;
+    private final EmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
         if (request.getUsername() != null && userRepository.existsByUsername(request.getUsername())) {
@@ -36,9 +39,13 @@ public class AuthService {
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
+                .status(UserStatus.PENDING)
                 .build();
 
         userRepository.save(user);
+
+        String otpCode = otpService.generateOTP(request.getEmail());
+        emailService.sendOtpEmail(request.getEmail(), otpCode);
 
         return AuthResponse.builder()
                 .build();
@@ -99,5 +106,18 @@ public class AuthService {
                 .build();
 
         return userResponse;
+    }
+
+    public boolean verifyAndActivateUser(VerifyOtpRequest request) {
+        boolean isValid = otpService.validateOTP(request.getEmail(), request.getOtp());
+        if (isValid) {
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            user.setStatus(UserStatus.ACTIVE);
+            userRepository.save(user);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
