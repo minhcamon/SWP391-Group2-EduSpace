@@ -45,9 +45,57 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
 
-                return ResponseEntity.ok(
-                                APIResponse.success("Successfull Login", response));
+        return ResponseEntity.ok(
+                APIResponse.success("Successfull Login", response));
+    }
+
+    @Operation(summary = "Đăng ký tài khoản mới", description = "Tạo mới một tài khoản người dùng với các thông tin cơ bản.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đăng ký thành công"),
+            @ApiResponse(responseCode = "400", description = "Thông tin đăng ký không hợp lệ, email hoặc username đã được sử dụng")
+    })
+    @PostMapping(path = "/register")
+    public ResponseEntity<APIResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+
+        return ResponseEntity.ok(
+                APIResponse.success("Successfull Register", response));
+    }
+
+    @Operation(summary = "Gửi mã OTP", description = "Tự động sinh mã OTP ngẫu nhiên gồm 6 chữ số và gửi qua email người dùng (Mã có hiệu lực trong 5 phút).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Mã OTP đã được gửi thành công đến email")
+    })
+    @PostMapping("/send-otp")
+    public ResponseEntity<APIResponse<Object>> sendOtp(
+            @RequestBody OtpRequest request) {
+        String email = request.getEmail();
+
+        String otp = otpService.generateOTP(email);
+        emailService.sendOtpEmail(email, otp);
+
+        return ResponseEntity.ok(
+                APIResponse.success("OTP code is sent to your email and is valid for 5 minutes.", null));
+    }
+
+    @Operation(summary = "Xác thực mã OTP", description = "Xác thực mã OTP người dùng nhập vào để thực hiện kích hoạt tài khoản hoặc reset mật khẩu.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Xác thực mã OTP thành công"),
+            @ApiResponse(responseCode = "400", description = "Mã OTP không hợp lệ, hết hạn hoặc quá số lần thử sai tối đa")
+    })
+    @PostMapping("/verify-otp")
+    public ResponseEntity<APIResponse<Object>> verifyOtp(
+            @RequestBody VerifyOtpRequest request) {
+        boolean isValid = otpService.validateOTP(request.getEmail(), request.getOtp());
+        if (isValid) {
+            return ResponseEntity.ok(
+                    APIResponse.success("OTP verification is successful.", null));
+        } else {
+            return ResponseEntity.badRequest().body(
+                    APIResponse.error(400, "OTP verification failed.", null));
         }
+    }
 
     
         @Operation(summary = "Kiểm tra username có sẵn", description = "Kiểm tra xem username đã được sử dụng hay chưa.")

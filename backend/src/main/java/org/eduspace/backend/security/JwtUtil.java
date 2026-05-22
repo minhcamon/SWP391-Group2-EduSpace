@@ -14,11 +14,14 @@ import java.util.Map;
 
 @Component
 public class JwtUtil {
+    private String secret;
+
     private final SecretKey secretKey;
 
     private long EXPIRATION_TIME = 3600000;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
+        this.secret = secret;
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 

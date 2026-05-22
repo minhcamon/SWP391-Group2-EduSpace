@@ -25,12 +25,14 @@ public class OtpService {
     // Storage lưu OTP trên RAM
     private final Map<String, OtpData> otpStorage = new ConcurrentHashMap<>();
 
+    // Cấu hình thời gian
     private static final long VALIDITY_MILLIS = 5 * 60 * 1000; // OTP sống 5 phút
     private static final long COOLDOWN_MILLIS = 60 * 1000; // Spam Cooldown: 1 phút
 
     // 1. Sinh OTP (Có chống spam)
     public String generateOTP(String email) {
         long currentTime = System.currentTimeMillis();
+        // Kiểm tra Cooldown xem user có bấm gửi liên tục không
         if (otpStorage.containsKey(email)) {
             OtpData existingOtp = otpStorage.get(email);
             long timeSinceLastSent = currentTime - existingOtp.lastSentTime;
@@ -40,7 +42,7 @@ public class OtpService {
                 throw new RuntimeException("Please wait for " + secondsLeft + " seconds before requesting OTP again.");
             }
         }
-
+        // Sinh mã mới và lưu đè
         Random random = new Random();
         String otp = String.valueOf(100000 + random.nextInt(900000));
 
@@ -53,11 +55,13 @@ public class OtpService {
         if (otpStorage.containsKey(email)) {
             OtpData otpData = otpStorage.get(email);
 
+            // Đã vượt quá 5 phút
             if (System.currentTimeMillis() > otpData.expirationTime) {
                 otpStorage.remove(email);
                 return false;
             }
 
+            // Đúng mã
             if (otpData.otpCode.equals(otpInput)) {
                 otpStorage.remove(email);
                 return true;
