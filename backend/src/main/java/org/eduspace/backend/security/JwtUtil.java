@@ -48,4 +48,41 @@ public class JwtUtil {
                 .signWith(secretKey)
                 .compact();
     }
+
+    public String generateResetPasswordToken(String email) {
+
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("purpose", "RESET_PASSWORD");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String extractEmail(String token) {
+
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }    
+    public boolean isResetPasswordToken(String token) {
+
+        String purpose = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("purpose", String.class);
+
+        return "RESET_PASSWORD".equals(purpose);
+    }
+
 }

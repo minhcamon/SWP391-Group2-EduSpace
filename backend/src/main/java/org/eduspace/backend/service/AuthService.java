@@ -3,6 +3,7 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.request.LoginRequest;
 import org.eduspace.backend.dto.request.RegisterRequest;
+import org.eduspace.backend.dto.request.ResetPasswordRequest;
 import org.eduspace.backend.dto.response.AuthResponse;
 import org.eduspace.backend.dto.response.UserResponse;
 import org.eduspace.backend.entity.User;
@@ -99,5 +100,28 @@ public class AuthService {
                 .build();
 
         return userResponse;
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+
+        String token = request.getResetToken();
+
+        if (!jwtUtil.isResetPasswordToken(token)) {
+            throw new RuntimeException("Invalid reset token");
+        }
+
+        String email = jwtUtil.extractEmail(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
+        );
+
+        userRepository.save(user);
     }
 }

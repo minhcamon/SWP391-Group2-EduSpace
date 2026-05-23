@@ -7,15 +7,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 import org.eduspace.backend.dto.request.CheckEmailRequest;
 import org.eduspace.backend.dto.request.CheckUsernameRequest;
 import org.eduspace.backend.dto.request.LoginRequest;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.request.OtpRequest;
 import org.eduspace.backend.dto.request.RegisterRequest;
+import org.eduspace.backend.dto.request.ResetPasswordRequest;
 import org.eduspace.backend.dto.request.VerifyOtpRequest;
 import org.eduspace.backend.dto.response.AuthResponse;
 import org.eduspace.backend.repository.UserRepository;
+import org.eduspace.backend.security.JwtUtil;
 import org.eduspace.backend.service.AuthService;
 import org.eduspace.backend.service.EmailService;
 import org.eduspace.backend.service.OtpService;
@@ -31,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth", description = "Các API xác thực tài khoản (Đăng ký, Đăng nhập, Gửi/Xác thực OTP)")
 public class AuthController {
         
+    private final JwtUtil jwtUtil;    
     private final AuthService authService;
     private final OtpService otpService;
     private final EmailService emailService;
@@ -84,14 +89,27 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Xác thực mã OTP thành công"),
             @ApiResponse(responseCode = "400", description = "Mã OTP không hợp lệ, hết hạn hoặc quá số lần thử sai tối đa")
     })
-    @PostMapping("/verify-otp")
+    @PostMapping("/verify-register")
     public ResponseEntity<APIResponse<Object>> verifyOtp(
             @RequestBody VerifyOtpRequest request) {
         boolean isValid = otpService.validateOTP(request.getEmail(), request.getOtp());
         if (isValid) {
-            return ResponseEntity.ok(
-                    APIResponse.success("OTP verification is successful.", null));
-        } else {
+                String resetToken =
+                        jwtUtil.generateResetPasswordToken(
+                                request.getEmail()
+                        );
+
+                return ResponseEntity.ok(
+                        APIResponse.success(
+                                "OTP verification is successful.",
+                                Map.of(
+                                        "resetToken", resetToken
+                                )
+                        )
+                );
+        }
+
+        else {
             return ResponseEntity.badRequest().body(
                     APIResponse.error(400, "OTP verification failed.", null));
         }
@@ -144,6 +162,20 @@ public class AuthController {
                         return ResponseEntity.badRequest().body(
                                 APIResponse.error(400, "Error checking email: " + e.getMessage(), null));
                 }
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<APIResponse<Object>> resetPassword(
+                @RequestBody ResetPasswordRequest request) {
+
+                authService.resetPassword(request);
+
+                return ResponseEntity.ok(
+                        APIResponse.success(
+                                "Password reset successfully.",
+                                null
+                        )
+                );
         }
                
 }
