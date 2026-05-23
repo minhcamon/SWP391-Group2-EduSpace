@@ -89,7 +89,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Xác thực mã OTP thành công"),
             @ApiResponse(responseCode = "400", description = "Mã OTP không hợp lệ, hết hạn hoặc quá số lần thử sai tối đa")
     })
-    @PostMapping("/verify-register")
+    @PostMapping("/verify-forgot")
     public ResponseEntity<APIResponse<Object>> verifyOtp(
             @RequestBody VerifyOtpRequest request) {
         boolean isValid = otpService.validateOTP(request.getEmail(), request.getOtp());
@@ -116,66 +116,71 @@ public class AuthController {
     }
 
     
-        @Operation(summary = "Kiểm tra username có sẵn", description = "Kiểm tra xem username đã được sử dụng hay chưa.")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Username khả dụng"),
-                @ApiResponse(responseCode = "400", description = "Username không hợp lệ hoặc đã được sử dụng")
-        })
-        @PostMapping(path = "/check-username")
-        public ResponseEntity<APIResponse<?>> checkUsername(
-                @Valid @RequestBody CheckUsernameRequest request) {
-                try {
-                        boolean exists = userRepository.existsByUsername(request.getUsername());
-                        
-                        if (exists) {
-                        return ResponseEntity.badRequest().body(
-                                APIResponse.error(400, "This username is already in use", null));
-                        }
-                        
-                        return ResponseEntity.ok(
-                                APIResponse.success("Username is available", null));
-                } catch (Exception e) {
-                        return ResponseEntity.badRequest().body(
-                                APIResponse.error(400, "Error checking username: " + e.getMessage(), null));
-                }
-        }
+    @Operation(summary = "Kiểm tra username có sẵn", description = "Kiểm tra xem username đã được sử dụng hay chưa.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Username khả dụng"),
+            @ApiResponse(responseCode = "400", description = "Username không hợp lệ hoặc đã được sử dụng")
+    })
+    @PostMapping(path = "/check-username")
+    public ResponseEntity<APIResponse<?>> checkUsername(
+            @Valid @RequestBody CheckUsernameRequest request) {
+            try {
+                    boolean exists = userRepository.existsByUsername(request.getUsername());
 
-        @Operation(summary = "Kiểm tra email có sẵn", description = "Kiểm tra xem email đã được sử dụng hay chưa.")
-        @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Email khả dụng"),
-                @ApiResponse(responseCode = "400", description = "Email không hợp lệ hoặc đã được sử dụng")
-        })
-        @PostMapping(path = "/check-email")
-        public ResponseEntity<APIResponse<?>> checkEmail(
-                @Valid @RequestBody CheckEmailRequest request) {
-                try {
-                        boolean exists = userRepository.existsByEmail(request.getEmail());
-                        
-                        if (exists) {
-                        return ResponseEntity.badRequest().body(
-                                APIResponse.error(400, "This email is already in use", null));
-                        }
-                                                
-                        return ResponseEntity.ok(
-                                APIResponse.success("Email is available", null));
-                } catch (Exception e) {
-                        return ResponseEntity.badRequest().body(
-                                APIResponse.error(400, "Error checking email: " + e.getMessage(), null));
-                }
-        }
+                    if (exists) {
+                    return ResponseEntity.badRequest().body(
+                            APIResponse.error(400, "This username is already in use", null));
+                    }
 
-        @PostMapping("/reset-password")
-        public ResponseEntity<APIResponse<Object>> resetPassword(
-                @RequestBody ResetPasswordRequest request) {
+                    return ResponseEntity.ok(
+                            APIResponse.success("Username is available", null));
+            } catch (Exception e) {
+                    return ResponseEntity.badRequest().body(
+                            APIResponse.error(400, "Error checking username: " + e.getMessage(), null));
+            }
+    }
 
-                authService.resetPassword(request);
+    @Operation(summary = "Kiểm tra email có sẵn", description = "Kiểm tra xem email đã được sử dụng hay chưa.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Email khả dụng"),
+            @ApiResponse(responseCode = "400", description = "Email không hợp lệ hoặc đã được sử dụng")
+    })
+    @PostMapping(path = "/check-email")
+    public ResponseEntity<APIResponse<?>> checkEmail(
+            @Valid @RequestBody CheckEmailRequest request) {
+            try {
+                    boolean exists = userRepository.existsByEmail(request.getEmail());
 
-                return ResponseEntity.ok(
-                        APIResponse.success(
-                                "Password reset successfully.",
-                                null
-                        )
-                );
-        }
+                    if (exists) {
+                    return ResponseEntity.badRequest().body(
+                            APIResponse.error(400, "This email is already in use", null));
+                    }
+
+                    return ResponseEntity.ok(
+                            APIResponse.success("Email is available", null));
+            } catch (Exception e) {
+                    return ResponseEntity.badRequest().body(
+                            APIResponse.error(400, "Error checking email: " + e.getMessage(), null));
+            }
+    }
+
+    @Operation(summary = "Xác nhận reset password", description = "Thay đổi mật khẩu cho forgot password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Thay đổi thành công"),
+            @ApiResponse(responseCode = "400", description = "Thay đổi không thành công")
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<APIResponse<Object>> resetPassword(
+            @RequestBody ResetPasswordRequest request) {
+
+            authService.resetPassword(request);
+
+            return ResponseEntity.ok(
+                    APIResponse.success(
+                            "Password reset successfully.",
+                            null
+                    )
+            );
+    }
                
 }
