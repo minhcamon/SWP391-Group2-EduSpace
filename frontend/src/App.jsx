@@ -12,6 +12,7 @@ import UserProfile from "@/pages/UserProfile";
 import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
 import CoursesPage from "@/pages/course/CoursesPage";
 import Leaderboard from "@/pages/Leaderboard";
+import CourseCreate from "@/pages/course/CourseCreate";
 
 function App() {
     return (
@@ -27,6 +28,7 @@ function App() {
                     <Route path="/profile" element={<UserProfile />}></Route>
                     <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
                     <Route path="/courses" element={<CoursesPage />}></Route>
+                    
                     <Route
                         path="/leaderboard"
                         element={<Leaderboard />}
@@ -40,6 +42,8 @@ function App() {
                         path="/creator"
                         element={<CreatorHomePage />}
                     ></Route>
+                    
+                    <Route path="/creator/create-course" element={<CourseCreate/>}></Route>
 
                     {/* Protected Route */}
                     <Route element={<ProtectedRoute />}></Route>
