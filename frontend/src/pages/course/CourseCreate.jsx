@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
-  LuInfo, LuImage, LuSlidersHorizontal,
-  LuCirclePlus, LuGripVertical, LuCirclePlay, LuFileText,
+  LuInfo, LuGripVertical, LuCirclePlay, LuFileText,
   LuX, LuPlus, LuTrash2, LuFolderPlus, LuSparkles, LuFolderLock
 } from 'react-icons/lu';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -9,19 +8,64 @@ import { useNavigate } from 'react-router';
 import Header from '@/components/layouts/Header';
 import CreatorSidebar from '@/components/layouts/CreatorSidebar';
 import CreatorFooter from '@/components/layouts/CreatorFooter';
+import { toast } from 'sonner';
+import courseService from '@/services/courseService';
 
 export default function CreateCourse() {
   const navigate = useNavigate();
-  // 1. Đồng bộ State thông tin chung theo trường nhập liệu của template mới
-  const [courseInfo, setCourseInfo] = useState({
+  // 1. Đồng bộ State thông tin chung bằng formData
+  const [formData, setFormData] = useState({
     title: '',
-    subject: 'Reading',
-    targetBand: '7.5 - 8.0',
+    subject: 'Java Software Engineering',
+    targetBand: 'Cơ bản (Beginner)',
     description: '',
-    thumbnailUrl: '',
+    thumbnailPreview: '',
     isFree: false,
-    price: ''
+    price: '',
+    isMentorApproved: true
   });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          thumbnailPreview: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreateCourse = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Vui lòng nhập tên khóa học!");
+      return;
+    }
+
+    try {
+      const payload = {
+        title: formData.title,
+        subject: formData.subject,
+        targetBand: formData.targetBand,
+        description: formData.description,
+        thumbnailUrl: formData.thumbnailPreview,
+        isFree: formData.isFree,
+        price: formData.price,
+        isMentorApproved: formData.isMentorApproved,
+        modules: modules
+      };
+
+      await courseService.createCourse(payload);
+      toast.success("Tạo khóa học thành công!");
+      navigate('/courses');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi tạo khóa học!");
+    }
+  };
 
   // 2. State quản lý cây học liệu ảo (Dữ liệu phẳng tương thích 100% 4 bảng gốc của bạn)
   const [modules, setModules] = useState([
@@ -260,10 +304,16 @@ export default function CreateCourse() {
                 <p className="text-sm text-[#464555] mt-1">Thiết kế lộ trình học cặp đôi động đồng bộ theo mô hình tuần tự.</p>
               </div>
               <div className="flex gap-4">
-                <button className="px-5 py-2.5 border border-[#3525cd] text-[#3525cd] rounded-xl text-sm font-semibold hover:bg-[#f6f3f2] transition-colors cursor-pointer">
+                <button
+                  onClick={() => toast.info("Đã lưu bản nháp thành công!")}
+                  className="px-5 py-2.5 border border-[#3525cd] text-[#3525cd] rounded-xl text-sm font-semibold hover:bg-[#f6f3f2] transition-colors cursor-pointer"
+                >
                   Lưu bản nháp
                 </button>
-                <button className="px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer">
+                <button
+                  onClick={handleCreateCourse}
+                  className="px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                >
                   Tạo Khóa Học
                 </button>
               </div>
@@ -275,7 +325,7 @@ export default function CreateCourse() {
               <div className="grid grid-cols-12 gap-6 items-stretch">
 
                 {/* Khối Thông tin chung */}
-                <div className="col-span-8 bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30 flex flex-col justify-between">
+                <div className="col-span-12 bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30 flex flex-col justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-[#3525cd] mb-4 flex items-center gap-2">
                       <LuInfo className="text-lg" /> Thông tin tổng quan
@@ -287,8 +337,8 @@ export default function CreateCourse() {
                           className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 outline-none text-sm transition-all"
                           placeholder="Nhập tên lộ trình khóa học..."
                           type="text"
-                          value={courseInfo.title}
-                          onChange={(e) => setCourseInfo({ ...courseInfo, title: e.target.value })}
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -296,57 +346,38 @@ export default function CreateCourse() {
                           <label className="block text-xs font-bold text-[#464555] mb-2">Chủ đề đào tạo</label>
                           <select
                             className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#3525cd]/20"
-                            value={courseInfo.subject}
-                            onChange={(e) => setCourseInfo({ ...courseInfo, subject: e.target.value })}
+                            value={formData.subject}
+                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                           >
-                            <option value="Java Boot">Java Software Engineering</option>
-                            <option value="Frontend">Frontend ReactJS</option>
-                            <option value="IoT">IoT & Microcontroller</option>
-                            <option value="GameDev">Unity C# Game Development</option>
+                            <option value="Java Software Engineering">Java Software Engineering</option>
+                            <option value="Frontend ReactJS">Frontend ReactJS</option>
+                            <option value="IoT & Microcontroller">IoT & Microcontroller</option>
+                            <option value="Unity C# Game Development">Unity C# Game Development</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-[#464555] mb-2">Cấp độ mục tiêu</label>
                           <select
                             className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#3525cd]/20"
-                            value={courseInfo.targetBand}
-                            onChange={(e) => setCourseInfo({ ...courseInfo, targetBand: e.target.value })}
+                            value={formData.targetBand}
+                            onChange={(e) => setFormData({ ...formData, targetBand: e.target.value })}
                           >
-                            <option>Cơ bản (Beginner)</option>
-                            <option>Trung cấp (Intermediate)</option>
-                            <option>Nâng cao (Advanced)</option>
+                            <option value="Cơ bản (Beginner)">Cơ bản (Beginner)</option>
+                            <option value="Trung cấp (Intermediate)">Trung cấp (Intermediate)</option>
+                            <option value="Nâng cao (Advanced)">Nâng cao (Advanced)</option>
                           </select>
                         </div>
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-[#464555] mb-2">Mô tả chi tiết</label>
-                        <textarea rows="3" className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 outline-none text-sm transition-all" placeholder="Nhập mục tiêu và kết quả đầu ra mong đợi..."></textarea>
+                        <textarea
+                          rows="3"
+                          className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 outline-none text-sm transition-all"
+                          placeholder="Nhập mục tiêu và kết quả đầu ra mong đợi..."
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        ></textarea>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Khối Cấu hình Điểm số & Ảnh (Side Column Bento) */}
-                <div className="col-span-4 space-y-6">
-                  <div className="bg-white p-5 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30">
-                    <h3 className="text-sm font-bold text-[#3525cd] mb-3 flex items-center gap-2">
-                      <LuImage className="text-lg" /> Hình ảnh hiển thị
-                    </h3>
-                    <div className="relative group cursor-pointer border-2 border-dashed border-[#c7c4d8] rounded-xl aspect-video flex flex-col items-center justify-center bg-[#f6f3f2] hover:bg-gray-100/70 hover:border-[#3525cd] transition-all overflow-hidden">
-                      <div className="text-center p-4">
-                        <LuCirclePlus className="text-2xl text-gray-400 mx-auto mb-1 group-hover:text-[#3525cd]" />
-                        <p className="text-xs font-semibold text-[#464555]">Tải ảnh khóa học (16:9)</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-5 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30">
-                    <h3 className="text-sm font-bold text-[#3525cd] mb-3 flex items-center gap-2">
-                      <LuSlidersHorizontal className="text-base" /> Chế độ vận hành
-                    </h3>
-                    <div className="flex items-center justify-between p-3 bg-[#f6f3f2] rounded-lg border border-[#3525cd]/10">
-                      <span className="text-xs font-bold text-[#1b1c1c]">Bật kiểm duyệt Mentor</span>
-                      <input type="checkbox" defaultChecked className="w-4 h-4 text-[#3525cd] rounded focus:ring-[#3525cd] cursor-pointer" />
                     </div>
                   </div>
                 </div>
@@ -385,50 +416,56 @@ export default function CreateCourse() {
                                 >
 
                                   {/* Thanh Header của Module - Chứa Handle kéo thả chuyên biệt */}
-                                  <div className="p-4 bg-[#f6f3f2] border-b border-[#c7c4d8]/30 flex flex-wrap items-center gap-4">
-                                    <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-[#3525cd] transition-colors">
-                                      <LuGripVertical />
-                                    </div>
-                                    <div className="flex-1 min-w-[200px]">
-                                      <span className="text-[10px] font-bold text-[#3525cd] uppercase tracking-wider">Module {index + 1}</span>
-                                      <input
-                                        className="block w-full bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-[#1b1c1c] outline-none"
-                                        type="text"
-                                        value={mod.title}
-                                        onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, title: e.target.value } : m))}
-                                      />
-                                    </div>
-
-                                    {/* INPUT THỜI GIAN THEO LÝ THUYẾT COURSERA ĐỘC LẬP */}
-                                    <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
-                                      <span className="text-[11px] font-bold text-gray-400">Thời lượng:</span>
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        className="w-10 text-center font-bold text-xs p-0 border-none focus:ring-0 text-gray-700"
-                                        value={mod.days}
-                                        onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, days: parseInt(e.target.value) || 7 } : m))}
-                                      />
-                                      <span className="text-[11px] font-semibold text-gray-500">ngày</span>
+                                  <div className="p-4 bg-[#f6f3f2] border-b border-[#c7c4d8]/30 flex flex-col gap-3">
+                                    {/* Hàng 1: Grip Handle + Tên Module */}
+                                    <div className="flex items-center gap-3">
+                                      <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-[#3525cd] transition-colors flex-shrink-0">
+                                        <LuGripVertical />
+                                      </div>
+                                      <div className="flex-1">
+                                        <span className="text-[10px] font-bold text-[#3525cd] uppercase tracking-wider block">Module {index + 1}</span>
+                                        <input
+                                          className="block w-full bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-[#1b1c1c] outline-none"
+                                          type="text"
+                                          value={mod.title}
+                                          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, title: e.target.value } : m))}
+                                        />
+                                      </div>
                                     </div>
 
-                                    {/* DROP DOWN ĐỘ KHÓ QUYẾT ĐỊNG NGẦM TRẦN ĐIỂM EXP */}
-                                    <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
-                                      <span className="text-[11px] font-bold text-gray-400">Độ khó:</span>
-                                      <select
-                                        className="text-xs font-bold text-gray-700 p-0 border-none focus:ring-0 bg-transparent pr-6 cursor-pointer"
-                                        value={mod.priority}
-                                        onChange={(e) => handlePriorityChange(mod.id, e.target.value)}
-                                      >
-                                        <option value="LOW">LOW (Dễ)</option>
-                                        <option value="MEDIUM">MEDIUM (Vừa)</option>
-                                        <option value="HIGH">HIGH (Khó)</option>
-                                      </select>
-                                    </div>
+                                    {/* Hàng 2: Các cấu hình thời gian, độ khó, EXP */}
+                                    <div className="flex flex-wrap items-center gap-3 pl-8">
+                                      {/* INPUT THỜI GIAN THEO LÝ THUYẾT COURSERA ĐỘC LẬP */}
+                                      <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
+                                        <span className="text-[11px] font-bold text-gray-400">Thời lượng:</span>
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          className="w-10 text-center font-bold text-xs p-0 border-none focus:ring-0 text-gray-700"
+                                          value={mod.days}
+                                          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, days: parseInt(e.target.value) || 7 } : m))}
+                                        />
+                                        <span className="text-[11px] font-semibold text-gray-500">ngày</span>
+                                      </div>
 
-                                    {/* TAG HIỂN THỊ EXP TỰ ĐỘNG ÁNH XẠ BAO BỌC CHO PAIR LEARNING OPTIMIZATION */}
-                                    <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-                                      <LuSparkles className="text-xs" /> +{mod.baseExp} Base EXP | Max Bonus: +{mod.speedBonusExp} EXP
+                                      {/* DROP DOWN ĐỘ KHÓ QUYẾT ĐỊNG NGẦM TRẦN ĐIỂM EXP */}
+                                      <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
+                                        <span className="text-[11px] font-bold text-gray-400">Độ khó:</span>
+                                        <select
+                                          className="text-xs font-bold text-gray-700 p-0 border-none focus:ring-0 bg-transparent pr-6 cursor-pointer"
+                                          value={mod.priority}
+                                          onChange={(e) => handlePriorityChange(mod.id, e.target.value)}
+                                        >
+                                          <option value="LOW">LOW (Dễ)</option>
+                                          <option value="MEDIUM">MEDIUM (Vừa)</option>
+                                          <option value="HIGH">HIGH (Khó)</option>
+                                        </select>
+                                      </div>
+
+                                      {/* TAG HIỂN THỊ EXP TỰ ĐỘNG ÁNH XẠ BAO BỌC CHO PAIR LEARNING OPTIMIZATION */}
+                                      <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                                        <LuSparkles className="text-xs" /> +{mod.baseExp} Base EXP | Max Bonus: +{mod.speedBonusExp} EXP
+                                      </div>
                                     </div>
                                   </div>
 
@@ -461,8 +498,23 @@ export default function CreateCourse() {
                                                   {/* Định dạng 1: Nếu là thanh phân cách Topic Header ảo */}
                                                   {lesson.content_type === 'TOPIC_HEADER' ? (
                                                     <>
-                                                      <span className="w-1.5 h-3.5 bg-[#3525cd] rounded-sm"></span>
-                                                      <span className="text-[11px] font-bold text-[#464555] uppercase tracking-wider">{lesson.title}</span>
+                                                      <span className="w-1.5 h-3.5 bg-[#3525cd] rounded-sm flex-shrink-0"></span>
+                                                      <input
+                                                        className="bg-transparent border-none focus:ring-0 p-0 text-[11px] font-bold text-[#464555] uppercase tracking-wider outline-none w-full"
+                                                        type="text"
+                                                        value={lesson.title}
+                                                        onChange={(e) => {
+                                                          setModules(modules.map(m => {
+                                                            if (m.id === mod.id) {
+                                                              return {
+                                                                ...m,
+                                                                lessons: m.lessons.map(l => l.id === lesson.id ? { ...l, title: e.target.value } : l)
+                                                              };
+                                                            }
+                                                            return m;
+                                                          }));
+                                                        }}
+                                                      />
                                                       <button onClick={() => handleDeleteLesson(mod.id, lesson.id)} className="ml-auto text-gray-300 hover:text-red-500 transition-colors cursor-pointer"><LuX className="text-xs" /></button>
                                                     </>
                                                   ) : (
@@ -474,7 +526,22 @@ export default function CreateCourse() {
                                                         <LuFileText className="text-amber-500 text-lg flex-shrink-0" />
                                                       )}
                                                       <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-[#1b1c1c] truncate">{lesson.title}</p>
+                                                        <input
+                                                          className="bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-[#1b1c1c] outline-none w-full"
+                                                          type="text"
+                                                          value={lesson.title}
+                                                          onChange={(e) => {
+                                                            setModules(modules.map(m => {
+                                                              if (m.id === mod.id) {
+                                                                return {
+                                                                  ...m,
+                                                                  lessons: m.lessons.map(l => l.id === lesson.id ? { ...l, title: e.target.value } : l)
+                                                                };
+                                                              }
+                                                                return m;
+                                                            }));
+                                                          }}
+                                                        />
                                                         <span className="text-[11px] text-gray-400 font-semibold uppercase">{lesson.content_type} • Tiến trình lý thuyết</span>
                                                       </div>
                                                       <button onClick={() => handleDeleteLesson(mod.id, lesson.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><LuTrash2 className="text-sm" /></button>
@@ -565,30 +632,77 @@ export default function CreateCourse() {
                                     </div>
 
                                     {/* Bộ cấu hình Rubric JSON Criteria thu nhỏ nằm ngay trong khối Assignment */}
-                                    <div className="bg-white/80 p-3 rounded-lg border border-[#00524a]/10 space-y-2">
+                                    <div className="bg-white/80 p-3 rounded-lg border border-[#00524a]/10 space-y-3">
                                       <span className="text-[10px] font-bold text-gray-400 block">Tiêu chí và Thang điểm chấm chéo giữa các cặp đôi (Rubric JSON Criteria):</span>
-                                      <div className="flex flex-wrap gap-2">
+                                      <div className="flex flex-col gap-2">
                                         {mod.assignment.rubricCriteria.map((rub, rIdx) => (
-                                          <div key={rIdx} className="flex items-center gap-1 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-md text-[10px] text-gray-600 font-bold">
-                                            <span>{rub.criterion} ({rub.maxPoint}đ)</span>
-                                            <button onClick={() => {
-                                              setModules(modules.map(m => m.id === mod.id ? {
-                                                ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
-                                              } : m));
-                                            }}><LuX className="text-gray-400 hover:text-red-500 cursor-pointer" /></button>
+                                          <div key={rIdx} className="flex items-center gap-3 p-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-600 font-bold w-full">
+                                            <input
+                                              type="text"
+                                              className="bg-transparent border-none focus:ring-0 p-0 text-xs font-semibold text-gray-600 outline-none flex-1 placeholder:text-gray-300"
+                                              placeholder="Nhập tên tiêu chí kiểm thử / chấm bài..."
+                                              value={rub.criterion}
+                                              onChange={(e) => {
+                                                setModules(modules.map(m => {
+                                                  if (m.id === mod.id) {
+                                                    const updatedRubrics = [...m.assignment.rubricCriteria];
+                                                    updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], criterion: e.target.value };
+                                                    return {
+                                                      ...m,
+                                                      assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
+                                                    };
+                                                  }
+                                                  return m;
+                                                }));
+                                              }}
+                                            />
+                                            <div className="flex items-center gap-1.5 flex-shrink-0 bg-white border border-[#c7c4d8]/40 px-2 py-0.5 rounded-md">
+                                              <span className="text-[10px] text-gray-400 font-bold">Thang điểm:</span>
+                                              <input
+                                                type="number"
+                                                min="1"
+                                                max="100"
+                                                className="bg-transparent border-none focus:ring-0 p-0 text-xs font-bold text-[#3525cd] outline-none w-8 text-center"
+                                                value={rub.maxPoint}
+                                                onChange={(e) => {
+                                                  setModules(modules.map(m => {
+                                                    if (m.id === mod.id) {
+                                                      const updatedRubrics = [...m.assignment.rubricCriteria];
+                                                      updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], maxPoint: parseInt(e.target.value) || 5 };
+                                                      return {
+                                                        ...m,
+                                                        assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
+                                                      };
+                                                    }
+                                                    return m;
+                                                  }));
+                                                }}
+                                              />
+                                              <span className="text-[10px] font-bold text-gray-500">đ</span>
+                                            </div>
+                                            <button 
+                                              onClick={() => {
+                                                setModules(modules.map(m => m.id === mod.id ? {
+                                                  ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
+                                                } : m));
+                                              }}
+                                              className="text-gray-400 hover:text-red-500 flex-shrink-0 cursor-pointer p-1"
+                                            >
+                                              <LuX className="text-sm" />
+                                            </button>
                                           </div>
                                         ))}
                                         <button
                                           onClick={() => {
-                                            const crit = prompt("Nhập tiêu chí kiểm thử/chấm bài cặp đôi:");
-                                            const pts = prompt("Thang điểm tối đa cho tiêu chí này (1-5):", "5");
-                                            if (crit && pts) {
-                                              setModules(modules.map(m => m.id === mod.id ? {
-                                                ...m, assignment: { ...m.assignment, rubricCriteria: [...m.assignment.rubricCriteria, { criterion: crit, maxPoint: parseInt(pts) || 5 }] }
-                                              } : m));
-                                            }
+                                            setModules(modules.map(m => m.id === mod.id ? {
+                                              ...m,
+                                              assignment: {
+                                                ...m.assignment,
+                                                rubricCriteria: [...m.assignment.rubricCriteria, { criterion: '', maxPoint: 5 }]
+                                              }
+                                            } : m));
                                           }}
-                                          className="px-2 py-0.5 border border-dashed border-[#3525cd]/40 text-[#3525cd] rounded-md text-[10px] font-bold hover:bg-indigo-50/50 cursor-pointer"
+                                          className="self-start px-3 py-1.5 border border-dashed border-[#3525cd]/40 text-[#3525cd] rounded-md text-[10px] font-bold hover:bg-indigo-50/50 cursor-pointer flex items-center gap-1"
                                         >
                                           + Thêm tiêu chí chấm chéo
                                         </button>
