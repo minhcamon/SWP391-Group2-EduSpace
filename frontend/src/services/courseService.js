@@ -1,6 +1,27 @@
 import api from '@/lib/axios';
 
-const createCourse = async (courseData) => {
-  const response = await api.post('/courses/create', courseData);
-  return response.data;
+const courseService = {
+  createCourse: async (courseData) => {
+    try {
+      const response = await api.post('/courses/create', courseData);
+      return response.data.data;
+    } catch (error) {
+      console.error('Create course error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi tạo khóa học!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  saveDraft: async (courseData) => {
+    try {
+      const response = await api.post('/courses/draft', courseData);
+      return response.data.data;
+    } catch (error) {
+      console.error('Save draft error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lưu bản nháp!';
+      throw new Error(errorMsg);
+    }
+  }
 };
+
+export default courseService;
