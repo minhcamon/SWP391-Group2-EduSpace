@@ -7,6 +7,7 @@ import {
     Settings,
     LogOut,
     BarChart3,
+    Form,
 } from "lucide-react";
 import Logo from "../common/Logo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,15 +18,15 @@ const Sidebar = () => {
     const handleLogout = () => {
         logout();
         window.location.href = "/";
-    }
+    };
 
     const location = useLocation();
     const currentPath = location.pathname;
 
     const roleMapping = {
-        "ADMIN": "Trang quản trị viên",
-        "CREATOR": "Creator Hub"
-    }
+        ADMIN: "Trang quản trị viên",
+        CREATOR: "Creator Hub",
+    };
 
     const menuAdminGroups = [
         {
@@ -61,6 +62,11 @@ const Sidebar = () => {
                     icon: GraduationCap,
                     path: "/admin/teachers",
                 },
+                {
+                    text: "Quản lý duyệt đơn",
+                    icon: Form,
+                    path: "/admin/creator-requests",
+                },
             ],
         },
         {
@@ -74,7 +80,6 @@ const Sidebar = () => {
             ],
         },
     ];
-
 
     const menuCreatorGroups = [
         {
@@ -94,7 +99,7 @@ const Sidebar = () => {
                     text: "Quản lý khóa học",
                     icon: BookOpen,
                     path: "/creator/courses",
-                }
+                },
             ],
         },
         {
@@ -105,14 +110,14 @@ const Sidebar = () => {
                     icon: Settings,
                     path: "/creator/settings",
                 },
-            ]
-        }
+            ],
+        },
     ];
 
     const menuMapping = {
-        "ADMIN": menuAdminGroups,
-        "CREATOR": menuCreatorGroups
-    }
+        ADMIN: menuAdminGroups,
+        CREATOR: menuCreatorGroups,
+    };
 
     const menuGroups = menuMapping[user.role];
 
@@ -145,17 +150,19 @@ const Sidebar = () => {
                                         <Link
                                             key={itemIdx}
                                             to={item.path}
-                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${isActive
-                                                ? "bg-indigo-50 text-indigo-700"
-                                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                                                }`}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${
+                                                isActive
+                                                    ? "bg-indigo-50 text-indigo-700"
+                                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                            }`}
                                         >
                                             <Icon
                                                 size={18}
-                                                className={`transition-colors duration-200 ${isActive
-                                                    ? "text-indigo-700"
-                                                    : "text-gray-400 group-hover:text-gray-600"
-                                                    }`}
+                                                className={`transition-colors duration-200 ${
+                                                    isActive
+                                                        ? "text-indigo-700"
+                                                        : "text-gray-400 group-hover:text-gray-600"
+                                                }`}
                                             />
                                             {item.text}
                                         </Link>
@@ -169,14 +176,16 @@ const Sidebar = () => {
 
             <div className="p-4 border-t border-gray-100 bg-gray-50/50">
                 <div className="flex items-center gap-3 p-2 mb-3 rounded-xl">
-                    <img
-                        src={
-                            user.avatarUrl ||
-                            "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                        }
-                        alt="Avatar Admin"
-                        className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-50"
-                    />
+                    <Link to="/profile">
+                        <img
+                            src={
+                                user.avatarUrl ||
+                                "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                            }
+                            alt="Avatar Admin"
+                            className="w-12 h-12 p-0.5 hover:cursor-pointer flex items-center justify-center rounded-full border-2 border-gray-100 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                        />
+                    </Link>
                     <div className="grow min-w-0">
                         <p className="text-sm font-bold text-gray-800 truncate">
                             {user.fullName}
@@ -186,6 +195,8 @@ const Sidebar = () => {
                         </p>
                     </div>
                 </div>
+
+                <hr className="mb-4 text-secondary" />
 
                 <button
                     onClick={handleLogout}
