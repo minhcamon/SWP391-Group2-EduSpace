@@ -7,7 +7,7 @@ const CourseItem = ({ courseItem }) => {
                 </h3>
 
                 <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md w-fit mb-4">
-                    Instructor ID: {courseItem.creator_id}
+                    Tác giả: {courseItem.creator_id}
                 </p>
 
                 <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
