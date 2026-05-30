@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping("/api/learner")
 public @interface LearnerRoute {
-    String value() default "";
+    
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.eduspace.backend.dto.response.APIResponse;
+import org.eduspace.backend.dto.response.CourseResponse;
 import org.eduspace.backend.dto.response.UserResponse;
 import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.service.AuthService;
@@ -50,8 +51,8 @@ public class UserController {
         })
         @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping("/courses")
-        public ResponseEntity<APIResponse<List<Course>>> getAllPublishedCourses() {
-                List<Course> courses = courseService.getAllCourses();
+        public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
+                List<CourseResponse> courses = courseService.getAllPublishedCourses();
                 return ResponseEntity.ok(
                         APIResponse.success("Successfully fetched courses", courses));
         }
