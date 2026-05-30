@@ -10,4 +10,6 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query(value = "SELECT * FROM courses WHERE user_id = :creatorId AND is_deleted = false", nativeQuery = true)
     List<Course> getCoursesByCreatorId(@Param("creatorId") Long creatorId);
+
+    List<Course> findByIsDeletedFalse();
 }
