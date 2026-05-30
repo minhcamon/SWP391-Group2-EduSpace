@@ -22,7 +22,10 @@ public class Course {
     @Column(name = "title", columnDefinition = "TEXT", nullable = false)
     private String title;
 
-    @Column(name = "status")
+    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    private String description;
+
+    @Column(name = "status", columnDefinition = "TEXT")
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private CourseStatus status = CourseStatus.DRAFT;

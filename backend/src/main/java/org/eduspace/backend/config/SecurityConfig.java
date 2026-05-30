@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html")
                         .permitAll()
+                        .requestMatchers("/api/creator/**").hasRole("CREATOR")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
