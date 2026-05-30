@@ -13,6 +13,7 @@ import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
 import Leaderboard from "@/pages/Leaderboard";
 import CourseCreate from "@/pages/course/CourseCreate";
 import ListCoursesPage from "@/pages/course/ListCoursesPage";
+import ErrorPage from "@/pages/ErrorPage";
 
 function App() {
     return (
@@ -24,11 +25,18 @@ function App() {
                     <Route path="/" element={<HomePage />}></Route>
                     <Route path="/signup" element={<RegisterForm />}></Route>
                     <Route path="/login" element={<LoginForm />}></Route>
-                    <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />}></Route>
+                    <Route
+                        path="/oauth2/redirect"
+                        element={<OAuth2RedirectHandler />}
+                    ></Route>
                     <Route path="/profile" element={<UserProfile />}></Route>
                     <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
-                    <Route path="/courses" element={<ListCoursesPage />}></Route>
-                    
+                    <Route
+                        path="/courses"
+                        element={<ListCoursesPage />}
+                    ></Route>
+                    <Route path="*" element={<ErrorPage />}></Route>
+
                     <Route
                         path="/leaderboard"
                         element={<Leaderboard />}
@@ -42,8 +50,11 @@ function App() {
                         path="/creator"
                         element={<CreatorHomePage />}
                     ></Route>
-                    
-                    <Route path="/creator/create-course" element={<CourseCreate/>}></Route>
+
+                    <Route
+                        path="/creator/create-course"
+                        element={<CourseCreate />}
+                    ></Route>
 
                     {/* Protected Route */}
                     <Route element={<ProtectedRoute />}></Route>
