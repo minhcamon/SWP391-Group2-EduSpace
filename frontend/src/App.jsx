@@ -10,9 +10,9 @@ import AdminHomePage from "@/pages/admin/AdminHomePage";
 import CreatorHomePage from "@/pages/creator/CreatorHomePage";
 import UserProfile from "@/pages/UserProfile";
 import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
-import CoursesPage from "@/pages/course/CoursesPage";
 import Leaderboard from "@/pages/Leaderboard";
 import CourseCreate from "@/pages/course/CourseCreate";
+import ListCoursesPage from "@/pages/course/ListCoursesPage";
 
 function App() {
     return (
@@ -27,7 +27,7 @@ function App() {
                     <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />}></Route>
                     <Route path="/profile" element={<UserProfile />}></Route>
                     <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
-                    <Route path="/courses" element={<CoursesPage />}></Route>
+                    <Route path="/courses" element={<ListCoursesPage />}></Route>
                     
                     <Route
                         path="/leaderboard"
