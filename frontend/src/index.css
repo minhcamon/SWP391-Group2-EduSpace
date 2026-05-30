@@ -1,15 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
+    /* phông chữ mặc định */
     --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
 
+    /* màu sắc chủ đạo (Brand Colors) */
     --color-primary: #4f46e5;
     --color-secondary: #f97316;
     --color-tertiary: #1dbfaf;
-    --color-neutral: #333333;
+
+    /* màu văn bản (Neutral Text) */
+    --color-neutral-dark: #1b1c1c;      /* màu text chính, tiêu đề (#1b1c1c) */
+    --color-neutral-medium: #464555;    /* màu text phụ, mô tả (#464555) */
+    --color-neutral-light: #8e8d99;     /* màu text disabled, placeholder */
+
+    /* màu nền và các bề mặt (Surfaces & Backgrounds) */
+    --color-bg-base: #fbf9f8;           /* màu nền chính toàn trang */
+    --color-bg-card: #f6f3f2;           /* màu nền card, form input (#f6f3f2) */
+    --color-bg-sidebar: #f0eded;        /* màu nền sidebar (#f0eded) */
+
+    /* màu cho đường viền (Borders) */
+    --color-border-light: #c7c4d8;      /* màu đường kẻ, viền card (#c7c4d8) */
+
+    /* trạng thái tương tác & hiệu ứng (Interactive States) */
+    --color-hover-light: #e4e2e1;       /* màu hover nền nhẹ (#e4e2e1) */
+    --color-active-light: #eae8e7;      /* màu active nền nhẹ (#eae8e7) */
+
+    /* màu trạng thái hệ thống (Semantic Colors) */
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #3b82f6;
 }
 
 body {
-    color: var(--color-neutral);
-    background-color: #f8fafc; 
+    font-family: var(--font-sans);
+    color: var(--color-neutral-dark);
+    background-color: var(--color-bg-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
