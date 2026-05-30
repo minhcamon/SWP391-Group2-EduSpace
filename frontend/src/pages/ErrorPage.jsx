@@ -1,7 +1,8 @@
-import { Link } from "react-router";
-import { Home, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+import { Home, AlertCircle, ArrowLeft } from "lucide-react";
 
 const ErrorPage = () => {
+    const navigate = useNavigate();
     return (
         <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center p-4">
             <div className="text-center max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -23,12 +24,23 @@ const ErrorPage = () => {
                     chủ.
                 </p>
 
-                <Link to="/" className="block">
-                    <button className="w-full bg-secondary hover:bg-[#ea580c] text-white font-bold py-3.5 px-6 rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 transition-all active:scale-[0.98] cursor-pointer">
-                        <Home size={18} />
-                        Quay lại trang chủ
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="w-full sm:w-1/2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 whitespace-nowrap transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                        <ArrowLeft size={18} />
+                        Quay lại trang trước
                     </button>
-                </Link>
+                    <Link to="/" className="block w-full sm:w-1/2">
+                        <button className="w-full bg-secondary hover:bg-[#ea580c] text-white font-bold py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 whitespace-nowrap shadow-sm shadow-orange-500/20 transition-all active:scale-[0.98] cursor-pointer">
+                            <Home size={18} />
+                            Quay lại trang chủ
+                        </button>
+                    </Link>
+                </div>
+
+
             </div>
 
             <p className="text-xs text-gray-400 mt-6 font-medium">

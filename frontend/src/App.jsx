@@ -11,9 +11,13 @@ import CreatorHomePage from "@/pages/creator/CreatorHomePage";
 import UserProfile from "@/pages/UserProfile";
 import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
 import Leaderboard from "@/pages/Leaderboard";
-import CourseCreate from "@/pages/course/CourseCreate";
+import CourseCreate from "@/pages/creator/CourseCreate";
 import ListCoursesPage from "@/pages/course/ListCoursesPage";
 import ErrorPage from "@/pages/ErrorPage";
+
+import CourseManagement from "./pages/creator/CourseManagement";
+import CreatorAnalytics from "./pages/creator/CreatorAnalytics";
+import CourseDetail from "./pages/creator/CourseDetail";
 
 function App() {
     return (
@@ -50,7 +54,18 @@ function App() {
                         path="/creator"
                         element={<CreatorHomePage />}
                     ></Route>
-
+                    <Route
+                        path="/creator/courses"
+                        element={<CourseManagement />}
+                    ></Route>
+                    <Route
+                        path="/creator/courses/:id"
+                        element={<CourseDetail />}
+                    ></Route>
+                    <Route
+                        path="/creator/analytics"
+                        element={<CreatorAnalytics />}
+                    ></Route>
                     <Route
                         path="/creator/create-course"
                         element={<CourseCreate />}
