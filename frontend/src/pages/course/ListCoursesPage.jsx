@@ -1,6 +1,8 @@
 import CourseItem from "@/components/features/course/CourseItem";
 import Footer from "@/components/layouts/Footer";
 import Header from "@/components/layouts/Header";
+import courseService from "@/services/courseService";
+import { useEffect, useState } from "react";
 
 const STATIC_COURSES_DB = [
     {
@@ -69,6 +71,22 @@ const STATIC_COURSES_DB = [
 ];
 
 const ListCoursesPage = () => {
+    const [courses, setCourses] = useState([]);
+
+    // useEffect(() => {
+    //     const fetchCourses = async () => {
+    //         try {
+    //             const data = await courseService.getPublishedCourses();
+    //             setCourses(data);
+    //         } catch (error) {
+    //             console.error("Lỗi fetch khóa học: ", error);
+    //             toast.error("Lỗi khi tải khóa học");
+    //         }
+    //     };
+
+    //     fetchCourses();
+    // }, []);
+
     const displayApprovedCourses = STATIC_COURSES_DB.filter(
         (course) => course.status === "PUBLISHED",
     );

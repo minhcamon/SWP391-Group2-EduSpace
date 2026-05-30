@@ -2,7 +2,7 @@ const CourseItem = ({ courseItem }) => {
     return (
         <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug hover:text-indigo-700 transition-colors cursor-pointer line-clamp-2 min-h-[56px]">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug hover:text-indigo-700 transition-colors cursor-pointer line-clamp-2 min-h-14">
                     {courseItem.title}
                 </h3>
 
