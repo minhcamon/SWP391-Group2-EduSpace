@@ -1,23 +1,27 @@
-import { Users } from "lucide-react";
-import SecondaryButton from "@/components/UI/SecondaryButton";
-const CourseItem = () => {
+const CourseItem = ({ courseItem }) => {
     return (
-        <div className="flex flex-col justify-between shadow-sm flex-1 min-w-200px max-w-300px bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all overflow-hidden">
-            <div className="p-5 flex flex-col">
-                <h3 className="text-xl font-bold text-neutral mb-1 leading-relaxed min-h-56px leading-snug">
-                    IELTS Foundation 0 - 3.0
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
+            <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug hover:text-indigo-700 transition-colors cursor-pointer line-clamp-2 min-h-[56px]">
+                    {courseItem.title}
                 </h3>
-                <p className="text-gray-500 text-md mb-4 leading-relaxed">
-                    Build a solid base
+
+                <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md w-fit mb-4">
+                    Instructor ID: {courseItem.creator_id}
+                </p>
+
+                <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
+                    {courseItem.description}
                 </p>
             </div>
-            <div className="flex items-center gap-1.5 text-neutral text-sm mt-auto p-5">
-                <Users className="text-gray-700" size={16}></Users>
-                <span className="font-medium">1000 học viên</span>
-            </div>
 
-            <div className="mb-6 w-3xs mx-auto">
-                <SecondaryButton buttonText="Enroll" />
+            <div className="flex gap-3 mt-auto">
+                <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl text-sm transition-colors border border-gray-200 cursor-pointer">
+                    Chi tiết
+                </button>
+                <button className="flex-1 bg-secondary hover:bg-[#ea580c] text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors shadow-sm shadow-orange-500/10 cursor-pointer">
+                    Đăng ký ngay
+                </button>
             </div>
         </div>
     );

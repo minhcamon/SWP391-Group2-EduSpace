@@ -9,8 +9,8 @@ const HomePage = () => {
             <div>
                 <Header />
                 <div className="min-h-screen">
-                    <RoadmapContainer />
                     <CourseContainer />
+                    <RoadmapContainer />
                 </div>
                 <Footer />
             </div>
