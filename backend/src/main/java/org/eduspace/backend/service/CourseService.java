@@ -29,9 +29,19 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
-    public List<Course> getAllCourses() {
-        return courseRepository.findByIsDeletedFalse().stream()
+    public List<CourseResponse> getAllPublishedCourses() {
+        List<Course> courses = courseRepository.findByIsDeletedFalse().stream()
                 .filter(course -> course.getStatus() == CourseStatus.PUBLISHED)
                 .toList();
+
+        return courses.stream()
+                .map(course -> CourseResponse.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .description(course.getDescription())
+                        .status(course.getStatus().name())
+                        .createdAt(course.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
