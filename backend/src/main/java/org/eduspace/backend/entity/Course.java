@@ -5,8 +5,6 @@ import lombok.*;
 import org.eduspace.backend.enums.CourseStatus;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Entity
