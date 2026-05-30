@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   LuUsers, LuGraduationCap, LuInfo, LuTrendingUp,
   LuSearch, LuFilter, LuBookOpen, LuChevronDown, LuActivity
@@ -43,7 +43,7 @@ export default function CreatorAnalytics() {
 
         {/* MAIN BODY */}
         <main className="flex-1 p-8 bg-bg-base overflow-y-auto">
-          <div className="max-w-[1100px] mx-auto space-y-8 animate-in fade-in duration-300">
+          <div className="max-w-275 mx-auto space-y-8 animate-in fade-in duration-300">
 
             {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -350,7 +350,7 @@ export default function CreatorAnalytics() {
                               />
                               <span className="font-bold text-neutral-dark">{std.name}</span>
                             </td>
-                            <td className="py-3 text-neutral-medium max-w-[150px] truncate">{std.course}</td>
+                            <td className="py-3 text-neutral-medium max-w-37.5 truncate">{std.course}</td>
                             <td className="py-3 font-extrabold text-red-500">{std.avgScore}</td>
                             <td className="py-3">
                               <div className="flex items-center gap-2">

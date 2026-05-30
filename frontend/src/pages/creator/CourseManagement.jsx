@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { LuPlus, LuBookOpen, LuUsers, LuSparkles, LuSearch, LuPencil, LuTrash2 } from 'react-icons/lu';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ export default function CourseManagement() {
 
         {/* MAIN BODY */}
         <main className="flex-1 p-8 bg-bg-base overflow-y-auto">
-          <div className="max-w-[1000px] mx-auto">
+          <div className="max-w-250 mx-auto">
 
             {/* Header section */}
             <div className="mb-8 flex items-center justify-between">
@@ -141,7 +141,7 @@ export default function CourseManagement() {
                           className="group bg-white rounded-2xl border border-border-light/40 overflow-hidden shadow-[0px_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
                         >
                           {/* Card Image Placeholder / Gradient Header */}
-                          <div className={`h-32 bg-gradient-to-br ${gradient} p-4 flex flex-col justify-between relative overflow-hidden`}>
+                          <div className={`h-32 bg-linear-to-br ${gradient} p-4 flex flex-col justify-between relative overflow-hidden`}>
                             {/* Decorative background circle */}
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-all duration-700" />
 
@@ -167,7 +167,7 @@ export default function CourseManagement() {
                           {/* Card Body */}
                           <div className="p-5 flex-1 flex flex-col justify-between">
                             <div>
-                              <h3 className="font-bold text-neutral-dark text-sm group-hover:text-primary transition-colors line-clamp-2 min-h-[40px] mb-4">
+                              <h3 className="font-bold text-neutral-dark text-sm group-hover:text-primary transition-colors line-clamp-2 min-h-10 mb-4">
                                 {course.title}
                               </h3>
 

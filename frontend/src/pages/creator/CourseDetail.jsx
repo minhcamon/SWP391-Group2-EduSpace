@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import {
   LuUsers, LuClock, LuLaptop,
@@ -76,7 +76,7 @@ export default function CourseDetail() {
 
         {/* MAIN BODY */}
         <main className="flex-1 p-8 bg-bg-base overflow-y-auto">
-          <div className="max-w-[1100px] mx-auto space-y-8 animate-in fade-in duration-300">
+          <div className="max-w-275 mx-auto space-y-8 animate-in fade-in duration-300">
 
             {/* Breadcrumb Navigation */}
             <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500">
@@ -94,7 +94,7 @@ export default function CourseDetail() {
             </div>
 
             {/* Banner Section Info */}
-            <div className="p-6 bg-gradient-to-r from-primary/90 to-[#6366f1]/90 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="p-6 bg-linear-to-r from-primary/90 to-[#6366f1]/90 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full blur-xl" />
               <div className="space-y-2 z-10">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-xs font-bold uppercase tracking-wider">
@@ -105,11 +105,11 @@ export default function CourseDetail() {
               </div>
 
               <div className="flex gap-4 z-10">
-                <div className="px-4 py-3 bg-white/10 backdrop-blur-md rounded-2xl text-center min-w-[80px]">
+                <div className="px-4 py-3 bg-white/10 backdrop-blur-md rounded-2xl text-center min-w-20">
                   <span className="block text-2xl font-black">{activeRooms.length}</span>
                   <span className="text-[10px] font-bold text-white/80 uppercase">Lớp active</span>
                 </div>
-                <div className="px-4 py-3 bg-white/10 backdrop-blur-md rounded-2xl text-center min-w-[80px]">
+                <div className="px-4 py-3 bg-white/10 backdrop-blur-md rounded-2xl text-center min-w-20">
                   <span className="block text-2xl font-black">{mentors.filter(m => m.status !== 'OFFLINE').length}</span>
                   <span className="text-[10px] font-bold text-white/80 uppercase">Mentor online</span>
                 </div>
@@ -152,7 +152,7 @@ export default function CourseDetail() {
                 </div>
 
                 {/* List of students waiting */}
-                <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-55 overflow-y-auto pr-1">
                   {queueStudents.map((std, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-100">
                       <div className="flex items-center gap-2.5">
