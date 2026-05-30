@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   LuInfo, LuGripVertical, LuCirclePlay, LuFileText,
   LuX, LuPlus, LuTrash2, LuFolderPlus, LuSparkles, LuFolderLock
@@ -290,7 +290,7 @@ export default function CreateCourse() {
 
         {/* MAIN STUDIO BUILDER */}
         <main className="flex-1 p-8 bg-bg-base overflow-y-auto">
-          <div className="max-w-[950px] mx-auto">
+          <div className="max-w-237.5 mx-auto">
 
             {/* Breadcrumb Navigation */}
             <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500">
@@ -314,7 +314,7 @@ export default function CreateCourse() {
                 </button>
                 <button
                   onClick={handleCreateCourse}
-                  className="px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
                 >
                   Tạo Khóa Học
                 </button>
@@ -421,7 +421,7 @@ export default function CreateCourse() {
                                   <div className="p-4 bg-bg-card border-b border-border-light/30 flex flex-col gap-3">
                                     {/* Hàng 1: Grip Handle + Tên Module */}
                                     <div className="flex items-center gap-3">
-                                      <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-primary transition-colors flex-shrink-0">
+                                      <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-primary transition-colors shrink-0">
                                         <LuGripVertical />
                                       </div>
                                       <div className="flex-1">
@@ -477,7 +477,7 @@ export default function CreateCourse() {
                                       <div
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="p-4 bg-white min-h-[60px] flex flex-col gap-3"
+                                        className="p-4 bg-white min-h-15 flex flex-col gap-3"
                                       >
                                         {mod.lessons.map((lesson, lIndex) => (
                                           <Draggable key={lesson.id} draggableId={lesson.id} index={lIndex}>
@@ -500,7 +500,7 @@ export default function CreateCourse() {
                                                   {/* Định dạng 1: Nếu là thanh phân cách Topic Header ảo */}
                                                   {lesson.content_type === 'TOPIC_HEADER' ? (
                                                     <>
-                                                      <span className="w-1.5 h-3.5 bg-primary rounded-sm flex-shrink-0"></span>
+                                                      <span className="w-1.5 h-3.5 bg-primary rounded-sm shrink-0"></span>
                                                       <input
                                                         className="bg-transparent border-none focus:ring-0 p-0 text-[11px] font-bold text-neutral-medium uppercase tracking-wider outline-none w-full"
                                                         type="text"
@@ -523,9 +523,9 @@ export default function CreateCourse() {
                                                     <>
                                                       {/* Định dạng 2: Nếu là bài Video hoặc Article lý thuyết */}
                                                       {lesson.content_type === 'VIDEO' ? (
-                                                        <LuCirclePlay className="text-blue-500 text-lg flex-shrink-0" />
+                                                        <LuCirclePlay className="text-blue-500 text-lg shrink-0" />
                                                       ) : (
-                                                        <LuFileText className="text-amber-500 text-lg flex-shrink-0" />
+                                                        <LuFileText className="text-amber-500 text-lg shrink-0" />
                                                       )}
                                                       <div className="flex-1 min-w-0">
                                                         <input
@@ -658,7 +658,7 @@ export default function CreateCourse() {
                                                 }));
                                               }}
                                             />
-                                            <div className="flex items-center gap-1.5 flex-shrink-0 bg-white border border-border-light/40 px-2 py-0.5 rounded-md">
+                                            <div className="flex items-center gap-1.5 shrink-0 bg-white border border-border-light/40 px-2 py-0.5 rounded-md">
                                               <span className="text-[10px] text-gray-400 font-bold">Thang điểm:</span>
                                               <input
                                                 type="number"
@@ -688,7 +688,7 @@ export default function CreateCourse() {
                                                   ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
                                                 } : m));
                                               }}
-                                              className="text-gray-400 hover:text-red-500 flex-shrink-0 cursor-pointer p-1"
+                                              className="text-gray-400 hover:text-red-500 shrink-0 cursor-pointer p-1"
                                             >
                                               <LuX className="text-sm" />
                                             </button>
