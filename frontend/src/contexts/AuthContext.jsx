@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         setIsLoading(true);
         try {
-            // AuthService đã tự chuẩn hóa data và ném Error nếu có lỗi
             const { token, user } = await AuthService.login(email, password);
 
             setTokens(token);

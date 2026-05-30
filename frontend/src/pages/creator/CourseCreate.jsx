@@ -4,9 +4,8 @@ import {
   LuX, LuPlus, LuTrash2, LuFolderPlus, LuSparkles, LuFolderLock
 } from 'react-icons/lu';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { useNavigate } from 'react-router';
-import Header from '@/components/layouts/Header';
-import CreatorSidebar from '@/components/layouts/CreatorSidebar';
+import { useNavigate, Link } from 'react-router';
+import Sidebar from '@/components/layouts/Sidebar';
 import CreatorFooter from '@/components/layouts/CreatorFooter';
 import { toast } from 'sonner';
 import courseService from '@/services/courseService';
@@ -285,28 +284,31 @@ export default function CreateCourse() {
   };
 
   return (
-    <div className="bg-[#fbf9f8] text-[#1b1c1c] min-h-screen font-sans antialiased">
-
-      <Header />
-
-      <div className="flex min-h-screen pt-16">
-
-        <CreatorSidebar />
+    <div className="bg-bg-base text-neutral-dark min-h-screen font-sans antialiased">
+      <div className="flex min-h-screen">
+        <Sidebar />
 
         {/* MAIN STUDIO BUILDER */}
-        <main className="ml-64 flex-1 p-8 bg-[#fbf9f8] overflow-y-auto">
+        <main className="flex-1 p-8 bg-bg-base overflow-y-auto">
           <div className="max-w-[950px] mx-auto">
+
+            {/* Breadcrumb Navigation */}
+            <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500">
+              <Link to="/creator/courses" className="hover:text-primary transition-colors">Quản lý khóa học</Link>
+              <span>/</span>
+              <span className="text-primary font-bold">Tạo khóa học mới</span>
+            </div>
 
             {/* Header Action Section */}
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-[#1b1c1c]">Tạo Khóa Học Mới</h1>
-                <p className="text-sm text-[#464555] mt-1">Thiết kế lộ trình học cặp đôi động đồng bộ theo mô hình tuần tự.</p>
+                <h1 className="text-2xl font-bold tracking-tight text-neutral-dark">Tạo Khóa Học Mới</h1>
+                <p className="text-sm text-neutral-medium mt-1">Thiết kế lộ trình học cặp đôi động đồng bộ theo mô hình tuần tự.</p>
               </div>
               <div className="flex gap-4">
                 <button
                   onClick={() => toast.info("Đã lưu bản nháp thành công!")}
-                  className="px-5 py-2.5 border border-[#3525cd] text-[#3525cd] rounded-xl text-sm font-semibold hover:bg-[#f6f3f2] transition-colors cursor-pointer"
+                  className="px-5 py-2.5 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-bg-card transition-colors cursor-pointer"
                 >
                   Lưu bản nháp
                 </button>
@@ -325,16 +327,16 @@ export default function CreateCourse() {
               <div className="grid grid-cols-12 gap-6 items-stretch">
 
                 {/* Khối Thông tin chung */}
-                <div className="col-span-12 bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30 flex flex-col justify-between">
+                <div className="col-span-12 bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-border-light/30 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-[#3525cd] mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
                       <LuInfo className="text-lg" /> Thông tin tổng quan
                     </h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-bold text-[#464555] mb-2">Tên khóa học</label>
+                        <label className="block text-xs font-bold text-neutral-medium mb-2">Tên khóa học</label>
                         <input
-                          className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 outline-none text-sm transition-all"
+                          className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
                           placeholder="Nhập tên lộ trình khóa học..."
                           type="text"
                           value={formData.title}
@@ -343,9 +345,9 @@ export default function CreateCourse() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-[#464555] mb-2">Chủ đề đào tạo</label>
+                          <label className="block text-xs font-bold text-neutral-medium mb-2">Chủ đề đào tạo</label>
                           <select
-                            className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#3525cd]/20"
+                            className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-primary/20"
                             value={formData.subject}
                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                           >
@@ -356,9 +358,9 @@ export default function CreateCourse() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-[#464555] mb-2">Cấp độ mục tiêu</label>
+                          <label className="block text-xs font-bold text-neutral-medium mb-2">Cấp độ mục tiêu</label>
                           <select
-                            className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-[#3525cd]/20"
+                            className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-primary/20"
                             value={formData.targetBand}
                             onChange={(e) => setFormData({ ...formData, targetBand: e.target.value })}
                           >
@@ -369,10 +371,10 @@ export default function CreateCourse() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-[#464555] mb-2">Mô tả chi tiết</label>
+                        <label className="block text-xs font-bold text-neutral-medium mb-2">Mô tả chi tiết</label>
                         <textarea
                           rows="3"
-                          className="w-full px-4 py-3 bg-[#f6f3f2] border border-[#c7c4d8]/40 rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 outline-none text-sm transition-all"
+                          className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
                           placeholder="Nhập mục tiêu và kết quả đầu ra mong đợi..."
                           value={formData.description}
                           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -385,13 +387,13 @@ export default function CreateCourse() {
 
               {/* CURRICULUM SECTION: KÍCH HOẠT DRAG & DROP CONTEXT TỔNG */}
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-[#c7c4d8]/30">
+                <div className="bg-white p-6 rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-border-light/30">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-bold text-[#1b1c1c]">Cấu trúc chương trình học</h3>
-                      <p className="text-xs text-[#464555] mt-0.5">Sắp xếp khung bài học lý thuyết và bài tập thực hành theo tuần.</p>
+                      <h3 className="text-lg font-bold text-neutral-dark">Cấu trúc chương trình học</h3>
+                      <p className="text-xs text-neutral-medium mt-0.5">Sắp xếp khung bài học lý thuyết và bài tập thực hành theo tuần.</p>
                     </div>
-                    <button onClick={handleAddModule} className="flex items-center gap-1.5 bg-[#3525cd]/10 text-[#3525cd] px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#3525cd] hover:text-white transition-all cursor-pointer">
+                    <button onClick={handleAddModule} className="flex items-center gap-1.5 bg-primary/10 text-primary px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary hover:text-white transition-all cursor-pointer">
                       <LuPlus className="text-sm" /> Thêm tuần học mới
                     </button>
                   </div>
@@ -410,22 +412,22 @@ export default function CreateCourse() {
                               >
                                 <div
                                   className={`border rounded-2xl overflow-hidden bg-white ${snapshot.isDragging
-                                    ? 'border-[#3525cd] shadow-lg ring-2 ring-[#3525cd]/10'
-                                    : 'border-[#c7c4d8]/50 shadow-xs'
+                                    ? 'border-primary shadow-lg ring-2 ring-primary/10'
+                                    : 'border-border-light/50 shadow-xs'
                                     }`}
                                 >
 
                                   {/* Thanh Header của Module - Chứa Handle kéo thả chuyên biệt */}
-                                  <div className="p-4 bg-[#f6f3f2] border-b border-[#c7c4d8]/30 flex flex-col gap-3">
+                                  <div className="p-4 bg-bg-card border-b border-border-light/30 flex flex-col gap-3">
                                     {/* Hàng 1: Grip Handle + Tên Module */}
                                     <div className="flex items-center gap-3">
-                                      <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-[#3525cd] transition-colors flex-shrink-0">
+                                      <div {...provided.dragHandleProps} className="text-gray-400 cursor-move p-1.5 hover:text-primary transition-colors flex-shrink-0">
                                         <LuGripVertical />
                                       </div>
                                       <div className="flex-1">
-                                        <span className="text-[10px] font-bold text-[#3525cd] uppercase tracking-wider block">Module {index + 1}</span>
+                                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">Module {index + 1}</span>
                                         <input
-                                          className="block w-full bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-[#1b1c1c] outline-none"
+                                          className="block w-full bg-transparent border-none focus:ring-0 p-0 text-base font-bold text-neutral-dark outline-none"
                                           type="text"
                                           value={mod.title}
                                           onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, title: e.target.value } : m))}
@@ -436,7 +438,7 @@ export default function CreateCourse() {
                                     {/* Hàng 2: Các cấu hình thời gian, độ khó, EXP */}
                                     <div className="flex flex-wrap items-center gap-3 pl-8">
                                       {/* INPUT THỜI GIAN THEO LÝ THUYẾT COURSERA ĐỘC LẬP */}
-                                      <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
+                                      <div className="flex items-center gap-1.5 bg-white border border-border-light/40 px-2 py-1 rounded-lg">
                                         <span className="text-[11px] font-bold text-gray-400">Thời lượng:</span>
                                         <input
                                           type="number"
@@ -449,7 +451,7 @@ export default function CreateCourse() {
                                       </div>
 
                                       {/* DROP DOWN ĐỘ KHÓ QUYẾT ĐỊNG NGẦM TRẦN ĐIỂM EXP */}
-                                      <div className="flex items-center gap-1.5 bg-white border border-[#c7c4d8]/40 px-2 py-1 rounded-lg">
+                                      <div className="flex items-center gap-1.5 bg-white border border-border-light/40 px-2 py-1 rounded-lg">
                                         <span className="text-[11px] font-bold text-gray-400">Độ khó:</span>
                                         <select
                                           className="text-xs font-bold text-gray-700 p-0 border-none focus:ring-0 bg-transparent pr-6 cursor-pointer"
@@ -463,7 +465,7 @@ export default function CreateCourse() {
                                       </div>
 
                                       {/* TAG HIỂN THỊ EXP TỰ ĐỘNG ÁNH XẠ BAO BỌC CHO PAIR LEARNING OPTIMIZATION */}
-                                      <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                                      <div className="text-[10px] font-bold text-secondary bg-secondary/10 border border-secondary/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
                                         <LuSparkles className="text-xs" /> +{mod.baseExp} Base EXP | Max Bonus: +{mod.speedBonusExp} EXP
                                       </div>
                                     </div>
@@ -488,19 +490,19 @@ export default function CreateCourse() {
                                               >
                                                 <div
                                                   className={`${lesson.content_type === 'TOPIC_HEADER'
-                                                    ? 'ml-0 font-bold bg-[#f6f3f2]/60 border-[#c7c4d8]/40'
-                                                    : 'ml-6 bg-white shadow-2xs hover:border-[#3525cd]/30'
+                                                    ? 'ml-0 font-bold bg-bg-card/60 border-border-light/40'
+                                                    : 'ml-6 bg-white shadow-2xs hover:border-primary/30'
                                                     } flex items-center gap-4 p-3.5 border rounded-xl group ${snapshot.isDragging
-                                                      ? 'border-[#3525cd] shadow-md bg-indigo-50/10'
-                                                      : 'border-[#c7c4d8]/20 transition-colors'
+                                                      ? 'border-primary shadow-md bg-primary/5'
+                                                      : 'border-border-light/20 transition-colors'
                                                     }`}
                                                 >
                                                   {/* Định dạng 1: Nếu là thanh phân cách Topic Header ảo */}
                                                   {lesson.content_type === 'TOPIC_HEADER' ? (
                                                     <>
-                                                      <span className="w-1.5 h-3.5 bg-[#3525cd] rounded-sm flex-shrink-0"></span>
+                                                      <span className="w-1.5 h-3.5 bg-primary rounded-sm flex-shrink-0"></span>
                                                       <input
-                                                        className="bg-transparent border-none focus:ring-0 p-0 text-[11px] font-bold text-[#464555] uppercase tracking-wider outline-none w-full"
+                                                        className="bg-transparent border-none focus:ring-0 p-0 text-[11px] font-bold text-neutral-medium uppercase tracking-wider outline-none w-full"
                                                         type="text"
                                                         value={lesson.title}
                                                         onChange={(e) => {
@@ -527,7 +529,7 @@ export default function CreateCourse() {
                                                       )}
                                                       <div className="flex-1 min-w-0">
                                                         <input
-                                                          className="bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-[#1b1c1c] outline-none w-full"
+                                                          className="bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-neutral-dark outline-none w-full"
                                                           type="text"
                                                           value={lesson.title}
                                                           onChange={(e) => {
@@ -538,7 +540,7 @@ export default function CreateCourse() {
                                                                   lessons: m.lessons.map(l => l.id === lesson.id ? { ...l, title: e.target.value } : l)
                                                                 };
                                                               }
-                                                                return m;
+                                                              return m;
                                                             }));
                                                           }}
                                                         />
@@ -556,9 +558,9 @@ export default function CreateCourse() {
 
                                         {/* THANH ĐIỀU KHIỂN THÊM NHANH INLINE (Hỗ trợ nhét bài và nhét Divider) */}
                                         {activeConfig?.moduleId === mod.id ? (
-                                          <div className="ml-6 p-4 border border-[#3525cd]/30 bg-indigo-50/10 rounded-xl space-y-3 animate-in fade-in duration-200">
-                                            <div className="flex items-center justify-between border-b border-[#e4e2e1]/40 pb-1.5">
-                                              <span className="text-xs font-bold text-[#3525cd]">
+                                          <div className="ml-6 p-4 border border-primary/30 bg-primary/5 rounded-xl space-y-3 animate-in fade-in duration-200">
+                                            <div className="flex items-center justify-between border-b border-hover-light/40 pb-1.5">
+                                              <span className="text-xs font-bold text-primary">
                                                 Thêm phần tử mới: <span className="italic opacity-80">{activeConfig.type}</span>
                                               </span>
                                               <button onClick={() => setActiveConfig(null)}><LuX className="text-gray-400 text-xs" /></button>
@@ -570,7 +572,7 @@ export default function CreateCourse() {
                                                 placeholder={activeConfig.type === 'TOPIC_HEADER' ? "Nhập tên Chủ đề / Nhóm bài học nhỏ..." : "Tiêu đề bài học..."}
                                                 value={inlineData.title}
                                                 onChange={(e) => setInlineData({ ...inlineData, title: e.target.value })}
-                                                className="w-full p-2 text-xs bg-white border border-[#c7c4d8]/40 rounded-lg outline-none"
+                                                className="w-full p-2 text-xs bg-white border border-border-light/40 rounded-lg outline-none"
                                               />
                                               {activeConfig.type !== 'TOPIC_HEADER' && (
                                                 <input
@@ -578,26 +580,26 @@ export default function CreateCourse() {
                                                   placeholder="Đường dẫn link học liệu URL..."
                                                   value={inlineData.url}
                                                   onChange={(e) => setInlineData({ ...inlineData, url: e.target.value })}
-                                                  className="p-2 text-xs bg-white border border-[#c7c4d8]/40 rounded-lg outline-none"
+                                                  className="p-2 text-xs bg-white border border-border-light/40 rounded-lg outline-none"
                                                 />
                                               )}
                                             </div>
 
                                             <div className="flex justify-end gap-2">
                                               <button onClick={() => setActiveConfig(null)} className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[10px] font-bold text-gray-500">Hủy</button>
-                                              <button onClick={() => handleSaveInlineLesson(mod.id)} className="px-3 py-1 bg-[#3525cd] text-white rounded-md text-[10px] font-bold">Xác nhận</button>
+                                              <button onClick={() => handleSaveInlineLesson(mod.id)} className="px-3 py-1 bg-primary text-white rounded-md text-[10px] font-bold">Xác nhận</button>
                                             </div>
                                           </div>
                                         ) : (
-                                          <div className="ml-6 flex gap-3 pt-2 border-t border-[#c7c4d8]/20">
-                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'VIDEO' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-[#c7c4d8] rounded-xl text-gray-400 text-xs font-bold hover:border-[#3525cd] hover:text-[#3525cd] transition-all cursor-pointer">
+                                          <div className="ml-6 flex gap-3 pt-2 border-t border-border-light/20">
+                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'VIDEO' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
                                               <LuCirclePlay className="text-blue-500 text-sm" /> + Thêm Video Lecture
                                             </button>
-                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'ARTICLE' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-[#c7c4d8] rounded-xl text-gray-400 text-xs font-bold hover:border-[#3525cd] hover:text-[#3525cd] transition-all cursor-pointer">
-                                              <LuFileText className="text-amber-500 text-sm" /> + Thêm Bài Viết / Văn Bản
+                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'ARTICLE' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
+                                              <LuFileText className="text-secondary text-sm" /> + Thêm Bài Viết / Văn Bản
                                             </button>
-                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'TOPIC_HEADER' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-[#c7c4d8] rounded-xl text-gray-400 text-xs font-bold hover:border-[#3525cd] hover:text-[#3525cd] transition-all cursor-pointer">
-                                              <LuFolderPlus className="text-[#3525cd] text-sm" /> + Thêm Nhóm Chủ Đề
+                                            <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'TOPIC_HEADER' })} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
+                                              <LuFolderPlus className="text-primary text-sm" /> + Thêm Nhóm Chủ Đề
                                             </button>
                                           </div>
                                         )}
@@ -606,25 +608,25 @@ export default function CreateCourse() {
                                   </Droppable>
 
                                   {/* KHỐI KHÓA ĐUÔI BẮT BUỘC: DUY NHẤT 1 BÀI ASSIGNMENT ĐỂ KÍCH HOẠT MÔ HÌNH PAIR LEARNING */}
-                                  <div className="mx-4 mb-4 p-4 bg-[#00524a]/5 border border-[#00524a]/10 rounded-xl space-y-3">
+                                  <div className="mx-4 mb-4 p-4 bg-tertiary/5 border border-tertiary/10 rounded-xl space-y-3">
                                     <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2 text-[#00524a] font-bold text-xs">
+                                      <div className="flex items-center gap-2 text-tertiary font-bold text-xs">
                                         <LuFolderLock className="text-base" /> Bài tập tự luận tổng kết tuần (Cốt lõi chặng học cặp đôi)
                                       </div>
-                                      <span className="text-[9px] bg-[#6ef8e7]/20 border border-[#00524a]/20 text-[#005049] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">Kích hoạt Peer Review</span>
+                                      <span className="text-[9px] bg-tertiary/20 border border-tertiary/20 text-tertiary font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">Kích hoạt Peer Review</span>
                                     </div>
 
                                     <div className="grid grid-cols-12 gap-3">
                                       <input
                                         type="text"
-                                        className="col-span-4 p-2.5 bg-white border border-[#c7c4d8]/50 rounded-lg text-xs font-bold outline-none focus:border-[#3525cd]"
+                                        className="col-span-4 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs font-bold outline-none focus:border-primary"
                                         placeholder="Tên bài tập lớn tổng kết..."
                                         value={mod.assignment.title}
                                         onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, title: e.target.value } } : m))}
                                       />
                                       <input
                                         type="text"
-                                        className="col-span-8 p-2.5 bg-white border border-[#c7c4d8]/50 rounded-lg text-xs outline-none focus:border-[#3525cd]"
+                                        className="col-span-8 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs outline-none focus:border-primary"
                                         placeholder="Mô tả tóm tắt yêu cầu đề bài hoặc link file tài liệu đề chi tiết..."
                                         value={mod.assignment.description}
                                         onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, description: e.target.value } } : m))}
@@ -632,7 +634,7 @@ export default function CreateCourse() {
                                     </div>
 
                                     {/* Bộ cấu hình Rubric JSON Criteria thu nhỏ nằm ngay trong khối Assignment */}
-                                    <div className="bg-white/80 p-3 rounded-lg border border-[#00524a]/10 space-y-3">
+                                    <div className="bg-white/80 p-3 rounded-lg border border-tertiary/10 space-y-3">
                                       <span className="text-[10px] font-bold text-gray-400 block">Tiêu chí và Thang điểm chấm chéo giữa các cặp đôi (Rubric JSON Criteria):</span>
                                       <div className="flex flex-col gap-2">
                                         {mod.assignment.rubricCriteria.map((rub, rIdx) => (
@@ -656,13 +658,13 @@ export default function CreateCourse() {
                                                 }));
                                               }}
                                             />
-                                            <div className="flex items-center gap-1.5 flex-shrink-0 bg-white border border-[#c7c4d8]/40 px-2 py-0.5 rounded-md">
+                                            <div className="flex items-center gap-1.5 flex-shrink-0 bg-white border border-border-light/40 px-2 py-0.5 rounded-md">
                                               <span className="text-[10px] text-gray-400 font-bold">Thang điểm:</span>
                                               <input
                                                 type="number"
                                                 min="1"
                                                 max="100"
-                                                className="bg-transparent border-none focus:ring-0 p-0 text-xs font-bold text-[#3525cd] outline-none w-8 text-center"
+                                                className="bg-transparent border-none focus:ring-0 p-0 text-xs font-bold text-primary outline-none w-8 text-center"
                                                 value={rub.maxPoint}
                                                 onChange={(e) => {
                                                   setModules(modules.map(m => {
@@ -680,7 +682,7 @@ export default function CreateCourse() {
                                               />
                                               <span className="text-[10px] font-bold text-gray-500">đ</span>
                                             </div>
-                                            <button 
+                                            <button
                                               onClick={() => {
                                                 setModules(modules.map(m => m.id === mod.id ? {
                                                   ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
@@ -702,7 +704,7 @@ export default function CreateCourse() {
                                               }
                                             } : m));
                                           }}
-                                          className="self-start px-3 py-1.5 border border-dashed border-[#3525cd]/40 text-[#3525cd] rounded-md text-[10px] font-bold hover:bg-indigo-50/50 cursor-pointer flex items-center gap-1"
+                                          className="self-start px-3 py-1.5 border border-dashed border-primary/40 text-primary rounded-md text-[10px] font-bold hover:bg-primary/10 cursor-pointer flex items-center gap-1"
                                         >
                                           + Thêm tiêu chí chấm chéo
                                         </button>
