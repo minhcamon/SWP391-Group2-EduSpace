@@ -50,7 +50,7 @@ public class UserController {
         })
         @SecurityRequirement(name = "Bearer Authentication")
         @GetMapping("/courses")
-        public ResponseEntity<APIResponse<List<Course>>> getCourses() {
+        public ResponseEntity<APIResponse<List<Course>>> getAllPublishedCourses() {
                 List<Course> courses = courseService.getAllCourses();
                 return ResponseEntity.ok(
                         APIResponse.success("Successfully fetched courses", courses));
