@@ -6,7 +6,7 @@ const DropDown = () => {
     const { user, logout } = useAuth();
 
     return (
-        <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-20 min-w-[220px]">
+        <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-20 min-w-55">
             <div className="flex">
                 <img
                     src={
