@@ -1,6 +1,6 @@
-import CourseItem from "./CourseItem";
-import { Link } from "react-router";
-import { MoveRight } from "lucide-react";
+import CourseItem from "@/components/features/course/CourseItem";
+import Footer from "@/components/layouts/Footer";
+import Header from "@/components/layouts/Header";
 
 const STATIC_COURSES_DB = [
     {
@@ -68,34 +68,39 @@ const STATIC_COURSES_DB = [
     },
 ];
 
-const CourseContainer = () => {
+const ListCoursesPage = () => {
     const displayApprovedCourses = STATIC_COURSES_DB.filter(
         (course) => course.status === "PUBLISHED",
     );
 
     return (
-        <div className="container mx-auto px-4 my-4">
-            <div className="flex justify-between">
-                <h1 className="text-2xl font-bold">Khóa học phổ biến</h1>
-                <Link to="/courses">
-                    <div className="flex hover:opacity-80">
-                        <span className="text-primary font-semibold">
-                            Xem tất cả
-                        </span>
-                        <MoveRight
-                            className="flex my-auto ml-2 mt-1.5 text-primary"
-                            size={16}
-                        ></MoveRight>
-                    </div>
-                </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
-                {displayApprovedCourses.slice(0, 4).map((course) => (
-                    <CourseItem key={course.id} courseItem={course} />
-                ))}
-            </div>
+        <div className="min-h-screen w-full bg-gray-50 flex flex-col">
+            <Header />
+
+            <main className="w-full mx-auto px-4 py-12 grow">
+                <div className="text-center md:text-left mb-10">
+                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
+                        Khám phá các khóa học tại{" "}
+                        <span className="text-indigo-700">EduSpace</span>
+                    </h2>
+                    <p className="text-gray-600 font-medium text-base max-w-2xl">
+                        Học tập theo mô hình lớp học 10 người — Ghép cặp tương
+                        tác cùng tiến bộ.
+                    </p>
+                </div>
+
+                <hr className="border-gray-200 mb-10" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {displayApprovedCourses.map((course) => (
+                        <CourseItem key={course.id} courseItem={course} />
+                    ))}
+                </div>
+            </main>
+
+            <Footer />
         </div>
     );
 };
 
-export default CourseContainer;
+export default ListCoursesPage;
