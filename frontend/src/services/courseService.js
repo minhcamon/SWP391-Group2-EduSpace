@@ -21,6 +21,17 @@ const courseService = {
       const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lưu bản nháp!';
       throw new Error(errorMsg);
     }
+  },
+
+  getPublishedCourses: async () => {
+    try {
+      const response = await api.get('/user/courses');
+      return response.data.data;
+    } catch (error) {
+      console.error('Get Published Courses error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lấy các khóa học đã xuất bản!';
+      throw new Error(errorMsg);
+    }
   }
 };
 

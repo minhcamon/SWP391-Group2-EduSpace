@@ -1,8 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Book } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import DropDown from "../common/DropDown";
+import Logo from "../common/Logo";
 const Header = () => {
     const { user } = useAuth();
 
@@ -10,14 +11,9 @@ const Header = () => {
     return (
         <header className="bg-white p-3 shadow-sm border-b border-gray-100">
             <div className="flex justify-between mx-auto">
-                <Link to="/">
-                    <div className="flex">
-                        <Book className=" text-primary" size={36} />
-                        <h1 className="ml-2 font-bold text-3xl text-primary">
-                            EduSpace
-                        </h1>
-                    </div>
-                </Link>
+                <div>
+                    <Logo />
+                </div>
 
                 <div className="md:flex hidden gap-4 my-auto">
                     <Link to="/roadmaps">
@@ -66,7 +62,8 @@ const Header = () => {
                                     >
                                         <img
                                             src={
-                                                user.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                                                user.avatarUrl ||
+                                                "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
                                             }
                                             alt="User Avatar"
                                             className="w-9 h-9 rounded-full object-cover border border-gray-500"

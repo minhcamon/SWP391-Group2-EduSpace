@@ -1,7 +1,11 @@
-import React from "react";
+import Sidebar from "@/components/layouts/Sidebar";
 
 const AdminHomePage = () => {
-    return <div>AdminHomePage</div>;
+    return (
+        <div>
+            <Sidebar />
+        </div>
+    );
 };
 
 export default AdminHomePage;
