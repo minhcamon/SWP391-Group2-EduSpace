@@ -2,12 +2,11 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { setTokens, clearTokens, getTokens } from "@/utils/utils";
 import AuthService from "@/services/authService";
 
-// Luu thong tin nguoi dung vao context de cac component con co the truy cap duoc
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); // default to true while checking auth
+    const [isLoading, setIsLoading] = useState(true);
 
     const checkAuth = async () => {
         const token = getTokens();
