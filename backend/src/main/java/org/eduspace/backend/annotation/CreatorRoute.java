@@ -9,5 +9,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping("/api/creator")
 public @interface CreatorRoute {
-    String value() default "";
 }
