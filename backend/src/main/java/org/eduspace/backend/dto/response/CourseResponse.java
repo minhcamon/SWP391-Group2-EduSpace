@@ -18,4 +18,6 @@ public class CourseResponse {
     private String status;
     private LocalDateTime createdAt;
     private String creatorFullName;
+    private String creatorAvatarUrl;
+    private String creatorEmail;
 }
