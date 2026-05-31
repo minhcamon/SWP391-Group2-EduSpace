@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { setTokens } from "@/utils/utils";
@@ -10,31 +10,39 @@ const OAuth2RedirectHandler = () => {
     const navigate = useNavigate();
     const { checkAuth } = useAuth();
 
+    const isProcessedRef = useRef(false);
+
     useEffect(() => {
         const token = searchParams.get("token");
 
         const handleOAuthRedirect = async () => {
-            if (token) {
-                try {
-                    setTokens(token);
-                    
-                    await checkAuth();
-                    
-                    toast.success("Đăng nhập thành công bằng Google!");
-                    navigate("/", { replace: true });
-                } catch (error) {
-                    console.error("Lỗi xác thực OAuth2:", error);
-                    toast.error("Không thể lấy thông tin tài khoản Google.");
-                    navigate("/login", { replace: true });
-                }
-            } else {
-                toast.error("Đăng nhập bằng Google thất bại. Token không hợp lệ!");
+            if (!token) {
+                if (isProcessedRef.current) return;
+                isProcessedRef.current = true;
+                toast.error("Không tìm thấy mã xác thực từ Google!");
+                navigate("/login", { replace: true });
+                return;
+            }
+
+            if (isProcessedRef.current) return;
+
+            isProcessedRef.current = true;
+
+            try {
+                setTokens(token);
+                await checkAuth();
+
+                toast.success("Đăng nhập thành công bằng Google!");
+                navigate("/", { replace: true });
+            } catch (error) {
+                console.error("Lỗi xác thực OAuth2:", error);
+                toast.error("Không thể lấy thông tin tài khoản Google.");
                 navigate("/login", { replace: true });
             }
         };
 
         handleOAuthRedirect();
-    }, [searchParams, navigate, checkAuth]);
+    }, [searchParams, navigate, checkAuth, setTokens]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
