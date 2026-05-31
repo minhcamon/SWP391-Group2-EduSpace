@@ -41,6 +41,7 @@ public class CourseService {
                         .description(course.getDescription())
                         .status(course.getStatus().name())
                         .createdAt(course.getCreatedAt())
+                        .creatorFullName(course.getCreator().getFullName())
                         .build())
                 .collect(Collectors.toList());
     }
