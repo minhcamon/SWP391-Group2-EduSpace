@@ -8,7 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE) // Gắn trên cấp độ Class
+@Target(ElementType.TYPE) 
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping("/api/admin")
 public @interface AdminRoute {
