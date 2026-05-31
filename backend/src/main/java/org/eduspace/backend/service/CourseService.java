@@ -47,4 +47,59 @@ public class CourseService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    public List<CourseResponse> getPendingCourses() {
+    List<Course> courses =
+            courseRepository.findByStatusAndIsDeletedFalse(CourseStatus.PENDING);
+
+    return courses.stream()
+            .map(course -> CourseResponse.builder()
+                    .id(course.getId())
+                    .title(course.getTitle())
+                    .description(course.getDescription())
+                    .status(course.getStatus().name())
+                    .createdAt(course.getCreatedAt())
+                    .creatorFullName(course.getCreator().getFullName())
+                    .creatorAvatarUrl(course.getCreator().getAvatarUrl())
+                    .creatorEmail(course.getCreator().getEmail())
+                    .build())
+            .collect(Collectors.toList());
+    }
+    public CourseResponse approveCourse(Long courseId) {
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() ->
+                        new RuntimeException("Course not found"));
+
+        course.setStatus(CourseStatus.PUBLISHED);
+
+        courseRepository.save(course);
+
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .description(course.getDescription())
+                .status(course.getStatus().name())
+                .createdAt(course.getCreatedAt())
+                .build();
+    }
+    public CourseResponse rejectCourse(Long courseId) {
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() ->
+                        new RuntimeException("Course not found"));
+
+        course.setStatus(CourseStatus.DRAFT);
+
+        courseRepository.save(course);
+
+        return CourseResponse.builder()
+                .id(course.getId())
+                .title(course.getTitle())
+                .description(course.getDescription())
+                .status(course.getStatus().name())
+                .createdAt(course.getCreatedAt())
+                .build();
+        }
+
 }
