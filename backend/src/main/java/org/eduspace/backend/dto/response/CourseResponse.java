@@ -17,4 +17,5 @@ public class CourseResponse {
     private String description;
     private String status;
     private LocalDateTime createdAt;
+    private String creatorFullName;
 }
