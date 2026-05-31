@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize(value = "hasRole('LEARNER')")
 @Tag(name = "Learner - Course", description = "Các API dành cho Learner xem và quản lý khóa học")
-public class CourseController {
+public class LearnerCourseController {
     private final CourseService courseService;
 
     @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
