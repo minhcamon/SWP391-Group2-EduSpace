@@ -6,11 +6,9 @@ const AuthService = {
             const payload = { usernameOrEmail: email, password };
 
             const response = await api.post('/auth/login', payload);
-            // Trả về trực tiếp object chứa { token, user }
             return response.data.data;
         } catch (error) {
             console.error('Login error at AuthService:', error);
-            // Chuẩn hóa lỗi Axios thành JS Error
             const errorMsg = error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại!';
             throw new Error(errorMsg);
         }
@@ -26,7 +24,6 @@ const AuthService = {
         };
         try {
             const response = await api.post('/auth/register', payload(userData));
-            // Trả về chuỗi message thành công
             return response.data.message || 'Đăng ký thành công!';
         } catch (error) {
             console.error('Registration error at AuthService:', error);
@@ -42,6 +39,39 @@ const AuthService = {
         } catch (error) {
             console.error('Get profile error at AuthService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể lấy thông tin người dùng!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    updateProfile: async (profileData) => {
+        try {
+            const response = await api.put('/user/profile', profileData);
+            return response.data.data;
+        } catch (error) {
+            console.error('Update profile error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Cập nhật thông tin thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    changePassword: async (passwordData) => {
+        try {
+            const response = await api.put('/user/change-password', passwordData);
+            return response.data.message || 'Đổi mật khẩu thành công!';
+        } catch (error) {
+            console.error('Change password error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    registerCreator: async (creatorData) => {
+        try {
+            const response = await api.post('/user/creator-register', creatorData);
+            return response.data.message || 'Đăng ký làm Creator thành công!';
+        } catch (error) {
+            console.error('Register creator error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Đăng ký làm Creator thất bại. Vui lòng thử lại!';
             throw new Error(errorMsg);
         }
     },
