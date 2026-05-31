@@ -42,6 +42,8 @@ public class CourseService {
                         .status(course.getStatus().name())
                         .createdAt(course.getCreatedAt())
                         .creatorFullName(course.getCreator().getFullName())
+                        .creatorAvatarUrl(course.getCreator().getAvatarUrl())
+                        .creatorEmail(course.getCreator().getEmail())
                         .build())
                 .collect(Collectors.toList());
     }
