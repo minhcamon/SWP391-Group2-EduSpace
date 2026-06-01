@@ -14,7 +14,6 @@ import org.eduspace.backend.service.CourseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -40,6 +39,6 @@ public class CreatorCourseController {
 
         List<CourseResponse> courses = courseService.getCoursesByCreatorId(currentCreatorId);
 
-        return ResponseEntity.ok(APIResponse.success("Successfull retrieved my courses",courses));
+        return ResponseEntity.ok(APIResponse.success("Successfull retrieved my courses", courses));
     }
 }
