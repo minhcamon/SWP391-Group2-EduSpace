@@ -1,7 +1,7 @@
 package org.eduspace.backend.config;
 
+import org.eduspace.backend.exception.ForbiddenException;
 import org.eduspace.backend.security.AuthenticationFilter;
-import org.eduspace.backend.security.CustomAccessDeniedHandler;
 import org.eduspace.backend.service.CustomOauth2UserService;
 import org.eduspace.backend.service.Oauth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +45,7 @@ public class SecurityConfig {
     private final CustomOauth2UserService customOauth2UserService;
     private final Oauth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final AuthenticationFilter authenticationFilter;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final ForbiddenException customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
