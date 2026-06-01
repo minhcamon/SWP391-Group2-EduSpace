@@ -3,6 +3,7 @@ import { Book, Lock, Mail, User, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
 import { toast } from "sonner";
+import Logo from "@/components/common/Logo";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -54,11 +55,8 @@ const RegisterForm = () => {
             <div className="w-full lg:w-[48%] flex flex-col justify-center px-6 sm:px-12 lg:px-[6%] py-12 bg-white overflow-y-auto">
                 <div className="w-full max-w-lg mx-auto">
                     {/* Brand Anchor */}
-                    <div className="flex items-center gap-2.5 mb-8">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-sm">
-                            <Book size={20} />
-                        </div>
-                        <span className="font-bold text-2xl text-primary tracking-tight">eduSpace</span>
+                    <div className="flex items-center gap-2.5 mb-6 w-72">
+                        <Logo />
                     </div>
 
                     {/* Page Header */}
