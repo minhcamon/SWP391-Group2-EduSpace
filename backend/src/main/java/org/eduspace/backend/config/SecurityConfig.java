@@ -1,6 +1,5 @@
 package org.eduspace.backend.config;
 
-import org.eduspace.backend.exception.ForbiddenException;
 import org.eduspace.backend.security.AuthenticationFilter;
 import org.eduspace.backend.service.CustomOauth2UserService;
 import org.eduspace.backend.service.Oauth2AuthenticationSuccessHandler;
@@ -18,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -45,7 +46,6 @@ public class SecurityConfig {
     private final CustomOauth2UserService customOauth2UserService;
     private final Oauth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final AuthenticationFilter authenticationFilter;
-    private final ForbiddenException customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -53,16 +53,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**", "/api/course/all", "/api/course/{id}", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**",
+                        .requestMatchers("/api/auth/**", "/api/course/all", "/oauth2/**",
+                                "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html")
-                        .permitAll()                 
+                        .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .exceptionHandling(exception -> exception
-                        .accessDeniedHandler(customAccessDeniedHandler))
                 .addFilterAfter(authenticationFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
