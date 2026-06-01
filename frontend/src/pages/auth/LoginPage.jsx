@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import authService from "@/services/authService";
 import GoogleIcon from "@/assets/google-icon-logo.svg";
+import Logo from "@/components/common/Logo";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -58,11 +59,8 @@ const LoginForm = () => {
 
             <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-12 lg:px-[8%] py-12 bg-white">
                 <div className="w-full max-w-md mx-auto">
-                    <div className="flex items-center gap-2.5 mb-10">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-sm">
-                            <Book size={20} />
-                        </div>
-                        <span className="font-bold text-2xl text-primary tracking-tight">eduSpace</span>
+                    <div className="w-72 mb-6">
+                        <Logo />
                     </div>
 
                     {/* Header */}
