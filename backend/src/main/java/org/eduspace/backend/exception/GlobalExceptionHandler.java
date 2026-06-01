@@ -2,6 +2,7 @@ package org.eduspace.backend.exception;
 
 import org.eduspace.backend.dto.response.APIResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +12,12 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<APIResponse<Object>> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(403).body(
+                APIResponse.error(403, "You are not authorized to access this resource!", null));
+    }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<APIResponse<Object>> handleRuntimeException(RuntimeException ex) {
