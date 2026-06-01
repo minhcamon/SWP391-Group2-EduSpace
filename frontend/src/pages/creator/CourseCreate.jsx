@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   LuInfo, LuGripVertical, LuCirclePlay, LuFileText,
   LuX, LuPlus, LuTrash2, LuFolderPlus, LuSparkles, LuFolderLock
@@ -12,16 +12,10 @@ import courseService from '@/services/courseService';
 
 export default function CreateCourse() {
   const navigate = useNavigate();
-  // 1. Đồng bộ State thông tin chung bằng formData
+  // 1. Using formData to collect input data
   const [formData, setFormData] = useState({
     title: '',
-    subject: 'Java Software Engineering',
-    targetBand: 'Cơ bản (Beginner)',
     description: '',
-    thumbnailPreview: '',
-    isFree: false,
-    price: '',
-    isMentorApproved: true
   });
 
   const handleImageChange = (e) => {
@@ -47,15 +41,11 @@ export default function CreateCourse() {
     try {
       const payload = {
         title: formData.title,
-        subject: formData.subject,
-        targetBand: formData.targetBand,
         description: formData.description,
-        thumbnailUrl: formData.thumbnailPreview,
-        isFree: formData.isFree,
-        price: formData.price,
-        isMentorApproved: formData.isMentorApproved,
         modules: modules
       };
+
+      console.log("Create Course Payload:", JSON.stringify(payload, null, 2));
 
       await courseService.createCourse(payload);
       toast.success("Tạo khóa học thành công!");
@@ -66,15 +56,16 @@ export default function CreateCourse() {
     }
   };
 
-  // 2. State quản lý cây học liệu ảo (Dữ liệu phẳng tương thích 100% 4 bảng gốc của bạn)
+  // 2. Module State
   const [modules, setModules] = useState([
     {
       id: 'mod-1',
       title: 'Giới thiệu về lập trình Java nâng cao',
       priority: 'MEDIUM', // LOW, MEDIUM, HIGH
-      days: 7, // Trường thời lượng tùy biến cứng của Coursera
-      baseExp: 100, // Tự động map ngầm phục vụ Pair Learning
+      days: 7,
+      baseExp: 100,
       speedBonusExp: 20,
+      sortOrder: 1,
       assignment: {
         title: 'Bài tập thực hành OOP chặng 1',
         description: 'Yêu cầu sinh viên triển khai các lớp kế thừa và đóng gói...',
@@ -92,11 +83,9 @@ export default function CreateCourse() {
     }
   ]);
 
-  // State quản lý việc thêm học liệu nhanh
   const [activeConfig, setActiveConfig] = useState(null); // { moduleId, type: 'VIDEO' | 'ARTICLE' }
   const [inlineData, setInlineData] = useState({ title: '', url: '' });
 
-  // Thuật toán tự động ánh xạ định mức EXP theo mức độ khó (Priority) chặng
   const handlePriorityChange = (moduleId, priority) => {
     const expMap = {
       LOW: { base: 50, bonus: 10 },
@@ -126,46 +115,10 @@ export default function CreateCourse() {
       baseExp: 50,
       speedBonusExp: 10,
       assignment: { title: 'Bài tập thực hành tổng kết tuần', description: '', rubricCriteria: [] },
-      lessons: []
+      lessons: [],
+      sortOrder: modules.length + 1,
     }]);
   };
-
-  const handleAddTopicHeader = (moduleId) => {
-    const headerTitle = prompt("Nhập tên Chủ đề / Nhóm bài học nhỏ (Topic Header):");
-    if (!headerTitle) return;
-
-    setModules(modules.map(mod => {
-      if (mod.id === moduleId) {
-        return {
-          ...mod,
-          lessons: [...mod.lessons, { id: `les-${Date.now()}`, title: headerTitle, content_type: 'TOPIC_HEADER' }]
-        };
-      }
-      return mod;
-    }));
-  };
-
-  // const handleSaveInlineLesson = (moduleId) => {
-  //   if (!inlineData.title.trim()) return;
-
-  //   setModules(modules.map(mod => {
-  //     if (mod.id === moduleId) {
-  //       return {
-  //         ...mod,
-  //         lessons: [...mod.lessons, {
-  //           id: `les-${Date.now()}`,
-  //           title: inlineData.title,
-  //           content_type: activeConfig.type,
-  //           content_url: inlineData.url
-  //         }]
-  //       };
-  //     }
-  //     return mod;
-  //   }));
-
-  //   setInlineData({ title: '', url: '' });
-  //   setActiveConfig(null);
-  // };
 
   const handleSaveInlineLesson = (moduleId) => {
     if (!inlineData.title.trim()) return;
@@ -179,9 +132,10 @@ export default function CreateCourse() {
             {
               id: `les-${Date.now()}`,
               title: inlineData.title,
-              content_type: activeConfig.type, // Sẽ mang giá trị 'TOPIC_HEADER', 'VIDEO', hoặc 'ARTICLE'
-              // Nếu là Header thì lưu chuỗi 'N/A' ngầm xuống DB, ngược lại thì lưu link URL bình thường
-              content_url: activeConfig.type === 'TOPIC_HEADER' ? 'N/A' : inlineData.url
+              content_type: activeConfig.type, // 'TOPIC_HEADER', 'VIDEO', 'ARTICLE'
+              // Header = N/A
+              content_url: activeConfig.type === 'TOPIC_HEADER' ? 'N/A' : inlineData.url,
+              sortOrder: mod.lessons.length + 1
             }
           ]
         };
@@ -189,27 +143,33 @@ export default function CreateCourse() {
       return mod;
     }));
 
-    // Reset trạng thái form về trống
     setInlineData({ title: '', url: '' });
     setActiveConfig(null);
   };
 
   const handleDeleteLesson = (moduleId, lessonId) => {
-    setModules(modules.map(mod => {
+    const updated = modules.map(mod => {
       if (mod.id === moduleId) {
-        return { ...mod, lessons: mod.lessons.filter(l => l.id !== lessonId) };
+        const filteredLessons = mod.lessons.filter(l => l.id !== lessonId);
+        // Cập nhật lại sortOrder cho các bài học còn lại
+        const updatedLessons = filteredLessons.map((l, index) => ({
+          ...l,
+          sortOrder: index + 1
+        }));
+        return { ...mod, lessons: updatedLessons };
       }
       return mod;
-    }));
+    });
+
+    console.log("Modules after deleting lesson:", updated);
+    setModules(updated);
   };
 
   const handleDragEnd = (result) => {
     const { source, destination, type } = result;
 
-    // 1. Kiểm tra nếu người dùng thả chuột ngoài vùng Droppable hợp lệ thì dừng luồng xử lý
     if (!destination) return;
 
-    // 2. Kiểm tra nếu vị trí thả trùng khít với vị trí kéo ban đầu (không có sự thay đổi) thì dừng luồng
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
@@ -223,11 +183,17 @@ export default function CreateCourse() {
     if (type === 'MODULE') {
       const reorderedModules = Array.from(modules);
 
-      // Tráo đổi vị trí phần tử trong mảng tuần học
       const [removedModule] = reorderedModules.splice(source.index, 1);
       reorderedModules.splice(destination.index, 0, removedModule);
 
-      setModules(reorderedModules);
+      // Cập nhật lại sortOrder cho toàn bộ module sau khi kéo thả
+      const updatedModules = reorderedModules.map((mod, index) => ({
+        ...mod,
+        sortOrder: index + 1
+      }));
+
+      console.log("Modules after dragging module:", updatedModules);
+      setModules(updatedModules);
       return;
     }
 
@@ -240,45 +206,70 @@ export default function CreateCourse() {
 
       // Nhánh 1: Kéo thả bài học nội bộ bên trong cùng 1 Module (cùng 1 tuần)
       if (sourceModuleId === destModuleId) {
-        setModules(modules.map(mod => {
+        const updated = modules.map(mod => {
           if (mod.id === sourceModuleId) {
             const reorderedLessons = Array.from(mod.lessons);
 
-            // Tráo đổi vị trí index nội bộ mảng bài học
             const [removedLesson] = reorderedLessons.splice(source.index, 1);
             reorderedLessons.splice(destination.index, 0, removedLesson);
 
-            return { ...mod, lessons: reorderedLessons };
+            // Cập nhật lại sortOrder cho toàn bộ bài học trong module
+            const updatedLessons = reorderedLessons.map((l, index) => ({
+              ...l,
+              sortOrder: index + 1
+            }));
+
+            return { ...mod, lessons: updatedLessons };
           }
           return mod;
-        }));
+        });
+
+        console.log("Modules after internal lesson drag:", updated);
+        setModules(updated);
       }
       // Nhánh 2: Kéo thả xuyên biên giới (Bốc bài học từ Tuần này thả sang Tuần khác)
       else {
-        let movedLessonData = null;
+        // Tìm module nguồn và module đích
+        const sourceModule = modules.find(m => m.id === sourceModuleId);
+        const destModule = modules.find(m => m.id === destModuleId);
 
-        // Bước 2.1: Duyệt qua mảng để tìm và rút (remove) bài học ra khỏi Module gốc
-        const updatedModulesWithRemoval = modules.map(mod => {
+        if (!sourceModule || !destModule) return;
+
+        // Bốc bài học ra
+        const sourceLessons = Array.from(sourceModule.lessons);
+        const [movedLesson] = sourceLessons.splice(source.index, 1);
+
+        if (!movedLesson) return;
+
+        // Cập nhật sortOrder cho module nguồn
+        const updatedSourceLessons = sourceLessons.map((l, index) => ({
+          ...l,
+          sortOrder: index + 1
+        }));
+
+        // Chèn vào module đích
+        const destLessons = Array.from(destModule.lessons);
+        destLessons.splice(destination.index, 0, movedLesson);
+
+        // Cập nhật sortOrder cho module đích
+        const updatedDestLessons = destLessons.map((l, index) => ({
+          ...l,
+          sortOrder: index + 1
+        }));
+
+        // Tạo mảng modules mới
+        const updatedModules = modules.map(mod => {
           if (mod.id === sourceModuleId) {
-            const sourceLessons = Array.from(mod.lessons);
-            const [removed] = sourceLessons.splice(source.index, 1);
-            movedLessonData = removed; // Găm dữ liệu bài học vào biến tạm để đem đi chèn
-            return { ...mod, lessons: sourceLessons };
+            return { ...mod, lessons: updatedSourceLessons };
+          }
+          if (mod.id === destModuleId) {
+            return { ...mod, lessons: updatedDestLessons };
           }
           return mod;
         });
 
-        // Bước 2.2: Chèn (insert) bài học vừa bốc vào mảng lessons của Module đích tại chỉ số index mới
-        const finalModules = updatedModulesWithRemoval.map(mod => {
-          if (mod.id === destModuleId && movedLessonData) {
-            const destLessons = Array.from(mod.lessons);
-            destLessons.splice(destination.index, 0, movedLessonData);
-            return { ...mod, lessons: destLessons };
-          }
-          return mod;
-        });
-
-        setModules(finalModules);
+        console.log("Modules after cross-module lesson drag:", updatedModules);
+        setModules(updatedModules);
       }
     }
   };
@@ -323,7 +314,7 @@ export default function CreateCourse() {
 
             <div className="space-y-8">
 
-              {/* BENTO ROW 1: TỔNG QUAN KHÓA HỌC KHỚP HOÀN TOÀN CẤU TRÚC MẪU */}
+              {/* BENTO ROW 1: TỔNG QUAN KHÓA HỌC */}
               <div className="grid grid-cols-12 gap-6 items-stretch">
 
                 {/* Khối Thông tin chung */}
@@ -342,33 +333,6 @@ export default function CreateCourse() {
                           value={formData.title}
                           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-neutral-medium mb-2">Chủ đề đào tạo</label>
-                          <select
-                            className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-primary/20"
-                            value={formData.subject}
-                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                          >
-                            <option value="Java Software Engineering">Java Software Engineering</option>
-                            <option value="Frontend ReactJS">Frontend ReactJS</option>
-                            <option value="IoT & Microcontroller">IoT & Microcontroller</option>
-                            <option value="Unity C# Game Development">Unity C# Game Development</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-neutral-medium mb-2">Cấp độ mục tiêu</label>
-                          <select
-                            className="w-full px-4 py-3 bg-bg-card border border-border-light/40 rounded-lg outline-none text-sm text-gray-700 focus:ring-2 focus:ring-primary/20"
-                            value={formData.targetBand}
-                            onChange={(e) => setFormData({ ...formData, targetBand: e.target.value })}
-                          >
-                            <option value="Cơ bản (Beginner)">Cơ bản (Beginner)</option>
-                            <option value="Trung cấp (Intermediate)">Trung cấp (Intermediate)</option>
-                            <option value="Nâng cao (Advanced)">Nâng cao (Advanced)</option>
-                          </select>
-                        </div>
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-neutral-medium mb-2">Mô tả chi tiết</label>
@@ -417,7 +381,7 @@ export default function CreateCourse() {
                                     }`}
                                 >
 
-                                  {/* Thanh Header của Module - Chứa Handle kéo thả chuyên biệt */}
+                                  {/* Thanh Header của Module */}
                                   <div className="p-4 bg-bg-card border-b border-border-light/30 flex flex-col gap-3">
                                     {/* Hàng 1: Grip Handle + Tên Module */}
                                     <div className="flex items-center gap-3">
