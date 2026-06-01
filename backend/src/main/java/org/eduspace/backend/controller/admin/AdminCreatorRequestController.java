@@ -33,8 +33,8 @@ public class AdminCreatorRequestController {
             @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
     })
-    @GetMapping("/creator-request")
-    public ResponseEntity<APIResponse<List<CreatorRequestApprovalRequest>>> getAllRequestPending(){
+    @GetMapping("/creator-request/all")
+    public ResponseEntity<APIResponse<List<CreatorRequestApprovalRequest>>> getAllRequestPending() {
         List<CreatorRequestApprovalRequest> requests = creatorRequestService.getAllRequestPending();
 
         return ResponseEntity.ok(APIResponse.success("Successfull Retrieve All Pending Creator's Requests", requests));
@@ -47,14 +47,14 @@ public class AdminCreatorRequestController {
             @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
     })
-    @PutMapping("/{requestId}/status")
+    @PutMapping("/creator-request/{requestId}/status")
     public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> handleCreatorRequest(
             @PathVariable Long requestId,
-            @RequestParam String status
-    ){
+            @RequestParam String status) {
         Long adminId = SecurityUtil.getCurrentUserId();
 
-        CreatorRequestApprovalResponse response = creatorRequestService.approveLearnerToCreator(requestId, status, adminId);
+        CreatorRequestApprovalResponse response = creatorRequestService.approveLearnerToCreator(requestId, status,
+                adminId);
 
         return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));
     }
