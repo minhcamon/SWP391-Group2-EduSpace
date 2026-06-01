@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import org.eduspace.backend.dto.request.CreatorRequestApprovalRequest;
+import org.eduspace.backend.dto.request.LearnerSendCreatorRequestDto;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
@@ -59,5 +61,28 @@ public class CreatorRequestController {
                                 adminId);
 
                 return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));
+        }
+
+        @Operation(summary = "Gửi yêu cầu nâng cấp lên Creator (LEARNER)", description = "Học viên điền lý do, kinh nghiệm để gửi đơn lên Ban quản trị chờ duyệt.")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Gửi yêu cầu thành công"),
+                @ApiResponse(responseCode = "400", description = "Dữ liệu gửi lên không hợp lệ"),
+                @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                @ApiResponse(responseCode = "403", description = "Không có quyền Learner")
+        })
+        @PostMapping("/send")
+        @PreAuthorize("hasRole('LEARNER')") 
+        public ResponseEntity<APIResponse<String>> sendCreatorRequest(
+                        @Valid @RequestBody LearnerSendCreatorRequestDto requestDto) {
+                
+                // Lấy ID của Learner đang đăng nhập từ Security Context (tiện và bảo mật)
+                Long learnerId = SecurityUtil.getCurrentUserId(); 
+
+                // Gọi xuống service để xử lý lưu vào DB
+                creatorRequestService.createCreatorRequest(requestDto, learnerId);
+
+                return ResponseEntity.ok(
+                        APIResponse.success("Gửi đơn đăng ký làm Creator thành công. Vui lòng chờ Admin phê duyệt!", null)
+                );
         }
 }
