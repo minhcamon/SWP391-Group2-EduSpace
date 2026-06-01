@@ -14,7 +14,8 @@ import Leaderboard from "@/pages/Leaderboard";
 import CourseCreate from "@/pages/creator/CourseCreate";
 import ListCoursesPage from "@/pages/course/ListCoursesPage";
 import ErrorPage from "@/pages/ErrorPage";
-import ManageRequestPage from "./pages/admin/ManagerRequestPage";
+import ManageRequestPage from "@/pages/admin/ManageRequestPage";
+import ManageCoursePage from "@/pages/admin/ManageCoursePage";
 
 import CourseManagement from "./pages/creator/CourseManagement";
 import CreatorAnalytics from "./pages/creator/CreatorAnalytics";
@@ -52,6 +53,10 @@ function App() {
                     <Route
                         path="/admin/creator-requests"
                         element={<ManageRequestPage />}
+                    ></Route>
+                    <Route
+                        path="/admin/courses-management"
+                        element={<ManageCoursePage />}
                     ></Route>
 
                     {/* creator route */}
