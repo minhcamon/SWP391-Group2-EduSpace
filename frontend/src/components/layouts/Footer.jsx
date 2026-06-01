@@ -144,7 +144,7 @@ const Footer = () => {
                                 rel="noreferrer"
                                 className="w-9 h-9 rounded-xl bg-gray-800 flex items-center justify-center hover:bg-secondary hover:text-white text-gray-400 transition-all duration-200"
                             >
-                                <i class="fa-brands fa-youtube"></i>
+                                <i className="fa-brands fa-youtube"></i>
                             </a>
                             <a
                                 href="https://github.com"
@@ -152,7 +152,7 @@ const Footer = () => {
                                 rel="noreferrer"
                                 className="w-9 h-9 rounded-xl bg-gray-800 flex items-center justify-center hover:bg-secondary hover:text-white text-gray-400 transition-all duration-200"
                             >
-                                <i class="fa-brands fa-github"></i>
+                                <i className="fa-brands fa-github"></i>
                             </a>
                         </div>
                         <p className="text-xs text-gray-500 leading-relaxed pt-1">
