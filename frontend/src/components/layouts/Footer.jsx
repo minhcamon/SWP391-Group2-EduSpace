@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { Book, Mail, Phone, MapPin } from "lucide-react";
+import Logo from "@/components/common/Logo";
 
 const Footer = () => {
     return (
@@ -8,12 +9,11 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-gray-800">
                     <div className="lg:col-span-4 space-y-4">
-                        <Link to="/" className="flex items-center space-x-2">
-                            <Book className="text-secondary" size={28} />
-                            <span className="font-bold text-2xl text-white tracking-wide">
-                                EduSpace
-                            </span>
-                        </Link>
+                        <div className="w-72">
+                            <Link to="/" className="flex items-center space-x-2">
+                                <Logo />
+                            </Link>
+                        </div>
                         <p className="text-sm text-gray-400 leading-relaxed pr-4">
                             Nền tảng học lập trình trực tuyến tối ưu, giúp bạn
                             định hình lộ trình, bứt phá kỹ năng và chinh phục
