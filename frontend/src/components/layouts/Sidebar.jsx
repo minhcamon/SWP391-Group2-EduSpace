@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Logo from "../common/Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { roleMapping } from "../../lib/data.js";
 
 const Sidebar = () => {
     const { user, logout } = useAuth();
@@ -23,7 +24,7 @@ const Sidebar = () => {
     const location = useLocation();
     const currentPath = location.pathname;
 
-    const roleMapping = {
+    const displayMapping = {
         ADMIN: "Trang quản trị viên",
         CREATOR: "Creator Hub",
     };
@@ -50,7 +51,7 @@ const Sidebar = () => {
                 {
                     text: "Quản lý khóa học",
                     icon: BookOpen,
-                    path: "/admin/courses",
+                    path: "/admin/courses-management",
                 },
                 {
                     text: "Quản lý học viên",
@@ -128,7 +129,7 @@ const Sidebar = () => {
                     <div>
                         <Logo />
                         <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-center text-primary">
-                            {roleMapping[user.role]}
+                            {displayMapping[user.role]}
                         </p>
                         <hr className="mt-4 text-secondary" />
                     </div>
