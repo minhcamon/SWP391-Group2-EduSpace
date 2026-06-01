@@ -53,12 +53,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**",
+                        .requestMatchers("/api/auth/**", "/api/course/all", "/api/course/{id}", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**",
                                 "/swagger-ui.html")
-                        .permitAll()
-                        .requestMatchers(("/api/learner/**")).hasRole("LEARNER")
-                        .requestMatchers("/api/creator/**").hasRole("CREATOR")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .permitAll()                 
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
