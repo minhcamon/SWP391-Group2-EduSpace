@@ -1,6 +1,5 @@
-import React from "react";
 import { Link } from "react-router";
-import { Book, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import Logo from "@/components/common/Logo";
 
 const Footer = () => {
@@ -136,7 +135,7 @@ const Footer = () => {
                                 rel="noreferrer"
                                 className="w-9 h-9 rounded-xl bg-gray-800 flex items-center justify-center hover:bg-secondary hover:text-white text-gray-400 transition-all duration-200"
                             >
-                                <i class="fa-brands fa-facebook"></i>
+                                <i className="fa-brands fa-facebook"></i>
                             </a>
                             <a
                                 href="https://youtube.com"
