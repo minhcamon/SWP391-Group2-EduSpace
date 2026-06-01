@@ -127,7 +127,7 @@ const Sidebar = () => {
                 <div className="flex items-center gap-3 px-2 mb-8">
                     <div>
                         <Logo />
-                        <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-center">
+                        <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-center text-primary">
                             {roleMapping[user.role]}
                         </p>
                         <hr className="mt-4 text-secondary" />
