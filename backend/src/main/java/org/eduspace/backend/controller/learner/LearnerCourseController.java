@@ -17,26 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
 @RestController
 @LearnerRoute
 @RequiredArgsConstructor
 @PreAuthorize(value = "hasRole('LEARNER')")
 @Tag(name = "Learner - Course", description = "Các API dành cho Learner xem và quản lý khóa học")
 public class LearnerCourseController {
-    private final CourseService courseService;
+        private final CourseService courseService;
 
-    @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
-            @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
-            @ApiResponse(responseCode = "403", description = "Tài khoản bị cấm hoặc không có quyền truy cập")
-    })
-    @SecurityRequirement(name = "Bearer Authentication")
-    @GetMapping("/courses")
-    public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
-            List<CourseResponse> courses = courseService.getAllPublishedCourses();
-            return ResponseEntity.ok(
-                    APIResponse.success("Successfully fetched courses", courses));
-    }
+        @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Tài khoản bị cấm hoặc không có quyền truy cập")
+        })
+        @SecurityRequirement(name = "Bearer Authentication")
+        @GetMapping("/course/all")
+        public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
+                List<CourseResponse> courses = courseService.getAllPublishedCourses();
+                return ResponseEntity.ok(
+                                APIResponse.success("Successfully fetched courses", courses));
+        }
 }
