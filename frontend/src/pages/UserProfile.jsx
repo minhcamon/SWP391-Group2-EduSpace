@@ -148,11 +148,10 @@ const UserProfile = () => {
         setIsUpdatingProfile(true);
         try {
             await AuthService.updateProfile(profileForm);
-            await checkAuth(); // Reload fresh user data in Context
+            await checkAuth(); 
             toast.success("Cập nhật thông tin hồ sơ thành công!");
         } catch (error) {
             console.error("Update profile error:", error);
-            // Simulate offline fallback locally if backend doesn't have PUT /user/profile endpoint
             toast.error(error.message || "Không thể cập nhật thông tin lên hệ thống!");
         } finally {
             setIsUpdatingProfile(false);
@@ -525,11 +524,11 @@ const UserProfile = () => {
                             <div className="space-y-3">
                                 <div className="flex gap-3 text-xs">
                                     <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                                    <span className="text-neutral-medium">Học hỏi liên tục mỗi ngày để gia tăng năng lực giao tiếp IELTS toàn diện.</span>
+                                    <span className="text-neutral-medium">Học hỏi liên tục mỗi ngày.</span>
                                 </div>
                                 <div className="flex gap-3 text-xs">
                                     <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                                    <span className="text-neutral-medium">Hoàn thành bài tập chấm từ Mentor để hiểu rõ các điểm ngữ pháp & phát âm.</span>
+                                    <span className="text-neutral-medium">Hoàn thành bài tập chấm từ Mentor.</span>
                                 </div>
                                 <div className="flex gap-3 text-xs">
                                     <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
