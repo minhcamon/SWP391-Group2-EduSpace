@@ -1,4 +1,4 @@
-package org.eduspace.backend.controller.admin;
+package org.eduspace.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.eduspace.backend.annotation.AdminRoute;
+import java.util.List;
 import org.eduspace.backend.dto.request.CreatorRequestApprovalRequest;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.response.CreatorRequestApprovalResponse;
@@ -16,15 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
-@AdminRoute
+@RequestMapping("/api/creator-requests")
 @RequiredArgsConstructor
-@PreAuthorize(value = "hasRole('ADMIN')")
-@Tag(name = "Admin - CreatorRequest", description = "Các API dành cho Admin xử lý yêu cầu nâng cấp từ Learner lên CREATOR")
+@Tag(name = "CreatorRequest", description = "Các API gửi request nâng cấp từ Learner lên CREATOR")
 @SecurityRequirement(name = "Bearer Authentication")
-public class AdminCreatorRequestController {
+public class CreatorRequestController {
+
     private final CreatorRequestService creatorRequestService;
 
     @Operation(summary = "Lấy danh sách yêu cầu nâng cấp lên Creator đang chờ duyệt", description = "Lấy tất cả các yêu cầu đăng ký làm Creator từ Học viên đang ở trạng thái PENDING.")
@@ -33,7 +32,8 @@ public class AdminCreatorRequestController {
             @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
     })
-    @GetMapping("/creator-request/all")
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<APIResponse<List<CreatorRequestApprovalRequest>>> getAllRequestPending() {
         List<CreatorRequestApprovalRequest> requests = creatorRequestService.getAllRequestPending();
 
@@ -47,7 +47,8 @@ public class AdminCreatorRequestController {
             @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
     })
-    @PutMapping("/creator-request/{requestId}/status")
+    @PutMapping("/{requestId}/status")
+    @PreAuthorize("hasRole('ADMIN')")   
     public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> handleCreatorRequest(
             @PathVariable Long requestId,
             @RequestParam String status) {
