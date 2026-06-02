@@ -9,110 +9,6 @@ import courseService from '@/services/courseService';
 import CourseGeneralInfo from './components/CourseGeneralInfo';
 import CourseCurriculum from './components/CourseCurriculum';
 
-// Unified mock database matching CourseManagement courses list
-const mockCoursesDb = {
-  'c-1': {
-    title: 'Lập trình Spring Boot nâng cao',
-    description: 'Khóa học Java Spring Boot nâng cao tập trung vào thiết kế hệ thống, tối ưu hóa database, và bảo mật phân quyền OAuth2/JWT.',
-    modules: [
-      {
-        id: 'mod-1',
-        title: 'Giới thiệu về lập trình Java nâng cao',
-        priority: 'MEDIUM',
-        days: 7,
-        baseExp: 100,
-        speedBonusExp: 20,
-        sortOrder: 1,
-        assignment: {
-          title: 'Bài tập thực hành OOP chặng 1',
-          description: 'Yêu cầu sinh viên triển khai các lớp kế thừa và đóng gói...',
-          rubricCriteria: [
-            { criterion: 'Độ chính xác thuật toán', maxPoint: 5 },
-            { criterion: 'Tối ưu hóa Code và Đặt tên biến clean', maxPoint: 5 }
-          ]
-        },
-        lessons: [
-          { id: 'les-1', title: 'Kiến thức nền tảng', content_type: 'TOPIC_HEADER' },
-          { id: 'les-2', title: '1.1 Tổng quan về cấu trúc Spring Framework', content_type: 'VIDEO', content_url: 'https://youtube.com/...' },
-          { id: 'les-3', title: '1.2 Các annotation phổ biến (@Component, @Service)', content_type: 'ARTICLE', content_url: 'https://drive.google.com/...' }
-        ]
-      }
-    ]
-  },
-  'c-2': {
-    title: 'Cấu trúc dữ liệu và Giải thuật',
-    description: 'Lộ trình nghiên cứu các cấu trúc dữ liệu cơ bản và giải thuật tìm kiếm, sắp xếp tối ưu cho lập trình viên.',
-    modules: [
-      {
-        id: 'mod-1',
-        title: 'Các cấu trúc dữ liệu tuyến tính',
-        priority: 'HIGH',
-        days: 10,
-        baseExp: 150,
-        speedBonusExp: 30,
-        sortOrder: 1,
-        assignment: {
-          title: 'Bài tập cài đặt Stack và Queue',
-          description: 'Triển khai danh sách liên kết kép để xây dựng hàng đợi...',
-          rubricCriteria: [
-            { criterion: 'Khả năng chạy thử đúng testcase', maxPoint: 10 }
-          ]
-        },
-        lessons: [
-          { id: 'les-1', title: 'Danh sách liên kết', content_type: 'TOPIC_HEADER' },
-          { id: 'les-2', title: '1.1 Danh sách liên kết đơn và kép', content_type: 'VIDEO', content_url: 'https://youtube.com/...' }
-        ]
-      }
-    ]
-  },
-  'c-3': {
-    title: 'JS Base: Lập trình cơ bản',
-    description: 'Nhập môn lập trình Javascript cho người mới bắt đầu.',
-    modules: [
-      {
-        id: 'mod-1',
-        title: 'Cú pháp Javascript cơ bản',
-        priority: 'LOW',
-        days: 5,
-        baseExp: 50,
-        speedBonusExp: 10,
-        sortOrder: 1,
-        assignment: {
-          title: 'Bài tập biến và hàm',
-          description: 'Viết các chương trình tính toán số học cơ bản...',
-          rubricCriteria: [
-            { criterion: 'Đúng logic đầu ra', maxPoint: 5 }
-          ]
-        },
-        lessons: [
-          { id: 'les-1', title: 'Khai báo biến', content_type: 'TOPIC_HEADER' },
-          { id: 'les-2', title: '1.1 Sử dụng let, const và var', content_type: 'VIDEO', content_url: 'https://youtube.com/...' }
-        ]
-      }
-    ]
-  },
-  'c-4': {
-    title: 'NextJS - Fullstack Mastery',
-    description: 'Trở thành fullstack developer với Next.js App Router.',
-    modules: []
-  },
-  'c-5': {
-    title: 'Python cho Khoa học dữ liệu',
-    description: 'Sử dụng Python, Pandas, Numpy để phân tích dữ liệu lớn.',
-    modules: []
-  },
-  'c-6': {
-    title: 'UI/UX Design Fundamentals',
-    description: 'Các nguyên lý thiết kế trải nghiệm người dùng cơ bản.',
-    modules: []
-  },
-  'c-7': {
-    title: 'Lập trình C cơ bản (Khóa học cũ)',
-    description: 'Khóa học C cơ bản đã lỗi thời được chuyển vào kho lưu trữ.',
-    modules: []
-  }
-};
-
 export default function CreateCourse({ mode: propMode }) {
   const { id } = useParams();
   const location = useLocation();
@@ -134,48 +30,61 @@ export default function CreateCourse({ mode: propMode }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    status: 'PENDING'
   });
 
   // 2. Modules and lessons state
-  const [modules, setModules] = useState([
-    {
-      id: 'mod-1',
-      title: 'Giới thiệu về lập trình Java nâng cao',
-      priority: 'MEDIUM',
-      days: 7,
-      baseExp: 100,
-      speedBonusExp: 20,
-      sortOrder: 1,
-      assignment: {
-        title: 'Bài tập thực hành OOP chặng 1',
-        description: 'Yêu cầu sinh viên triển khai các lớp kế thừa và đóng gói...',
-        rubricCriteria: [
-          { criterion: 'Độ chính xác thuật toán', maxPoint: 5 },
-          { criterion: 'Tối ưu hóa Code và Đặt tên biến clean', maxPoint: 5 }
-        ]
-      },
-      lessons: [
-        { id: 'les-1', title: 'Kiến thức nền tảng', content_type: 'TOPIC_HEADER' },
-        { id: 'les-2', title: '1.1 Tổng quan về cấu trúc Spring Framework', content_type: 'VIDEO', content_url: 'https://youtube.com/...' },
-        { id: 'les-3', title: '1.2 Các annotation phổ biến (@Component, @Service)', content_type: 'ARTICLE', content_url: 'https://drive.google.com/...' }
-      ]
-    }
-  ]);
+  const [modules, setModules] = useState([]);
 
-  // Load course details from mock database if in EDIT or VIEW mode
+  // Load course details from API if in EDIT or VIEW mode
   useEffect(() => {
-    if ((resolvedMode === 'EDIT' || resolvedMode === 'VIEW') && id && mockCoursesDb[id]) {
-      const courseData = mockCoursesDb[id];
-      setFormData({
-        title: courseData.title || '',
-        description: courseData.description || '',
-      });
-      if (courseData.modules && courseData.modules.length > 0) {
-        setModules(courseData.modules);
+    const loadCourseDetails = async () => {
+      if ((resolvedMode === 'EDIT' || resolvedMode === 'VIEW') && id) {
+        try {
+          const courseData = await courseService.getCourseById(id);
+          setFormData({
+            title: courseData.title || '',
+            description: courseData.description || '',
+            status: courseData.status || 'DRAFT'
+          });
+
+          if (courseData.modules && courseData.modules.length > 0) {
+            const mappedModules = courseData.modules.map(mod => ({
+              id: mod.id?.toString() || `mod-${Date.now()}-${Math.random()}`,
+              title: mod.title,
+              priority: mod.priority || 'LOW',
+              days: mod.days || 7,
+              baseExp: mod.baseExp || 50,
+              speedBonusExp: mod.speedBonusExp || 10,
+              sortOrder: mod.sortOrder,
+              assignments: mod.assignments ? {
+                id: mod.assignments.id,
+                title: mod.assignments.title || '',
+                description: mod.assignments.description || '',
+                rubricCriteria: mod.assignments.rubricCriteria || []
+              } : { title: '', description: '', rubricCriteria: [] },
+              lessons: (mod.lessons || []).map(lesson => ({
+                id: lesson.id?.toString() || `les-${Date.now()}-${Math.random()}`,
+                title: lesson.title,
+                content_type: lesson.contentType,
+                content_url: lesson.contentUrl,
+                sortOrder: lesson.sortOrder
+              }))
+            }));
+            setModules(mappedModules);
+          } else {
+            setModules([]);
+          }
+        } catch (error) {
+          console.error('Error loading course details:', error);
+          toast.error('Lỗi khi tải chi tiết khóa học!');
+        }
       } else {
         setModules([]);
       }
-    }
+    };
+
+    loadCourseDetails();
   }, [id, resolvedMode]);
 
   const handleCreateCourse = async () => {
@@ -188,7 +97,26 @@ export default function CreateCourse({ mode: propMode }) {
       const payload = {
         title: formData.title,
         description: formData.description,
-        modules: modules
+        status: 'PENDING',
+        modules: modules.map((mod, modIdx) => ({
+          title: mod.title,
+          priority: mod.priority,
+          days: mod.days,
+          baseExp: mod.baseExp,
+          speedBonusExp: mod.speedBonusExp,
+          sortOrder: modIdx + 1,
+          assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+            title: mod.assignments.title,
+            description: mod.assignments.description,
+            rubricCriteria: mod.assignments.rubricCriteria
+          } : null,
+          lessons: (mod.lessons || []).map((les, lesIdx) => ({
+            title: les.title,
+            contentType: les.content_type,
+            contentUrl: les.content_type === 'TEXT' ? 'N/A' : (les.content_url || 'N/A'),
+            sortOrder: lesIdx + 1
+          }))
+        }))
       };
 
       console.log("Create Course Payload:", JSON.stringify(payload, null, 2));
@@ -198,17 +126,51 @@ export default function CreateCourse({ mode: propMode }) {
       navigate('/creator/courses');
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi tạo khóa học!");
+      toast.error(error.message || "Đã xảy ra lỗi khi tạo khóa học!");
     }
   };
 
-  const handleUpdateCourse = () => {
+  const handleUpdateCourse = async () => {
     if (!formData.title.trim()) {
       toast.error("Vui lòng nhập tên khóa học!");
       return;
     }
-    toast.success(`Đã cập nhật khóa học "${formData.title}" thành công!`);
-    navigate('/creator/courses');
+
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        status: formData.status || 'DRAFT',
+        modules: modules.map((mod, modIdx) => ({
+          title: mod.title,
+          priority: mod.priority,
+          days: mod.days,
+          baseExp: mod.baseExp,
+          speedBonusExp: mod.speedBonusExp,
+          sortOrder: modIdx + 1,
+          assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+            title: mod.assignments.title,
+            description: mod.assignments.description,
+            rubricCriteria: mod.assignments.rubricCriteria
+          } : null,
+          lessons: (mod.lessons || []).map((les, lesIdx) => ({
+            title: les.title,
+            contentType: les.content_type,
+            contentUrl: les.content_type === 'TEXT' ? 'N/A' : (les.content_url || 'N/A'),
+            sortOrder: lesIdx + 1
+          }))
+        }))
+      };
+
+      console.log("Update Course Payload:", JSON.stringify(payload, null, 2));
+
+      await courseService.updateCourse(id, payload);
+      toast.success("Cập nhật khóa học thành công!");
+      navigate('/creator/courses');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Đã xảy ra lỗi khi cập nhật khóa học!");
+    }
   };
 
   const [activeConfig, setActiveConfig] = useState(null); // { moduleId, type: 'VIDEO' | 'ARTICLE' }
@@ -242,7 +204,7 @@ export default function CreateCourse({ mode: propMode }) {
       days: 7,
       baseExp: 50,
       speedBonusExp: 10,
-      assignment: { title: 'Bài tập thực hành tổng kết tuần', description: '', rubricCriteria: [] },
+      assignments: { title: 'Bài tập thực hành tổng kết tuần', description: '', rubricCriteria: [] },
       lessons: [],
       sortOrder: modules.length + 1,
     }]);
@@ -376,10 +338,10 @@ export default function CreateCourse({ mode: propMode }) {
   // Breadcrumb and Header strings based on operational mode
   const breadcrumbText = resolvedMode === 'CREATE' ? 'Tạo khóa học mới' : resolvedMode === 'EDIT' ? 'Chỉnh sửa khóa học' : 'Chi tiết khóa học';
   const headerTitleText = resolvedMode === 'CREATE' ? 'Tạo Khóa Học Mới' : resolvedMode === 'EDIT' ? 'Chỉnh Sửa Khóa Học' : 'Chi Tiết Khóa Học (Xem)';
-  const headerDescText = resolvedMode === 'CREATE' 
-    ? 'Thiết kế lộ trình học cặp đôi động đồng bộ theo mô hình tuần tự.' 
-    : resolvedMode === 'EDIT' 
-      ? 'Chỉnh sửa cấu trúc lộ trình bài học và tiêu chí rubric chấm chéo.' 
+  const headerDescText = resolvedMode === 'CREATE'
+    ? 'Thiết kế lộ trình học cặp đôi động đồng bộ theo mô hình tuần tự.'
+    : resolvedMode === 'EDIT'
+      ? 'Chỉnh sửa cấu trúc lộ trình bài học và tiêu chí rubric chấm chéo.'
       : 'Thông tin học liệu lý thuyết và bài tập tự luận của khóa học.';
 
   return (

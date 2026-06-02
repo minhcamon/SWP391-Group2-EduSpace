@@ -3,7 +3,7 @@ import api from '@/lib/axios';
 const courseService = {
   createCourse: async (courseData) => {
     try {
-      const response = await api.post('/courses/create', courseData);
+      const response = await api.post('/course/create-course', courseData);
       return response.data.data;
     } catch (error) {
       console.error('Create course error at CourseService:', error);
@@ -21,6 +21,18 @@ const courseService = {
       const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lưu bản nháp!';
       throw new Error(errorMsg);
     }
+  },
+
+  getCourseByCreator: async () => {
+    try {
+      const response = await api.get('/course/my-courses');  
+      return response.data.data;
+    } catch (error) {
+      console.error('Get Course by Creator ID error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lấy khóa học theo người tạo!';
+      throw new Error(errorMsg);
+    }
+
   },
 
   getPublishedCourses: async () => {
@@ -63,6 +75,28 @@ const courseService = {
     } catch (error) {
       console.error('Reject Courses error at CourseService:', error);
       const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi thay đổi trạng thái khóa học thành từ chối!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  getCourseById: async (courseId) => {
+    try {
+      const response = await api.get(`/course/${courseId}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Get Course details error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi tải chi tiết khóa học!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  updateCourse: async (courseId, courseData) => {
+    try {
+      const response = await api.put(`/course/${courseId}`, courseData);
+      return response.data.data;
+    } catch (error) {
+      console.error('Update Course error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi cập nhật khóa học!';
       throw new Error(errorMsg);
     }
   }
