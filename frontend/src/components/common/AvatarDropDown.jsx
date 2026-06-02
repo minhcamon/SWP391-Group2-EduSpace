@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router";
 import { roleMapping } from "@/lib/data";
 import { User, Shield, BookOpen, LogOut } from "lucide-react";
+import Avatar from "@/components/layouts/Avatar";
 
 const AvatarDropDown = () => {
     const { user, logout } = useAuth();
@@ -11,13 +12,10 @@ const AvatarDropDown = () => {
         2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
             {/* User Profile Summary Header */}
             <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
-                <img
-                    src={
-                        user?.avatarUrl ||
-                        "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                    }
+                <Avatar
+                    src={user?.avatarUrl}
                     alt="User Avatar"
-                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                    className="w-10 h-10 border border-slate-200 shrink-0"
                 />
                 <div className="overflow-hidden">
                     <p className="font-bold text-neutral-dark text-sm truncate">

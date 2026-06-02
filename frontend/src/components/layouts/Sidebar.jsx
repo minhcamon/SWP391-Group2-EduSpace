@@ -10,6 +10,7 @@ import {
     Form,
 } from "lucide-react";
 import Logo from "../common/Logo";
+import Avatar from "./Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
 
@@ -182,13 +183,10 @@ const Sidebar = () => {
             <div className="p-4 border-t border-gray-100 bg-gray-50/50">
                 <div className="flex items-center gap-3 p-2 mb-3 rounded-xl">
                     <Link to="/profile">
-                        <img
-                            src={
-                                user.avatarUrl ||
-                                "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                            }
+                        <Avatar
+                            src={user.avatarUrl}
                             alt="Avatar Admin"
-                            className="w-12 h-12 p-0.5 hover:cursor-pointer flex items-center justify-center rounded-full border-2 border-gray-100 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                            className="w-12 h-12 p-0.5 hover:cursor-pointer flex items-center justify-center border-2 border-gray-100 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                         />
                     </Link>
                     <div className="grow min-w-0">
