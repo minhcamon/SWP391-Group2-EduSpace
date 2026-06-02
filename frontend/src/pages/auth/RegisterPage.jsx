@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
 import { toast } from "sonner";
 import Logo from "@/components/common/Logo";
+import { runWithLoading } from "@/utils/utils";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -38,15 +39,16 @@ const RegisterForm = () => {
             return toast.error("Mật khẩu xác nhận không khớp!");
         }
 
-        setIsSubmitting(false);
-        try {
-            const successMessage = await AuthService.register(formData);
-            toast.success(successMessage || "Đăng ký tài khoản thành công!");
-            navigate("/login");
-        } catch (error) {
-            console.error("Registration failed: ", error);
-            toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");
-        }
+        await runWithLoading(setIsSubmitting, async () => {
+            try {
+                const successMessage = await AuthService.register(formData);
+                toast.success(successMessage || "Đăng ký tài khoản thành công!");
+                navigate("/login");
+            } catch (error) {
+                console.error("Registration failed: ", error);
+                toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");
+            }
+        });
     };
 
     return (
@@ -238,7 +240,7 @@ const RegisterForm = () => {
                                 className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-md font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
                                 type="submit"
                             >
-                                Tạo Tài Khoản
+                                {isSubmitting ? "Đang xử lý..." : "Tạo Tài Khoản"}
                             </button>
                         </div>
                     </form>
