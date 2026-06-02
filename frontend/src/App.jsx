@@ -77,12 +77,20 @@ function App() {
                             element={<CourseDetail />}
                         ></Route>
                         <Route
+                            path="/creator/courses/:id/edit"
+                            element={<CourseCreate mode="EDIT" />}
+                        ></Route>
+                        <Route
+                            path="/creator/courses/:id/view"
+                            element={<CourseCreate mode="VIEW" />}
+                        ></Route>
+                        <Route
                             path="/creator/analytics"
                             element={<CreatorAnalytics />}
                         ></Route>
                         <Route
                             path="/creator/create-course"
-                            element={<CourseCreate />}
+                            element={<CourseCreate mode="CREATE" />}
                         ></Route>
                     </Route>
 
