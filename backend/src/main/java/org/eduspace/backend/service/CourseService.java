@@ -128,7 +128,7 @@ public class CourseService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .creator(creator)
-                .status(CourseStatus.DRAFT)
+                .status(CourseStatus.valueOf(request.getStatus()))
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
                 .build();
