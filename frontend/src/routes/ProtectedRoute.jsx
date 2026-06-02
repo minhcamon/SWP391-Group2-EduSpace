@@ -1,15 +1,26 @@
-import { Navigate } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { Outlet } from "react-router";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ allowedRoles }) => {
     const { user, isLoading } = useAuth();
+
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
+                <div className="text-sm font-medium text-slate-500 animate-pulse">
+                    Đang tải dữ liệu EduSpace...
+                </div>
+            </div>
+        );
     }
 
     if (!user) {
-        return <Navigate to="/login" replace />; // Redirect to login page if not authenticated
+        return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+        console.warn(`Truy cập bị từ chối: Role ${user.role} không có quyền.`);
+        return <Navigate to="/*" replace />;
     }
 
     return <Outlet />;

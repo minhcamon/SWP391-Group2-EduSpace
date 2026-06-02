@@ -35,54 +35,57 @@ function App() {
                         path="/oauth2/redirect"
                         element={<OAuth2RedirectHandler />}
                     ></Route>
-                    <Route path="/profile" element={<UserProfile />}></Route>
                     <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
                     <Route
                         path="/courses"
                         element={<ListCoursesPage />}
                     ></Route>
-                    <Route path="*" element={<ErrorPage />}></Route>
 
-                    <Route
-                        path="/leaderboard"
-                        element={<Leaderboard />}
-                    ></Route>
+                    {/* Authenticated user routes */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/profile" element={<UserProfile />}></Route>
+                        <Route path="/leaderboard" element={<Leaderboard />}></Route>
+                    </Route>
 
                     {/* admin route */}
-                    <Route path="/admin" element={<AdminHomePage />}></Route>
-                    <Route
-                        path="/admin/creator-requests"
-                        element={<ManageRequestPage />}
-                    ></Route>
-                    <Route
-                        path="/admin/courses-management"
-                        element={<ManageCoursePage />}
-                    ></Route>
+                    <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+                        <Route path="/admin" element={<AdminHomePage />}></Route>
+                        <Route
+                            path="/admin/creator-requests"
+                            element={<ManageRequestPage />}
+                        ></Route>
+                        <Route
+                            path="/admin/courses-management"
+                            element={<ManageCoursePage />}
+                        ></Route>
+                    </Route>
 
                     {/* creator route */}
-                    <Route
-                        path="/creator"
-                        element={<CreatorHomePage />}
-                    ></Route>
-                    <Route
-                        path="/creator/courses"
-                        element={<CourseManagement />}
-                    ></Route>
-                    <Route
-                        path="/creator/courses/:id"
-                        element={<CourseDetail />}
-                    ></Route>
-                    <Route
-                        path="/creator/analytics"
-                        element={<CreatorAnalytics />}
-                    ></Route>
-                    <Route
-                        path="/creator/create-course"
-                        element={<CourseCreate />}
-                    ></Route>
+                    <Route element={<ProtectedRoute allowedRoles={["CREATOR"]} />}>
+                        <Route
+                            path="/creator"
+                            element={<CreatorHomePage />}
+                        ></Route>
+                        <Route
+                            path="/creator/courses"
+                            element={<CourseManagement />}
+                        ></Route>
+                        <Route
+                            path="/creator/courses/:id"
+                            element={<CourseDetail />}
+                        ></Route>
+                        <Route
+                            path="/creator/analytics"
+                            element={<CreatorAnalytics />}
+                        ></Route>
+                        <Route
+                            path="/creator/create-course"
+                            element={<CourseCreate />}
+                        ></Route>
+                    </Route>
 
-                    {/* Protected Route */}
-                    <Route element={<ProtectedRoute />}></Route>
+                    <Route path="*" element={<ErrorPage />}></Route>
+
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
