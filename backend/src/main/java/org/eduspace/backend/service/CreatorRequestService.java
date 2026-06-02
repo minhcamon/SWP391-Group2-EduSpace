@@ -22,14 +22,17 @@ public class CreatorRequestService {
     private final CreatorRequestRepository creatorRequestRepository;
     private final UserRepository userRepository;
 
-    public List<CreatorRequestApprovalRequest> getAllRequestPending(){
+    public List<CreatorRequestApprovalRequest> getAllRequestPending() {
         List<CreatorRequest> requests = creatorRequestRepository.findByStatus(CreatorRequestStatus.PENDING);
 
         return requests.stream()
-                .map(request->CreatorRequestApprovalRequest.builder()
-                        .learnerId(request.getId())
+                .map(request -> CreatorRequestApprovalRequest.builder()
+                        .requestId(request.getId())
+                        .learnerId(request.getLearner().getId())
                         .learnerName(request.getLearner().getFullName())
+                        .learnerEmail(request.getLearner().getEmail())
                         .documentUrl(request.getDocumentUrl())
+                        .status(request.getStatus().name())
                         .build())
                 .collect(Collectors.toList());
 
@@ -73,20 +76,20 @@ public class CreatorRequestService {
 
     @Transactional
     public void createCreatorRequest(LearnerSendCreatorRequestDto requestDto, Long learnerId) {
-        
+
         User learner = userRepository.findById(learnerId)
                 .orElseThrow(() -> new RuntimeException("User (Learner) not found with ID: " + learnerId));
 
-        boolean hasPendingRequest = creatorRequestRepository.existsByLearnerAndStatus(learner, CreatorRequestStatus.PENDING);
+        boolean hasPendingRequest = creatorRequestRepository.existsByLearnerAndStatus(learner,
+                CreatorRequestStatus.PENDING);
         if (hasPendingRequest) {
             throw new RuntimeException("Bạn đã có một yêu cầu đang chờ duyệt. Không thể gửi thêm!");
         }
 
-        
         CreatorRequest newRequest = CreatorRequest.builder()
                 .learner(learner)
-                .status(CreatorRequestStatus.PENDING) 
-                .documentUrl(requestDto.getReason()) 
+                .status(CreatorRequestStatus.PENDING)
+                .documentUrl(requestDto.getReason())
                 .build();
 
         creatorRequestRepository.save(newRequest);
