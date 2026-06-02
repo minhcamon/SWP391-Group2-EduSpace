@@ -20,7 +20,7 @@ public class ClassTimeline {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "module_id")
-    private Module module;
+    private CourseModule module;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
