@@ -9,12 +9,15 @@ import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.UserStatus;
 import org.eduspace.backend.repository.UserRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -47,13 +50,28 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             if (userId != null) {
                 User user = userRepository.findById(userId).orElse(null);
 
-                if (user != null && user.getStatus() != UserStatus.ACTIVE) {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter()
-                            .write("{\"code\": 403, \"message\": \"Your account has been banned or disabled!\"}");
-                    return;
+                if(user != null){
+                    if(user.getStatus() != UserStatus.ACTIVE){
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter()
+                                .write("{\"code\": 403, \"message\": \"Your account has been banned or disabled!\"}");
+                        return;
+                    }
+
+                    String realRole = user.getRole().name();
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_"+realRole));
+
+                    JwtAuthenticationToken updatedAuth = new JwtAuthenticationToken(jwt,authorities);
+                    SecurityContextHolder.getContext().setAuthentication(updatedAuth);
                 }
+//                if (user != null && user.getStatus() != UserStatus.ACTIVE) {
+//                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//                    response.setContentType("application/json;charset=UTF-8");
+//                    response.getWriter()
+//                            .write("{\"code\": 403, \"message\": \"Your account has been banned or disabled!\"}");
+//                    return;
+//                }
             }
         }
 
