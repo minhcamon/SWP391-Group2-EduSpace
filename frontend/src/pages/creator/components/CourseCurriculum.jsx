@@ -136,7 +136,7 @@ export default function CourseCurriculum({
                                         className="outline-none"
                                       >
                                         <div
-                                          className={`${lesson.content_type === 'TOPIC_HEADER'
+                                          className={`${lesson.content_type === 'TEXT'
                                             ? 'ml-0 font-bold bg-bg-card/60 border-border-light/40'
                                             : mode === 'VIEW' ? 'ml-0 bg-white' : 'ml-6 bg-white shadow-2xs hover:border-primary/30'
                                             } flex items-center gap-4 p-3.5 border rounded-xl group ${snapshot.isDragging
@@ -144,7 +144,7 @@ export default function CourseCurriculum({
                                               : 'border-border-light/20 transition-colors'
                                             }`}
                                         >
-                                          {lesson.content_type === 'TOPIC_HEADER' ? (
+                                          {lesson.content_type === 'TEXT' ? (
                                             <>
                                               <span className="w-1.5 h-3.5 bg-primary rounded-sm shrink-0"></span>
                                               <input
@@ -222,15 +222,15 @@ export default function CourseCurriculum({
                                         <button onClick={() => setActiveConfig(null)}><X size={14} className="text-gray-400" /></button>
                                       </div>
 
-                                      <div className={activeConfig.type === 'TOPIC_HEADER' ? "block" : "grid grid-cols-2 gap-3"}>
+                                      <div className={activeConfig.type === 'TEXT' ? "block" : "grid grid-cols-2 gap-3"}>
                                         <input
                                           type="text"
-                                          placeholder={activeConfig.type === 'TOPIC_HEADER' ? "Tên Chủ đề nhỏ..." : "Tiêu đề bài học..."}
+                                          placeholder={activeConfig.type === 'TEXT' ? "Tên Chủ đề nhỏ..." : "Tiêu đề bài học..."}
                                           value={inlineData.title}
                                           onChange={(e) => setInlineData({ ...inlineData, title: e.target.value })}
                                           className="w-full p-2 text-xs bg-white border border-border-light/40 rounded-lg outline-none"
                                         />
-                                        {activeConfig.type !== 'TOPIC_HEADER' && (
+                                        {activeConfig.type !== 'TEXT' && (
                                           <input
                                             type="text"
                                             placeholder="Link URL học liệu..."
@@ -251,10 +251,10 @@ export default function CourseCurriculum({
                                       <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'VIDEO' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
                                         <PlayCircle className="text-blue-500 text-sm" size={14} /> + Thêm Video
                                       </button>
-                                      <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'ARTICLE' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
+                                      <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'DOCUMENT' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
                                         <FileText className="text-secondary text-sm" size={14} /> + Thêm Bài Viết
                                       </button>
-                                      <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'TOPIC_HEADER' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
+                                      <button onClick={() => setActiveConfig({ moduleId: mod.id, type: 'TEXT' })} className="flex-1 flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border-light rounded-xl text-gray-400 text-xs font-bold hover:border-primary hover:text-primary transition-all cursor-pointer">
                                         <FolderPlus className="text-primary text-sm" size={14} /> + Thêm Chủ Đề
                                       </button>
                                     </div>
@@ -278,16 +278,16 @@ export default function CourseCurriculum({
                                 type="text"
                                 className="col-span-4 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs font-bold outline-none focus:border-primary disabled:opacity-75 disabled:cursor-not-allowed"
                                 placeholder="Tên bài tập..."
-                                value={mod.assignment.title}
-                                onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, title: e.target.value } } : m))}
+                                value={mod.assignments.title}
+                                onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignments: { ...m.assignments, title: e.target.value } } : m))}
                                 disabled={mode === 'VIEW'}
                               />
                               <input
                                 type="text"
                                 className="col-span-8 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs outline-none focus:border-primary disabled:opacity-75 disabled:cursor-not-allowed"
                                 placeholder="Yêu cầu hoặc link tài liệu bài tập..."
-                                value={mod.assignment.description}
-                                onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, description: e.target.value } } : m))}
+                                value={mod.assignments.description}
+                                onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignments: { ...m.assignments, description: e.target.value } } : m))}
                                 disabled={mode === 'VIEW'}
                               />
                             </div>
@@ -295,7 +295,7 @@ export default function CourseCurriculum({
                             <div className="bg-white/85 p-3 rounded-lg border border-tertiary/10 space-y-3">
                               <span className="text-[10px] font-bold text-gray-400 block">Tiêu chí chấm điểm chéo (Rubric):</span>
                               <div className="flex flex-col gap-2">
-                                {mod.assignment.rubricCriteria.map((rub, rIdx) => (
+                                {mod.assignments.rubricCriteria.map((rub, rIdx) => (
                                   <div key={rIdx} className="flex items-center gap-3 p-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-600 font-bold w-full">
                                     <input
                                       type="text"
@@ -305,11 +305,11 @@ export default function CourseCurriculum({
                                       onChange={(e) => {
                                         setModules(modules.map(m => {
                                           if (m.id === mod.id) {
-                                            const updatedRubrics = [...m.assignment.rubricCriteria];
+                                            const updatedRubrics = [...m.assignments.rubricCriteria];
                                             updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], criterion: e.target.value };
                                             return {
                                               ...m,
-                                              assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
+                                              assignments: { ...m.assignments, rubricCriteria: updatedRubrics }
                                             };
                                           }
                                           return m;
@@ -327,11 +327,11 @@ export default function CourseCurriculum({
                                         onChange={(e) => {
                                           setModules(modules.map(m => {
                                             if (m.id === mod.id) {
-                                              const updatedRubrics = [...m.assignment.rubricCriteria];
+                                              const updatedRubrics = [...m.assignments.rubricCriteria];
                                               updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], maxPoint: parseInt(e.target.value) || 5 };
                                               return {
                                                 ...m,
-                                                assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
+                                                assignments: { ...m.assignments, rubricCriteria: updatedRubrics }
                                               };
                                             }
                                             return m;
@@ -345,7 +345,7 @@ export default function CourseCurriculum({
                                       <button
                                         onClick={() => {
                                           setModules(modules.map(m => m.id === mod.id ? {
-                                            ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
+                                            ...m, assignments: { ...m.assignments, rubricCriteria: m.assignments.rubricCriteria.filter((_, i) => i !== rIdx) }
                                           } : m));
                                         }}
                                         className="text-gray-400 hover:text-red-500 shrink-0 cursor-pointer p-1"
@@ -360,9 +360,9 @@ export default function CourseCurriculum({
                                     onClick={() => {
                                       setModules(modules.map(m => m.id === mod.id ? {
                                         ...m,
-                                        assignment: {
-                                          ...m.assignment,
-                                          rubricCriteria: [...m.assignment.rubricCriteria, { criterion: '', maxPoint: 5 }]
+                                        assignments: {
+                                          ...m.assignments,
+                                          rubricCriteria: [...m.assignments.rubricCriteria, { criterion: '', maxPoint: 5 }]
                                         }
                                       } : m));
                                     }}
