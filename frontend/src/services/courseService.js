@@ -25,7 +25,7 @@ const courseService = {
 
   getPublishedCourses: async () => {
     try {
-      const response = await api.get('/user/courses');
+      const response = await api.get('/course/my-courses');
       return response.data.data;
     } catch (error) {
       console.error('Get Published Courses error at CourseService:', error);

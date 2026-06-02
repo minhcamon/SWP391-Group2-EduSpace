@@ -15,21 +15,30 @@
     --color-tertiary: #75BB47;
 
     /* màu văn bản (Neutral Text) */
-    --color-neutral-dark: #1b1c1c;      /* màu text chính, tiêu đề (#1b1c1c) */
-    --color-neutral-medium: #464555;    /* màu text phụ, mô tả (#464555) */
-    --color-neutral-light: #8e8d99;     /* màu text disabled, placeholder */
+    --color-neutral-dark: #1b1c1c;
+    /* màu text chính, tiêu đề (#1b1c1c) */
+    --color-neutral-medium: #464555;
+    /* màu text phụ, mô tả (#464555) */
+    --color-neutral-light: #8e8d99;
+    /* màu text disabled, placeholder */
 
     /* màu nền và các bề mặt (Surfaces & Backgrounds) */
-    --color-bg-base: #fbf9f8;           /* màu nền chính toàn trang */
-    --color-bg-card: #f6f3f2;           /* màu nền card, form input (#f6f3f2) */
-    --color-bg-sidebar: #f0eded;        /* màu nền sidebar (#f0eded) */
+    --color-bg-base: #fbf9f8;
+    /* màu nền chính toàn trang */
+    --color-bg-card: #f6f3f2;
+    /* màu nền card, form input (#f6f3f2) */
+    --color-bg-sidebar: #f0eded;
+    /* màu nền sidebar (#f0eded) */
 
     /* màu cho đường viền (Borders) */
-    --color-border-light: #c7c4d8;      /* màu đường kẻ, viền card (#c7c4d8) */
+    --color-border-light: #c7c4d8;
+    /* màu đường kẻ, viền card (#c7c4d8) */
 
     /* trạng thái tương tác & hiệu ứng (Interactive States) */
-    --color-hover-light: #e4e2e1;       /* màu hover nền nhẹ (#e4e2e1) */
-    --color-active-light: #eae8e7;      /* màu active nền nhẹ (#eae8e7) */
+    --color-hover-light: #e4e2e1;
+    /* màu hover nền nhẹ (#e4e2e1) */
+    --color-active-light: #eae8e7;
+    /* màu active nền nhẹ (#eae8e7) */
 
     /* màu trạng thái hệ thống (Semantic Colors) */
     --color-success: #10b981;
@@ -44,4 +53,13 @@ body {
     background-color: var(--color-bg-base);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+#nprogress .bar {
+    background: var(--color-primary) !important;
+    height: 4px !important;
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px var(--color-primary), 0 0 5px var(--color-primary) !important;
 }

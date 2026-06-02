@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AuthService from "@/services/authService";
 import { toast } from "sonner";
+import { runWithLoading } from "@/utils/utils";
 
 const CreatorRegisterModal = ({ isOpen, onClose, onSuccess }) => {
     const [portfolioUrl, setPortfolioUrl] = useState("");
@@ -14,20 +15,19 @@ const CreatorRegisterModal = ({ isOpen, onClose, onSuccess }) => {
             return toast.error("Vui lòng cung cấp link tài liệu đăng ký!");
         }
 
-        setIsSubmitting(true);
-        try {
-            // Only send portfolioUrl since database structure only needs this link
-            await AuthService.registerCreator({ portfolioUrl: portfolioUrl.trim() });
-            toast.success("Hồ sơ đăng ký của bạn đã được gửi thành công!");
-            setPortfolioUrl("");
-            if (onSuccess) onSuccess();
-            onClose();
-        } catch (error) {
-            console.error("Register creator error:", error);
-            toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");
-        } finally {
-            setIsSubmitting(false);
-        }
+        await runWithLoading(setIsSubmitting, async () => {
+            try {
+                // Only send portfolioUrl since database structure only needs this link
+                await AuthService.registerCreator({ portfolioUrl: portfolioUrl.trim() });
+                toast.success("Hồ sơ đăng ký của bạn đã được gửi thành công!");
+                setPortfolioUrl("");
+                if (onSuccess) onSuccess();
+                onClose();
+            } catch (error) {
+                console.error("Register creator error:", error);
+                toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");
+            }
+        });
     };
 
     return (
