@@ -10,7 +10,7 @@ import org.eduspace.backend.enums.ModulePriority;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Module {
+public class CourseModule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

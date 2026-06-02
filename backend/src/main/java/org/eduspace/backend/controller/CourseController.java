@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.eduspace.backend.dto.request.CreateCourseRequest;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.response.CourseResponse;
 import org.eduspace.backend.security.SecurityUtil;
@@ -77,7 +78,7 @@ public class CourseController {
                                                 courseService.rejectCourse(id)));
         }
 
-        // CREATOR
+        // ---------------CREATOR-----------------
         @Operation(summary = "Lấy danh sách khóa học của tôi (CREATOR)", description = "Lấy danh sách toàn bộ các khóa học do Creator hiện tại tạo và quản lý.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
@@ -94,6 +95,25 @@ public class CourseController {
                 return ResponseEntity.ok(APIResponse.success("Successfull retrieved my courses", courses));
         }
 
+        @Operation(summary = "Tạo khóa học (CREATOR)", description = "Tạo một khóa học mới do Creator hiện tại tạo.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Tạo khóa học thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role CREATOR)")
+        })
+        @PostMapping("/create-course")
+        @PreAuthorize("hasRole('CREATOR')")
+        public ResponseEntity<APIResponse<Long>> createCourse(
+                @RequestBody CreateCourseRequest request
+        ) {
+                Long creatorId = SecurityUtil.getCurrentUserId();  
+                Long courseId = courseService.createCourse(request, creatorId);
+                
+                return ResponseEntity.ok(
+                        APIResponse.success("Course created successfully", courseId)
+                );
+        }
+
         // Public
         @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
         @ApiResponses(value = {
@@ -105,4 +125,5 @@ public class CourseController {
                 return ResponseEntity.ok(
                                 APIResponse.success("Successfully fetched courses", courses));
         }
+
 }
