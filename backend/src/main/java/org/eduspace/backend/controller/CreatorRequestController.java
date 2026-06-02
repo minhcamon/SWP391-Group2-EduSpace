@@ -5,11 +5,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import org.eduspace.backend.dto.request.CreatorRequestApprovalRequest;
-import org.eduspace.backend.dto.request.LearnerSendCreatorRequestDto;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
@@ -42,22 +40,39 @@ public class CreatorRequestController {
                                 APIResponse.success("Successfull Retrieve All Pending Creator's Requests", requests));
         }
 
-        @Operation(summary = "Xử lý yêu cầu nâng cấp làm Creator (ADMIN)", description = "Admin phê duyệt (APPROVED) hoặc từ chối (REJECTED) yêu cầu của Học viên.")
+        @Operation(summary = "Xử lý yêu cầu đồng ý làm Creator (ADMIN)", description = "Admin phê duyệt (APPROVED) yêu cầu của Học viên.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Xử lý yêu cầu thành công"),
                         @ApiResponse(responseCode = "400", description = "ID yêu cầu không hợp lệ hoặc trạng thái xử lý không đúng định dạng (APPROVED/REJECTED)"),
                         @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
                         @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
         })
-        @PutMapping("/{requestId}/status")
+        @PutMapping("/{id}/approved")
         @PreAuthorize("hasRole('ADMIN')")
-        public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> handleCreatorRequest(
-                        @PathVariable Long requestId,
-                        @RequestParam String status) {
+        public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> approveCreatorRequest(
+                        @PathVariable Long id) {
                 Long adminId = SecurityUtil.getCurrentUserId();
 
-                CreatorRequestApprovalResponse response = creatorRequestService.approveLearnerToCreator(requestId,
-                                status,
+                CreatorRequestApprovalResponse response = creatorRequestService.approveLearnerToCreator(id,
+                                adminId);
+
+                return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));
+        }
+
+        @Operation(summary = "Xử lý yêu cầu từ chối làm Creator (ADMIN)", description = "Admin phê duyệt (REJECTED) yêu cầu của Học viên.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Xử lý yêu cầu thành công"),
+                        @ApiResponse(responseCode = "400", description = "ID yêu cầu không hợp lệ hoặc trạng thái xử lý không đúng định dạng (APPROVED/REJECTED)"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
+        })
+        @PutMapping("/{id}/rejected")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> rejectCreatorRequest(
+                        @PathVariable Long id) {
+                Long adminId = SecurityUtil.getCurrentUserId();
+
+                CreatorRequestApprovalResponse response = creatorRequestService.rejectLearnerToCreator(id,
                                 adminId);
 
                 return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));

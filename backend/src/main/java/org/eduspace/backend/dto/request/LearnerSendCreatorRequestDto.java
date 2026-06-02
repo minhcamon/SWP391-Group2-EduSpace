@@ -1,6 +1,5 @@
 package org.eduspace.backend.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
