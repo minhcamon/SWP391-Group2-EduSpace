@@ -3,6 +3,7 @@ import { Bell, Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
 import AvatarDropDown from "../common/AvatarDropDown";
+import Avatar from "./Avatar";
 import Logo from "../common/Logo";
 
 const Header = () => {
@@ -87,13 +88,10 @@ const Header = () => {
                                     onClick={() => setShowDropDown(!showDropDown)}
                                     className="hover:cursor-pointer flex items-center justify-center rounded-full p-0.5 border border-slate-200 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                                 >
-                                    <img
-                                        src={
-                                            user.avatarUrl ||
-                                            "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-                                        }
+                                    <Avatar
+                                        src={user.avatarUrl}
                                         alt="User Avatar"
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        className="w-8 h-8"
                                     />
                                 </button>
                                 {showDropDown && (
