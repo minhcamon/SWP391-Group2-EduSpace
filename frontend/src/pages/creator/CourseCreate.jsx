@@ -130,6 +130,48 @@ export default function CreateCourse({ mode: propMode }) {
     }
   };
 
+  const handleSaveCourse = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Vui lòng nhập tên khóa học!");
+      return;
+    }
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        status: 'DRAFT',
+        modules: modules.map((mod, modIdx) => ({
+          title: mod.title,
+          priority: mod.priority,
+          days: mod.days,
+          baseExp: mod.baseExp,
+          speedBonusExp: mod.speedBonusExp,
+          sortOrder: modIdx + 1,
+          assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+            title: mod.assignments.title,
+            description: mod.assignments.description,
+            rubricCriteria: mod.assignments.rubricCriteria
+          } : null,
+          lessons: (mod.lessons || []).map((les, lesIdx) => ({
+            title: les.title,
+            contentType: les.content_type,
+            contentUrl: les.content_type === 'TEXT' ? 'N/A' : (les.content_url || 'N/A'),
+            sortOrder: lesIdx + 1
+          }))
+        }))
+      };
+
+      console.log("Save Course Payload:", JSON.stringify(payload, null, 2));
+
+      await courseService.createCourse(payload);
+      toast.success("Lưu bản nháp khóa học thành công!");
+      navigate('/creator/courses');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Đã xảy ra lỗi khi lưu bản nháp khóa học!");
+    }
+  };
+
   const handleUpdateCourse = async () => {
     if (!formData.title.trim()) {
       toast.error("Vui lòng nhập tên khóa học!");
@@ -173,7 +215,7 @@ export default function CreateCourse({ mode: propMode }) {
     }
   };
 
-  const [activeConfig, setActiveConfig] = useState(null); // { moduleId, type: 'VIDEO' | 'ARTICLE' }
+  const [activeConfig, setActiveConfig] = useState(null);
   const [inlineData, setInlineData] = useState({ title: '', url: '' });
 
   const handlePriorityChange = (moduleId, priority) => {
@@ -377,7 +419,7 @@ export default function CreateCourse({ mode: propMode }) {
                 ) : (
                   <>
                     <button
-                      onClick={() => toast.info("Đã lưu bản nháp thành công!")}
+                      onClick={() => handleSaveCourse()}
                       className="px-5 py-2.5 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-bg-card transition-colors cursor-pointer"
                     >
                       Lưu bản nháp
