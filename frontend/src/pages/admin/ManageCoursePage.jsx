@@ -1,56 +1,66 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import { ClipboardList, Inbox, Clock } from "lucide-react";
 import CourseTable from "@/components/admin/CourseTable";
 import { toast } from "sonner";
-
-const MOCK_COURSES_DB = [
-    {
-        id: 1,
-        title: "Lập trình Java Web với Spring Boot nâng cao",
-        creator_id: 101,
-        status: "PENDING",
-        created_at: "2026-05-30T10:00:00Z",
-    },
-    {
-        id: 2,
-        title: "Cấu trúc dữ liệu & Giải thuật ứng dụng",
-        creator_id: 102,
-        status: "PENDING",
-        created_at: "2026-05-30T11:15:00Z",
-    },
-    {
-        id: 3,
-        title: "Thiết kiến trúc hệ thống Microservices",
-        creator_id: 101,
-        status: "PUBLISHED",
-        created_at: "2026-05-29T08:00:00Z",
-    },
-];
+import courseService from "@/services/courseService";
 
 const CourseManagementPage = () => {
-    const [courses, setCourses] = useState(MOCK_COURSES_DB);
+    const [pendingCourses, setPendingCourses] = useState([]);
 
-    const handleProcessCourse = (courseId, actionType) => {
-        const finalStatus =
-            actionType === "APPROVED" ? "PUBLISHED" : "REJECTED";
-        const confirmCheck = window.confirm(
-            `Xác nhận xử lý khóa học #${courseId} với trạng thái: ${finalStatus}?`,
-        );
-        if (!confirmCheck) return;
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const data = await courseService.getPendingCourses();
 
-        setCourses((prev) =>
-            prev.map((c) =>
-                c.id === courseId ? { ...c, status: finalStatus } : c,
-            ),
-        );
-        toast.success(`Cập nhật trạng thái Course #${courseId} thành công!`);
+                setPendingCourses(data);
+            } catch (error) {
+                console.error(
+                    "Lỗi khi lấy khóa học Pending tại ManagementCoursePage: ",
+                    error,
+                );
+                toast.error("Lỗi khi tải khóa học");
+            }
+        };
+
+        fetchCourses();
+    }, []);
+
+    const handleApprove = async (courseId) => {
+        try {
+            await courseService.approveCourse(courseId);
+
+            toast.success("Duyệt khóa học thành công");
+
+            setPendingCourses((prevCourse) =>
+                prevCourse.filter((course) => course.id !== courseId),
+            );
+        } catch (error) {
+            console.error(
+                "Lỗi khi duyệt khóa học thành công tại ManagementCoursePage: ",
+                error,
+            );
+            toast.error("Lỗi khi duyệt khóa học");
+        }
     };
 
-    const pendingCourses = courses.filter((c) => c.status === "PENDING");
-    const historyCourses = courses.filter(
-        (c) => c.status === "PUBLISHED" || c.status === "REJECTED",
-    );
+    const handleReject = async (courseId) => {
+        try {
+            await courseService.rejectCourse(courseId);
+
+            toast.success("Từ chối khóa học thành công");
+
+            setPendingCourses((prevCourse) =>
+                prevCourse.filter((course) => course.id !== courseId),
+            );
+        } catch (error) {
+            console.error(
+                "Lỗi lấy khóa học từ chối tại ManagementCoursePage: ",
+                error,
+            );
+            toast.error("Lỗi khi từ chối khóa học");
+        }
+    };
 
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
@@ -67,7 +77,7 @@ const CourseManagementPage = () => {
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
-                        <ClipboardList size={20} className="text-amber-500" />
+                        <ClipboardList size={20} className="text-primary" />
                         <h2 className="text-lg font-bold">
                             Khóa học chờ duyệt
                         </h2>
@@ -84,14 +94,15 @@ const CourseManagementPage = () => {
                         </div>
                     ) : (
                         <CourseTable
-                            data={pendingCourses}
+                            courses={pendingCourses}
                             isHistory={false}
-                            onAction={handleProcessCourse}
+                            onApproveClick={handleApprove}
+                            onRejectClick={handleReject}
                         />
                     )}
                 </div>
 
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
                         <ClipboardList size={20} className="text-tertiary" />
                         <h2 className="text-lg font-bold">
@@ -111,7 +122,7 @@ const CourseManagementPage = () => {
                     ) : (
                         <CourseTable data={historyCourses} isHistory={true} />
                     )}
-                </div>
+                </div> */}
             </main>
         </div>
     );

@@ -1,7 +1,12 @@
 import { Check, X, BookOpen } from "lucide-react";
 import { statusMapping } from "@/lib/data";
 
-const CourseTable = ({ data, isHistory = false, onAction }) => {
+const CourseTable = ({
+    courses,
+    isHistory = false,
+    onApproveClick,
+    onRejectClick,
+}) => {
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -9,10 +14,10 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                             <th className="py-4 px-6 w-24">ID Khóa</th>
-                            <th className="py-4 px-6 w-96">
-                                Cấu trúc Khóa học
+                            <th className="py-4 px-6 w-96">Tên Khóa học</th>
+                            <th className="py-4 px-6 w-48 text-center">
+                                Ngày gửi yêu cầu
                             </th>
-                            <th className="py-4 px-6 w-48">Ngày gửi yêu cầu</th>
                             <th className="py-4 px-6 w-32 text-center">
                                 Trạng thái
                             </th>
@@ -24,7 +29,7 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
-                        {data.map((course) => {
+                        {courses.map((course) => {
                             const isPublished = course.status === "PUBLISHED";
                             return (
                                 <tr
@@ -44,22 +49,22 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                                         <div className="flex items-center gap-2">
                                             <BookOpen
                                                 size={16}
-                                                className="text-gray-400"
+                                                className="text-secondary opacity-80"
                                             />
                                             <div>
                                                 <div className="font-semibold text-gray-900">
                                                     {course.title}
                                                 </div>
                                                 <div className="text-xs text-gray-500">
-                                                    Mã Giảng viên:{" "}
-                                                    {course.creator_id}
+                                                    Giảng viên:{" "}
+                                                    {course.creatorFullName}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-5 px-6 text-gray-500">
+                                    <td className="py-5 px-6 text-gray-500 text-center">
                                         {new Date(
-                                            course.created_at,
+                                            course.createdAt,
                                         ).toLocaleDateString("vi-VN")}
                                     </td>
                                     <td className="py-5 px-6 text-center">
@@ -81,9 +86,8 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() =>
-                                                        onAction(
+                                                        onApproveClick(
                                                             course.id,
-                                                            "APPROVED",
                                                         )
                                                     }
                                                     className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
@@ -92,10 +96,7 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                                                 </button>
                                                 <button
                                                     onClick={() =>
-                                                        onAction(
-                                                            course.id,
-                                                            "REJECTED",
-                                                        )
+                                                        onRejectClick(course.id)
                                                     }
                                                     className="flex items-center gap-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
                                                 >

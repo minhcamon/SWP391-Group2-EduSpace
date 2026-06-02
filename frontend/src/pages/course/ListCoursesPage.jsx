@@ -11,7 +11,7 @@ const ListCoursesPage = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const data = await courseService.getAllPublishedCourses();
+                const data = await courseService.getPublishedCourses();
                 setCourses(data);
             } catch (error) {
                 console.error(
