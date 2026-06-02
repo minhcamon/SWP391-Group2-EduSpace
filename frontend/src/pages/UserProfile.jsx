@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthService from "@/services/authService";
 import courseService from "@/services/courseService";
 import Header from "@/components/layouts/Header";
+import Avatar from "@/components/layouts/Avatar";
 import CreatorUpgradeCard from "@/components/features/CreatorUpgradeCard";
 import { toast } from "sonner";
 import { runWithLoading } from "@/utils/utils";
@@ -177,9 +178,9 @@ const UserProfile = () => {
                     <div className="lg:col-span-2 bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all duration-300">
                         {/* Avatar Wrapper (Read-only) */}
                         <div className="relative shrink-0">
-                            <img
+                            <Avatar
                                 alt="User Avatar"
-                                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-bg-card shadow-sm"
+                                className="w-28 h-28 sm:w-32 sm:h-32 border-4 border-bg-card shadow-sm"
                                 src={profileForm.avatarUrl}
                             />
                         </div>

@@ -36,7 +36,7 @@ const LoginForm = () => {
         e.preventDefault();
         const { username, password } = formData;
 
-        await runWithLoading(setIsSubmitting, async () => {
+        const handleLogin = async () => {
             try {
                 await login(username, password);
                 console.log("Login successful");
@@ -46,7 +46,9 @@ const LoginForm = () => {
                 console.error("Login failed at LoginForm:", error);
                 toast.error(error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
             }
-        });
+        }
+
+        await runWithLoading(setIsSubmitting, handleLogin());
     };
 
     return (
@@ -145,7 +147,7 @@ const LoginForm = () => {
                         <div className="pt-2">
                             <button
                                 disabled={isSubmitting}
-                                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-md font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
+                                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
                                 type="submit"
                             >
                                 {isSubmitting ? "Đang xử lý..." : "Đăng Nhập"}
