@@ -5,17 +5,15 @@ import courseService from "@/services/courseService";
 import Header from "@/components/layouts/Header";
 import CreatorUpgradeCard from "@/components/features/CreatorUpgradeCard";
 import { toast } from "sonner";
+import { runWithLoading } from "@/utils/utils";
 import {
     User,
     Mail,
     Phone,
     Lock,
     BookOpen,
-    Award,
     CheckCircle2,
     KeyRound,
-    Camera,
-    Check,
     Trophy,
     Shield,
 } from "lucide-react";
@@ -26,7 +24,6 @@ const UserProfile = () => {
     const [coursesCount, setCoursesCount] = useState(0);
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-    const [showAvatarSelector, setShowAvatarSelector] = useState(false);
 
     // Profile Details Form State
     const [profileForm, setProfileForm] = useState({
@@ -35,7 +32,7 @@ const UserProfile = () => {
         email: "",
         phone: "",
         bio: "",
-        avatarUrl: "",
+        avatarUrl: "/images/default-avatar.png",
     });
 
     // Password Form State
@@ -48,13 +45,14 @@ const UserProfile = () => {
     // Initialize form states once user data is available
     useEffect(() => {
         if (user) {
+            console.log(user);
             setProfileForm({
                 fullName: user.fullName || "",
                 username: user.username || "",
                 email: user.email || "",
                 phone: user.phone || "",
                 bio: user.bio || "Thành viên tích cực học tập tại EduSpace. Rất vui được đồng hành cùng mọi người!",
-                avatarUrl: user.avatarUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+                avatarUrl: user.avatarUrl || "/images/default-avatar.png",
             });
         }
     }, [user]);
@@ -67,7 +65,7 @@ const UserProfile = () => {
                     const data = await courseService.getPublishedCourses();
                     if (data && Array.isArray(data)) {
                         setCoursesCount(data.length);
-                    } 
+                    }
                 } catch (error) {
                     console.error("Failed to load courses count:", error);
                 }
@@ -113,14 +111,6 @@ const UserProfile = () => {
         }));
     };
 
-    const handleSelectAvatar = (url) => {
-        setProfileForm((prev) => ({
-            ...prev,
-            avatarUrl: url,
-        }));
-        setShowAvatarSelector(false);
-    };
-
     const handleSaveProfile = async (e) => {
         e.preventDefault();
         if (!profileForm.fullName.trim()) {
@@ -130,17 +120,16 @@ const UserProfile = () => {
             return toast.error("Email không được để trống!");
         }
 
-        setIsUpdatingProfile(true);
-        try {
-            await AuthService.updateProfile(profileForm);
-            await checkAuth(); 
-            toast.success("Cập nhật thông tin hồ sơ thành công!");
-        } catch (error) {
-            console.error("Update profile error:", error);
-            toast.error(error.message || "Không thể cập nhật thông tin lên hệ thống!");
-        } finally {
-            setIsUpdatingProfile(false);
-        }
+        await runWithLoading(setIsUpdatingProfile, async () => {
+            try {
+                await AuthService.updateProfile(profileForm);
+                await checkAuth();
+                toast.success("Cập nhật thông tin hồ sơ thành công!");
+            } catch (error) {
+                console.error("Update profile error:", error);
+                toast.error(error.message || "Không thể cập nhật thông tin lên hệ thống!");
+            }
+        });
     };
 
     const handleSavePassword = async (e) => {
@@ -157,22 +146,25 @@ const UserProfile = () => {
             return toast.error("Mật khẩu mới phải chứa ít nhất 6 ký tự!");
         }
 
-        setIsUpdatingPassword(true);
-        try {
-            await AuthService.changePassword({ currentPassword, newPassword });
-            toast.success("Thay đổi mật khẩu thành công!");
-            setPasswordForm({
-                currentPassword: "",
-                newPassword: "",
-                confirmPassword: "",
-            });
-        } catch (error) {
-            console.error("Change password error:", error);
-            toast.error(error.message || "Thay đổi mật khẩu thất bại!");
-        } finally {
-            setIsUpdatingPassword(false);
-        }
+        await runWithLoading(setIsUpdatingPassword, async () => {
+            try {
+                await AuthService.changePassword({ currentPassword, newPassword });
+                toast.success("Thay đổi mật khẩu thành công!");
+                setPasswordForm({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                });
+            } catch (error) {
+                console.error("Change password error:", error);
+                toast.error(error.message || "Thay đổi mật khẩu thất bại!");
+            }
+        });
     };
+
+    if (!user) {
+        return <div className="p-6">Đang tải thông tin hồ sơ...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-bg-base text-neutral-dark font-sans flex flex-col pb-12">
@@ -183,8 +175,8 @@ const UserProfile = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left: User Bio Card */}
                     <div className="lg:col-span-2 bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all duration-300">
-                        {/* Avatar Wrapper with Selector Icon */}
-                        <div className="relative group shrink-0">
+                        {/* Avatar Wrapper (Read-only) */}
+                        <div className="relative shrink-0">
                             <img
                                 alt="User Avatar"
                                 className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-bg-card shadow-sm"

@@ -20,11 +20,13 @@ import ManageCoursePage from "@/pages/admin/ManageCoursePage";
 import CourseManagement from "./pages/creator/CourseManagement";
 import CreatorAnalytics from "./pages/creator/CreatorAnalytics";
 import CourseDetail from "./pages/creator/CourseDetail";
+import RouteProgressBar from "@/components/common/RouteProgressBar";
 
 function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
+                <RouteProgressBar />
                 <Toaster position="bottom-right" richColors />
                 <Routes>
                     {/* public route */}

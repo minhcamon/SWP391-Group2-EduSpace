@@ -33,4 +33,14 @@ export const decodeToken = (token) => {
         console.error("Failed to decode token:", error);
         return null;
     }
-};
+};
+
+export const runWithLoading = async (setLoading, asyncFn) => {
+    if (typeof setLoading !== "function") return asyncFn();
+    setLoading(true);
+    try {
+        return await asyncFn();
+    } finally {
+        setLoading(false);
+    }
+};

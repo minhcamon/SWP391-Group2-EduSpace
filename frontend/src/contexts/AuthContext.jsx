@@ -47,16 +47,11 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        setIsLoading(true);
-        try {
-            const { token, user: userData } = await authService.login(email, password);
-            console.log(token, userData);
-            setTokens(token);
-            setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
-        } finally {
-            setIsLoading(false);
-        }
+        const { token, user: userData } = await authService.login(email, password);
+        console.log(token, userData);
+        setTokens(token);
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
     };
 
     const logout = () => {
