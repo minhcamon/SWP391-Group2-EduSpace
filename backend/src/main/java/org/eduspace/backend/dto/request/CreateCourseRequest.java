@@ -12,4 +12,6 @@ public class CreateCourseRequest {
     private String description;
 
     private List<CreateModuleRequest> modules;
+
+    private String status;
 }
