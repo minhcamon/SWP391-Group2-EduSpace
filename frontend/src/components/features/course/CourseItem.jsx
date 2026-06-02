@@ -2,11 +2,11 @@ const CourseItem = ({ courseItem }) => {
     return (
         <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug hover:text-indigo-700 transition-colors cursor-pointer line-clamp-2 min-h-14">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 leading-snug hover:text-primary transition-colors cursor-pointer line-clamp-2 min-h-14">
                     {courseItem.title}
                 </h3>
 
-                <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md w-fit mb-4">
+                <p className="text-xs font-semibold text-secondary bg-indigo-50 px-2.5 py-1 rounded-md w-fit mb-4">
                     Tác giả: {courseItem.creator_id}
                 </p>
 

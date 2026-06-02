@@ -58,7 +58,7 @@ const CourseManagementPage = () => {
             <main className="grow p-8 min-w-0 space-y-8">
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <h1 className="text-2xl font-bold text-secondary tracking-tight">
-                        Hệ thống kiểm duyệt khóa học
+                        Kiểm duyệt khóa học
                     </h1>
                     <p className="text-gray-500 text-sm mt-0.5">
                         Quản lý khóa học và Lịch sử duyệt khóa học
@@ -93,7 +93,7 @@ const CourseManagementPage = () => {
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
-                        <ClipboardList size={20} className="text-indigo-600" />
+                        <ClipboardList size={20} className="text-tertiary" />
                         <h2 className="text-lg font-bold">
                             Nhật ký quyết định
                         </h2>

@@ -17,7 +17,7 @@ const CourseTable = ({ data, isHistory = false, onAction }) => {
                                 Trạng thái
                             </th>
                             {!isHistory && (
-                                <th className="py-4 px-6 w-52 text-center">
+                                <th className="py-4 px-6 w-52 text-right">
                                     Tác vụ
                                 </th>
                             )}

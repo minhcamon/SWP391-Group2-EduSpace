@@ -49,11 +49,6 @@ const Sidebar = () => {
             groupName: "Quản lý hệ thống",
             items: [
                 {
-                    text: "Quản lý khóa học",
-                    icon: BookOpen,
-                    path: "/admin/courses-management",
-                },
-                {
                     text: "Quản lý học viên",
                     icon: Users,
                     path: "/admin/students",
@@ -64,7 +59,12 @@ const Sidebar = () => {
                     path: "/admin/teachers",
                 },
                 {
-                    text: "Quản lý duyệt đơn",
+                    text: "Kiểm duyệt khóa học",
+                    icon: BookOpen,
+                    path: "/admin/courses-management",
+                },
+                {
+                    text: "Kiểm duyệt duyệt đơn",
                     icon: Form,
                     path: "/admin/creator-requests",
                 },
@@ -153,16 +153,16 @@ const Sidebar = () => {
                                             to={item.path}
                                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${
                                                 isActive
-                                                    ? "bg-indigo-50 text-indigo-700"
-                                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                                    ? "bg-indigo-50 text-primary"
+                                                    : "text-gray-600 hover:bg-gray-50 hover:text-primary"
                                             }`}
                                         >
                                             <Icon
                                                 size={18}
                                                 className={`transition-colors duration-200 ${
                                                     isActive
-                                                        ? "text-indigo-700"
-                                                        : "text-gray-400 group-hover:text-gray-600"
+                                                        ? "text-primary"
+                                                        : "text-gray-400 group-hover:text-primary"
                                                 }`}
                                             />
                                             {item.text}
@@ -191,7 +191,7 @@ const Sidebar = () => {
                         <p className="text-sm font-bold text-gray-800 truncate">
                             {user.fullName}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="mt-2 text-xs text-gray-500 truncate">
                             {roleMapping[user.role]}
                         </p>
                     </div>
