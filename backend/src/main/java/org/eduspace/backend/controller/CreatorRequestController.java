@@ -65,24 +65,24 @@ public class CreatorRequestController {
 
         @Operation(summary = "Gửi yêu cầu nâng cấp lên Creator (LEARNER)", description = "Học viên điền lý do, kinh nghiệm để gửi đơn lên Ban quản trị chờ duyệt.")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Gửi yêu cầu thành công"),
-                @ApiResponse(responseCode = "400", description = "Dữ liệu gửi lên không hợp lệ"),
-                @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-                @ApiResponse(responseCode = "403", description = "Không có quyền Learner")
+                        @ApiResponse(responseCode = "200", description = "Gửi yêu cầu thành công"),
+                        @ApiResponse(responseCode = "400", description = "Dữ liệu gửi lên không hợp lệ"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền Learner")
         })
         @PostMapping("/send")
-        @PreAuthorize("hasRole('LEARNER')") 
-        public ResponseEntity<APIResponse<String>> sendCreatorRequest(
-                        @Valid @RequestBody LearnerSendCreatorRequestDto requestDto) {
-                
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<String>> sendCreatorRequest() {
+
                 // Lấy ID của Learner đang đăng nhập từ Security Context (tiện và bảo mật)
-                Long learnerId = SecurityUtil.getCurrentUserId(); 
+                Long learnerId = SecurityUtil.getCurrentUserId();
 
                 // Gọi xuống service để xử lý lưu vào DB
-                creatorRequestService.createCreatorRequest(requestDto, learnerId);
+                creatorRequestService.createCreatorRequest(learnerId);
 
                 return ResponseEntity.ok(
-                        APIResponse.success("Gửi đơn đăng ký làm Creator thành công. Vui lòng chờ Admin phê duyệt!", null)
-                );
+                                APIResponse.success(
+                                                "Gửi đơn đăng ký làm Creator thành công. Vui lòng chờ Admin phê duyệt!",
+                                                null));
         }
 }

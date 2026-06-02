@@ -75,7 +75,7 @@ public class CreatorRequestService {
     }
 
     @Transactional
-    public void createCreatorRequest(LearnerSendCreatorRequestDto requestDto, Long learnerId) {
+    public void createCreatorRequest(Long learnerId) {
 
         User learner = userRepository.findById(learnerId)
                 .orElseThrow(() -> new RuntimeException("User (Learner) not found with ID: " + learnerId));
@@ -89,7 +89,7 @@ public class CreatorRequestService {
         CreatorRequest newRequest = CreatorRequest.builder()
                 .learner(learner)
                 .status(CreatorRequestStatus.PENDING)
-                .documentUrl(requestDto.getReason())
+                // .documentUrl(requestDto.getReason())
                 .build();
 
         creatorRequestRepository.save(newRequest);
