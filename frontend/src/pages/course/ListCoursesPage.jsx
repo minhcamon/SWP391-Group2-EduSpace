@@ -99,7 +99,7 @@ const ListCoursesPage = () => {
                 <div className="text-center md:text-left mb-10">
                     <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
                         Khám phá các khóa học tại{" "}
-                        <span className="text-indigo-700">EduSpace</span>
+                        <span className="text-primary">Edu<span className="text-tertiary">Space</span></span>
                     </h2>
                     <p className="text-gray-600 font-medium text-base max-w-2xl">
                         Học tập theo mô hình lớp học 10 người — Ghép cặp tương
