@@ -20,6 +20,10 @@ const Sidebar = () => {
         logout();
         window.location.href = "/";
     };
+    
+    if (user === null) {
+        return null; 
+    }
 
     const location = useLocation();
     const currentPath = location.pathname;
