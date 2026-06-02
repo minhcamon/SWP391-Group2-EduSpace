@@ -73,7 +73,11 @@ const AuthService = {
 
     registerCreator: async (creatorData) => {
         try {
-            const response = await api.post('/user/creator-register', creatorData);
+            const payload = {
+                reason: creatorData.portfolioUrl
+            };
+            console.log('Payload for creator registration:', payload);            
+            const response = await api.post('/creator-requests/send', payload);
             return response.data.message || 'Đăng ký làm Creator thành công!';
         } catch (error) {
             console.error('Register creator error at AuthService:', error);
