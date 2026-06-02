@@ -1,77 +1,30 @@
 import CourseItem from "./CourseItem";
 import { Link } from "react-router";
 import { MoveRight } from "lucide-react";
-
-const STATIC_COURSES_DB = [
-    {
-        id: 1,
-        title: "Lập trình Java Web với Spring Boot nâng cao",
-        status: "PUBLISHED",
-        creator_id: 101,
-        description:
-            "Khóa học chuyên sâu về hệ sinh thái Spring: Spring Boot, Spring Security, JPA. Thực hành xây dựng Restful API theo kiến trúc phân tầng chuẩn dự án thực tế.",
-        created_at: "2026-05-20T09:00:00Z",
-    },
-    {
-        id: 2,
-        title: "Cấu trúc dữ liệu & Giải thuật ứng dụng",
-        status: "DRAFT",
-        creator_id: 102,
-        description:
-            "Nắm vững bản chất của Array, Linked List, Stack, Queue, Tree, Graph và các thuật toán tối ưu hóa mã nguồn, chuẩn bị nền tảng phỏng vấn Big Tech.",
-        created_at: "2026-05-25T14:30:00Z",
-    },
-    {
-        id: 3,
-        title: "Thiết kế kiến trúc hệ thống ứng dụng vi dịch vụ (Microservices)",
-        status: "PUBLISHED",
-        creator_id: 101,
-        description:
-            "Học cách chia nhỏ hệ thống Monolith thành các service độc lập. Triển khai API Gateway, Service Discovery, Event-Driven Architecture với Kafka và Docker.",
-        created_at: "2026-05-28T10:15:00Z",
-    },
-    {
-        id: 4,
-        title: "Xây dựng ứng dụng Frontend với ReactJS & Tailwind",
-        status: "ARCHIVED",
-        creator_id: 103,
-        description:
-            "Làm chủ Component Lifecycle, React Hooks, State Management (Redux/Zustand) và xây dựng giao diện thô/responsive cực nhanh với hệ thống utility-first của Tailwind CSS.",
-        created_at: "2026-05-18T16:00:00Z",
-    },
-    {
-        id: 5,
-        title: "Thiết kế kiến trúc hệ thống ứng dụng vi dịch vụ (Microservices)",
-        status: "PUBLISHED",
-        creator_id: 101,
-        description:
-            "Học cách chia nhỏ hệ thống Monolith thành các service độc lập. Triển khai API Gateway, Service Discovery, Event-Driven Architecture với Kafka và Docker.",
-        created_at: "2026-05-28T10:15:00Z",
-    },
-    {
-        id: 6,
-        title: "Thiết kế kiến trúc hệ thống ứng dụng vi dịch vụ (Microservices)",
-        status: "PUBLISHED",
-        creator_id: 101,
-        description:
-            "Học cách chia nhỏ hệ thống Monolith thành các service độc lập. Triển khai API Gateway, Service Discovery, Event-Driven Architecture với Kafka và Docker.",
-        created_at: "2026-05-28T10:15:00Z",
-    },
-    {
-        id: 7,
-        title: "Thiết kế kiến trúc hệ thống ứng dụng vi dịch vụ (Microservices)",
-        status: "PUBLISHED",
-        creator_id: 101,
-        description:
-            "Học cách chia nhỏ hệ thống Monolith thành các service độc lập. Triển khai API Gateway, Service Discovery, Event-Driven Architecture với Kafka và Docker.",
-        created_at: "2026-05-28T10:15:00Z",
-    },
-];
+import { useEffect, useState } from "react";
+import courseService from "@/services/courseService";
+import { toast } from "sonner";
 
 const CourseContainer = () => {
-    const displayApprovedCourses = STATIC_COURSES_DB.filter(
-        (course) => course.status === "PUBLISHED",
-    );
+    const [courses, setCourses] = useState([]);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const data = await courseService.getAllPublishedCourses();
+
+                setCourses(data);
+            } catch (error) {
+                console.error(
+                    "Lỗi fetch khóa học tại CourseContainer: ",
+                    error,
+                );
+                toast.error("Lỗi khi tải khóa học");
+            }
+        };
+
+        fetchCourses();
+    }, []);
 
     return (
         <div className="container mx-auto px-4 my-4">
@@ -90,8 +43,8 @@ const CourseContainer = () => {
                 </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
-                {displayApprovedCourses.slice(0, 4).map((course) => (
-                    <CourseItem key={course.id} courseItem={course} />
+                {courses.slice(0, 4).map((course) => (
+                    <CourseItem key={course.id} course={course} />
                 ))}
             </div>
         </div>
