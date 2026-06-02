@@ -9,7 +9,7 @@ import Logo from "@/components/common/Logo";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
-        email: "",
+        username: "",
         password: "",
     });
     const [rememberMe, setRememberMe] = useState(false);
@@ -32,10 +32,10 @@ const LoginForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { email, password } = formData;
+        const { username, password } = formData;
 
         try {
-            await login(email, password);
+            await login(username, password);
             console.log("Login successful");
             toast.success("Đăng nhập thành công!");
             navigate("/");
@@ -71,10 +71,10 @@ const LoginForm = () => {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Email Field */}
+                        {/* Username Field */}
                         <div className="space-y-1.5">
-                            <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="email">
-                                Địa chỉ Email
+                            <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
+                                Tên đăng nhập hoặc Email
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
@@ -82,12 +82,12 @@ const LoginForm = () => {
                                 </div>
                                 <input
                                     className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
-                                    id="email"
-                                    name="email"
-                                    placeholder="nhap@email.com"
+                                    id="username"
+                                    name="username"
+                                    placeholder="Tên đăng nhập hoặc email"
                                     required
-                                    type="email"
-                                    value={formData.email}
+                                    type="text"
+                                    value={formData.username}
                                     onChange={handleChange}
                                 />
                             </div>
