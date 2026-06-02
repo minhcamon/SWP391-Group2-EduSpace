@@ -3,7 +3,6 @@ package org.eduspace.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.request.CreatorRequestApprovalRequest;
-import org.eduspace.backend.dto.request.LearnerSendCreatorRequestDto;
 import org.eduspace.backend.dto.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.entity.CreatorRequest;
 import org.eduspace.backend.enums.CreatorRequestStatus;
@@ -39,29 +38,36 @@ public class CreatorRequestService {
     }
 
     @Transactional
-    public CreatorRequestApprovalResponse approveLearnerToCreator(Long requestId, String status, Long adminId) {
+    public CreatorRequestApprovalResponse approveLearnerToCreator(Long requestId, Long adminId) {
         CreatorRequest request = creatorRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Creator request not found with ID: " + requestId));
 
         if (request.getStatus() != CreatorRequestStatus.PENDING) {
             throw new RuntimeException("This request has already been processed");
         }
+        request.setStatus(CreatorRequestStatus.APPROVED);
+        request.getLearner().setRole(Role.CREATOR);
 
-        CreatorRequestStatus targetStatus;
-        try {
-            targetStatus = CreatorRequestStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status provided. Expected APPROVED or REJECTED");
-        }
+        CreatorRequest updatedRequest = creatorRequestRepository.save(request);
 
-        if (targetStatus == CreatorRequestStatus.APPROVED) {
-            request.setStatus(CreatorRequestStatus.APPROVED);
-            if (request.getLearner() != null) {
-                request.getLearner().setRole(Role.CREATOR);
-            }
-        } else if (targetStatus == CreatorRequestStatus.REJECTED) {
-            request.setStatus(CreatorRequestStatus.REJECTED);
+        return CreatorRequestApprovalResponse.builder()
+                .id(updatedRequest.getId())
+                .status(updatedRequest.getStatus().name())
+                .learnerId(updatedRequest.getLearner() != null ? updatedRequest.getLearner().getId() : null)
+                .approvedBy(adminId)
+                .processedAt(LocalDateTime.now())
+                .build();
+    }
+
+    @Transactional
+    public CreatorRequestApprovalResponse rejectLearnerToCreator(Long requestId, Long adminId) {
+        CreatorRequest request = creatorRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Creator request not found with ID: " + requestId));
+
+        if (request.getStatus() != CreatorRequestStatus.PENDING) {
+            throw new RuntimeException("This request has already been processed");
         }
+        request.setStatus(CreatorRequestStatus.REJECTED);
 
         CreatorRequest updatedRequest = creatorRequestRepository.save(request);
 
