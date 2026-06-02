@@ -5,23 +5,18 @@ import {
     Users,
     GraduationCap,
     Settings,
-    LogOut,
     BarChart3,
     Form,
 } from "lucide-react";
 import Logo from "../common/Logo";
 import Avatar from "./Avatar";
+import LogoutButton from "./LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
 
 const Sidebar = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
-    const handleLogout = () => {
-        logout();
-        window.location.href = "/";
-    };
-    
     if (user === null) {
         return null; 
     }
@@ -201,16 +196,12 @@ const Sidebar = () => {
 
                 <hr className="mb-4 text-secondary" />
 
-                <button
-                    onClick={handleLogout}
+                <LogoutButton
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer group"
-                >
-                    <LogOut
-                        size={18}
-                        className="text-red-400 group-hover:text-red-600 transition-colors"
-                    />
-                    Đăng xuất
-                </button>
+                    iconSize={18}
+                    iconClassName="text-red-400 group-hover:text-red-600 transition-colors"
+                    redirectPath="/"
+                />
             </div>
         </aside>
     );

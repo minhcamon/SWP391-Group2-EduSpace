@@ -1,11 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router";
 import { roleMapping } from "@/lib/data";
-import { User, Shield, BookOpen, LogOut } from "lucide-react";
+import { User, Shield, BookOpen } from "lucide-react";
 import Avatar from "@/components/layouts/Avatar";
+import LogoutButton from "@/components/layouts/LogoutButton";
 
 const AvatarDropDown = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     return (
         <div className="absolute right-0 mt-
@@ -63,13 +64,11 @@ const AvatarDropDown = () => {
 
             {/* Logout Option */}
             <div className="border-t border-slate-100 pt-1">
-                <button
-                    onClick={logout}
+                <LogoutButton
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-150 text-left hover:cursor-pointer"
-                >
-                    <LogOut size={16} />
-                    Đăng xuất
-                </button>
+                    iconSize={16}
+                    redirectPath="/"
+                />
             </div>
         </div>
     );
