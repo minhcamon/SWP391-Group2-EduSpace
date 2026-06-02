@@ -20,17 +20,6 @@ import {
     Shield,
 } from "lucide-react";
 
-// Predefined high-quality avatar options
-const AVATAR_OPTIONS = [
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Kiki",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Midnight",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Mimi",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Pumpkin",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Snuggles",
-];
 
 const UserProfile = () => {
     const { user, checkAuth } = useAuth();
@@ -78,13 +67,9 @@ const UserProfile = () => {
                     const data = await courseService.getPublishedCourses();
                     if (data && Array.isArray(data)) {
                         setCoursesCount(data.length);
-                    } else {
-                        // Fallback fallback mock count for UI completeness
-                        setCoursesCount(4);
-                    }
+                    } 
                 } catch (error) {
                     console.error("Failed to load courses count:", error);
-                    setCoursesCount(3); // Default fallback
                 }
             }
         };
@@ -205,43 +190,6 @@ const UserProfile = () => {
                                 className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-bg-card shadow-sm"
                                 src={profileForm.avatarUrl}
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                                className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-md hover:bg-[#3f38c9] transition-colors cursor-pointer"
-                                title="Thay đổi ảnh đại diện"
-                            >
-                                <Camera size={16} />
-                            </button>
-
-                            {/* Avatar Picker Dropdown Grid */}
-                            {showAvatarSelector && (
-                                <div className="absolute left-0 mt-3 w-64 bg-white border border-border-light/40 rounded-xl shadow-xl p-3 z-30 animate-in fade-in zoom-in-95 duration-150">
-                                    <div className="text-xs font-bold text-neutral-medium mb-2 uppercase tracking-wider">Chọn ảnh đại diện</div>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {AVATAR_OPTIONS.map((url, idx) => (
-                                            <button
-                                                key={idx}
-                                                type="button"
-                                                onClick={() => handleSelectAvatar(url)}
-                                                className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all hover:scale-105 ${profileForm.avatarUrl === url
-                                                        ? "border-primary scale-95"
-                                                        : "border-transparent"
-                                                    }`}
-                                            >
-                                                <img src={url} alt={`Avatar option ${idx + 1}`} className="w-full h-full object-cover" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAvatarSelector(false)}
-                                        className="w-full text-center mt-3 text-xs text-neutral-medium hover:text-primary font-bold transition-colors pt-2 border-t border-slate-100"
-                                    >
-                                        Đóng
-                                    </button>
-                                </div>
-                            )}
                         </div>
 
                         {/* User basic info */}

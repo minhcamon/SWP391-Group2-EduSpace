@@ -1,28 +1,42 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { setTokens, clearTokens, getTokens } from "@/utils/utils";
-import AuthService from "@/services/authService";
+import { setTokens, clearTokens, getTokens, decodeToken } from "@/utils/utils";
+import authService from "@/services/authService";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+            try {
+                return JSON.parse(savedUser);
+            } catch (e) {
+                console.error("Failed to parse saved user:", e);
+            }
+        }
+        const token = getTokens();
+        return token ? decodeToken(token) : null;
+    });
     const [isLoading, setIsLoading] = useState(true);
 
     const checkAuth = async () => {
         const token = getTokens();
         if (!token) {
             setUser(null);
+            localStorage.removeItem("user");
             setIsLoading(false);
             return;
         }
         setIsLoading(true);
         try {
-            const userData = await AuthService.getUserProfile();
+            const userData = await authService.getUserProfile();
             setUser(userData);
+            localStorage.setItem("user", JSON.stringify(userData));
         } catch (error) {
             console.error("Auto login failed:", error);
             clearTokens();
             setUser(null);
+            localStorage.removeItem("user");
         } finally {
             setIsLoading(false);
         }
@@ -35,10 +49,11 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         setIsLoading(true);
         try {
-            const { token, user } = await AuthService.login(email, password);
-
+            const { token, user: userData } = await authService.login(email, password);
+            console.log(token, userData);
             setTokens(token);
-            setUser(user);
+            setUser(userData);
+            localStorage.setItem("user", JSON.stringify(userData));
         } finally {
             setIsLoading(false);
         }
@@ -47,7 +62,9 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         clearTokens();
         setUser(null);
+        localStorage.removeItem("user");
     };
+
 
     const contextValue = {
         user,
