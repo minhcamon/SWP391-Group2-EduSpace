@@ -50,13 +50,11 @@ const MOCK_CREATOR_REQUESTS_DB = [
 
 const ManageRequestPage = () => {
     const [allRequests, setAllRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setAllRequests(MOCK_CREATOR_REQUESTS_DB);
-            setLoading(false);
-        }, 300);
+        }, 0);
         return () => clearTimeout(timer);
     }, []);
 
@@ -82,20 +80,13 @@ const ManageRequestPage = () => {
         toast.success(`Cập nhật đơn #${requestId} thành công!`);
     };
 
-    if (loading)
-        return (
-            <div className="p-8 font-mono">
-                Đang tải cấu trúc đơn hệ thống...
-            </div>
-        );
-
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
             <main className="grow p-8 min-w-0 space-y-8">
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                     <h1 className="text-2xl font-bold text-secondary tracking-tight">
-                        Hệ thống kiểm duyệt đơn
+                        Kiểm duyệt đơn
                     </h1>
                     <p className="text-gray-500 text-sm mt-0.5">
                         Quản lý duyệt đơn và Lịch sử duyệt đơn
@@ -130,7 +121,7 @@ const ManageRequestPage = () => {
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
-                        <History size={20} className="text-indigo-600" />
+                        <History size={20} className="text-tertiary" />
                         <h2 className="text-lg font-bold">
                             2. Nhật ký duyệt đơn
                         </h2>

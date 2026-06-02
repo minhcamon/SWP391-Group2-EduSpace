@@ -9,7 +9,7 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-gray-800">
                     <div className="lg:col-span-4 space-y-4">
                         <div className="w-72">
-                                <Logo />
+                            <Logo />
                         </div>
                         <p className="text-sm text-gray-400 leading-relaxed pr-4">
                             Nền tảng học lập trình trực tuyến tối ưu, giúp bạn
@@ -171,7 +171,7 @@ const Footer = () => {
                     <div className="flex items-center space-x-1.5 bg-gray-800/40 px-3 py-1.5 rounded-lg border border-gray-800/60">
                         <span>Sản phẩm phát triển bởi</span>
                         <span className="font-semibold text-gray-400">
-                            Group 2 - SWP391 FPT University
+                            Group 2 - SE2027JV - SWP391 FPT University
                         </span>
                     </div>
                 </div>
