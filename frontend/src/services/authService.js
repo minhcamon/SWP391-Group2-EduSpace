@@ -3,7 +3,10 @@ import api from '@/lib/axios';
 const AuthService = {
     login: async (email, password) => {
         try {
-            const payload = { usernameOrEmail: email, password };
+            const payload = { 
+                usernameOrEmail: email, 
+                password 
+            };
 
             const response = await api.post('/auth/login', payload);
             return response.data.data;
@@ -16,14 +19,17 @@ const AuthService = {
 
     register: async (userData) => {
         
-        // const { username, email, password, fullname, phone } = userData;
-        // const fullName = fullname;
-
-        const payload = ({ username, email, password, fullName, phone }) => {
-            return { userData: { username, email, password, fullName, phone } };
+        console.log('Registering user with data:', userData);
+        const payload = {
+            username: userData.username,
+            email: userData.email,
+            password: userData.password,
+            fullName: userData.fullname,
+            phone: userData.phone
         };
+        console.log('Payload for registration:', payload);
         try {
-            const response = await api.post('/auth/register', payload(userData));
+            const response = await api.post('/auth/register', payload);
             return response.data.message || 'Đăng ký thành công!';
         } catch (error) {
             console.error('Registration error at AuthService:', error);
