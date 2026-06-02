@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreatorRequestApprovalRequest {
+    private Long requestId;
     private Long learnerId;
+    private String learnerEmail;
     private String learnerName;
     private String documentUrl;
+    private String status;
 }
