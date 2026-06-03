@@ -20,4 +20,6 @@ public class CourseResponse {
     private String creatorFullName;
     private String creatorAvatarUrl;
     private String creatorEmail;
+    private Long approvedBy; 
+    private String reason;
 }

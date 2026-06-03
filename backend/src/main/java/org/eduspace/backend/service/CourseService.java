@@ -121,6 +121,8 @@ public class CourseService {
                 .description(course.getDescription())
                 .status(course.getStatus().name())
                 .createdAt(course.getCreatedAt())
+                .approvedBy(course.getApproveBy() != null ? course.getApproveBy().getId() : null)
+                .reason(course.getReason())
                 .build();
     }
 
