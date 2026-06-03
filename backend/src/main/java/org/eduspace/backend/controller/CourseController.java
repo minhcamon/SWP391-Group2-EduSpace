@@ -106,14 +106,12 @@ public class CourseController {
         @PostMapping("/create-course")
         @PreAuthorize("hasRole('CREATOR')")
         public ResponseEntity<APIResponse<Long>> createCourse(
-                @RequestBody CreateCourseRequest request
-        ) {
-                Long creatorId = SecurityUtil.getCurrentUserId();  
+                        @RequestBody CreateCourseRequest request) {
+                Long creatorId = SecurityUtil.getCurrentUserId();
                 Long courseId = courseService.createCourse(request, creatorId);
-                
+
                 return ResponseEntity.ok(
-                        APIResponse.success("Course created successfully", courseId)
-                );
+                                APIResponse.success("Course created successfully", courseId));
         }
 
         // Public
@@ -126,6 +124,19 @@ public class CourseController {
                 List<CourseResponse> courses = courseService.getAllPublishedCourses();
                 return ResponseEntity.ok(
                                 APIResponse.success("Successfully fetched courses", courses));
+        }
+
+        @Operation(summary = "Lấy chi tiết khóa học theo ID", description = "Lấy thông tin chi tiết khóa học bao gồm modules, lessons và assignments.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy khóa học thành công"),
+                        @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không tồn tại"),
+        })
+        @GetMapping("/{id}")
+        public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
+                        @PathVariable Long id) {
+                CourseResponse course = courseService.getPublishedCourseById(id);
+                return ResponseEntity.ok(
+                                APIResponse.success("Course retrieved successfully", course));
         }
 
 }
