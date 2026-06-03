@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**", "/api/course/all", "/oauth2/**",
                                 "/v3/api-docs/**", "/swagger-ui/**",
-                                "/swagger-ui.html")
+                                "/swagger-ui.html", "/api/course/{id}")
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
