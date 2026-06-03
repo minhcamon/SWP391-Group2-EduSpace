@@ -1,7 +1,12 @@
 import { User, Mail, Check, X } from "lucide-react";
 import { statusMapping } from "@/lib/data";
 
-const RequestTable = ({ data, isHistory = false, onAction }) => {
+const RequestTable = ({
+    requests,
+    isHistory = false,
+    onApprovedClick,
+    onRejectClick,
+}) => {
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -24,11 +29,11 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
-                        {data.map((req) => {
-                            const isApproved = req.status === "APPROVED";
+                        {requests.map((request) => {
+                            const isApproved = request.status === "APPROVED";
                             return (
                                 <tr
-                                    key={req.id}
+                                    key={request.requestId}
                                     className={`transition-colors ${
                                         isHistory
                                             ? isApproved
@@ -38,7 +43,7 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                                     }`}
                                 >
                                     <td className="py-5 px-6 font-bold text-gray-900">
-                                        #{req.id}
+                                        #{request.requestId}
                                     </td>
                                     <td className="py-5 px-6 space-y-1">
                                         <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
@@ -46,22 +51,19 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                                                 size={14}
                                                 className="text-gray-400"
                                             />{" "}
-                                            {req.full_name}
+                                            {request.learnerName}
                                         </div>
                                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                             <Mail
                                                 size={14}
                                                 className="text-gray-400"
                                             />{" "}
-                                            {req.email}
-                                        </div>
-                                        <div className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded w-fit">
-                                            UID: {req.user_id}
+                                            {request.learnerEmail}
                                         </div>
                                     </td>
                                     <td className="py-5 px-6">
                                         <p className="text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100 leading-relaxed max-w-2xl text-sm">
-                                            {req.document_urls}
+                                            {request.documentUrl}
                                         </p>
                                     </td>
                                     <td className="py-5 px-6 text-center">
@@ -74,8 +76,8 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                                                     : "bg-amber-50 text-amber-600 border-amber-200/50"
                                             }`}
                                         >
-                                            {statusMapping[req.status] ||
-                                                req.status}
+                                            {statusMapping[request.status] ||
+                                                request.status}
                                         </span>
                                     </td>
                                     {!isHistory && (
@@ -83,9 +85,8 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() =>
-                                                        onAction(
-                                                            req.id,
-                                                            "APPROVED",
+                                                        onApprovedClick(
+                                                            request.requestId,
                                                         )
                                                     }
                                                     className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
@@ -94,9 +95,8 @@ const RequestTable = ({ data, isHistory = false, onAction }) => {
                                                 </button>
                                                 <button
                                                     onClick={() =>
-                                                        onAction(
-                                                            req.id,
-                                                            "REJECTED",
+                                                        onRejectClick(
+                                                            request.requestId,
                                                         )
                                                     }
                                                     className="flex items-center gap-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
