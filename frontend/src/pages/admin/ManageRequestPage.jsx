@@ -4,80 +4,61 @@ import { ClipboardList, History, Inbox, Clock } from "lucide-react";
 import { statusMapping } from "@/lib/data";
 import RequestTable from "@/components/admin/RequestTable";
 import { toast } from "sonner";
-
-const MOCK_CREATOR_REQUESTS_DB = [
-    {
-        id: 1,
-        user_id: 201,
-        full_name: "Nguyễn Văn Minh",
-        email: "minhnn@fe.edu.vn",
-        document_urls:
-            "Em đã hoàn thành khóa Java Web với điểm số 9.0. Có 6 tháng kinh nghiệm làm trợ giảng thực tế, mong muốn được nâng quyền làm Creator để đóng góp lộ trình khóa học mới.",
-        status: "PENDING",
-        created_at: "2026-05-30T10:00:00Z",
-    },
-    {
-        id: 2,
-        user_id: 205,
-        full_name: "Trần Thu Hà",
-        email: "hatt@fe.edu.vn",
-        document_urls:
-            "Điểm tổng kết môn Kiểm thử tự động đạt 8.5. Đủ quỹ thời gian rảnh rỗi vào buổi tối để hỗ trợ, trực tuyến giải đáp bài tập và cứu trợ 1-1 cho các học viên khóa sau.",
-        status: "PENDING",
-        created_at: "2026-05-30T11:15:00Z",
-    },
-    {
-        id: 3,
-        user_id: 209,
-        full_name: "Lê Hoàng Long",
-        email: "longlh@fe.edu.vn",
-        document_urls:
-            "Ứng tuyển Mentor môn Microservices. Điểm kết thúc môn đạt 9.5.",
-        status: "APPROVED",
-        created_at: "2026-05-29T08:00:00Z",
-    },
-    {
-        id: 4,
-        user_id: 212,
-        full_name: "Phạm Thúy Vi",
-        email: "vipt@fe.edu.vn",
-        document_urls:
-            "Đăng ký làm nội dung khóa học ReactJS, điểm số đạt 7.5.",
-        status: "REJECTED",
-        created_at: "2026-05-29T09:30:00Z",
-    },
-];
+import creatorService from "@/services/creatorService";
 
 const ManageRequestPage = () => {
-    const [allRequests, setAllRequests] = useState([]);
+    const [pendingRequests, setPendingRequests] = useState([]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setAllRequests(MOCK_CREATOR_REQUESTS_DB);
-        }, 0);
-        return () => clearTimeout(timer);
+        const fetchPendingRequests = async () => {
+            try {
+                const data = await creatorService.getCreatorRequests();
+
+                setPendingRequests(data);
+            } catch (error) {
+                console.error(
+                    "Lỗi khi lấy data creator request tại ManageRequestPage",
+                    error,
+                );
+                toast.error("Lỗi khi lấy đơn duyệt");
+            }
+        };
+
+        fetchPendingRequests();
     }, []);
 
-    const pendingRequests = allRequests.filter(
-        (req) => req.status === "PENDING",
-    );
-    const historyRequests = allRequests.filter(
-        (req) => req.status === "APPROVED" || req.status === "REJECTED",
-    );
+    const handleApprove = async (requestId) => {
+        try {
+            await creatorService.approveCreatorRequest(requestId);
 
-    const handleProcessRequest = (requestId, actionType) => {
-        const targetStatusLabel = statusMapping[actionType] || actionType;
-        const confirmCheck = window.confirm(
-            `Xác nhận xử lý đơn số #${requestId} với trạng thái: ${targetStatusLabel}?`,
-        );
-        if (!confirmCheck) return;
+            setPendingRequests((prevPendingRequests) =>
+                prevPendingRequests.filter(
+                    (request) => request.requestId !== requestId,
+                ),
+            );
 
-        setAllRequests((prev) =>
-            prev.map((req) =>
-                req.id === requestId ? { ...req, status: actionType } : req,
-            ),
-        );
-        toast.success(`Cập nhật đơn #${requestId} thành công!`);
+            toast.success(`Duyệt đơn #${requestId} thành công`);
+        } catch (error) {
+            console.error("Lỗi khi duyệt đơn ở ManageRequestPage: ", error);
+            toast.error("Lỗi khi duyệt đơn");
+        }
+    };
+
+    const handleReject = async (requestId) => {
+        try {
+            await creatorService.rejectCreatorRequest(requestId);
+
+            setPendingRequests((prevPendingRequests) =>
+                prevPendingRequests.filter(
+                    (request) => request.requestId !== requestId,
+                ),
+            );
+
+            toast.success(`Từ chối đơn #${requestId} thành công`);
+        } catch (error) {
+            console.error("Lỗi khi từ chối đơn ở ManageRequestPage: ", error);
+            toast.error("Lỗi khi từ chối đơn");
+        }
     };
 
     return (
@@ -95,7 +76,7 @@ const ManageRequestPage = () => {
 
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
-                        <ClipboardList size={20} className="text-amber-500" />
+                        <ClipboardList size={20} className="text-primary" />
                         <h2 className="text-lg font-bold">
                             1. Danh sách đơn chờ xử lý
                         </h2>
@@ -112,14 +93,15 @@ const ManageRequestPage = () => {
                         </div>
                     ) : (
                         <RequestTable
-                            data={pendingRequests}
+                            requests={pendingRequests}
                             isHistory={false}
-                            onAction={handleProcessRequest}
+                            onApprovedClick={handleApprove}
+                            onRejectClick={handleReject}
                         />
                     )}
                 </div>
 
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
                         <History size={20} className="text-tertiary" />
                         <h2 className="text-lg font-bold">
@@ -139,7 +121,7 @@ const ManageRequestPage = () => {
                     ) : (
                         <RequestTable data={historyRequests} isHistory={true} />
                     )}
-                </div>
+                </div> */}
             </main>
         </div>
     );
