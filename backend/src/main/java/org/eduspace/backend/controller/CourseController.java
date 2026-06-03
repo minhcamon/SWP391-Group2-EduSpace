@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import org.eduspace.backend.dto.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.request.CreateCourseRequest;
 import org.eduspace.backend.dto.response.APIResponse;
 import org.eduspace.backend.dto.response.CourseResponse;
@@ -70,12 +71,13 @@ public class CourseController {
         @PutMapping("/{id}/reject")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<APIResponse<CourseResponse>> rejectCourse(
-                        @PathVariable Long id) {
+                        @PathVariable Long id,
+                        @RequestBody AdminRejectCourseRequest request) {
 
                 return ResponseEntity.ok(
                                 APIResponse.success(
                                                 "Course rejected successfully",
-                                                courseService.rejectCourse(id)));
+                                                courseService.rejectCourse(id, request)));
         }
 
         // ---------------CREATOR-----------------

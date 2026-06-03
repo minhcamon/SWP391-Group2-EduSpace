@@ -2,6 +2,7 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 
+import org.eduspace.backend.dto.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.request.CreateAssignmentRequest;
 import org.eduspace.backend.dto.request.CreateCourseRequest;
 import org.eduspace.backend.dto.request.CreateLessonRequest;
@@ -101,12 +102,16 @@ public class CourseService {
                 .build();
     }
 
-    public CourseResponse rejectCourse(Long courseId) {
+    public CourseResponse rejectCourse(Long courseId, AdminRejectCourseRequest request) {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
+        User admin = userRepository.findById(request.getAdminId())
+            .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
-        course.setStatus(CourseStatus.DRAFT);
+        course.setStatus(CourseStatus.REJECTED);
+        course.setApproveBy(admin);
+        course.setReason(request.getReason());
 
         courseRepository.save(course);
 
