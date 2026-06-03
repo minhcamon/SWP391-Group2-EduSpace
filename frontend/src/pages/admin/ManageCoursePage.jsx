@@ -9,7 +9,7 @@ const CourseManagementPage = () => {
     const [pendingCourses, setPendingCourses] = useState([]);
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchPendingCourses = async () => {
             try {
                 const data = await courseService.getPendingCourses();
 
@@ -23,7 +23,7 @@ const CourseManagementPage = () => {
             }
         };
 
-        fetchCourses();
+        fetchPendingCourses();
     }, []);
 
     const handleApprove = async (courseId) => {
