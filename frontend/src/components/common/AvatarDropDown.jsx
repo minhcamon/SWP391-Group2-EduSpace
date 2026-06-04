@@ -28,7 +28,7 @@ const AvatarDropDown = () => {
                     <p className="text-xs text-neutral-medium truncate mb-1">
                         {user?.email}
                     </p>
-                    <Badge title={roleMapping[user?.role] || "Học viên"} />
+                    <Badge><span className="text-primary">{roleMapping[user?.role] || "Học viên"}</span></Badge>
                 </div>
             </div>
 

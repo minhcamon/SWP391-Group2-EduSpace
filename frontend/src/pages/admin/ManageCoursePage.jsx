@@ -5,6 +5,7 @@ import CourseTable from "@/components/admin/CourseTable";
 import { toast } from "sonner";
 import courseService from "@/services/courseService";
 import ReloadButton from "@/components/ui/ReloadButton";
+import CardInformation from "@/components/ui/CardInformation";
 
 const CourseManagementPage = () => {
     const [pendingCourses, setPendingCourses] = useState([]);
@@ -71,17 +72,12 @@ const CourseManagementPage = () => {
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
             <main className="grow p-8 min-w-0 space-y-8">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                    <h1 className="text-2xl font-bold text-secondary tracking-tight">
-                        Kiểm duyệt khóa học
-                    </h1>
-                    <p className="text-gray-500 text-sm mt-0.5">
-                        Quản lý khóa học và Lịch sử duyệt khóa học
-                    </p>
-                </div>
+                <CardInformation description="Quản lý khóa học và Lịch sử duyệt khóa học">
+                    <h1 className="text-secondary">Kiểm duyệt khóa học</h1>
+                </CardInformation>
 
                 <div className="flex justify-end">
-                    <ReloadButton action={fetchPendingCourses}/>
+                    <ReloadButton action={fetchPendingCourses} />
                 </div>
 
                 <div className="space-y-4">
