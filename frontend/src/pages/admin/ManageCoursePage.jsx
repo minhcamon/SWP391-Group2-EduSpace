@@ -4,26 +4,27 @@ import { ClipboardList, Inbox, Clock } from "lucide-react";
 import CourseTable from "@/components/admin/CourseTable";
 import { toast } from "sonner";
 import courseService from "@/services/courseService";
+import ReloadButton from "@/components/ui/ReloadButton";
 
 const CourseManagementPage = () => {
     const [pendingCourses, setPendingCourses] = useState([]);
 
     useEffect(() => {
-        const fetchPendingCourses = async () => {
-            try {
-                const data = await courseService.getPendingCourses();
-                setPendingCourses(data);
-            } catch (error) {
-                console.error(
-                    "Lỗi khi lấy khóa học Pending tại ManagementCoursePage: ",
-                    error,
-                );
-                toast.error("Lỗi khi tải khóa học");
-            }
-        };
-
         fetchPendingCourses();
     }, []);
+
+    const fetchPendingCourses = async () => {
+        try {
+            const data = await courseService.getPendingCourses();
+            setPendingCourses(data);
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy khóa học Pending tại ManagementCoursePage: ",
+                error,
+            );
+            toast.error("Lỗi khi tải khóa học");
+        }
+    };
 
     const handleApprove = async (courseId) => {
         try {
@@ -77,6 +78,10 @@ const CourseManagementPage = () => {
                     <p className="text-gray-500 text-sm mt-0.5">
                         Quản lý khóa học và Lịch sử duyệt khóa học
                     </p>
+                </div>
+
+                <div className="flex justify-end">
+                    <ReloadButton action={fetchPendingCourses}/>
                 </div>
 
                 <div className="space-y-4">
