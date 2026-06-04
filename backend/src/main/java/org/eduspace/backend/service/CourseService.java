@@ -87,13 +87,17 @@ public class CourseService {
                                 .collect(Collectors.toList());
         }
 
-        public CourseResponse approveCourse(Long courseId) {
+        public CourseResponse approveCourse(Long courseId, Long adminId) {
 
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
+                User admin = userRepository.findById(adminId)
+                                .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
+                course.setApproveBy(admin);
                 course.setStatus(CourseStatus.PUBLISHED);
-
+                course.setReason(null);
+                
                 courseRepository.save(course);
 
                 return CourseResponse.builder()
@@ -102,6 +106,8 @@ public class CourseService {
                                 .description(course.getDescription())
                                 .status(course.getStatus().name())
                                 .createdAt(course.getCreatedAt())
+                                .approvedBy(admin.getId())
+                                .reason(null)
                                 .build();
         }
 
