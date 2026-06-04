@@ -19,7 +19,7 @@ const CourseItem = ({ course }) => {
                 <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl text-sm transition-colors border border-gray-200 cursor-pointer">
                     Chi tiết
                 </button>
-                <button className="flex-1 bg-secondary hover:bg-[#ea580c] text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors shadow-sm shadow-orange-500/10 cursor-pointer">
+                <button className="flex-1 bg-primary hover:bg-[#ea580c] text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors shadow-sm shadow-orange-500/10 cursor-pointer">
                     Đăng ký ngay
                 </button>
             </div>
