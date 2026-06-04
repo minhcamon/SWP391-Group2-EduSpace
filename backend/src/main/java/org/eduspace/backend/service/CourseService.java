@@ -2,15 +2,15 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 
-import org.eduspace.backend.dto.admin.request.AdminRejectCourseRequest;
-import org.eduspace.backend.dto.creator.request.CreateAssignmentRequest;
-import org.eduspace.backend.dto.creator.request.CreateCourseRequest;
-import org.eduspace.backend.dto.creator.request.CreateLessonRequest;
-import org.eduspace.backend.dto.creator.request.CreateModuleRequest;
-import org.eduspace.backend.dto.creator.response.AssignmentResponse;
-import org.eduspace.backend.dto.creator.response.CourseResponse;
-import org.eduspace.backend.dto.creator.response.LessonResponse;
-import org.eduspace.backend.dto.creator.response.ModuleResponse;
+import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
+import org.eduspace.backend.dto.course.request.CreateAssignmentRequest;
+import org.eduspace.backend.dto.course.request.CreateCourseRequest;
+import org.eduspace.backend.dto.course.request.CreateLessonRequest;
+import org.eduspace.backend.dto.course.request.CreateModuleRequest;
+import org.eduspace.backend.dto.course.response.AssignmentResponse;
+import org.eduspace.backend.dto.course.response.CourseResponse;
+import org.eduspace.backend.dto.course.response.LessonResponse;
+import org.eduspace.backend.dto.course.response.ModuleResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.CourseModule;
