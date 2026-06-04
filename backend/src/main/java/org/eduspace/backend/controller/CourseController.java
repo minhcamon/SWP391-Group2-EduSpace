@@ -53,12 +53,13 @@ public class CourseController {
         @PutMapping("/{id}/approve")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<APIResponse<CourseResponse>> approveCourse(
-                        @PathVariable Long id) {
+                        @PathVariable Long id,
+                        @RequestParam Long adminId) {
 
                 return ResponseEntity.ok(
                                 APIResponse.success(
                                                 "Course approved successfully",
-                                                courseService.approveCourse(id)));
+                                                courseService.approveCourse(id, adminId)));
         }
 
         @Operation(summary = "Từ chối khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang REJECTED.")
