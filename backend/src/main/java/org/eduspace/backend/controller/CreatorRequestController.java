@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.eduspace.backend.dto.common.APIResponse;
-import org.eduspace.backend.dto.creator.request.CreatorRequestApprovalRequest;
-import org.eduspace.backend.dto.creator.response.CreatorRequestApprovalResponse;
+import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRequest;
+import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CreatorRequestService;
 import org.springframework.http.ResponseEntity;

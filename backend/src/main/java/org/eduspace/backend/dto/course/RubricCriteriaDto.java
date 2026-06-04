@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.common;
+package org.eduspace.backend.dto.course;
 
 import lombok.*;
 
