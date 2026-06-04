@@ -1,3 +1,4 @@
+import CardInformation from "@/components/common/CardInformation";
 import CourseItem from "@/components/features/course/CourseItem";
 import Footer from "@/components/layouts/Footer";
 import Header from "@/components/layouts/Header";
@@ -30,7 +31,7 @@ const ListCoursesPage = () => {
             <Header />
 
             <main className="w-full mx-auto px-4 py-12 grow container">
-                <div className="text-center md:text-left mb-10">
+                {/* <div className="text-center md:text-left mb-10">
                     <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
                         Khám phá các khóa học tại{" "}
                         <span className="text-primary">
@@ -41,9 +42,12 @@ const ListCoursesPage = () => {
                         Học tập theo mô hình lớp học 10 người — Ghép cặp tương
                         tác cùng tiến bộ.
                     </p>
-                </div>
-
                 <hr className="border-gray-200 mb-10" />
+                </div> */}
+
+                <CardInformation />
+
+                <hr className="rounded-2xl border-gray-200 mb-10" />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {courses.map((course) => (

@@ -88,16 +88,6 @@ const Sidebar = () => {
                 },
             ],
         },
-        {
-            groupName: "Cấu hình",
-            items: [
-                {
-                    text: "Cài đặt hệ thống",
-                    icon: Settings,
-                    path: "/creator/settings",
-                },
-            ],
-        },
     ];
 
     const menuMapping = {
