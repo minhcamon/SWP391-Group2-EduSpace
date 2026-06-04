@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.eduspace.backend.enums.CreatorRequestStatus;
+import org.eduspace.backend.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +28,7 @@ public class CreatorRequest {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private CreatorRequestStatus status = CreatorRequestStatus.PENDING;
+    private RequestStatus status = RequestStatus.PENDING;
 
     @Column(name = "processed_at")
     private LocalDateTime processedAt;

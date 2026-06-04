@@ -1,6 +1,6 @@
 package org.eduspace.backend.enums;
 
-public enum CreatorRequestStatus {
+public enum RequestStatus {
     PENDING,
     APPROVED,
     REJECTED
