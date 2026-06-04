@@ -1,8 +1,8 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.creator.request;
 
 import java.util.List;
 
-import org.eduspace.backend.dto.RubricCriteriaDto;
+import org.eduspace.backend.dto.common.RubricCriteriaDto;
 
 import lombok.Data;
 

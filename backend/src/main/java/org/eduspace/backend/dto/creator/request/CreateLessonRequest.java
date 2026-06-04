@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.creator.request;
 
 import org.eduspace.backend.enums.LessonContentType;
 import lombok.Data;

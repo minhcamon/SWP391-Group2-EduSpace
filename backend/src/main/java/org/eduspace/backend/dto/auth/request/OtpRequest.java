@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.auth.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CheckEmailRequest {
-    @NotBlank(message = "Cannot be left email blank")
+public class OtpRequest {
+
+    @NotBlank(message = "Email cannot be blank")
     @Email(message = "Invalid email")
     private String email;
 }
