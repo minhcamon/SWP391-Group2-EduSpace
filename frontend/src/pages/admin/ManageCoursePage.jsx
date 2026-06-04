@@ -12,7 +12,6 @@ const CourseManagementPage = () => {
         const fetchPendingCourses = async () => {
             try {
                 const data = await courseService.getPendingCourses();
-
                 setPendingCourses(data);
             } catch (error) {
                 console.error(
@@ -46,7 +45,12 @@ const CourseManagementPage = () => {
 
     const handleReject = async (courseId) => {
         try {
-            await courseService.rejectCourse(courseId);
+            const payload = {
+                reason: "Alo Vu a Vu",
+                adminId: 4,
+            };
+
+            await courseService.rejectCourse(courseId, payload);
 
             toast.success("Từ chối khóa học thành công");
 
