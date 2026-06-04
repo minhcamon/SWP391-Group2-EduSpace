@@ -2,7 +2,8 @@ package org.eduspace.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.eduspace.backend.dto.RubricCriteriaDto;
+
+import org.eduspace.backend.dto.common.RubricCriteriaDto;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 

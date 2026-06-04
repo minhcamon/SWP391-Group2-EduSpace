@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import org.eduspace.backend.dto.request.AdminRejectCourseRequest;
-import org.eduspace.backend.dto.request.CreateCourseRequest;
-import org.eduspace.backend.dto.response.APIResponse;
-import org.eduspace.backend.dto.response.CourseResponse;
+import org.eduspace.backend.dto.admin.request.AdminRejectCourseRequest;
+import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.creator.request.CreateCourseRequest;
+import org.eduspace.backend.dto.creator.response.CourseResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.springframework.http.ResponseEntity;

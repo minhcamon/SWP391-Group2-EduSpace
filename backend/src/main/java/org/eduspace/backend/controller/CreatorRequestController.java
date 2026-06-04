@@ -7,9 +7,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
-import org.eduspace.backend.dto.request.CreatorRequestApprovalRequest;
-import org.eduspace.backend.dto.response.APIResponse;
-import org.eduspace.backend.dto.response.CreatorRequestApprovalResponse;
+
+import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.creator.request.CreatorRequestApprovalRequest;
+import org.eduspace.backend.dto.creator.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CreatorRequestService;
 import org.springframework.http.ResponseEntity;

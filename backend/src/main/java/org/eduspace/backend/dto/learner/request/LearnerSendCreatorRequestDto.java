@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.learner.request;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,11 +1,12 @@
 package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.eduspace.backend.dto.request.LoginRequest;
-import org.eduspace.backend.dto.request.RegisterRequest;
-import org.eduspace.backend.dto.request.ResetPasswordRequest;
-import org.eduspace.backend.dto.response.AuthResponse;
-import org.eduspace.backend.dto.response.UserResponse;
+
+import org.eduspace.backend.dto.auth.request.LoginRequest;
+import org.eduspace.backend.dto.auth.request.RegisterRequest;
+import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
+import org.eduspace.backend.dto.auth.response.AuthResponse;
+import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.UserStatus;
 import org.eduspace.backend.repository.UserRepository;

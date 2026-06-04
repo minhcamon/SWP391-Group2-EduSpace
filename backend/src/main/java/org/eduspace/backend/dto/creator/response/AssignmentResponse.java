@@ -1,11 +1,13 @@
-package org.eduspace.backend.dto.response;
+package org.eduspace.backend.dto.creator.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.eduspace.backend.dto.RubricCriteriaDto;
+
 import java.util.List;
+
+import org.eduspace.backend.dto.common.RubricCriteriaDto;
 
 @Data
 @Builder
