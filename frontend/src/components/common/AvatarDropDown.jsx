@@ -4,13 +4,16 @@ import { roleMapping } from "@/lib/data";
 import { User, Shield, BookOpen } from "lucide-react";
 import Avatar from "@/components/layouts/Avatar";
 import LogoutButton from "@/components/layouts/LogoutButton";
+import Badge from "../ui/Badge";
 
 const AvatarDropDown = () => {
     const { user } = useAuth();
 
     return (
-        <div className="absolute right-0 mt-
-        2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+            className="absolute right-0 mt-
+        2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-150"
+        >
             {/* User Profile Summary Header */}
             <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
                 <Avatar
@@ -25,9 +28,7 @@ const AvatarDropDown = () => {
                     <p className="text-xs text-neutral-medium truncate mb-1">
                         {user?.email}
                     </p>
-                    <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded-full">
-                        {roleMapping[user?.role] || "Học viên"}
-                    </span>
+                    <Badge title={roleMapping[user?.role] || "Học viên"} />
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-import CardInformation from "@/components/common/CardInformation";
+import CardInformation from "@/components/ui/CardInformation";
 import CourseItem from "@/components/features/course/CourseItem";
 import Footer from "@/components/layouts/Footer";
 import Header from "@/components/layouts/Header";
@@ -10,21 +10,18 @@ const ListCoursesPage = () => {
     const [courses, setCourses] = useState([]);
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const data = await courseService.getPublishedCourses();
-                setCourses(data);
-            } catch (error) {
-                console.error(
-                    "Lỗi fetch khóa học tại ListCoursesPage: ",
-                    error,
-                );
-                toast.error("Lỗi khi tải khóa học");
-            }
-        };
-
         fetchCourses();
     }, []);
+
+    const fetchCourses = async () => {
+        try {
+            const data = await courseService.getPublishedCourses();
+            setCourses(data);
+        } catch (error) {
+            console.error("Lỗi fetch khóa học tại ListCoursesPage: ", error);
+            toast.error("Lỗi khi tải khóa học");
+        }
+    };
 
     return (
         <div className="min-h-screen w-full bg-gray-50 flex flex-col">

@@ -13,6 +13,7 @@ import Avatar from "./Avatar";
 import LogoutButton from "./LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
+import Badge from "../ui/Badge";
 
 const Sidebar = () => {
     const { user } = useAuth();
@@ -163,9 +164,7 @@ const Sidebar = () => {
                         <p className="text-sm font-bold text-gray-800 truncate">
                             {user.fullName}
                         </p>
-                        <p className="mt-2 text-xs text-gray-500 truncate">
-                            {roleMapping[user.role]}
-                        </p>
+                        <Badge title={roleMapping[user.role]} />
                     </div>
                 </div>
 
