@@ -5,8 +5,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.eduspace.backend.dto.response.APIResponse;
-import org.eduspace.backend.dto.response.UserResponse;
+
+import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

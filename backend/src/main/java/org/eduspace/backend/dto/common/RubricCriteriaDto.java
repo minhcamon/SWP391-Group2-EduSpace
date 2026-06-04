@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto;
+package org.eduspace.backend.dto.common;
 
 import lombok.*;
 

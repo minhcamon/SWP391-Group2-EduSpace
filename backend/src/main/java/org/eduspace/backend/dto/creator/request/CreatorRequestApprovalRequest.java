@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.creator.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

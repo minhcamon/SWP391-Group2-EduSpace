@@ -1,6 +1,6 @@
 package org.eduspace.backend.exception;
 
-import org.eduspace.backend.dto.response.APIResponse;
+import org.eduspace.backend.dto.common.APIResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;

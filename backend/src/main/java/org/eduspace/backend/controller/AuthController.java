@@ -9,15 +9,15 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
-import org.eduspace.backend.dto.request.CheckEmailRequest;
-import org.eduspace.backend.dto.request.CheckUsernameRequest;
-import org.eduspace.backend.dto.request.LoginRequest;
-import org.eduspace.backend.dto.response.APIResponse;
-import org.eduspace.backend.dto.request.OtpRequest;
-import org.eduspace.backend.dto.request.RegisterRequest;
-import org.eduspace.backend.dto.request.ResetPasswordRequest;
-import org.eduspace.backend.dto.request.VerifyOtpRequest;
-import org.eduspace.backend.dto.response.AuthResponse;
+import org.eduspace.backend.dto.auth.request.CheckEmailRequest;
+import org.eduspace.backend.dto.auth.request.CheckUsernameRequest;
+import org.eduspace.backend.dto.auth.request.LoginRequest;
+import org.eduspace.backend.dto.auth.request.OtpRequest;
+import org.eduspace.backend.dto.auth.request.RegisterRequest;
+import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
+import org.eduspace.backend.dto.auth.request.VerifyOtpRequest;
+import org.eduspace.backend.dto.auth.response.AuthResponse;
+import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.repository.UserRepository;
 import org.eduspace.backend.security.JwtUtil;
 import org.eduspace.backend.service.AuthService;
