@@ -65,7 +65,7 @@ const RegisterForm = () => {
                     <div className="mb-8">
                         <h1 className="font-bold text-3xl md:text-4xl text-neutral-dark mb-2 tracking-tight">Tạo tài khoản</h1>
                         <p className="text-sm text-neutral-medium leading-relaxed">
-                            Tham gia eduSpace để bắt đầu hành trình luyện thi IELTS chuyên sâu của bạn.
+                            Tham gia eduSpace để bắt đầu hành trình của bạn.
                         </p>
                     </div>
 

@@ -261,4 +261,71 @@ public class CourseService {
                                 .modules(moduleResponses)
                                 .build();
         }
+
+
+        public CourseResponse getCourseById(Long courseId) {
+                Course course = courseRepository.findById(courseId)
+                                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+                if (course.isDeleted()) {
+                        throw new RuntimeException("Course has been deleted");
+                }
+
+                // Fetch modules
+                List<CourseModule> modules = moduleRepository.findByCourseIdOrderBySortOrder(courseId);
+
+                List<ModuleResponse> moduleResponses = modules.stream()
+                                .map(module -> {
+                                        // Fetch lessons for this module
+                                        List<Lesson> lessons = lessonRepository
+                                                        .findByModuleIdOrderBySortOrder(module.getId());
+                                        List<LessonResponse> lessonResponses = lessons.stream()
+                                                        .map(lesson -> LessonResponse.builder()
+                                                                        .id(lesson.getId())
+                                                                        .title(lesson.getTitle())
+                                                                        .contentType(lesson.getContentType().name())
+                                                                        .contentUrl(lesson.getContentUrl())
+                                                                        .sortOrder(lesson.getSortOrder())
+                                                                        .build())
+                                                        .toList();
+
+                                        // Fetch assignment for this module
+                                        Assignment assignment = assignmentRepository.findByModuleId(module.getId())
+                                                        .orElse(null);
+                                        AssignmentResponse assignmentResponse = null;
+                                        if (assignment != null) {
+                                                assignmentResponse = AssignmentResponse.builder()
+                                                                .id(assignment.getId())
+                                                                .title(assignment.getTitle())
+                                                                .description(assignment.getDescription())
+                                                                .rubricCriteria(assignment.getRubricCriteria())
+                                                                .build();
+                                        }
+
+                                        return ModuleResponse.builder()
+                                                        .id(module.getId())
+                                                        .title(module.getTitle())
+                                                        .priority(module.getPriority().name())
+                                                        .days(module.getDays())
+                                                        .baseExp(module.getBaseExp())
+                                                        .speedBonusExp(module.getSpeedBonusExp())
+                                                        .sortOrder(module.getSortOrder())
+                                                        .lessons(lessonResponses)
+                                                        .assignment(assignmentResponse)
+                                                        .build();
+                                })
+                                .toList();
+
+                return CourseResponse.builder()
+                                .id(course.getId())
+                                .title(course.getTitle())
+                                .description(course.getDescription())
+                                .status(course.getStatus().name())
+                                .createdAt(course.getCreatedAt())
+                                .creatorFullName(course.getCreator().getFullName())
+                                .creatorAvatarUrl(course.getCreator().getAvatarUrl())
+                                .creatorEmail(course.getCreator().getEmail())
+                                .modules(moduleResponses)
+                                .build();
+        }
 }
