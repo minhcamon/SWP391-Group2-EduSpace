@@ -3,8 +3,8 @@ package org.eduspace.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-import org.eduspace.backend.dto.creator.request.CreatorRequestApprovalRequest;
-import org.eduspace.backend.dto.creator.response.CreatorRequestApprovalResponse;
+import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRequest;
+import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.entity.CreatorRequest;
 import org.eduspace.backend.enums.CreatorRequestStatus;
 import org.eduspace.backend.enums.Role;

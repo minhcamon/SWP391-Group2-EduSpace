@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.creator.request;
+package org.eduspace.backend.dto.course.request;
 
 import java.util.List;
 
