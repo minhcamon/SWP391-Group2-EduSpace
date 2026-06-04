@@ -18,7 +18,7 @@ const Sidebar = () => {
     const { user } = useAuth();
 
     if (user === null) {
-        return null; 
+        return null;
     }
 
     const location = useLocation();
@@ -37,11 +37,6 @@ const Sidebar = () => {
                     text: "Dashboard",
                     icon: LayoutDashboard,
                     path: "/admin/dashboard",
-                },
-                {
-                    text: "Thống kê thu nhập",
-                    icon: BarChart3,
-                    path: "/admin/analytics",
                 },
             ],
         },
@@ -67,16 +62,6 @@ const Sidebar = () => {
                     text: "Kiểm duyệt duyệt đơn",
                     icon: Form,
                     path: "/admin/creator-requests",
-                },
-            ],
-        },
-        {
-            groupName: "Cấu hình",
-            items: [
-                {
-                    text: "Cài đặt hệ thống",
-                    icon: Settings,
-                    path: "/admin/settings",
                 },
             ],
         },
