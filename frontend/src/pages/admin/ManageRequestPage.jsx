@@ -5,27 +5,28 @@ import { statusMapping } from "@/lib/data";
 import RequestTable from "@/components/admin/RequestTable";
 import { toast } from "sonner";
 import creatorService from "@/services/creatorService";
+import ReloadButton from "@/components/ui/ReloadButton";
 
 const ManageRequestPage = () => {
     const [pendingRequests, setPendingRequests] = useState([]);
 
     useEffect(() => {
-        const fetchPendingRequests = async () => {
-            try {
-                const data = await creatorService.getCreatorRequests();
-
-                setPendingRequests(data);
-            } catch (error) {
-                console.error(
-                    "Lỗi khi lấy data creator request tại ManageRequestPage",
-                    error,
-                );
-                toast.error("Lỗi khi lấy đơn duyệt");
-            }
-        };
-
         fetchPendingRequests();
     }, []);
+
+    const fetchPendingRequests = async () => {
+        try {
+            const data = await creatorService.getCreatorRequests();
+
+            setPendingRequests(data);
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy data creator request tại ManageRequestPage",
+                error,
+            );
+            toast.error("Lỗi khi lấy đơn duyệt");
+        }
+    };
 
     const handleApprove = async (requestId) => {
         try {
@@ -72,6 +73,10 @@ const ManageRequestPage = () => {
                     <p className="text-gray-500 text-sm mt-0.5">
                         Quản lý duyệt đơn và Lịch sử duyệt đơn
                     </p>
+                </div>
+
+                <div className="flex justify-end">
+                    <ReloadButton action={fetchPendingRequests} />
                 </div>
 
                 <div className="space-y-4">
