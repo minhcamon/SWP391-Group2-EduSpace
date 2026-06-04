@@ -10,10 +10,7 @@ const CourseItem = ({ course }) => {
                 </h3>
 
                 <div className="mb-4">
-                    <Badge
-                        textColor="text-secondary"
-                        title={course.creatorFullName}
-                    />
+                    <Badge><span className="text-tertiary">Tác giả: {course.creatorFullName}</span></Badge>
                 </div>
 
                 <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
