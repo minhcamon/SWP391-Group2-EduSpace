@@ -78,7 +78,7 @@ const ManageRequestPage = () => {
                     <div className="flex items-center gap-2 text-gray-900 px-1">
                         <ClipboardList size={20} className="text-primary" />
                         <h2 className="text-lg font-bold">
-                            1. Danh sách đơn chờ xử lý
+                            Danh sách đơn chờ xử lý
                         </h2>
                     </div>
                     {pendingRequests.length === 0 ? (

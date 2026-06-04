@@ -68,9 +68,9 @@ const courseService = {
     }
   },
 
-  rejectCourse: async (courseId) => {
+  rejectCourse: async (courseId, payload) => {
     try {
-      const response = await api.put(`/course/${courseId}/reject`);
+      const response = await api.put(`/course/${courseId}/reject`, payload);
       return response.data.data;
     } catch (error) {
       console.error('Reject Courses error at CourseService:', error);
