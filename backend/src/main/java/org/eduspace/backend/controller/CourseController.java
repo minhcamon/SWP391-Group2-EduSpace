@@ -12,10 +12,13 @@ import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseResponse;
+import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -139,5 +142,13 @@ public class CourseController {
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
         }
-
+        @DeleteMapping("/{id}")
+        public ResponseEntity<?> deleteCourse(@PathVariable("id") Long courseId) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                
+                User currentUser = (User) authentication.getPrincipal();
+                
+                courseService.deleteCourse(courseId, currentUser);
+                return ResponseEntity.ok("Deleted");
+        }
 }
