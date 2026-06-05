@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRequest;
 import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
+import org.eduspace.backend.dto.creator_request.response.CreatorRequestResponse;
 import org.eduspace.backend.entity.CreatorRequest;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.enums.Role;
@@ -13,6 +14,7 @@ import org.eduspace.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.eduspace.backend.entity.User;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,5 +107,31 @@ public class CreatorRequestService {
                                 .build();
 
                 creatorRequestRepository.save(newRequest);
+        }
+        @Transactional
+        public List<CreatorRequestResponse> getAllCreatorRequests() {
+                List<CreatorRequest> requests = creatorRequestRepository.findAllByOrderByCreatedAtDesc();
+    
+                List<CreatorRequestResponse> responseList = new ArrayList<>();
+
+                for (CreatorRequest req : requests) {
+                        Long adminId = null;
+                        if (req.getApprovedBy() != null) {
+                        adminId = req.getApprovedBy().getId();
+                        }
+                        
+                        CreatorRequestResponse res = CreatorRequestResponse.builder()
+                                .requestId(req.getId())
+                                .senderId(req.getLearner().getId())
+                                .senderName(req.getLearner().getFullName())
+                                .senderEmail(req.getLearner().getEmail())
+                                .approvedId(adminId) 
+                                .status(req.getStatus().name()) 
+                                .createdAt(req.getProcessedAt())
+                                .build();
+                                
+                        responseList.add(res);
+                }
+                return responseList;
         }
 }
