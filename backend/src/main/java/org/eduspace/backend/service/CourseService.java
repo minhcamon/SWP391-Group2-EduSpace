@@ -351,4 +351,17 @@ public class CourseService {
                                 .modules(moduleResponses)
                                 .build();
         }
+        public void deleteCourse(Long courseId, User currentUser) {
+                Course course = courseRepository.findById(courseId)
+                        .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                if (!currentUser.getRole().name().equals("ADMIN") && 
+                        !course.getCreator().getId().equals(currentUser.getId())) {
+                        
+                        throw new RuntimeException("Bạn không có quyền xóa khóa học của người khác!");
+                }
+
+                course.setDeleted(true);
+                courseRepository.save(course);
+        }
 }
