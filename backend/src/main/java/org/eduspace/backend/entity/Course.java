@@ -37,13 +37,6 @@ public class Course {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id")
-    private User approveBy;
-
-    @Column(name = "reason", columnDefinition = "TEXT")
-    private String reason;
-
     @Column(name = "is_deleted")
     private boolean isDeleted;
 

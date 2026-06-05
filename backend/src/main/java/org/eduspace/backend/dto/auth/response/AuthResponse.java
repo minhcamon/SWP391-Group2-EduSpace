@@ -1,5 +1,6 @@
 package org.eduspace.backend.dto.auth.response;
 
+
 import org.eduspace.backend.dto.user.response.UserResponse;
 
 import lombok.AllArgsConstructor;

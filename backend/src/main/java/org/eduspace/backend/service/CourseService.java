@@ -14,11 +14,14 @@ import org.eduspace.backend.dto.course.response.ModuleResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.CourseModule;
+import org.eduspace.backend.entity.CourseRequest;
 import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.CourseStatus;
+import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.repository.AssignmentRepository;
 import org.eduspace.backend.repository.CourseRepository;
+import org.eduspace.backend.repository.CourseRequestRepository;
 import org.eduspace.backend.repository.LessonRepository;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.UserRepository;
@@ -36,7 +39,7 @@ public class CourseService {
         private final AssignmentRepository assignmentRepository;
         private final LessonRepository lessonRepository;
         private final UserRepository userRepository;
-
+        private final CourseRequestRepository courseRequestRepository;
         public List<CourseResponse> getCoursesByCreatorId(Long creatorId) {
                 List<Course> courses = courseRepository.getCoursesByCreatorId(creatorId);
 
@@ -93,12 +96,20 @@ public class CourseService {
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
                 User admin = userRepository.findById(adminId)
                                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
-
-                course.setApproveBy(admin);
+                        
                 course.setStatus(CourseStatus.PUBLISHED);
-                course.setReason(null);
-
                 courseRepository.save(course);
+
+                CourseRequest courseLog = CourseRequest.builder()
+                        .course(course)
+                        .adminId(adminId)
+                        .status(RequestStatus.APPROVED)
+                        .createdAt(LocalDateTime.now())
+                        .processedAt(LocalDateTime.now())
+                        .reason(null)
+                        .build();
+
+                courseRequestRepository.save(courseLog);
 
                 return CourseResponse.builder()
                                 .id(course.getId())
@@ -119,10 +130,18 @@ public class CourseService {
                                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
                 course.setStatus(CourseStatus.REJECTED);
-                course.setApproveBy(admin);
-                course.setReason(request.getReason());
-
                 courseRepository.save(course);
+
+                CourseRequest courseLog = CourseRequest.builder()
+                        .course(course)
+                        .adminId(admin.getId()) 
+                        .status(RequestStatus.REJECTED) 
+                        .createdAt(LocalDateTime.now())
+                        .processedAt(LocalDateTime.now())
+                        .reason(request.getReason())
+                        .build();
+                        
+                courseRequestRepository.save(courseLog);
 
                 return CourseResponse.builder()
                                 .id(course.getId())
@@ -130,8 +149,6 @@ public class CourseService {
                                 .description(course.getDescription())
                                 .status(course.getStatus().name())
                                 .createdAt(course.getCreatedAt())
-                                .approvedBy(course.getApproveBy() != null ? course.getApproveBy().getId() : null)
-                                .reason(course.getReason())
                                 .build();
         }
 
