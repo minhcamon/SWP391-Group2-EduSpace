@@ -127,11 +127,11 @@ public class CourseService {
                                 .build();
         }
 
-        public CourseResponse rejectCourse(Long courseId, AdminRejectCourseRequest request) {
+        public CourseResponse rejectCourse(Long courseId, Long adminId, AdminRejectCourseRequest request) {
 
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
-                User admin = userRepository.findById(request.getAdminId())
+                User admin = userRepository.findById(adminId)
                                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
                 course.setStatus(CourseStatus.REJECTED);
@@ -139,7 +139,7 @@ public class CourseService {
 
                 CourseRequest courseLog = CourseRequest.builder()
                                 .course(course)
-                                .adminId(admin.getId())
+                                .adminId(adminId)
                                 .status(RequestStatus.REJECTED)
                                 .createdAt(LocalDateTime.now())
                                 .processedAt(LocalDateTime.now())
@@ -155,6 +155,7 @@ public class CourseService {
                                 .status(course.getStatus().name())
                                 .reason(request.getReason())
                                 .createdAt(course.getCreatedAt())
+                                .approvedBy(admin.getId())
                                 .build();
         }
 
