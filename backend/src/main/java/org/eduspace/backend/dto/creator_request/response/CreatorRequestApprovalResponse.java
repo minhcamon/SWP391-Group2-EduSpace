@@ -13,8 +13,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CreatorRequestApprovalResponse {
     private Long id;
-    private String status;
     private Long learnerId;
+    private String learnerName;
+    private String learnerEmail;
     private Long approvedBy;
     private LocalDateTime processedAt;
+    private String status;
+    private String reason;
 }
