@@ -11,6 +11,7 @@ import java.util.List;
 import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
+import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
@@ -118,6 +119,29 @@ public class CourseController {
                                 APIResponse.success("Course created successfully", courseId));
         }
 
+        @Operation(summary = "Cập nhật khóa học (CREATOR)", description = "Cập nhật tiêu đề hoặc mô tả khóa học. Chỉ có thể cập nhật khóa học ở trạng thái DRAFT hoặc REJECTED.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Cập nhật khóa học thành công"),
+                        @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
+                        @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR")
+        })
+        @PutMapping("/{id}")
+        @PreAuthorize("hasRole('CREATOR')")
+        public ResponseEntity<APIResponse<CourseResponse>> updateCourse(
+                        @PathVariable Long id,
+                        @RequestBody UpdateCourseRequest request) {
+                Long creatorId = SecurityUtil.getCurrentUserId();
+                boolean isUpdated = courseService.updateCourse(id, request, creatorId);
+
+                if (!isUpdated) {
+                        return ResponseEntity.badRequest().build();
+                }
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Course updated successfully", null));
+        }
+
         // Public
         @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
         @ApiResponses(value = {
@@ -142,12 +166,13 @@ public class CourseController {
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
         }
+
         @DeleteMapping("/{id}")
         public ResponseEntity<?> deleteCourse(@PathVariable("id") Long courseId) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                
+
                 User currentUser = (User) authentication.getPrincipal();
-                
+
                 courseService.deleteCourse(courseId, currentUser);
                 return ResponseEntity.ok("Deleted");
         }

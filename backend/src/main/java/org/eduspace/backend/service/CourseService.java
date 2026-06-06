@@ -7,6 +7,10 @@ import org.eduspace.backend.dto.course.request.CreateAssignmentRequest;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.CreateLessonRequest;
 import org.eduspace.backend.dto.course.request.CreateModuleRequest;
+import org.eduspace.backend.dto.course.request.UpdateAssignmentRequest;
+import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
+import org.eduspace.backend.dto.course.request.UpdateLessonRequest;
+import org.eduspace.backend.dto.course.request.UpdateModuleRequest;
 import org.eduspace.backend.dto.course.response.AssignmentResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.course.response.LessonResponse;
@@ -40,6 +44,7 @@ public class CourseService {
         private final LessonRepository lessonRepository;
         private final UserRepository userRepository;
         private final CourseRequestRepository courseRequestRepository;
+
         public List<CourseResponse> getCoursesByCreatorId(Long creatorId) {
                 List<Course> courses = courseRepository.getCoursesByCreatorId(creatorId);
 
@@ -96,18 +101,18 @@ public class CourseService {
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
                 User admin = userRepository.findById(adminId)
                                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
-                        
+
                 course.setStatus(CourseStatus.PUBLISHED);
                 courseRepository.save(course);
 
                 CourseRequest courseLog = CourseRequest.builder()
-                        .course(course)
-                        .adminId(adminId)
-                        .status(RequestStatus.APPROVED)
-                        .createdAt(LocalDateTime.now())
-                        .processedAt(LocalDateTime.now())
-                        .reason(null)
-                        .build();
+                                .course(course)
+                                .adminId(adminId)
+                                .status(RequestStatus.APPROVED)
+                                .createdAt(LocalDateTime.now())
+                                .processedAt(LocalDateTime.now())
+                                .reason(null)
+                                .build();
 
                 courseRequestRepository.save(courseLog);
 
@@ -133,14 +138,14 @@ public class CourseService {
                 courseRepository.save(course);
 
                 CourseRequest courseLog = CourseRequest.builder()
-                        .course(course)
-                        .adminId(admin.getId()) 
-                        .status(RequestStatus.REJECTED) 
-                        .createdAt(LocalDateTime.now())
-                        .processedAt(LocalDateTime.now())
-                        .reason(request.getReason())
-                        .build();
-                        
+                                .course(course)
+                                .adminId(admin.getId())
+                                .status(RequestStatus.REJECTED)
+                                .createdAt(LocalDateTime.now())
+                                .processedAt(LocalDateTime.now())
+                                .reason(request.getReason())
+                                .build();
+
                 courseRequestRepository.save(courseLog);
 
                 return CourseResponse.builder()
@@ -285,7 +290,6 @@ public class CourseService {
                                 .build();
         }
 
-
         public CourseResponse getCourseById(Long courseId) {
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
@@ -351,17 +355,116 @@ public class CourseService {
                                 .modules(moduleResponses)
                                 .build();
         }
+
         public void deleteCourse(Long courseId, User currentUser) {
                 Course course = courseRepository.findById(courseId)
-                        .orElseThrow(() -> new RuntimeException("Course not found"));
+                                .orElseThrow(() -> new RuntimeException("Course not found"));
 
-                if (!currentUser.getRole().name().equals("ADMIN") && 
-                        !course.getCreator().getId().equals(currentUser.getId())) {
-                        
+                if (!currentUser.getRole().name().equals("ADMIN") &&
+                                !course.getCreator().getId().equals(currentUser.getId())) {
+
                         throw new RuntimeException("Bạn không có quyền xóa khóa học của người khác!");
                 }
 
                 course.setDeleted(true);
                 courseRepository.save(course);
+        }
+
+        public boolean updateCourse(Long courseId, UpdateCourseRequest request, Long creatorId) {
+                Course course = courseRepository.findById(courseId)
+                                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                if (!course.getCreator().getId().equals(creatorId)) {
+                        throw new RuntimeException("Only course creator can update this course");
+                }
+
+                if (course.getStatus() != CourseStatus.DRAFT && course.getStatus() != CourseStatus.REJECTED) {
+                        throw new RuntimeException("Can only update courses in DRAFT or REJECTED status");
+                }
+
+                if (request.getTitle() != null && !request.getTitle().isEmpty()) {
+                        course.setTitle(request.getTitle());
+                }
+                if (request.getDescription() != null && !request.getDescription().isEmpty()) {
+                        course.setDescription(request.getDescription());
+                }
+
+                courseRepository.save(course);
+
+                // Update modules if provided
+                if (request.getModules() != null) {
+                        for (UpdateModuleRequest moduleRequest : request.getModules()) {
+                                if (moduleRequest.getId() != null) {
+                                        CourseModule module = moduleRepository.findById(moduleRequest.getId())
+                                                        .orElseThrow(() -> new RuntimeException("Module not found"));
+
+                                        if (moduleRequest.getTitle() != null)
+                                                module.setTitle(moduleRequest.getTitle());
+                                        if (moduleRequest.getPriority() != null)
+                                                module.setPriority(moduleRequest.getPriority());
+                                        if (moduleRequest.getDays() != null)
+                                                module.setDays(moduleRequest.getDays());
+                                        if (moduleRequest.getBaseExp() != null)
+                                                module.setBaseExp(moduleRequest.getBaseExp());
+                                        if (moduleRequest.getSpeedBonusExp() != null)
+                                                module.setSpeedBonusExp(moduleRequest.getSpeedBonusExp());
+                                        if (moduleRequest.getSortOrder() != null)
+                                                module.setSortOrder(moduleRequest.getSortOrder());
+
+                                        moduleRepository.save(module);
+
+                                        // Update lessons
+                                        if (moduleRequest.getLessons() != null) {
+                                                for (UpdateLessonRequest lessonRequest : moduleRequest.getLessons()) {
+                                                        if (lessonRequest.getId() != null) {
+                                                                Lesson lesson = lessonRepository
+                                                                                .findById(lessonRequest.getId())
+                                                                                .orElseThrow(() -> new RuntimeException(
+                                                                                                "Lesson not found"));
+
+                                                                if (lessonRequest.getTitle() != null)
+                                                                        lesson.setTitle(lessonRequest.getTitle());
+                                                                if (lessonRequest.getContentType() != null)
+                                                                        lesson.setContentType(
+                                                                                        lessonRequest.getContentType());
+                                                                if (lessonRequest.getContentUrl() != null)
+                                                                        lesson.setContentUrl(
+                                                                                        lessonRequest.getContentUrl());
+                                                                if (lessonRequest.getSortOrder() != null)
+                                                                        lesson.setSortOrder(
+                                                                                        lessonRequest.getSortOrder());
+
+                                                                lessonRepository.save(lesson);
+                                                        }
+                                                }
+                                        }
+
+                                        // Update assignment
+                                        if (moduleRequest.getAssignment() != null) {
+                                                UpdateAssignmentRequest assignmentRequest = moduleRequest
+                                                                .getAssignment();
+                                                if (assignmentRequest.getId() != null) {
+                                                        Assignment assignment = assignmentRepository
+                                                                        .findById(assignmentRequest.getId())
+                                                                        .orElseThrow(() -> new RuntimeException(
+                                                                                        "Assignment not found"));
+
+                                                        if (assignmentRequest.getTitle() != null)
+                                                                assignment.setTitle(assignmentRequest.getTitle());
+                                                        if (assignmentRequest.getDescription() != null)
+                                                                assignment.setDescription(
+                                                                                assignmentRequest.getDescription());
+                                                        if (assignmentRequest.getRubricCriteria() != null)
+                                                                assignment.setRubricCriteria(
+                                                                                assignmentRequest.getRubricCriteria());
+
+                                                        assignmentRepository.save(assignment);
+                                                }
+                                        }
+                                }
+                        }
+                }
+
+                return true;
         }
 }
