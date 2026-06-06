@@ -380,7 +380,7 @@ public class CourseService {
                         throw new RuntimeException("Only course creator can update this course");
                 }
 
-                if (course.getStatus() != CourseStatus.DRAFT && course.getStatus() != CourseStatus.REJECTED) {
+                if (course.getStatus() != CourseStatus.DRAFT && course.getStatus() != CourseStatus.REJECTED && course.getStatus() != CourseStatus.ARCHIVED) {
                         throw new RuntimeException("Can only update courses in DRAFT or REJECTED status");
                 }
 
@@ -390,7 +390,9 @@ public class CourseService {
                 if (request.getDescription() != null && !request.getDescription().isEmpty()) {
                         course.setDescription(request.getDescription());
                 }
-
+                if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+                        course.setStatus(CourseStatus.valueOf(request.getStatus().toUpperCase()));
+                }
                 courseRepository.save(course);
 
                 // Update modules if provided

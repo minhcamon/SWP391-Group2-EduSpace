@@ -16,6 +16,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import useCourseManagement from '../hooks/useCourseManagement';
+import CourseDeleteModal from '../components/CourseDeleteModal';
 
 export default function CourseManagement() {
   const {
@@ -35,6 +36,10 @@ export default function CourseManagement() {
     statsDrafts,
     formatDate,
     handleDelete,
+    handleConfirmDelete,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    deleteCourseTitle,
     handleArchive,
     handleRestore,
     handleManageClass
@@ -404,6 +409,12 @@ export default function CourseManagement() {
                     </div>
                   )}
 
+                  <CourseDeleteModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onConfirm={handleConfirmDelete}
+                    courseTitle={deleteCourseTitle}
+                  />
             </div>
     </div>
   );
