@@ -125,7 +125,7 @@ public class CourseController {
                         @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
                         @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR")
         })
-        @PutMapping("/{id}")
+        @PutMapping("/{id}/update")
         @PreAuthorize("hasRole('CREATOR')")
         public ResponseEntity<APIResponse<CourseResponse>> updateCourse(
                         @PathVariable Long id,
@@ -166,7 +166,7 @@ public class CourseController {
                                 APIResponse.success("Course retrieved successfully", course));
         }
 
-        @DeleteMapping("/{id}")
+        @DeleteMapping("/{id}/delete")
         public ResponseEntity<?> deleteCourse(@PathVariable("id") Long courseId) {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
