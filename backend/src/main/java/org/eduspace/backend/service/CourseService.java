@@ -153,6 +153,7 @@ public class CourseService {
                                 .title(course.getTitle())
                                 .description(course.getDescription())
                                 .status(course.getStatus().name())
+                                .reason(request.getReason())
                                 .createdAt(course.getCreatedAt())
                                 .build();
         }
@@ -467,4 +468,5 @@ public class CourseService {
 
                 return true;
         }
+
 }

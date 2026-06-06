@@ -2,6 +2,8 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+
 import org.eduspace.backend.dto.auth.request.LoginRequest;
 import org.eduspace.backend.dto.auth.request.RegisterRequest;
 import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
@@ -38,6 +40,7 @@ public class AuthService {
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
@@ -114,14 +117,11 @@ public class AuthService {
         String email = jwtUtil.extractEmail(token);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setPassword(
                 passwordEncoder.encode(
-                        request.getPassword()
-                )
-        );
+                        request.getPassword()));
 
         userRepository.save(user);
     }
