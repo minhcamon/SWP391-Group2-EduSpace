@@ -57,6 +57,7 @@ export default function useCourseCreate(propMode) {
     const [modules, setModules] = useState([]);
     const [activeConfig, setActiveConfig] = useState(null);
     const [inlineData, setInlineData] = useState({ title: '', url: '' });
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     // Load course details
     useEffect(() => {
@@ -137,8 +138,13 @@ export default function useCourseCreate(propMode) {
             const payload = buildCoursePayload(formData, modules, 'DRAFT');
             console.log("Save Course Payload:", JSON.stringify(payload, null, 2));
 
-            await courseService.createCourse(payload);
-            toast.success("Lưu bản nháp khóa học thành công!");
+            if (resolvedMode === 'EDIT') {
+                await courseService.updateCourse(id, payload);
+                toast.success("Cập nhật bản nháp khóa học thành công!");
+            } else {
+                await courseService.createCourse(payload);
+                toast.success("Lưu bản nháp khóa học thành công!");
+            }
             navigate('/creator/courses');
         } catch (error) {
             console.error(error);
@@ -162,6 +168,34 @@ export default function useCourseCreate(propMode) {
         } catch (error) {
             console.error(error);
             toast.error(error.message || "Đã xảy ra lỗi khi cập nhật khóa học!");
+        }
+    };
+
+    const handleOpenConfirmModal = () => {
+        if (!formData.title.trim()) {
+            toast.error("Vui lòng nhập tên khóa học!");
+            return;
+        }
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmSubmit = async (status) => {
+        try {
+            const payload = buildCoursePayload(formData, modules, status);
+            console.log(`${resolvedMode} Course Payload (${status}):`, JSON.stringify(payload, null, 2));
+
+            if (resolvedMode === 'EDIT') {
+                await courseService.updateCourse(id, payload);
+                toast.success(status === 'PENDING' ? "Cập nhật và gửi duyệt khóa học thành công!" : "Cập nhật bản nháp khóa học thành công!");
+            } else {
+                await courseService.createCourse(payload);
+                toast.success(status === 'PENDING' ? "Tạo và gửi duyệt khóa học thành công!" : "Lưu bản nháp khóa học thành công!");
+            }
+            setIsConfirmModalOpen(false);
+            navigate('/creator/courses');
+        } catch (error) {
+            console.error(error);
+            toast.error(error.message || "Đã xảy ra lỗi khi xử lý khóa học!");
         }
     };
 
@@ -347,6 +381,10 @@ export default function useCourseCreate(propMode) {
         handleCreateCourse,
         handleSaveCourse,
         handleUpdateCourse,
+        handleOpenConfirmModal,
+        handleConfirmSubmit,
+        isConfirmModalOpen,
+        setIsConfirmModalOpen,
         handlePriorityChange,
         handleAddModule,
         handleSaveInlineLesson,
