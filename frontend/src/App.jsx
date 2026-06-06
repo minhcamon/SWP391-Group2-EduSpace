@@ -1,26 +1,26 @@
 import { BrowserRouter, Routes, Route } from "react-router";
-import HomePage from "@/pages/HomePage";
-import RegisterForm from "@/pages/auth/RegisterPage";
-import LoginForm from "@/pages/auth/LoginPage";
-import OAuth2RedirectHandler from "@/pages/auth/OAuth2RedirectHandler";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import { Toaster } from "sonner";
-import AdminHomePage from "@/pages/admin/AdminHomePage";
-import CreatorHomePage from "@/pages/creator/CreatorHomePage";
-import UserProfile from "@/pages/UserProfile";
-import RoadmapsPage from "@/pages/roadmap/RoadmapsPage";
-import Leaderboard from "@/pages/Leaderboard";
-import CourseCreate from "@/pages/creator/CourseCreate";
-import ListCoursesPage from "@/pages/course/ListCoursesPage";
-import ErrorPage from "@/pages/ErrorPage";
-import ManageRequestPage from "@/pages/admin/ManageRequestPage";
-import ManageCoursePage from "@/pages/admin/ManageCoursePage";
-
-import CourseManagement from "./pages/creator/CourseManagement";
-import CreatorAnalytics from "./pages/creator/CreatorAnalytics";
-import CourseDetail from "./pages/creator/CourseDetail";
 import RouteProgressBar from "@/components/common/RouteProgressBar";
+
+// Import page anchors
+import Home from "@/pages/Home";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+import GoogleCallback from "@/pages/auth/GoogleCallback";
+import Roadmaps from "@/pages/Roadmaps";
+import Courses from "@/pages/Courses";
+import Profile from "@/pages/learner/Profile";
+import CreatorHome from "@/pages/creator/Home";
+import CreatorCourses from "@/pages/creator/Courses";
+import CreatorCourseDetail from "@/pages/creator/CourseDetail";
+import CreatorCourseBuilder from "@/pages/creator/CourseBuilder";
+import CreatorAnalytics from "@/pages/creator/Analytics";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AdminRequests from "@/pages/admin/Requests";
+import AdminCourses from "@/pages/admin/Courses";
+import Error from "@/pages/Error";
 
 function App() {
     return (
@@ -30,35 +30,34 @@ function App() {
                 <Toaster position="bottom-right" richColors />
                 <Routes>
                     {/* public route */}
-                    <Route path="/" element={<HomePage />}></Route>
-                    <Route path="/signup" element={<RegisterForm />}></Route>
-                    <Route path="/login" element={<LoginForm />}></Route>
+                    <Route path="/" element={<Home />}></Route>
+                    <Route path="/signup" element={<Register />}></Route>
+                    <Route path="/login" element={<Login />}></Route>
                     <Route
                         path="/oauth2/redirect"
-                        element={<OAuth2RedirectHandler />}
+                        element={<GoogleCallback />}
                     ></Route>
-                    <Route path="/roadmaps" element={<RoadmapsPage />}></Route>
+                    <Route path="/roadmaps" element={<Roadmaps />}></Route>
                     <Route
                         path="/courses"
-                        element={<ListCoursesPage />}
+                        element={<Courses />}
                     ></Route>
 
                     {/* Authenticated user routes */}
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/profile" element={<UserProfile />}></Route>
-                        <Route path="/leaderboard" element={<Leaderboard />}></Route>
+                        <Route path="/profile" element={<Profile />}></Route>
                     </Route>
 
                     {/* admin route */}
                     <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-                        <Route path="/admin" element={<AdminHomePage />}></Route>
+                        <Route path="/admin" element={<AdminDashboard />}></Route>
                         <Route
                             path="/admin/creator-requests"
-                            element={<ManageRequestPage />}
+                            element={<AdminRequests />}
                         ></Route>
                         <Route
                             path="/admin/courses-management"
-                            element={<ManageCoursePage />}
+                            element={<AdminCourses />}
                         ></Route>
                     </Route>
 
@@ -66,23 +65,23 @@ function App() {
                     <Route element={<ProtectedRoute allowedRoles={["CREATOR"]} />}>
                         <Route
                             path="/creator"
-                            element={<CreatorHomePage />}
+                            element={<CreatorHome />}
                         ></Route>
                         <Route
                             path="/creator/courses"
-                            element={<CourseManagement />}
+                            element={<CreatorCourses />}
                         ></Route>
                         <Route
                             path="/creator/courses/:id"
-                            element={<CourseDetail />}
+                            element={<CreatorCourseDetail />}
                         ></Route>
                         <Route
                             path="/creator/courses/:id/edit"
-                            element={<CourseCreate mode="EDIT" />}
+                            element={<CreatorCourseBuilder mode="EDIT" />}
                         ></Route>
                         <Route
                             path="/creator/courses/:id/view"
-                            element={<CourseCreate mode="VIEW" />}
+                            element={<CreatorCourseBuilder mode="VIEW" />}
                         ></Route>
                         <Route
                             path="/creator/analytics"
@@ -90,11 +89,11 @@ function App() {
                         ></Route>
                         <Route
                             path="/creator/create-course"
-                            element={<CourseCreate mode="CREATE" />}
+                            element={<CreatorCourseBuilder mode="CREATE" />}
                         ></Route>
                     </Route>
 
-                    <Route path="*" element={<ErrorPage />}></Route>
+                    <Route path="*" element={<Error />}></Route>
 
                 </Routes>
             </BrowserRouter>
