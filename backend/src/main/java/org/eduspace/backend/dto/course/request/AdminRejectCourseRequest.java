@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AdminRejectCourseRequest {
 
-    @NotNull(message = "Admin ID cannot be null")
-    private Long adminId; 
     @NotBlank(message = "Rejection reason cannot be blank")
     private String reason;
 }
