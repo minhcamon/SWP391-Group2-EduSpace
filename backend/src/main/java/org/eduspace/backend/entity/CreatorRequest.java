@@ -33,6 +33,9 @@ public class CreatorRequest {
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
+    @Column(name = "reason", columnDefinition = "TEXT")
+    private String reason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User learner;

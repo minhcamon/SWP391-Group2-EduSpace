@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRequest;
 import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
-import org.eduspace.backend.dto.creator_request.response.CreatorRequestResponse;
 import org.eduspace.backend.entity.CreatorRequest;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.enums.Role;
@@ -65,7 +64,7 @@ public class CreatorRequestService {
         }
 
         @Transactional
-        public CreatorRequestApprovalResponse rejectLearnerToCreator(Long requestId, Long adminId) {
+        public CreatorRequestApprovalResponse rejectLearnerToCreator(Long requestId, Long adminId, String reason) {
                 CreatorRequest request = creatorRequestRepository.findById(requestId)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Creator request not found with ID: " + requestId));
@@ -74,6 +73,7 @@ public class CreatorRequestService {
                         throw new RuntimeException("This request has already been processed");
                 }
                 request.setStatus(RequestStatus.REJECTED);
+                request.setReason(reason);
 
                 CreatorRequest updatedRequest = creatorRequestRepository.save(request);
 
@@ -84,6 +84,7 @@ public class CreatorRequestService {
                                                 : null)
                                 .approvedBy(adminId)
                                 .processedAt(LocalDateTime.now())
+                                .reason(updatedRequest.getReason())
                                 .build();
         }
 
@@ -103,35 +104,36 @@ public class CreatorRequestService {
                 CreatorRequest newRequest = CreatorRequest.builder()
                                 .learner(learner)
                                 .status(RequestStatus.PENDING)
-                                // .documentUrl(requestDto.getReason())
                                 .build();
 
                 creatorRequestRepository.save(newRequest);
         }
+
         @Transactional
-        public List<CreatorRequestResponse> getAllCreatorRequests() {
+        public List<CreatorRequestApprovalResponse> getAllCreatorRequests() {
                 List<CreatorRequest> requests = creatorRequestRepository.findAllByOrderByIdDesc();
-    
-                List<CreatorRequestResponse> responseList = new ArrayList<>();
+
+                List<CreatorRequestApprovalResponse> responseList = new ArrayList<>();
 
                 for (CreatorRequest req : requests) {
                         Long adminId = null;
                         if (req.getApprovedBy() != null) {
-                        adminId = req.getApprovedBy().getId();
+                                adminId = req.getApprovedBy().getId();
                         }
-                        
-                        CreatorRequestResponse res = CreatorRequestResponse.builder()
-                                .requestId(req.getId())
-                                .senderId(req.getLearner().getId())
-                                .senderName(req.getLearner().getFullName())
-                                .senderEmail(req.getLearner().getEmail())
-                                .approvedId(adminId) 
-                                .status(req.getStatus().name()) 
-                                .createdAt(req.getProcessedAt())
-                                .build();
-                                
+
+                        CreatorRequestApprovalResponse res = CreatorRequestApprovalResponse.builder()
+                                        .id(req.getId())
+                                        .learnerId(req.getLearner().getId())
+                                        .learnerName(req.getLearner().getFullName())
+                                        .learnerEmail(req.getLearner().getEmail())
+                                        .approvedBy(adminId)
+                                        .processedAt(req.getProcessedAt())
+                                        .status(req.getStatus().name())
+                                        .build();
+
                         responseList.add(res);
                 }
                 return responseList;
         }
+
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.creator_request.request.AdminRejectCreatorRequest;
 import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRequest;
 import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
@@ -70,11 +71,11 @@ public class CreatorRequestController {
         @PutMapping("/{id}/rejected")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<APIResponse<CreatorRequestApprovalResponse>> rejectCreatorRequest(
-                        @PathVariable Long id) {
+                        @PathVariable Long id, @RequestBody AdminRejectCreatorRequest request) {
                 Long adminId = SecurityUtil.getCurrentUserId();
 
                 CreatorRequestApprovalResponse response = creatorRequestService.rejectLearnerToCreator(id,
-                                adminId);
+                                adminId, request.getReason());
 
                 return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));
         }
