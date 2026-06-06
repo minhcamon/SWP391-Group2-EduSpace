@@ -57,14 +57,14 @@ public class CourseController {
         @PutMapping("/{id}/approve")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<APIResponse<CourseResponse>> approveCourse(
-                        @PathVariable Long id,
-                        @RequestParam Long adminId) {
+                        @PathVariable Long id) {
 
-                return ResponseEntity.ok(
-                                APIResponse.success(
-                                                "Course approved successfully",
-                                                courseService.approveCourse(id, adminId)));
-        }
+                Long adminId = SecurityUtil.getCurrentUserId();
+
+                CourseResponse response = courseService.approveCourse(id, adminId);
+
+                return ResponseEntity.ok(APIResponse.success("Approve course successfully", response));
+    }
 
         @Operation(summary = "Từ chối khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang REJECTED.")
         @ApiResponses(value = {
@@ -79,11 +79,10 @@ public class CourseController {
                         @PathVariable Long id,
                         @RequestBody AdminRejectCourseRequest request) {
 
-                return ResponseEntity.ok(
-                                APIResponse.success(
-                                                "Course rejected successfully",
-                                                courseService.rejectCourse(id, request)));
-        }
+                Long adminId = SecurityUtil.getCurrentUserId(); 
+    
+                CourseResponse response = courseService.rejectCourse(id, adminId, request);
+                return ResponseEntity.ok(APIResponse.success("Reject course successfully", response));        }
 
         // ---------------CREATOR-----------------
         @Operation(summary = "Lấy danh sách khóa học của tôi (CREATOR)", description = "Lấy danh sách toàn bộ các khóa học do Creator hiện tại tạo và quản lý.")
