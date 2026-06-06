@@ -25,7 +25,7 @@ const courseService = {
 
   getCourseByCreator: async () => {
     try {
-      const response = await api.get('/course/my-courses');  
+      const response = await api.get('/course/my-courses');
       return response.data.data;
     } catch (error) {
       console.error('Get Course by Creator ID error at CourseService:', error);
@@ -92,14 +92,25 @@ const courseService = {
 
   updateCourse: async (courseId, courseData) => {
     try {
-      const response = await api.put(`/course/${courseId}`, courseData);
+      const response = await api.put(`/course/${courseId}/update`, courseData);
       return response.data.data;
     } catch (error) {
       console.error('Update Course error at CourseService:', error);
       const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi cập nhật khóa học!';
       throw new Error(errorMsg);
     }
-  }
+  },
+
+  deleteCourse: async (courseId) => {
+    try {
+      const response = await api.delete(`/course/${courseId}/delete`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Delete Course error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi xóa khóa học!';
+      throw new Error(errorMsg);
+    }
+  },
 };
 
 export default courseService;

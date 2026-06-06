@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import CreatorFooter from '@/components/layouts/CreatorFooter';
 import CourseGeneralInfo from '../components/CourseGeneralInfo';
 import CourseCurriculum from '../components/CourseCurriculum';
+import CourseSubmitModal from '../components/CourseSubmitModal';
 import useCourseCreate from '../hooks/useCourseCreate';
 
 export default function CreateCourse({ mode: propMode }) {
@@ -19,6 +20,10 @@ export default function CreateCourse({ mode: propMode }) {
     handleCreateCourse,
     handleSaveCourse,
     handleUpdateCourse,
+    handleOpenConfirmModal,
+    handleConfirmSubmit,
+    isConfirmModalOpen,
+    setIsConfirmModalOpen,
     handlePriorityChange,
     handleAddModule,
     handleSaveInlineLesson,
@@ -64,14 +69,14 @@ export default function CreateCourse({ mode: propMode }) {
                     </button>
                     {resolvedMode === 'EDIT' ? (
                       <button
-                        onClick={handleUpdateCourse}
+                        onClick={handleOpenConfirmModal}
                         className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
                       >
                         Cập nhật Khóa Học
                       </button>
                     ) : (
                       <button
-                        onClick={handleCreateCourse}
+                        onClick={handleOpenConfirmModal}
                         className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
                       >
                         Tạo Khóa Học
@@ -107,9 +112,16 @@ export default function CreateCourse({ mode: propMode }) {
               />
             </div>
 
-            {/* FOOTER NAVIGATION */}
-            <CreatorFooter onBack={() => navigate(-1)} />
-
-    </div>
-  );
+             {/* FOOTER NAVIGATION */}
+             <CreatorFooter onBack={() => navigate(-1)} />
+ 
+             {/* Confirmation Submit Modal */}
+             <CourseSubmitModal
+               isOpen={isConfirmModalOpen}
+               onClose={() => setIsConfirmModalOpen(false)}
+               onSubmit={handleConfirmSubmit}
+               mode={resolvedMode}
+             />
+     </div>
+   );
 }

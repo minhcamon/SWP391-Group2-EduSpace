@@ -6,6 +6,9 @@ export default function useCourseManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('ALL');
     const [courses, setCourses] = useState([]);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteCourseId, setDeleteCourseId] = useState(null);
+    const [deleteCourseTitle, setDeleteCourseTitle] = useState(null);
 
     const fetchCourses = async () => {
         try {
@@ -32,18 +35,105 @@ export default function useCourseManagement() {
     };
 
     const handleDelete = (id, title) => {
-        setCourses(prev => prev.filter(c => c.id !== id));
-        toast.success(`Đã xóa vĩnh viễn khóa học: ${title}`);
+        setDeleteCourseId(id);
+        setDeleteCourseTitle(title);
+        setIsDeleteModalOpen(true);
     };
 
-    const handleArchive = (id, title) => {
-        setCourses(prev => prev.map(c => c.id === id ? { ...c, status: 'ARCHIVED', lastUpdated: 'Lưu trữ vừa xong' } : c));
-        toast.info(`Đã chuyển khóa học vào Kho lưu trữ: ${title}`);
+    const handleConfirmDelete = async () => {
+        if (!deleteCourseId) return;
+        try {
+            await courseService.deleteCourse(deleteCourseId);
+            setCourses(prev => prev.filter(c => c.id !== deleteCourseId));
+            toast.success(`Đã xóa vĩnh viễn khóa học: ${deleteCourseTitle}`);
+        } catch (error) {
+            console.error(error);
+            toast.error(error.message || 'Lỗi khi xóa khóa học!');
+        } finally {
+            setIsDeleteModalOpen(false);
+            setDeleteCourseId(null);
+            setDeleteCourseTitle(null);
+        }
     };
 
-    const handleRestore = (id, title) => {
-        setCourses(prev => prev.map(c => c.id === id ? { ...c, status: 'DRAFT', lastUpdated: 'Khôi phục vừa xong' } : c));
-        toast.success(`Đã khôi phục khóa học thành bản nháp: ${title}`);
+    const handleArchive = async (id, title) => {
+        try {
+            const fullCourse = await courseService.getCourseById(id);
+            
+            const mappedModules = (fullCourse.modules || []).map(mod => ({
+                title: mod.title,
+                priority: mod.priority || 'LOW',
+                days: mod.days || 7,
+                baseExp: mod.baseExp || 50,
+                speedBonusExp: mod.speedBonusExp || 10,
+                sortOrder: mod.sortOrder,
+                assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+                    title: mod.assignments.title,
+                    description: mod.assignments.description,
+                    rubricCriteria: mod.assignments.rubricCriteria
+                } : null,
+                lessons: (mod.lessons || []).map(les => ({
+                    title: les.title,
+                    contentType: les.contentType,
+                    contentUrl: les.contentUrl || 'N/A',
+                    sortOrder: les.sortOrder
+                }))
+            }));
+
+            const payload = {
+                title: fullCourse.title,
+                description: fullCourse.description,
+                status: 'ARCHIVED',
+                modules: mappedModules
+            };
+
+            await courseService.updateCourse(id, payload);
+            setCourses(prev => prev.map(c => c.id === id ? { ...c, status: 'ARCHIVED' } : c));
+            toast.success(`Đã chuyển khóa học vào Kho lưu trữ: ${title}`);
+        } catch (error) {
+            console.error('Archive course error:', error);
+            toast.error(error.message || 'Lỗi khi lưu trữ khóa học!');
+        }
+    };
+
+    const handleRestore = async (id, title) => {
+        try {
+            const fullCourse = await courseService.getCourseById(id);
+            
+            const mappedModules = (fullCourse.modules || []).map(mod => ({
+                title: mod.title,
+                priority: mod.priority || 'LOW',
+                days: mod.days || 7,
+                baseExp: mod.baseExp || 50,
+                speedBonusExp: mod.speedBonusExp || 10,
+                sortOrder: mod.sortOrder,
+                assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+                    title: mod.assignments.title,
+                    description: mod.assignments.description,
+                    rubricCriteria: mod.assignments.rubricCriteria
+                } : null,
+                lessons: (mod.lessons || []).map(les => ({
+                    title: les.title,
+                    contentType: les.contentType,
+                    contentUrl: les.contentUrl || 'N/A',
+                    sortOrder: les.sortOrder
+                }))
+            }));
+
+            const payload = {
+                title: fullCourse.title,
+                description: fullCourse.description,
+                status: 'DRAFT',
+                modules: mappedModules
+            };
+
+            await courseService.updateCourse(id, payload);
+            setCourses(prev => prev.map(c => c.id === id ? { ...c, status: 'DRAFT' } : c));
+            toast.success(`Đã khôi phục khóa học thành bản nháp: ${title}`);
+        } catch (error) {
+            console.error('Restore course error:', error);
+            toast.error(error.message || 'Lỗi khi khôi phục khóa học!');
+        }
     };
 
     const handleFixAlert = (title) => {
@@ -98,6 +188,10 @@ export default function useCourseManagement() {
         statsDrafts,
         formatDate,
         handleDelete,
+        handleConfirmDelete,
+        isDeleteModalOpen,
+        setIsDeleteModalOpen,
+        deleteCourseTitle,
         handleArchive,
         handleRestore,
         handleFixAlert,
