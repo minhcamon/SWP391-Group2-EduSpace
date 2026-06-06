@@ -110,7 +110,7 @@ public class CreatorRequestService {
         }
         @Transactional
         public List<CreatorRequestResponse> getAllCreatorRequests() {
-                List<CreatorRequest> requests = creatorRequestRepository.findAllByOrderByCreatedAtDesc();
+                List<CreatorRequest> requests = creatorRequestRepository.findAllByOrderByIdDesc();
     
                 List<CreatorRequestResponse> responseList = new ArrayList<>();
 

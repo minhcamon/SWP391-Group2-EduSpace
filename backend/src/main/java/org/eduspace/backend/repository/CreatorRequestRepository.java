@@ -17,5 +17,5 @@ public interface CreatorRequestRepository extends JpaRepository<CreatorRequest, 
 
     boolean existsByLearnerAndStatus(User learner, RequestStatus status);
     
-    List<CreatorRequest> findAllByOrderByCreatedAtDesc();
+    List<CreatorRequest> findAllByOrderByIdDesc();
 }
