@@ -1,8 +1,8 @@
 package org.eduspace.backend.config;
 
 import org.eduspace.backend.security.AuthenticationFilter;
-import org.eduspace.backend.service.CustomOauth2UserService;
-import org.eduspace.backend.service.Oauth2AuthenticationSuccessHandler;
+import org.eduspace.backend.security.oauth2.CustomOauth2UserService;
+import org.eduspace.backend.security.oauth2.Oauth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
