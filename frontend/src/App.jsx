@@ -5,22 +5,22 @@ import { Toaster } from "sonner";
 import RouteProgressBar from "@/components/common/RouteProgressBar";
 
 // Import page anchors
-import Home from "@/pages/Home";
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
-import GoogleCallback from "@/pages/auth/GoogleCallback";
-import Roadmaps from "@/pages/Roadmaps";
-import Courses from "@/pages/Courses";
-import Profile from "@/pages/learner/Profile";
-import CreatorHome from "@/pages/creator/Home";
-import CreatorCourses from "@/pages/creator/Courses";
-import CreatorCourseDetail from "@/pages/creator/CourseDetail";
-import CreatorCourseBuilder from "@/pages/creator/CourseBuilder";
-import CreatorAnalytics from "@/pages/creator/Analytics";
-import AdminDashboard from "@/pages/admin/Dashboard";
-import AdminRequests from "@/pages/admin/Requests";
-import AdminCourses from "@/pages/admin/Courses";
-import Error from "@/pages/Error";
+import Home from "@/views/Home";
+import Login from "@/views/auth/Login";
+import Register from "@/views/auth/Register";
+import GoogleCallback from "@/views/auth/GoogleCallback";
+import Roadmaps from "@/views/Roadmaps";
+import Courses from "@/views/Courses";
+import Profile from "@/views/UserProfile";
+import CreatorHome from "@/views/creator/Home";
+import CreatorCourses from "@/views/creator/Courses";
+import CreatorCourseDetail from "@/views/creator/CourseDetail";
+import CreatorCourseBuilder from "@/views/creator/CourseBuilder";
+import CreatorAnalytics from "@/views/creator/Analytics";
+import AdminDashboard from "@/views/admin/Dashboard";
+import AdminRequests from "@/views/admin/Requests";
+import AdminCourses from "@/views/admin/Courses";
+import Error from "@/views/Error";
 
 function App() {
     return (
