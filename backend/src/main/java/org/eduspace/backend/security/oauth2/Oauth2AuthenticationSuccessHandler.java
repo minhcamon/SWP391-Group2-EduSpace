@@ -1,11 +1,10 @@
-package org.eduspace.backend.service;
+package org.eduspace.backend.security.oauth2;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.eduspace.backend.entity.CustomOauth2User;
 import org.eduspace.backend.security.JwtUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;

@@ -1,8 +1,9 @@
-package org.eduspace.backend.entity;
+package org.eduspace.backend.security.oauth2;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.eduspace.backend.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
