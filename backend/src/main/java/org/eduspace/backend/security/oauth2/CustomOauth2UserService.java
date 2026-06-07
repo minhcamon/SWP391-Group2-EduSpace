@@ -1,7 +1,6 @@
-package org.eduspace.backend.service;
+package org.eduspace.backend.security.oauth2;
 
 import lombok.RequiredArgsConstructor;
-import org.eduspace.backend.entity.CustomOauth2User;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.AuthProvider;
 import org.eduspace.backend.enums.Role;
