@@ -5,10 +5,24 @@ import RequestTable from "@/modules/course-lifecycle/components/RequestTable";
 import { toast } from "sonner";
 import creatorService from "@/services/creatorService";
 import ReloadButton from "@/components/ui/ReloadButton";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/Dialog";
+import Textarea from "@/components/ui/Textarea";
+import Button from "@/components/ui/Button";
 
 const Requests = () => {
     const [pendingRequests, setPendingRequests] = useState([]);
     const [allRequests, setAllRequests] = useState([]);
+
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [rejectReason, setRejectReason] = useState("");
+    const [isSubmittingReject, setIsSubmittingReject] = useState(false);
 
     useEffect(() => {
         fetchPendingRequests();
@@ -18,8 +32,6 @@ const Requests = () => {
     const handleReload = () => {
         fetchPendingRequests();
         fetchAllRequests();
-        console.log(pendingRequests);
-        console.log(allRequests);
     };
 
     const fetchPendingRequests = async () => {
@@ -67,20 +79,47 @@ const Requests = () => {
         }
     };
 
-    const handleReject = async (requestId) => {
+    const handleRejectClick = (courseId) => {
+        setSelectedRequestId(courseId);
+        setRejectReason("");
+        setIsRejectDialogOpen(true);
+    };
+
+    const handleConfirmReject = async () => {
+        if (!rejectReason.trim()) {
+            toast.warning("Vui lòng nhập lý do từ chối đơn!");
+            return;
+        }
+
         try {
-            await creatorService.rejectCreatorRequest(requestId);
+            setIsSubmittingReject(true);
+            const payload = {
+                reason: rejectReason.trim(),
+            };
+
+            await creatorService.rejectCreatorRequest(
+                selectedRequestId,
+                payload,
+            );
+
+            toast.success(`Từ chối đơn #${selectedRequestId} thành công`);
 
             setPendingRequests((prevPendingRequests) =>
                 prevPendingRequests.filter(
-                    (request) => request.requestId !== requestId,
+                    (request) => request.requestId !== selectedRequestId,
                 ),
             );
 
-            toast.success(`Từ chối đơn #${requestId} thành công`);
+            setIsRejectDialogOpen(false);
+            setSelectedRequestId(null);
+            setRejectReason("");
+
+            handleReload();
         } catch (error) {
             console.error("Lỗi khi từ chối đơn ở Requests: ", error);
             toast.error("Lỗi khi từ chối đơn");
+        } finally {
+            setIsSubmittingReject(false);
         }
     };
 
@@ -123,7 +162,7 @@ const Requests = () => {
                             requests={pendingRequests}
                             isHistory={false}
                             onApprovedClick={handleApprove}
-                            onRejectClick={handleReject}
+                            onRejectClick={handleRejectClick}
                         />
                     )}
                 </div>
@@ -149,6 +188,58 @@ const Requests = () => {
                         <RequestTable requests={allRequests} isHistory={true} />
                     )}
                 </div>
+
+                <Dialog
+                    open={isRejectDialogOpen}
+                    onOpenChange={setIsRejectDialogOpen}
+                >
+                    <DialogContent className="sm:max-w-120 bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
+                        <DialogHeader className="space-y-2">
+                            <DialogTitle className="text-xl font-bold text-gray-900">
+                                Lý do từ chối đơn
+                            </DialogTitle>
+                            <DialogDescription className="text-gray-500 text-sm leading-relaxed">
+                                Vui lòng nhập lý do cụ thể từ chối phê duyệt đơn
+                                ứng tuyển này.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <Textarea
+                                value={rejectReason}
+                                onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                }
+                                placeholder="Ví dụ: Hồ sơ còn quá sơ sài, thiếu chứng chỉ ..."
+                                className="min-h-30 rounded-xl border border-gray-200 focus-visible:ring-indigo-500 text-sm p-3 leading-relaxed"
+                                disabled={isSubmittingReject}
+                            />
+                        </div>
+
+                        <div className="flex gap-3 sm:justify-end">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsRejectDialogOpen(false)}
+                                disabled={isSubmittingReject}
+                                className="rounded-xl font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                            >
+                                Hủy bỏ
+                            </Button>
+
+                            <Button
+                                type="button"
+                                onClick={handleConfirmReject}
+                                disabled={isSubmittingReject}
+                                className="rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white shadow-sm shadow-red-600/10 cursor-pointer"
+                            >
+                                {isSubmittingReject
+                                    ? "Đang xử lý..."
+                                    : "Xác nhận từ chối"}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </main>
         </div>
     );

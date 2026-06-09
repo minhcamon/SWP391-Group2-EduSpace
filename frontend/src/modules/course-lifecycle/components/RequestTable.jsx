@@ -31,9 +31,20 @@ const RequestTable = ({
                             <TableHead className="py-4 px-6 w-72 font-bold text-gray-500">
                                 Ứng viên
                             </TableHead>
-                            <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
-                                Đơn trình bày / Minh chứng
-                            </TableHead>
+                            {!isHistory ? (
+                                <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
+                                    Đơn trình bày / Minh chứng
+                                </TableHead>
+                            ) : (
+                                <TableHead className="py-4 px-6 w-2 font-bold text-gray-500">
+                                    Email
+                                </TableHead>
+                            )}
+                            {isHistory && (
+                                <TableHead className="py-4 px-6 w-2 font-bold text-gray-500">
+                                    Ngày xử lý
+                                </TableHead>
+                            )}
                             <TableHead className="py-4 px-5 w-32 text-center font-bold text-gray-500">
                                 Trạng thái
                             </TableHead>
@@ -92,8 +103,19 @@ const RequestTable = ({
                                     ) : (
                                         <TableCell className="py-5 px-6">
                                             <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                <Mail
+                                                    size={14}
+                                                    className="text-secondary"
+                                                />{" "}
                                                 {request.learnerEmail}
                                             </div>
+                                        </TableCell>
+                                    )}
+                                    {isHistory && (
+                                        <TableCell className="py-4 px-6 w-2 font-bold text-gray-500">
+                                            {new Date(
+                                                request.processedAt,
+                                            ).toLocaleDateString("vi-VN")}
                                         </TableCell>
                                     )}
                                     <TableCell className="py-5 px-6 text-center">

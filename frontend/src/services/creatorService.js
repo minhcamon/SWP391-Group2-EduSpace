@@ -34,9 +34,9 @@ const creatorService = {
         }
     },
 
-    rejectCreatorRequest: async (requestId) => {
+    rejectCreatorRequest: async (requestId, payload) => {
         try {
-            const res = await api.put(`/creator-requests/${requestId}/rejected`);
+            const res = await api.put(`/creator-requests/${requestId}/rejected`, payload);
             return res.data.data
         } catch (error) {
             console.error('Reject Creator Requests error at creatorService:', error);
