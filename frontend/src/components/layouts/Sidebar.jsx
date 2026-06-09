@@ -162,7 +162,7 @@ const Sidebar = () => {
                         <p className="text-sm font-bold text-gray-800 truncate">
                             {user.fullName}
                         </p>
-                        <Badge><span className="text-primary">{roleMapping[user.role]}</span></Badge>
+                        <Badge variant="roletag">{roleMapping[user.role]}</Badge>
                     </div>
                 </div>
 
