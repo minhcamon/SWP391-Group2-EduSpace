@@ -23,16 +23,20 @@ const RequestTable = ({
                 <Table className="w-full text-left border-collapse">
                     <TableHeader>
                         <TableRow className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            <TableHead className="py-4 px-6 w-24">ID Đơn</TableHead>
-                            <TableHead className="py-4 px-6 w-72">Ứng viên</TableHead>
-                            <TableHead className="py-4 px-6">
+                            <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">
+                                ID Đơn
+                            </TableHead>
+                            <TableHead className="py-4 px-6 w-72 font-bold text-gray-500">
+                                Ứng viên
+                            </TableHead>
+                            <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
                                 Đơn trình bày / Minh chứng
                             </TableHead>
-                            <TableHead className="py-4 px-5 w-32 text-center">
+                            <TableHead className="py-4 px-5 w-32 text-center font-bold text-gray-500">
                                 Trạng thái
                             </TableHead>
                             {!isHistory && (
-                                <TableHead className="py-4 px-6 w-52 text-right">
+                                <TableHead className="py-4 px-6 w-52 text-right font-bold text-gray-500">
                                     Tác vụ
                                 </TableHead>
                             )}
@@ -59,32 +63,37 @@ const RequestTable = ({
                                         <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
                                             <User
                                                 size={14}
-                                                className="text-gray-400"
+                                                className="text-secondary"
                                             />{" "}
                                             {request.learnerName}
                                         </div>
                                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                             <Mail
                                                 size={14}
-                                                className="text-gray-400"
+                                                className="text-secondary"
                                             />{" "}
                                             {request.learnerEmail}
                                         </div>
                                     </TableCell>
                                     <TableCell className="py-5 px-6">
-                                        <p className="text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100 leading-relaxed max-w-2xl text-sm">
-                                            {request.documentUrl}
-                                        </p>
+                                        {request.documentUrl}
                                     </TableCell>
                                     <TableCell className="py-5 px-6 text-center">
                                         <Badge
-                                            className={`h-auto px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                            variant={
                                                 isHistory
                                                     ? isApproved
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                        : "bg-red-50 text-red-700 border-red-200"
-                                                    : "bg-amber-50 text-amber-600 border-amber-200/50"
-                                            }`}
+                                                        ? "approved"
+                                                        : "destructive"
+                                                    : "pending"
+                                            }
+                                            // className={`h-auto px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                            //     isHistory
+                                            //         ? isApproved
+                                            //             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                            //             : "bg-red-50 text-red-700 border-red-200"
+                                            //         : "bg-amber-50 text-amber-600 border-amber-200/50"
+                                            // }`}
                                         >
                                             {statusMapping[request.status] ||
                                                 request.status}
