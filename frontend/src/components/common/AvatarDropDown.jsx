@@ -2,8 +2,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router";
 import { roleMapping } from "@/lib/data";
 import { User, Shield, BookOpen } from "lucide-react";
-import Avatar from "@/components/layouts/Avatar";
-import LogoutButton from "@/components/layouts/LogoutButton";
+import Avatar from "@/components/common/Avatar";
+import LogoutButton from "@/components/ui/LogoutButton";
 import Badge from "../ui/Badge";
 
 const AvatarDropDown = () => {
@@ -28,7 +28,7 @@ const AvatarDropDown = () => {
                     <p className="text-xs text-neutral-medium truncate mb-1">
                         {user?.email}
                     </p>
-                    <Badge><span className="text-primary">{roleMapping[user?.role] || "Học viên"}</span></Badge>
+                    <Badge variant="roletag">{roleMapping[user?.role] || "Học viên"}</Badge>
                 </div>
             </div>
 

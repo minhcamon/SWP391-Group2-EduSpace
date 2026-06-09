@@ -6,26 +6,32 @@ import { toast } from "sonner";
 import courseService from "@/services/courseService";
 import ReloadButton from "@/components/ui/ReloadButton";
 import CardInformation from "@/components/ui/CardInformation";
+import EmptyState from "@/components/ui/EmptyState";
+import { runWithLoading } from "@/utils/utils";
 
 const Courses = () => {
     const [pendingCourses, setPendingCourses] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         fetchPendingCourses();
     }, []);
 
     const fetchPendingCourses = async () => {
-        try {
-            const data = await courseService.getPendingCourses();
-            setPendingCourses(data);
-        } catch (error) {
-            console.error(
-                "Lỗi khi lấy khóa học Pending tại Courses: ",
-                error,
-            );
-            toast.error("Lỗi khi tải khóa học");
-        }
+        await runWithLoading(setIsLoading, async () => {
+            try {
+                const data = await courseService.getPendingCourses();
+                setPendingCourses(data);
+            } catch (error) {
+                console.error(
+                    "Lỗi khi lấy khóa học Pending tại Courses: ",
+                    error,
+                );
+                toast.error("Lỗi khi tải khóa học");
+            }
+        });
     };
+
 
     const handleApprove = async (courseId) => {
         try {
@@ -77,7 +83,7 @@ const Courses = () => {
                 </CardInformation>
 
                 <div className="flex justify-end">
-                    <ReloadButton action={fetchPendingCourses} />
+                    <ReloadButton action={fetchPendingCourses} isLoading={isLoading} />
                 </div>
 
                 <div className="space-y-4">
@@ -88,15 +94,10 @@ const Courses = () => {
                         </h2>
                     </div>
                     {pendingCourses.length === 0 ? (
-                        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
-                            <Inbox
-                                size={32}
-                                className="text-gray-300 mx-auto mb-2"
-                            />
-                            <p className="text-gray-500 text-sm font-medium">
-                                Hàng chờ trống. Không có khóa học nào cần xử lý.
-                            </p>
-                        </div>
+                        <EmptyState
+                            icon={Inbox}
+                            description="Hàng chờ trống. Không có khóa học nào cần xử lý."
+                        />
                     ) : (
                         <CourseTable
                             courses={pendingCourses}
@@ -112,3 +113,4 @@ const Courses = () => {
 };
 
 export default Courses;
+

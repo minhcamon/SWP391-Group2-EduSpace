@@ -9,8 +9,8 @@ import {
     Form,
 } from "lucide-react";
 import Logo from "../common/Logo";
-import Avatar from "./Avatar";
-import LogoutButton from "./LogoutButton";
+import Avatar from "../common/Avatar";
+import LogoutButton from "../ui/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
 import Badge from "../ui/Badge";
@@ -127,19 +127,17 @@ const Sidebar = () => {
                                         <Link
                                             key={itemIdx}
                                             to={item.path}
-                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${
-                                                isActive
-                                                    ? "bg-indigo-50 text-primary"
-                                                    : "text-gray-600 hover:bg-gray-50 hover:text-primary"
-                                            }`}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group ${isActive
+                                                ? "bg-indigo-50 text-primary"
+                                                : "text-gray-600 hover:bg-gray-50 hover:text-primary"
+                                                }`}
                                         >
                                             <Icon
                                                 size={18}
-                                                className={`transition-colors duration-200 ${
-                                                    isActive
-                                                        ? "text-primary"
-                                                        : "text-gray-400 group-hover:text-primary"
-                                                }`}
+                                                className={`transition-colors duration-200 ${isActive
+                                                    ? "text-primary"
+                                                    : "text-gray-400 group-hover:text-primary"
+                                                    }`}
                                             />
                                             {item.text}
                                         </Link>

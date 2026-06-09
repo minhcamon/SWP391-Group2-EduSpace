@@ -2,10 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthService from "@/services/authService";
 import courseService from "@/services/courseService";
-import Avatar from "@/components/layouts/Avatar";
+import Avatar from "@/components/common/Avatar";
 import CreatorUpgradeCard from "@/modules/course-lifecycle/components/CreatorUpgradeCard";
 import { toast } from "sonner";
 import { runWithLoading } from "@/utils/utils";
+import { Link } from "react-router";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import Button from "@/components/ui/Button";
+import Textarea from "@/components/ui/Textarea";
 import {
     User,
     Mail,
@@ -77,17 +83,18 @@ const UserProfile = () => {
     if (!user) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center p-4">
-                <div className="text-center bg-white p-8 rounded-2xl shadow-sm border border-border-light/30 max-w-sm w-full">
-                    <Shield className="text-primary mx-auto mb-4" size={48} />
-                    <h2 className="text-xl font-bold text-neutral-dark mb-2">Vui lòng đăng nhập</h2>
-                    <p className="text-neutral-medium text-sm mb-6">Bạn cần đăng nhập để xem và quản lý thông tin hồ sơ cá nhân.</p>
-                    <a
-                        href="/login"
-                        className="inline-block w-full bg-primary hover:bg-[#3f38c9] text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all active:scale-[0.98]"
-                    >
-                        Đăng nhập ngay
-                    </a>
-                </div>
+                <Card className="text-center bg-white border border-border-light/30 max-w-sm w-full">
+                    <CardContent className="p-8 flex flex-col items-center">
+                        <Shield className="text-primary mb-4" size={48} />
+                        <h2 className="text-xl font-bold text-neutral-dark mb-2">Vui lòng đăng nhập</h2>
+                        <p className="text-neutral-medium text-sm mb-6">Bạn cần đăng nhập để xem và quản lý thông tin hồ sơ cá nhân.</p>
+                        <Link to="/login" className="w-full">
+                            <Button className="w-full py-3 h-auto rounded-xl text-sm font-semibold">
+                                Đăng nhập ngay
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -159,16 +166,13 @@ const UserProfile = () => {
         });
     };
 
-    if (!user) {
-        return <div className="p-6">Đang tải thông tin hồ sơ...</div>;
-    }
-
     return (
         <div className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8 animate-in fade-in duration-300 pb-12">
-                {/* Bento Grid Header */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left: User Bio Card */}
-                    <div className="lg:col-span-2 bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all duration-300">
+            {/* Bento Grid Header */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left: User Bio Card */}
+                <Card className="lg:col-span-2 bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all duration-300">
+                    <CardContent className="p-6 md:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         {/* Avatar Wrapper (Read-only) */}
                         <div className="relative shrink-0">
                             <Avatar
@@ -196,12 +200,14 @@ const UserProfile = () => {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </CardContent>
+                </Card>
 
-                    {/* Right: Quick Stats Column */}
-                    <div className="flex flex-col gap-4">
-                        {/* Completed Courses */}
-                        <div className="bg-white rounded-xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-5 flex items-center gap-4 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                {/* Right: Quick Stats Column */}
+                <div className="flex flex-col gap-4">
+                    {/* Completed Courses */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                        <CardContent className="p-5 flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                 <BookOpen size={22} />
                             </div>
@@ -209,10 +215,12 @@ const UserProfile = () => {
                                 <span className="text-[10px] text-neutral-medium uppercase tracking-wider font-bold block">Khóa học đăng ký</span>
                                 <span className="text-xl font-bold text-neutral-dark">{coursesCount} khóa học</span>
                             </div>
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        {/* Points */}
-                        <div className="bg-white rounded-xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-5 flex items-center gap-4 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                    {/* Points */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                        <CardContent className="p-5 flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary shrink-0">
                                 <Trophy size={22} />
                             </div>
@@ -220,10 +228,12 @@ const UserProfile = () => {
                                 <span className="text-[10px] text-neutral-medium uppercase tracking-wider font-bold block">Điểm cống hiến</span>
                                 <span className="text-xl font-bold text-neutral-dark">580 Điểm</span>
                             </div>
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        {/* Status Check */}
-                        <div className="bg-white rounded-xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-5 flex items-center gap-4 hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                    {/* Status Check */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
+                        <CardContent className="p-5 flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
                                 <CheckCircle2 size={22} />
                             </div>
@@ -231,102 +241,105 @@ const UserProfile = () => {
                                 <span className="text-[10px] text-neutral-medium uppercase tracking-wider font-bold block">Trạng thái tài khoản</span>
                                 <span className="text-sm font-bold text-emerald-600">Đã xác minh</span>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
+            </div>
 
-                {/* Form Sections */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    {/* Left Panel: Inputs and Password Change */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Profile edit card */}
-                        <div className="bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8">
-                            <h3 className="text-lg font-bold text-neutral-dark mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
+            {/* Form Sections */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Panel: Inputs and Password Change */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Profile edit card */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
+                        <CardHeader className="p-6 md:p-8 pb-0">
+                            <CardTitle className="text-lg font-bold text-neutral-dark flex items-center gap-2 border-b border-slate-100 pb-4">
                                 <User size={20} className="text-primary" /> Cập nhật thông tin cá nhân
-                            </h3>
-
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 md:p-8 pt-0">
                             <form onSubmit={handleSaveProfile} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Full Name */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="fullName">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="fullName">
                                             Họ và Tên
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <User size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="fullName"
                                                 name="fullName"
                                                 type="text"
                                                 value={profileForm.fullName}
                                                 onChange={handleProfileChange}
                                                 placeholder="Nguyen Van A"
-                                                className="w-full bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Username */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
                                             Tên đăng nhập
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <User size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="username"
                                                 name="username"
                                                 type="text"
                                                 value={profileForm.username}
                                                 disabled
                                                 placeholder="username"
-                                                className="w-full bg-slate-50 border border-border-light/20 text-neutral-medium rounded-xl pl-10 pr-4 py-3 text-sm outline-none cursor-not-allowed"
+                                                className="pl-10 pr-4 py-3 h-auto bg-slate-50 border-border-light/20 text-neutral-medium rounded-xl cursor-not-allowed"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Email */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="email">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="email">
                                             Địa chỉ Email
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <Mail size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="email"
                                                 name="email"
                                                 type="email"
                                                 value={profileForm.email}
                                                 onChange={handleProfileChange}
                                                 placeholder="nguyen.van.a@example.com"
-                                                className="w-full bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Phone */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="phone">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="phone">
                                             Số điện thoại
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <Phone size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="phone"
                                                 name="phone"
                                                 type="text"
                                                 value={profileForm.phone}
                                                 onChange={handleProfileChange}
                                                 placeholder="0123456789"
-                                                className="w-full bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
@@ -334,100 +347,103 @@ const UserProfile = () => {
 
                                 {/* Bio */}
                                 <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="bio">
+                                    <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="bio">
                                         Giới thiệu ngắn
-                                    </label>
-                                    <textarea
+                                    </Label>
+                                    <Textarea
                                         id="bio"
                                         name="bio"
                                         rows={3}
                                         value={profileForm.bio}
                                         onChange={handleProfileChange}
                                         placeholder="Một vài dòng tự giới thiệu về bản thân..."
-                                        className="w-full bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all placeholder:text-neutral-light"
+                                        className="bg-bg-card border border-border-light/40 rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all placeholder:text-neutral-light"
                                     />
                                 </div>
 
                                 {/* Save Button */}
                                 <div className="flex justify-end pt-2 border-t border-slate-100">
-                                    <button
+                                    <Button
                                         type="submit"
-                                        disabled={isUpdatingProfile}
-                                        className="bg-primary hover:opacity-95 text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2"
+                                        isLoading={isUpdatingProfile}
+                                        className="bg-primary hover:opacity-95 text-white font-semibold py-3 px-6 h-auto rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2"
                                     >
-                                        {isUpdatingProfile ? "Đang lưu..." : "Lưu thay đổi"}
-                                    </button>
+                                        Lưu thay đổi
+                                    </Button>
                                 </div>
                             </form>
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        {/* Password change card */}
-                        <div className="bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8">
-                            <h3 className="text-lg font-bold text-neutral-dark mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
+                    {/* Password change card */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
+                        <CardHeader className="p-6 md:p-8 pb-0">
+                            <CardTitle className="text-lg font-bold text-neutral-dark flex items-center gap-2 border-b border-slate-100 pb-4">
                                 <KeyRound size={20} className="text-primary" /> Đổi mật khẩu bảo mật
-                            </h3>
-
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 md:p-8 pt-0">
                             <form onSubmit={handleSavePassword} className="space-y-5">
                                 <div className="space-y-4">
                                     {/* Current Password */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="currentPassword">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="currentPassword">
                                             Mật khẩu hiện tại
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <Lock size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="currentPassword"
                                                 name="currentPassword"
                                                 type="password"
                                                 value={passwordForm.currentPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="••••••••"
-                                                className="w-full md:w-2/3 bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="w-full md:w-2/3 pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
 
                                     {/* New Password */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="newPassword">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="newPassword">
                                             Mật khẩu mới
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <Lock size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="newPassword"
                                                 name="newPassword"
                                                 type="password"
                                                 value={passwordForm.newPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="Nhập mật khẩu mới"
-                                                className="w-full md:w-2/3 bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="w-full md:w-2/3 pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Confirm Password */}
                                     <div className="space-y-2">
-                                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="confirmPassword">
+                                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="confirmPassword">
                                             Xác nhận mật khẩu mới
-                                        </label>
+                                        </Label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light">
+                                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
                                                 <Lock size={16} />
                                             </span>
-                                            <input
+                                            <Input
                                                 id="confirmPassword"
                                                 name="confirmPassword"
                                                 type="password"
                                                 value={passwordForm.confirmPassword}
                                                 onChange={handlePasswordChange}
                                                 placeholder="Nhập lại mật khẩu mới"
-                                                className="w-full md:w-2/3 bg-bg-card border border-border-light/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-light"
+                                                className="w-full md:w-2/3 pl-10 pr-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
                                             />
                                         </div>
                                     </div>
@@ -435,45 +451,48 @@ const UserProfile = () => {
 
                                 {/* Submit button */}
                                 <div className="flex justify-end pt-2 border-t border-slate-100">
-                                    <button
+                                    <Button
                                         type="submit"
-                                        disabled={isUpdatingPassword}
-                                        className="bg-primary hover:opacity-95 text-white font-semibold py-3 px-6 rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2"
+                                        isLoading={isUpdatingPassword}
+                                        className="bg-primary hover:opacity-95 text-white font-semibold py-3 px-6 h-auto rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2"
                                     >
-                                        {isUpdatingPassword ? "Đang thực hiện..." : "Đổi mật khẩu"}
-                                    </button>
+                                        Đổi mật khẩu
+                                    </Button>
                                 </div>
                             </form>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                    {/* Right Panel: Creator Upgrade Card */}
-                    <div className="space-y-6">
-                        {/* Content Creator Upgrade card */}
-                        <CreatorUpgradeCard user={user} />
+                {/* Right Panel: Creator Upgrade Card */}
+                <div className="space-y-6">
+                    {/* Content Creator Upgrade card */}
+                    <CreatorUpgradeCard user={user} />
 
-                        {/* Studying motivation card */}
-                        <div className="bg-white rounded-2xl border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 flex flex-col gap-4">
-                            <h4 className="text-sm font-bold text-neutral-dark uppercase tracking-wider border-b border-slate-100 pb-2">Phương châm học tập</h4>
-                            <div className="space-y-3">
-                                <div className="flex gap-3 text-xs">
-                                    <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                                    <span className="text-neutral-medium">Học hỏi liên tục mỗi ngày.</span>
-                                </div>
-                                <div className="flex gap-3 text-xs">
-                                    <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                                    <span className="text-neutral-medium">Hoàn thành bài tập chấm từ Mentor.</span>
-                                </div>
-                                <div className="flex gap-3 text-xs">
-                                    <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                                    <span className="text-neutral-medium">Tham gia cống hiến bài viết chất lượng trong cộng đồng học viên.</span>
-                                </div>
+                    {/* Studying motivation card */}
+                    <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
+                        <CardHeader className="p-6 pb-0">
+                            <CardTitle className="text-sm font-bold text-neutral-dark uppercase tracking-wider border-b border-slate-100 pb-2">Phương châm học tập</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 pt-0 space-y-3">
+                            <div className="flex gap-3 text-xs">
+                                <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+                                <span className="text-neutral-medium">Học hỏi liên tục mỗi ngày.</span>
                             </div>
-                        </div>
-                    </div>
+                            <div className="flex gap-3 text-xs">
+                                <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+                                <span className="text-neutral-medium">Hoàn thành bài tập chấm từ Mentor.</span>
+                            </div>
+                            <div className="flex gap-3 text-xs">
+                                <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+                                <span className="text-neutral-medium">Tham gia cống hiến bài viết chất lượng trong cộng đồng học viên.</span>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
+};
 
 export default UserProfile;

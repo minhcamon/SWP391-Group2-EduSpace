@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import authService from "@/services/authService";
 import GoogleIcon from "@/assets/google-icon-logo.svg";
 import { runWithLoading } from "@/utils/utils";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import Button from "@/components/ui/Button";
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
@@ -47,7 +50,7 @@ const LoginForm = () => {
             }
         };
 
-        await runWithLoading(setIsSubmitting, handleLogin());
+        await runWithLoading(setIsSubmitting, handleLogin);
     };
 
     return (
@@ -56,15 +59,15 @@ const LoginForm = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Username Field */}
                 <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
+                    <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
                         Tên đăng nhập hoặc Email
-                    </label>
+                    </Label>
                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light z-10">
                             <Mail size={16} />
                         </div>
-                        <input
-                            className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                        <Input
+                            className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                             id="username"
                             name="username"
                             placeholder="Tên đăng nhập hoặc email"
@@ -78,15 +81,15 @@ const LoginForm = () => {
 
                 {/* Password Field */}
                 <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="password">
+                    <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="password">
                         Mật khẩu
-                    </label>
+                    </Label>
                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light z-10">
                             <Lock size={16} />
                         </div>
-                        <input
-                            className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                        <Input
+                            className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                             id="password"
                             name="password"
                             placeholder="••••••••"
@@ -109,9 +112,9 @@ const LoginForm = () => {
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
                         />
-                        <label className="ml-2 block text-xs font-semibold text-neutral-medium cursor-pointer" htmlFor="remember-me">
+                        <Label className="ml-2 text-xs font-semibold text-neutral-medium cursor-pointer" htmlFor="remember-me">
                             Ghi nhớ đăng nhập
-                        </label>
+                        </Label>
                     </div>
                     <div className="text-xs">
                         <Link to="#" className="font-semibold text-primary hover:opacity-95 transition-opacity">
@@ -122,13 +125,13 @@ const LoginForm = () => {
 
                 {/* Submit Button */}
                 <div className="pt-2">
-                    <button
-                        disabled={isSubmitting}
-                        className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
+                    <Button
                         type="submit"
+                        isLoading={isSubmitting}
+                        className="w-full py-3.5 h-auto border border-transparent rounded-xl font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
                     >
-                        {isSubmitting ? "Đang xử lý..." : "Đăng Nhập"}
-                    </button>
+                        Đăng Nhập
+                    </Button>
                 </div>
             </form>
 
@@ -148,10 +151,11 @@ const LoginForm = () => {
 
             {/* Social Logins */}
             <div className="space-y-3">
-                <button
+                <Button
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-bg-base hover:bg-bg-card border border-border-light/40 rounded-xl text-xs font-semibold text-neutral-dark transition-all hover:border-border-light active:scale-[0.98] cursor-pointer shadow-sm"
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2.5 py-3 h-auto bg-bg-base hover:bg-bg-card border border-border-light/40 rounded-xl text-xs font-semibold text-neutral-dark transition-all hover:border-border-light active:scale-[0.98] cursor-pointer shadow-sm"
                     type="button"
                 >
                     <img
@@ -160,7 +164,7 @@ const LoginForm = () => {
                         className="w-4 h-4 object-contain"
                     />
                     Đăng nhập bằng Google
-                </button>
+                </Button>
             </div>
 
             {/* Sign Up Link */}
