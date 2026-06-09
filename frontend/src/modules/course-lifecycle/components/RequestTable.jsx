@@ -23,9 +23,11 @@ const RequestTable = ({
                 <Table className="w-full text-left border-collapse">
                     <TableHeader>
                         <TableRow className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">
-                                ID Đơn
-                            </TableHead>
+                            {!isHistory && (
+                                <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">
+                                    ID Đơn
+                                </TableHead>
+                            )}
                             <TableHead className="py-4 px-6 w-72 font-bold text-gray-500">
                                 Ứng viên
                             </TableHead>
@@ -47,7 +49,11 @@ const RequestTable = ({
                             const isApproved = request.status === "APPROVED";
                             return (
                                 <TableRow
-                                    key={request.requestId}
+                                    key={
+                                        !isHistory
+                                            ? request.requestId
+                                            : request.id
+                                    }
                                     className={`transition-colors ${
                                         isHistory
                                             ? isApproved
@@ -56,9 +62,11 @@ const RequestTable = ({
                                             : "hover:bg-gray-50/40"
                                     }`}
                                 >
-                                    <TableCell className="py-5 px-6 font-bold text-gray-900">
-                                        #{request.requestId}
-                                    </TableCell>
+                                    {!isHistory && (
+                                        <TableCell className="py-5 px-6 font-bold text-gray-900">
+                                            #{request.requestId}
+                                        </TableCell>
+                                    )}
                                     <TableCell className="py-5 px-6 space-y-1">
                                         <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
                                             <User
@@ -67,17 +75,27 @@ const RequestTable = ({
                                             />{" "}
                                             {request.learnerName}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                            <Mail
-                                                size={14}
-                                                className="text-secondary"
-                                            />{" "}
-                                            {request.learnerEmail}
-                                        </div>
+                                        {!isHistory && (
+                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                <Mail
+                                                    size={14}
+                                                    className="text-secondary"
+                                                />{" "}
+                                                {request.learnerEmail}
+                                            </div>
+                                        )}
                                     </TableCell>
-                                    <TableCell className="py-5 px-6">
-                                        {request.documentUrl}
-                                    </TableCell>
+                                    {!isHistory ? (
+                                        <TableCell className="py-5 px-6">
+                                            {request.documentUrl}
+                                        </TableCell>
+                                    ) : (
+                                        <TableCell className="py-5 px-6">
+                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                {request.learnerEmail}
+                                            </div>
+                                        </TableCell>
+                                    )}
                                     <TableCell className="py-5 px-6 text-center">
                                         <Badge
                                             variant={

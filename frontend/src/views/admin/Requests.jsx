@@ -8,15 +8,38 @@ import ReloadButton from "@/components/ui/ReloadButton";
 
 const Requests = () => {
     const [pendingRequests, setPendingRequests] = useState([]);
+    const [allRequests, setAllRequests] = useState([]);
 
     useEffect(() => {
         fetchPendingRequests();
+        fetchAllRequests();
     }, []);
+
+    const handleReload = () => {
+        fetchPendingRequests();
+        fetchAllRequests();
+        console.log(pendingRequests);
+        console.log(allRequests);
+    };
 
     const fetchPendingRequests = async () => {
         try {
             const data = await creatorService.getPendingCreatorRequests();
             setPendingRequests(data);
+        } catch (error) {
+            console.error(
+                "Lỗi khi lấy pending creator request tại Requests",
+                error,
+            );
+            toast.error("Lỗi khi lấy đơn duyệt");
+        }
+    };
+
+    const fetchAllRequests = async () => {
+        try {
+            const res = await creatorService.getCreatorRequests();
+            const data = res.filter((request) => request.status !== "PENDING");
+            setAllRequests(data);
         } catch (error) {
             console.error(
                 "Lỗi khi lấy data creator request tại Requests",
@@ -37,6 +60,7 @@ const Requests = () => {
             );
 
             toast.success(`Duyệt đơn #${requestId} thành công`);
+            handleReload();
         } catch (error) {
             console.error("Lỗi khi duyệt đơn ở Requests: ", error);
             toast.error("Lỗi khi duyệt đơn");
@@ -74,7 +98,7 @@ const Requests = () => {
                 </div>
 
                 <div className="flex justify-end">
-                    <ReloadButton action={fetchPendingRequests} />
+                    <ReloadButton action={handleReload} />
                 </div>
 
                 <div className="space-y-4">
@@ -104,14 +128,14 @@ const Requests = () => {
                     )}
                 </div>
 
-                {/* <div className="space-y-4">
+                <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-900 px-1">
                         <History size={20} className="text-tertiary" />
                         <h2 className="text-lg font-bold">
                             Lịch sử đơn đã xử lý
                         </h2>
                     </div>
-                    {pendingRequests.length === 0 ? (
+                    {allRequests.length === 0 ? (
                         <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
                             <Inbox
                                 size={32}
@@ -122,14 +146,9 @@ const Requests = () => {
                             </p>
                         </div>
                     ) : (
-                        <RequestTable
-                            requests={pendingRequests}
-                            isHistory={true}
-                            onApprovedClick={handleApprove}
-                            onRejectClick={handleReject}
-                        />
+                        <RequestTable requests={allRequests} isHistory={true} />
                     )}
-                </div> */}
+                </div>
             </main>
         </div>
     );
