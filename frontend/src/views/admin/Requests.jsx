@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/Dialog";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
 
 const Requests = () => {
     const [pendingRequests, setPendingRequests] = useState([]);
@@ -148,15 +149,10 @@ const Requests = () => {
                         </h2>
                     </div>
                     {pendingRequests.length === 0 ? (
-                        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
-                            <Inbox
-                                size={32}
-                                className="text-gray-300 mx-auto mb-2"
-                            />
-                            <p className="text-gray-500 text-sm font-medium">
-                                Hàng chờ trống. Không có đơn nào cần xử lý.
-                            </p>
-                        </div>
+                        <EmptyState
+                            icon={Inbox}
+                            description="Hàng chờ trống. Không có đơn nào cần xử lý."
+                        />
                     ) : (
                         <RequestTable
                             requests={pendingRequests}
@@ -175,15 +171,10 @@ const Requests = () => {
                         </h2>
                     </div>
                     {allRequests.length === 0 ? (
-                        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
-                            <Inbox
-                                size={32}
-                                className="text-gray-300 mx-auto mb-2"
-                            />
-                            <p className="text-gray-500 text-sm font-medium">
-                                Lịch sử duyệt trống. Không có đơn nào cần xử lý.
-                            </p>
-                        </div>
+                        <EmptyState
+                            icon={Inbox}
+                            description="Lịch sử duyệt đơn trống. Không có lịch sử nào."
+                        />
                     ) : (
                         <RequestTable requests={allRequests} isHistory={true} />
                     )}
