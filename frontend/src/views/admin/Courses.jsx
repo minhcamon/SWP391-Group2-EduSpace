@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
-import { ClipboardList, Inbox } from "lucide-react";
+import { ClipboardList, Inbox, History } from "lucide-react";
 import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import { toast } from "sonner";
 import courseService from "@/services/courseService";
@@ -31,7 +31,6 @@ const Courses = () => {
             }
         });
     };
-
 
     const handleApprove = async (courseId) => {
         try {
@@ -66,10 +65,7 @@ const Courses = () => {
                 prevCourse.filter((course) => course.id !== courseId),
             );
         } catch (error) {
-            console.error(
-                "Lỗi lấy khóa học từ chối tại Courses: ",
-                error,
-            );
+            console.error("Lỗi lấy khóa học từ chối tại Courses: ", error);
             toast.error("Lỗi khi từ chối khóa học");
         }
     };
@@ -83,7 +79,10 @@ const Courses = () => {
                 </CardInformation>
 
                 <div className="flex justify-end">
-                    <ReloadButton action={fetchPendingCourses} isLoading={isLoading} />
+                    <ReloadButton
+                        action={fetchPendingCourses}
+                        isLoading={isLoading}
+                    />
                 </div>
 
                 <div className="space-y-4">
@@ -107,10 +106,31 @@ const Courses = () => {
                         />
                     )}
                 </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-gray-900 px-1">
+                        <History size={20} className="text-tertiary" />
+                        <h2 className="text-lg font-bold">
+                            Lịch sử duyệt khóa học
+                        </h2>
+                    </div>
+                    {pendingCourses.length === 0 ? (
+                        <EmptyState
+                            icon={Inbox}
+                            description="Lịch sử trống. Không có lịch sử duyệt khóa học nào."
+                        />
+                    ) : (
+                        <CourseTable
+                            courses={pendingCourses}
+                            isHistory={false}
+                            onApproveClick={handleApprove}
+                            onRejectClick={handleReject}
+                        />
+                    )}
+                </div>
             </main>
         </div>
     );
 };
 
 export default Courses;
-
