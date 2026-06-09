@@ -1,30 +1,35 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
-import { ClipboardList, Inbox } from "lucide-react";
+import { ClipboardList, Inbox, History } from "lucide-react";
 import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import { toast } from "sonner";
 import courseService from "@/services/courseService";
 import ReloadButton from "@/components/ui/ReloadButton";
 import CardInformation from "@/components/ui/CardInformation";
+import EmptyState from "@/components/ui/EmptyState";
+import { runWithLoading } from "@/utils/utils";
 
 const Courses = () => {
     const [pendingCourses, setPendingCourses] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         fetchPendingCourses();
     }, []);
 
     const fetchPendingCourses = async () => {
-        try {
-            const data = await courseService.getPendingCourses();
-            setPendingCourses(data);
-        } catch (error) {
-            console.error(
-                "Lỗi khi lấy khóa học Pending tại Courses: ",
-                error,
-            );
-            toast.error("Lỗi khi tải khóa học");
-        }
+        await runWithLoading(setIsLoading, async () => {
+            try {
+                const data = await courseService.getPendingCourses();
+                setPendingCourses(data);
+            } catch (error) {
+                console.error(
+                    "Lỗi khi lấy khóa học Pending tại Courses: ",
+                    error,
+                );
+                toast.error("Lỗi khi tải khóa học");
+            }
+        });
     };
 
     const handleApprove = async (courseId) => {
@@ -60,10 +65,7 @@ const Courses = () => {
                 prevCourse.filter((course) => course.id !== courseId),
             );
         } catch (error) {
-            console.error(
-                "Lỗi lấy khóa học từ chối tại Courses: ",
-                error,
-            );
+            console.error("Lỗi lấy khóa học từ chối tại Courses: ", error);
             toast.error("Lỗi khi từ chối khóa học");
         }
     };
@@ -77,7 +79,10 @@ const Courses = () => {
                 </CardInformation>
 
                 <div className="flex justify-end">
-                    <ReloadButton action={fetchPendingCourses} />
+                    <ReloadButton
+                        action={fetchPendingCourses}
+                        isLoading={isLoading}
+                    />
                 </div>
 
                 <div className="space-y-4">
@@ -88,15 +93,32 @@ const Courses = () => {
                         </h2>
                     </div>
                     {pendingCourses.length === 0 ? (
-                        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm">
-                            <Inbox
-                                size={32}
-                                className="text-gray-300 mx-auto mb-2"
-                            />
-                            <p className="text-gray-500 text-sm font-medium">
-                                Hàng chờ trống. Không có khóa học nào cần xử lý.
-                            </p>
-                        </div>
+                        <EmptyState
+                            icon={Inbox}
+                            description="Hàng chờ trống. Không có khóa học nào cần xử lý."
+                        />
+                    ) : (
+                        <CourseTable
+                            courses={pendingCourses}
+                            isHistory={false}
+                            onApproveClick={handleApprove}
+                            onRejectClick={handleReject}
+                        />
+                    )}
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-gray-900 px-1">
+                        <History size={20} className="text-tertiary" />
+                        <h2 className="text-lg font-bold">
+                            Lịch sử duyệt khóa học
+                        </h2>
+                    </div>
+                    {pendingCourses.length === 0 ? (
+                        <EmptyState
+                            icon={Inbox}
+                            description="Lịch sử trống. Không có lịch sử duyệt khóa học nào."
+                        />
                     ) : (
                         <CourseTable
                             courses={pendingCourses}

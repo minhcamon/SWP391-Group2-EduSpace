@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Award, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import CreatorRegisterModal from "./CreatorRegisterModal";
+import { Card } from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 
 const CreatorUpgradeCard = ({ user }) => {
     const [showCreatorModal, setShowCreatorModal] = useState(false);
@@ -21,7 +23,7 @@ const CreatorUpgradeCard = ({ user }) => {
 
     if (isCreator) {
         return (
-            <div className="bg-white rounded-2xl border border-emerald-500/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <Card className="bg-white border border-emerald-500/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 {/* Decorative background circle */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
 
@@ -35,20 +37,22 @@ const CreatorUpgradeCard = ({ user }) => {
                     Tài khoản của bạn đã được nâng cấp. Bạn có đầy đủ quyền hạn để đăng tải tài liệu, tạo khóa học và xây dựng lộ trình học tập cho học viên!
                 </p>
 
-                <a
-                    href="/creator"
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-6 rounded-xl text-sm transition-all active:scale-[0.98] flex justify-center items-center gap-2 shadow-sm shadow-emerald-500/20"
+                <Button
+                    asChild
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-6 h-auto rounded-xl text-sm transition-all active:scale-[0.98] flex justify-center items-center gap-2 shadow-sm shadow-emerald-500/20 cursor-pointer"
                 >
-                    Đi tới Creator Dashboard
-                    <ExternalLink size={16} />
-                </a>
-            </div>
+                    <a href="/creator">
+                        Đi tới Creator Dashboard
+                        <ExternalLink size={16} />
+                    </a>
+                </Button>
+            </Card>
         );
     }
 
     if (isPending) {
         return (
-            <div className="bg-white rounded-2xl border border-amber-500/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <Card className="bg-white border border-amber-500/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 {/* Decorative background circle */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
 
@@ -62,20 +66,21 @@ const CreatorUpgradeCard = ({ user }) => {
                     Đơn đăng ký Content Creator của bạn đã được gửi lên hệ thống và đang chờ Admin phê duyệt. Kết quả sẽ được cập nhật sớm nhất!
                 </p>
 
-                <button
+                <Button
                     disabled
-                    className="w-full bg-amber-50 text-amber-600 font-semibold py-3.5 px-6 rounded-xl text-sm cursor-not-allowed border border-amber-200/50 flex justify-center items-center gap-2"
+                    variant="outline"
+                    className="w-full bg-amber-50 text-amber-600 font-semibold py-3.5 px-6 h-auto rounded-xl text-sm cursor-not-allowed border border-amber-200/50 flex justify-center items-center gap-2"
                 >
                     <Clock size={16} className="animate-spin" />
                     Đang kiểm duyệt...
-                </button>
-            </div>
+                </Button>
+            </Card>
         );
     }
 
     return (
         <>
-            <div className="bg-white rounded-2xl border border-secondary/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <Card className="bg-white border border-secondary/20 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-lg transition-all duration-300">
                 {/* Decorative background circle */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-secondary/10 rounded-full blur-2xl group-hover:scale-110 transition-all duration-500"></div>
 
@@ -89,13 +94,13 @@ const CreatorUpgradeCard = ({ user }) => {
                     Chia sẻ kiến thức của bạn tới cộng đồng học viên EduSpace. Trở thành Content Creator để tự xây dựng lộ trình học và thiết kế khóa học của riêng bạn!
                 </p>
 
-                <button
+                <Button
                     onClick={() => setShowCreatorModal(true)}
-                    className="w-full bg-secondary hover:bg-[#ea580c] text-white font-semibold py-3.5 px-6 rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex justify-center items-center gap-2 shadow-sm shadow-orange-500/20"
+                    className="w-full bg-secondary hover:bg-[#ea580c] text-white font-semibold py-3.5 px-6 h-auto rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex justify-center items-center gap-2 shadow-sm shadow-orange-500/20"
                 >
                     Đăng ký làm Content Creator
-                </button>
-            </div>
+                </Button>
+            </Card>
 
             {/* Modal Popup */}
             <CreatorRegisterModal

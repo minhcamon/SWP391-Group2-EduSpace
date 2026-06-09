@@ -1,5 +1,15 @@
 import { Check, X, BookOpen } from "lucide-react";
 import { statusMapping } from "@/lib/data";
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableHead,
+    TableRow,
+    TableCell,
+} from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import Badge from "@/components/ui/Badge";
 
 const CourseTable = ({
     courses,
@@ -10,31 +20,31 @@ const CourseTable = ({
     return (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            <th className="py-4 px-6 w-24">ID Khóa</th>
-                            <th className="py-4 px-6 w-96">Tên Khóa học</th>
-                            <th className="py-4 px-6 w-48 text-center">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-gray-50">
+                            <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">ID Khóa</TableHead>
+                            <TableHead className="py-4 px-6 w-96 font-bold text-gray-500">Tên Khóa học</TableHead>
+                            <TableHead className="py-4 px-6 w-48 text-center font-bold text-gray-500">
                                 Ngày gửi yêu cầu
-                            </th>
-                            <th className="py-4 px-6 w-32 text-center">
+                            </TableHead>
+                            <TableHead className="py-4 px-6 w-32 text-center font-bold text-gray-500">
                                 Trạng thái
-                            </th>
+                            </TableHead>
                             {!isHistory && (
-                                <th className="py-4 px-6 w-52 text-right">
+                                <TableHead className="py-4 px-6 w-52 text-right font-bold text-gray-500">
                                     Tác vụ
-                                </th>
+                                </TableHead>
                             )}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className="divide-y divide-gray-200 text-sm text-gray-600">
                         {courses.map((course) => {
                             const isPublished = course.status === "PUBLISHED";
                             return (
-                                <tr
+                                <TableRow
                                     key={course.id}
-                                    className={`transition-colors ${
+                                    className={`transition-colors border-b border-gray-200 ${
                                         isHistory
                                             ? isPublished
                                                 ? "bg-emerald-50/20 hover:bg-emerald-50/40"
@@ -42,10 +52,10 @@ const CourseTable = ({
                                             : "hover:bg-gray-50/40"
                                     }`}
                                 >
-                                    <td className="py-5 px-6 font-bold text-gray-900">
+                                    <TableCell className="py-5 px-6 font-bold text-gray-900">
                                         #{course.id}
-                                    </td>
-                                    <td className="py-5 px-6">
+                                    </TableCell>
+                                    <TableCell className="py-5 px-6">
                                         <div className="flex items-center gap-2">
                                             <BookOpen
                                                 size={16}
@@ -61,14 +71,15 @@ const CourseTable = ({
                                                 </div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td className="py-5 px-6 text-gray-500 text-center">
+                                    </TableCell>
+                                    <TableCell className="py-5 px-6 text-gray-500 text-center">
                                         {new Date(
                                             course.createdAt,
                                         ).toLocaleDateString("vi-VN")}
-                                    </td>
-                                    <td className="py-5 px-6 text-center">
-                                        <span
+                                    </TableCell>
+                                    <TableCell className="py-5 px-6 text-center">
+                                        <Badge
+                                            variant={isHistory ? (isPublished ? "default" : "destructive") : "secondary"}
                                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                                                 isHistory
                                                     ? isPublished
@@ -79,40 +90,42 @@ const CourseTable = ({
                                         >
                                             {statusMapping[course.status] ||
                                                 course.status}
-                                        </span>
-                                    </td>
+                                        </Badge>
+                                    </TableCell>
                                     {!isHistory && (
-                                        <td className="py-5 px-6 text-right">
+                                        <TableCell className="py-5 px-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button
+                                                <Button
                                                     onClick={() =>
                                                         onApproveClick(
                                                             course.id,
                                                         )
                                                     }
-                                                    className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
+                                                    className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-2.5 rounded-xl text-xs transition-colors shadow-sm cursor-pointer h-8"
                                                 >
                                                     <Check size={14} /> Duyệt
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     onClick={() =>
                                                         onRejectClick(course.id)
                                                     }
-                                                    className="flex items-center gap-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 font-semibold py-2 px-2 rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
+                                                    variant="outline"
+                                                    className="flex items-center gap-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 font-semibold py-2 px-2.5 rounded-xl text-xs transition-colors shadow-sm cursor-pointer h-8"
                                                 >
                                                     <X size={14} /> Từ chối
-                                                </button>
+                                                </Button>
                                             </div>
-                                        </td>
+                                        </TableCell>
                                     )}
-                                </tr>
+                                </TableRow>
                             );
                         })}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );
 };
 
 export default CourseTable;
+

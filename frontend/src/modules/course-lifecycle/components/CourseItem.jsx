@@ -1,4 +1,5 @@
 import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 
 const CourseItem = ({ course }) => {
@@ -10,7 +11,11 @@ const CourseItem = ({ course }) => {
                 </h3>
 
                 <div className="mb-4">
-                    <Badge><span className="text-tertiary">Tác giả: {course.creatorFullName}</span></Badge>
+                    <Badge variant="secondary" className="py-2.5">
+                        <span>
+                            Tác giả: {course.creatorFullName}
+                        </span>
+                    </Badge>
                 </div>
 
                 <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
@@ -18,11 +23,16 @@ const CourseItem = ({ course }) => {
                 </p>
             </div>
 
-            <div className="flex gap-3 mt-auto">
-                <button className="flex-1 text-sm rounded-2xl bg-gray-50 py-3 px-4 hover:cursor-pointer hover:scale-95 transition-colors hover:bg-gray-100 text-gray-700 border border-gray-200">
+            <div className="flex gap-4 mt-auto">
+                <Button
+                    variant="outline"
+                    className="rounded-full py-6 px-12 hover:cursor-pointer hover:scale-95"
+                >
                     Chi tiết
-                </button>
-                <PrimaryButton title="Đăng ký ngay" />
+                </Button>
+                <Button className="rounded-full p-6 hover:cursor-pointer hover:scale-95">
+                    Đăng ký ngay
+                </Button>
                 {/* <button className="flex-1 bg-primary hover:bg-[#ea580c] text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors shadow-sm shadow-orange-500/10 cursor-pointer">
                     
                 </button> */}

@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router";
 import AuthService from "@/services/authService";
 import { toast } from "sonner";
 import { runWithLoading } from "@/utils/utils";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import Button from "@/components/ui/Button";
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -57,15 +60,15 @@ const RegisterForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Full Name Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="fullname">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="fullname">
                             Họ và tên
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <User size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="fullname"
                                 name="fullname"
                                 placeholder="Nguyen Van A"
@@ -79,15 +82,15 @@ const RegisterForm = () => {
 
                     {/* Phone Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="phone">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="phone">
                             Số điện thoại
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <Phone size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="phone"
                                 name="phone"
                                 placeholder="0123456789"
@@ -103,15 +106,15 @@ const RegisterForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Username Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="username">
                             Tên đăng nhập
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <User size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="username"
                                 name="username"
                                 placeholder="username"
@@ -125,15 +128,15 @@ const RegisterForm = () => {
 
                     {/* Email Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="email">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="email">
                             Địa chỉ Email
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <Mail size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="email"
                                 name="email"
                                 placeholder="name@example.com"
@@ -149,15 +152,15 @@ const RegisterForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Password Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="password">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="password">
                             Mật khẩu
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <Lock size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="password"
                                 name="password"
                                 placeholder="Nhập mật khẩu"
@@ -171,15 +174,15 @@ const RegisterForm = () => {
 
                     {/* Confirm Password Field */}
                     <div className="space-y-1.5">
-                        <label className="block text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="confirmPassword">
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="confirmPassword">
                             Xác nhận mật khẩu
-                        </label>
+                        </Label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-light">
                                 <Lock size={16} />
                             </div>
-                            <input
-                                className="w-full pl-10 pr-4 py-3 bg-bg-base border border-border-light/40 rounded-xl text-sm text-neutral-dark focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-light"
+                            <Input
+                                className="pl-10 pr-4 py-3 h-auto bg-bg-base border-border-light/40 rounded-xl"
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 placeholder="Nhập lại mật khẩu"
@@ -203,7 +206,7 @@ const RegisterForm = () => {
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
                     />
-                    <label className="text-xs text-neutral-medium cursor-pointer" htmlFor="terms">
+                    <Label className="text-xs text-neutral-medium cursor-pointer" htmlFor="terms">
                         Tôi đồng ý với{" "}
                         <Link className="font-bold text-primary hover:underline transition-all" to="#">
                             Điều khoản
@@ -213,18 +216,18 @@ const RegisterForm = () => {
                             Điều kiện
                         </Link>{" "}
                         của nền tảng.
-                    </label>
+                    </Label>
                 </div>
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                    <button
-                        disabled={isSubmitting}
-                        className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-sm shadow-orange-500/20"
+                    <Button
                         type="submit"
+                        isLoading={isSubmitting}
+                        className="w-full py-3.5 h-auto border border-transparent rounded-xl font-semibold text-sm text-white bg-secondary hover:bg-[#ea580c] transition-all cursor-pointer shadow-sm shadow-orange-500/20"
                     >
-                        {isSubmitting ? "Đang xử lý..." : "Tạo Tài Khoản"}
-                    </button>
+                        Tạo Tài Khoản
+                    </Button>
                 </div>
             </form>
 
@@ -247,3 +250,4 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
+

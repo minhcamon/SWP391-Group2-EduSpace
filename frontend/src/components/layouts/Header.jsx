@@ -3,7 +3,7 @@ import { Bell, Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
 import AvatarDropDown from "../common/AvatarDropDown";
-import Avatar from "./Avatar";
+import Avatar from "../common/Avatar";
 import Logo from "../common/Logo";
 
 const Header = () => {
