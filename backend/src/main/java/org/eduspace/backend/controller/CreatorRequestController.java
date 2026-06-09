@@ -33,13 +33,28 @@ public class CreatorRequestController {
                         @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
                         @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
         })
-        @GetMapping("/all")
+        @GetMapping("/pending")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<APIResponse<List<CreatorRequestApprovalRequest>>> getAllRequestPending() {
                 List<CreatorRequestApprovalRequest> requests = creatorRequestService.getAllRequestPending();
 
                 return ResponseEntity.ok(
                                 APIResponse.success("Successfull Retrieve All Pending Creator's Requests", requests));
+        }
+
+        @Operation(summary = "Lấy lịch sử yêu cầu nâng cấp lên Creator đang chờ duyệt (ADMIN)", description = "Lấy tất cả các yêu cầu đăng ký làm Creator từ Học viên.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy danh sách yêu cầu thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
+        })
+        @GetMapping("/history")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<APIResponse<List<CreatorRequestApprovalResponse>>> getAllRequest() {
+                List<CreatorRequestApprovalResponse> requests = creatorRequestService.getAllCreatorRequests();
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Successfull Retrieve All Creator's Requests", requests));
         }
 
         @Operation(summary = "Xử lý yêu cầu đồng ý làm Creator (ADMIN)", description = "Admin phê duyệt (APPROVED) yêu cầu của Học viên.")

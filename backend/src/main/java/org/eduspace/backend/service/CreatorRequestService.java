@@ -51,6 +51,12 @@ public class CreatorRequestService {
                 request.setStatus(RequestStatus.APPROVED);
                 request.getLearner().setRole(Role.CREATOR);
 
+                request.setProcessedAt(LocalDateTime.now());
+                User admin = userRepository.findById(adminId)
+                                .orElse(null);
+
+                request.setApprovedBy(admin);
+
                 CreatorRequest updatedRequest = creatorRequestRepository.save(request);
 
                 return CreatorRequestApprovalResponse.builder()
@@ -74,6 +80,12 @@ public class CreatorRequestService {
                 }
                 request.setStatus(RequestStatus.REJECTED);
                 request.setReason(reason);
+
+                request.setProcessedAt(LocalDateTime.now());
+                User admin = userRepository.findById(adminId)
+                                .orElse(null);
+
+                request.setApprovedBy(admin);
 
                 CreatorRequest updatedRequest = creatorRequestRepository.save(request);
 
