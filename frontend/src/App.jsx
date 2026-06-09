@@ -21,6 +21,8 @@ import AdminDashboard from "@/views/admin/Dashboard";
 import AdminRequests from "@/views/admin/Requests";
 import AdminCourses from "@/views/admin/Courses";
 import Error from "@/views/Error";
+import LearnerCourseDetail from "@/views/LearnerCourseDetail";
+import ClassView from "@/views/ClassView";
 
 function App() {
     return (
@@ -42,10 +44,15 @@ function App() {
                         path="/courses"
                         element={<Courses />}
                     ></Route>
+                    <Route
+                        path="/courses/:id"
+                        element={<LearnerCourseDetail />}
+                    ></Route>
 
                     {/* Authenticated user routes */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/profile" element={<Profile />}></Route>
+                        <Route path="/classes/:classId" element={<ClassView />}></Route>
                     </Route>
 
                     {/* admin route */}
