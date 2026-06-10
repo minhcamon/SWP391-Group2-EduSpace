@@ -37,7 +37,7 @@ const Sidebar = () => {
                 {
                     text: "Dashboard",
                     icon: LayoutDashboard,
-                    path: "/admin/dashboard",
+                    path: "/admin",
                 },
             ],
         },

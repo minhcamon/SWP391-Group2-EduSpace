@@ -9,7 +9,7 @@ const Home = () => {
         <>
             <div className="min-h-screen w-full bg-gray-50 flex flex-col">
                 <Header />
-                <main className="w-full mx-auto py-12 grow container">
+                <main className="mx-auto w-full px-4 py-12 grow max-w-300">
                     <CourseContainer />
                     <RoadmapContainer />
                 </main>

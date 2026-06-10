@@ -24,7 +24,7 @@ const ListCoursesPage = () => {
     const getCourseLength = courses.length;
 
     return (
-        <main className="w-full mx-auto px-4 py-12 grow container">
+        <main>
             <CardInformationComponent description="Học tập theo mô hình lớp học 10 người — Ghép cặp tương tác, cùng nhau tiến bộ vượt bậc.">
                 Khám phá các khóa học tại{" "}
                 <span className="text-primary">Edu</span>
@@ -32,11 +32,12 @@ const ListCoursesPage = () => {
             </CardInformationComponent>
 
             <div className="mt-5">
-                Hiện tại đang có <strong className="text-secondary">{getCourseLength}</strong> khóa
-                học
+                Hiện tại đang có{" "}
+                <strong className="text-secondary">{getCourseLength}</strong>{" "}
+                khóa học
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
                 {courses.map((course) => (
                     <CourseItem key={course.id} course={course} />
                 ))}
