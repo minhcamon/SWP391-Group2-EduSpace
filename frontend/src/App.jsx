@@ -22,7 +22,7 @@ import AdminRequests from "@/views/admin/Requests";
 import AdminCourses from "@/views/admin/Courses";
 import Error from "@/views/Error";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
-import ClassView from "@/views/ClassView";
+import ClassView from "@/views/learning/ClassView";
 
 function App() {
     return (
