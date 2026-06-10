@@ -7,12 +7,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/Card";
-import PrimaryButton from "@/components/ui/PrimaryButton";
 
 const CourseItem = ({ course }) => {
     return (
         <div>
-            <Card className=" bg-white shadow-sm hover:shadow-md transform transition-all duration-300 hover:-translate-y-1.5 hover:cursor-pointer">
+            <Card className=" bg-white shadow-sm hover:shadow-md transform transition-all duration-300 hover:-translate-y-1.5">
                 <CardHeader>
                     <CardTitle className="font-bold text-xl min-h-12">
                         {course.title}
