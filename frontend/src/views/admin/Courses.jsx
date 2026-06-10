@@ -5,7 +5,6 @@ import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import { toast } from "sonner";
 import courseService from "@/services/courseService";
 import ReloadButton from "@/components/ui/ReloadButton";
-import CardInformation from "@/components/ui/CardInformation";
 import EmptyState from "@/components/ui/EmptyState";
 import { runWithLoading } from "@/utils/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +17,12 @@ import {
 } from "@/components/ui/Dialog";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/Card";
 
 const Courses = () => {
     const { user } = useAuth();
@@ -134,9 +139,16 @@ const Courses = () => {
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
             <main className="grow p-8 min-w-0 space-y-8">
-                <CardInformation description="Quản lý khóa học và Lịch sử duyệt khóa học">
-                    <h1 className="text-secondary">Kiểm duyệt khóa học</h1>
-                </CardInformation>
+                <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold text-secondary">
+                            Kiểm duyệt khóa học
+                        </CardTitle>
+                        <CardDescription>
+                            Quản lý khóa học và Lịch sử duyệt khóa học
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
 
                 <div className="flex justify-end">
                     <ReloadButton action={handleReload} isLoading={isLoading} />

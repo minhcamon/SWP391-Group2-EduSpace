@@ -15,6 +15,12 @@ import {
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/Card";
 
 const Requests = () => {
     const [pendingRequests, setPendingRequests] = useState([]);
@@ -128,14 +134,16 @@ const Requests = () => {
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
             <main className="grow p-8 min-w-0 space-y-8">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                    <h1 className="text-2xl font-bold text-secondary tracking-tight">
-                        Kiểm duyệt đơn
-                    </h1>
-                    <p className="text-gray-500 text-sm mt-0.5">
-                        Quản lý duyệt đơn và Lịch sử duyệt đơn
-                    </p>
-                </div>
+                <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold text-secondary">
+                            Kiểm duyệt đơn
+                        </CardTitle>
+                        <CardDescription>
+                            Quản lý duyệt đơn và Lịch sử duyệt đơn
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
 
                 <div className="flex justify-end">
                     <ReloadButton action={handleReload} />
