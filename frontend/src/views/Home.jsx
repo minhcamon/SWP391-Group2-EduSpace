@@ -7,12 +7,12 @@ import Footer from "@/components/layouts/Footer";
 const Home = () => {
     return (
         <>
-            <div>
+            <div className="min-h-screen w-full bg-gray-50 flex flex-col">
                 <Header />
-                <div className="min-h-screen">
+                <main className="w-full mx-auto py-12 grow container">
                     <CourseContainer />
                     <RoadmapContainer />
-                </div>
+                </main>
                 <Footer />
             </div>
         </>

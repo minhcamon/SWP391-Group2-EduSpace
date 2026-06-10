@@ -28,7 +28,7 @@ const CourseContainer = () => {
     }, []);
 
     return (
-        <div className="container mx-auto px-4 my-4">
+        <div className="container mx-auto px-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Khóa học phổ biến</h1>
                 <Link to="/courses">

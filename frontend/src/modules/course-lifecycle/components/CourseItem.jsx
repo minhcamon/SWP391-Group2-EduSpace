@@ -23,7 +23,7 @@ const CourseItem = ({ course }) => {
                 </p>
             </div>
 
-            <div className="flex gap-4 mt-auto">
+            <div className="flex gap-4">
                 <Button
                     variant="outline"
                     className="rounded-full py-6 px-12 hover:cursor-pointer hover:scale-95"
