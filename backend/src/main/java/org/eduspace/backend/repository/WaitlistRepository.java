@@ -2,6 +2,7 @@ package org.eduspace.backend.repository;
 
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.entity.Waitlist;
+import org.eduspace.backend.enums.WaitlistStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,5 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
                 ORDER BY we.enrolledAt ASC
             """)
     List<User> findUsersByWaitListId(Long waitlistId);
+    Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
 }
