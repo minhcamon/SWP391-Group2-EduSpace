@@ -42,7 +42,7 @@ const CoursesPage = () => {
     };
 
     return (
-        <div>
+        <>
             <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-secondary">
@@ -80,7 +80,7 @@ const CoursesPage = () => {
                 setRejectReason={setRejectReason}
                 handleConfirmReject={handleConfirmReject}
             />
-        </div>
+        </>
     );
 };
 

@@ -44,16 +44,16 @@ const Sidebar = () => {
         {
             groupName: "Quản lý hệ thống",
             items: [
-                {
-                    text: "Quản lý học viên",
-                    icon: Users,
-                    path: "/admin/students",
-                },
-                {
-                    text: "Quản lý giảng viên",
-                    icon: GraduationCap,
-                    path: "/admin/teachers",
-                },
+                // {
+                //     text: "Quản lý học viên",
+                //     icon: Users,
+                //     path: "/admin/students",
+                // },
+                // {
+                //     text: "Quản lý giảng viên",
+                //     icon: GraduationCap,
+                //     path: "/admin/teachers",
+                // },
                 {
                     text: "Kiểm duyệt khóa học",
                     icon: BookOpen,
