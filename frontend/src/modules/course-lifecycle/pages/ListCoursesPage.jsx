@@ -1,5 +1,10 @@
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/Card";
 import CourseItem from "../components/CourseItem";
-import CardInformationComponent from "@/components/ui/CardInformation";
 import courseService from "@/services/courseService";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,12 +29,20 @@ const ListCoursesPage = () => {
     const getCourseLength = courses.length;
 
     return (
-        <main>
-            <CardInformationComponent description="Học tập theo mô hình lớp học 10 người — Ghép cặp tương tác, cùng nhau tiến bộ vượt bậc.">
-                Khám phá các khóa học tại{" "}
-                <span className="text-primary">Edu</span>
-                <span className="text-tertiary">Space</span>
-            </CardInformationComponent>
+        <main className="w-full mx-auto px-4 py-12 grow container">
+            <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
+                <CardHeader>
+                    <CardTitle className="text-2xl font-bold">
+                        Khám phá các khóa học tại{" "}
+                        <span className="text-primary">Edu</span>
+                        <span className="text-tertiary">Space</span>
+                    </CardTitle>
+                    <CardDescription>
+                        Học tập theo mô hình lớp học 10 người — Ghép cặp tương
+                        tác, cùng nhau tiến bộ vượt bậc
+                    </CardDescription>
+                </CardHeader>
+            </Card>
 
             <div className="mt-5">
                 Hiện tại đang có{" "}

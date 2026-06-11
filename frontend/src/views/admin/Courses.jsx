@@ -3,36 +3,71 @@ import Sidebar from "@/components/layouts/Sidebar";
 import { ClipboardList, Inbox, History } from "lucide-react";
 import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import ReloadButton from "@/components/ui/ReloadButton";
-import CardInformation from "@/components/ui/CardInformation";
 import EmptyState from "@/components/ui/EmptyState";
 import useCourse from "@/modules/admin/hooks/useCourse";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/Dialog";
+import Textarea from "@/components/ui/Textarea";
+import Button from "@/components/ui/Button";
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/Card";
 
 const Courses = () => {
+    const { user } = useAuth();
+
     const {
         pendingCourses,
+        courseRequestsHistory,
+        rejectReason,
+        isRejectDialogOpen,
+        isSubmittingReject,
         isLoading,
+        setIsRejectDialogOpen,
+        setRejectReason,
         fetchPendingCourses,
+        fetchCourseRequestsHistory,
         handleApprove,
-        handleReject,
-    } = useCourse("Admin Courses");
+        handleConfirmReject,
+        handleRejectClick,
+    } = useCourse("Admin Courses", user.id);
 
     useEffect(() => {
         fetchPendingCourses();
-    }, [fetchPendingCourses]);
+        fetchCourseRequestsHistory();
+    }, [fetchPendingCourses, fetchCourseRequestsHistory]);
+
+    const handleReload = () => {
+        fetchPendingCourses();
+        fetchCourseRequestsHistory();
+    };
 
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
             <main className="grow p-8 min-w-0 space-y-8">
-                <CardInformation description="Quản lý khóa học và Lịch sử duyệt khóa học">
-                    <h1 className="text-secondary">Kiểm duyệt khóa học</h1>
-                </CardInformation>
+                <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold text-secondary">
+                            Kiểm duyệt khóa học
+                        </CardTitle>
+                        <CardDescription>
+                            Quản lý khóa học và Lịch sử duyệt khóa học
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
 
                 <div className="flex justify-end">
-                    <ReloadButton
-                        action={fetchPendingCourses}
-                        isLoading={isLoading}
-                    />
+                    <ReloadButton action={handleReload} isLoading={isLoading} />
                 </div>
 
                 <div className="space-y-4">
@@ -52,7 +87,7 @@ const Courses = () => {
                             courses={pendingCourses}
                             isHistory={false}
                             onApproveClick={handleApprove}
-                            onRejectClick={handleReject}
+                            onRejectClick={handleRejectClick}
                         />
                     )}
                 </div>
@@ -64,20 +99,70 @@ const Courses = () => {
                             Lịch sử duyệt khóa học
                         </h2>
                     </div>
-                    {pendingCourses.length === 0 ? (
+                    {courseRequestsHistory.length === 0 ? (
                         <EmptyState
                             icon={Inbox}
                             description="Lịch sử trống. Không có lịch sử duyệt khóa học nào."
                         />
                     ) : (
                         <CourseTable
-                            courses={pendingCourses}
-                            isHistory={false}
-                            onApproveClick={handleApprove}
-                            onRejectClick={handleReject}
+                            courses={courseRequestsHistory}
+                            isHistory={true}
                         />
                     )}
                 </div>
+
+                <Dialog
+                    open={isRejectDialogOpen}
+                    onOpenChange={setIsRejectDialogOpen}
+                >
+                    <DialogContent className="sm:max-w-120 bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
+                        <DialogHeader className="space-y-2">
+                            <DialogTitle className="text-xl font-bold text-gray-900">
+                                Lý do từ chối khóa học
+                            </DialogTitle>
+                            <DialogDescription className="text-gray-500 text-sm leading-relaxed">
+                                Vui lòng nhập lý do cụ thể từ chối phê duyệt
+                                khóa học này.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4">
+                            <Textarea
+                                value={rejectReason}
+                                onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                }
+                                placeholder="Ví dụ: Khóa học còn quá sơ sài, thiếu bài tập thực hành chương 3..."
+                                className="min-h-30 rounded-xl border border-gray-200 focus-visible:ring-indigo-500 text-sm p-3 leading-relaxed"
+                                disabled={isSubmittingReject}
+                            />
+                        </div>
+
+                        <div className="flex gap-3 sm:justify-end">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsRejectDialogOpen(false)}
+                                disabled={isSubmittingReject}
+                                className="rounded-xl font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                            >
+                                Hủy bỏ
+                            </Button>
+
+                            <Button
+                                type="button"
+                                onClick={handleConfirmReject}
+                                disabled={isSubmittingReject}
+                                className="rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white shadow-sm shadow-red-600/10 cursor-pointer"
+                            >
+                                {isSubmittingReject
+                                    ? "Đang xử lý..."
+                                    : "Xác nhận từ chối"}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </main>
         </div>
     );

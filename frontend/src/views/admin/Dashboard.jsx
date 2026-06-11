@@ -106,6 +106,10 @@ const Dashboard = () => {
         fetchPendingCourses();
     }, [fetchPendingCourses]);
 
+    const handleReload = () => {
+        fetchPendingCourses();
+    };
+
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
@@ -212,7 +216,7 @@ const Dashboard = () => {
 
                 <div className="flex justify-end">
                     <ReloadButton
-                        action={fetchPendingCourses}
+                        action={handleReload}
                         isLoading={isLoading}
                     />
                 </div>

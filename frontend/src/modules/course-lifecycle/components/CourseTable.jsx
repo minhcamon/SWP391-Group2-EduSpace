@@ -23,11 +23,28 @@ const CourseTable = ({
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-gray-50">
-                            <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">ID Khóa</TableHead>
-                            <TableHead className="py-4 px-6 w-96 font-bold text-gray-500">Tên Khóa học</TableHead>
-                            <TableHead className="py-4 px-6 w-48 text-center font-bold text-gray-500">
-                                Ngày gửi yêu cầu
+                            {!isHistory && (
+                                <TableHead className="py-4 px-6 w-24 font-bold text-gray-500">
+                                    ID Khóa Học
+                                </TableHead>
+                            )}
+                            <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
+                                Tên Khóa học
                             </TableHead>
+                            {!isHistory ? (
+                                <TableHead className="py-4 px-6 w-48 text-center font-bold text-gray-500">
+                                    Ngày gửi yêu cầu
+                                </TableHead>
+                            ) : (
+                                <TableHead className="py-4 px-6 w-48 text-center font-bold text-gray-500">
+                                    Người tạo
+                                </TableHead>
+                            )}
+                            {isHistory && (
+                                <TableHead className="py-4 px-6 w-48 text-center font-bold text-gray-500">
+                                    Ngày xử lý yêu cầu
+                                </TableHead>
+                            )}
                             <TableHead className="py-4 px-6 w-32 text-center font-bold text-gray-500">
                                 Trạng thái
                             </TableHead>
@@ -40,10 +57,10 @@ const CourseTable = ({
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-200 text-sm text-gray-600">
                         {courses.map((course) => {
-                            const isPublished = course.status === "PUBLISHED";
+                            const isPublished = course.status === "APPROVED";
                             return (
                                 <TableRow
-                                    key={course.id}
+                                    key={!isHistory ? course.id : course.courseRequestId}
                                     className={`transition-colors border-b border-gray-200 ${
                                         isHistory
                                             ? isPublished
@@ -52,41 +69,72 @@ const CourseTable = ({
                                             : "hover:bg-gray-50/40"
                                     }`}
                                 >
-                                    <TableCell className="py-5 px-6 font-bold text-gray-900">
-                                        #{course.id}
-                                    </TableCell>
-                                    <TableCell className="py-5 px-6">
-                                        <div className="flex items-center gap-2">
-                                            <BookOpen
-                                                size={16}
-                                                className="text-secondary opacity-80"
-                                            />
-                                            <div>
-                                                <div className="font-semibold text-gray-900">
-                                                    {course.title}
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    Giảng viên:{" "}
-                                                    {course.creatorFullName}
+                                    {!isHistory && (
+                                        <TableCell className="py-5 px-6 font-bold text-gray-900">
+                                            #{course.id}
+                                        </TableCell>
+                                    )}
+                                    {!isHistory ? (
+                                        <TableCell className="py-5 px-6">
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen
+                                                    size={16}
+                                                    className="text-secondary opacity-80"
+                                                />
+                                                <div>
+                                                    <div className="font-semibold text-gray-900">
+                                                        {!isHistory &&
+                                                            course.title}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        Giảng viên:{" "}
+                                                        {!isHistory &&
+                                                            course.creatorFullName}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </TableCell>
+                                        </TableCell>
+                                    ) : (
+                                        <TableCell className="py-5 px-6">
+                                            <div className="flex items-center gap-2">
+                                                <BookOpen
+                                                    size={16}
+                                                    className="text-secondary opacity-80"
+                                                />
+                                                <div className="font-semibold text-gray-900">
+                                                    {isHistory &&
+                                                        course.courseName}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                    )}
+                                    {isHistory && (
+                                        <TableCell className="py-5 px-6">
+                                            <div className="flex gap-2 justify-center">
+                                                <div className="text-gray-500">
+                                                    {course.creatorName}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                    )}
                                     <TableCell className="py-5 px-6 text-gray-500 text-center">
-                                        {new Date(
-                                            course.createdAt,
-                                        ).toLocaleDateString("vi-VN")}
+                                        {!isHistory
+                                            ? new Date(
+                                                  course.createdAt,
+                                              ).toLocaleDateString("vi-VN")
+                                            : new Date(
+                                                  course.processedAt,
+                                              ).toLocaleDateString("vi-VN")}
                                     </TableCell>
                                     <TableCell className="py-5 px-6 text-center">
                                         <Badge
-                                            variant={isHistory ? (isPublished ? "default" : "destructive") : "secondary"}
-                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                            variant={
                                                 isHistory
                                                     ? isPublished
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                        : "bg-red-50 text-red-700 border-red-200"
-                                                    : "bg-amber-50 text-amber-600 border-amber-200/50"
-                                            }`}
+                                                        ? "approved"
+                                                        : "destructive"
+                                                    : "pending"
+                                            }
                                         >
                                             {statusMapping[course.status] ||
                                                 course.status}
@@ -128,4 +176,3 @@ const CourseTable = ({
 };
 
 export default CourseTable;
-

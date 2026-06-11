@@ -3,9 +3,15 @@ import { runWithLoading } from "@/utils/utils";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-export const usePendingCourse = (usingPage) => {
+export const usePendingCourse = (usingPage, adminId) => {
     const [pendingCourses, setPendingCourses] = useState([]);
+    const [courseRequestsHistory, setCourseRequestsHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
+    const [rejectReason, setRejectReason] = useState("");
+    const [isSubmittingReject, setIsSubmittingReject] = useState(false);
 
     const fetchPendingCourses = useCallback(async () => {
         await runWithLoading(setIsLoading, async () => {
@@ -18,6 +24,21 @@ export const usePendingCourse = (usingPage) => {
                     error,
                 );
                 toast.error("Lỗi khi tải khóa học");
+            }
+        });
+    }, [usingPage])
+
+    const fetchCourseRequestsHistory = useCallback(async () => {
+        await runWithLoading(setIsLoading, async () => {
+            try {
+                const data = await courseService.getCourseRequestsHistory();
+                setCourseRequestsHistory(data);
+            } catch (error) {
+                console.error(
+                    `Lỗi khi lấy lịch sử duyệt khóa học tại ${usingPage}: `,
+                    error,
+                );
+                toast.error("Lỗi khi tải lịch sử duyệt khóa học");
             }
         });
     }, [usingPage])
@@ -40,32 +61,59 @@ export const usePendingCourse = (usingPage) => {
         }
     }, [usingPage])
 
-    const handleReject = useCallback(async (courseId) => {
+    const handleRejectClick = useCallback((courseId) => {
+        setSelectedCourseId(courseId);
+        setRejectReason("");
+        setIsRejectDialogOpen(true);
+    }, [])
+
+    const handleConfirmReject = useCallback(async () => {
+        if (!rejectReason.trim()) {
+            toast.warning("Vui lòng nhập lý do từ chối khóa học!");
+            return;
+        }
+
         try {
+            setIsSubmittingReject(true);
             const payload = {
-                reason: "Alo Vu a Vu",
-                adminId: 4,
+                reason: rejectReason.trim(),
+                adminId: adminId,
             };
 
-            await courseService.rejectCourse(courseId, payload);
+            await courseService.rejectCourse(selectedCourseId, payload);
 
-            toast.success("Đã từ chối khóa học");
+            toast.success("Từ chối khóa học thành công");
 
             setPendingCourses((prevCourse) =>
-                prevCourse.filter((course) => course.id !== courseId),
+                prevCourse.filter((course) => course.id !== selectedCourseId),
             );
+
+            setIsRejectDialogOpen(false);
+            setSelectedCourseId(null);
+            setRejectReason("");
+
         } catch (error) {
-            console.error(`Lỗi từ chối khóa học tại ${usingPage}: `, error);
+            console.error(`Lỗi khi từ chối khóa học tại ${usingPage}: `, error);
             toast.error("Lỗi khi từ chối khóa học");
+        } finally {
+            setIsSubmittingReject(false);
         }
-    }, [usingPage])
+    }, [adminId, rejectReason, selectedCourseId, usingPage])
 
     return {
         pendingCourses,
+        courseRequestsHistory,
+        rejectReason,
+        isRejectDialogOpen,
+        isSubmittingReject,
         isLoading,
+        setIsRejectDialogOpen,
+        setRejectReason,
         fetchPendingCourses,
+        fetchCourseRequestsHistory,
         handleApprove,
-        handleReject
+        handleConfirmReject,
+        handleRejectClick
     }
 }
 
