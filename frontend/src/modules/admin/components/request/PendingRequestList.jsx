@@ -1,30 +1,30 @@
 import EmptyState from "@/components/ui/EmptyState";
 import { ClipboardList, Inbox } from "lucide-react";
-import CourseTable from "@/modules/admin/components/course/CourseTable";
+import RequestTable from "@/modules/admin/components/request/RequestTable";
 
-const PendingCourseList = ({
-    pendingCourses,
+const PendingRequestList = ({
+    pendingRequests,
     handleApprove,
     handleRejectClick,
 }) => {
-    const pendingCoursesLength = pendingCourses.length;
+    const pendingRequestsLength = pendingRequests.length;
 
     return (
         <>
             <div className="flex items-center gap-2 text-gray-900 px-1">
                 <ClipboardList size={20} className="text-primary" />
-                <h2 className="text-lg font-bold">Khóa học chờ duyệt</h2>
+                <h2 className="text-lg font-bold">Danh sách đơn chờ xử lý</h2>
             </div>
-            {pendingCoursesLength === 0 ? (
+            {pendingRequestsLength === 0 ? (
                 <EmptyState
                     icon={Inbox}
-                    description="Hàng chờ trống. Không có khóa học nào cần xử lý."
+                    description="Hàng chờ trống. Không có đơn nào cần xử lý."
                 />
             ) : (
-                <CourseTable
-                    courses={pendingCourses}
+                <RequestTable
+                    requests={pendingRequests}
                     isHistory={false}
-                    onApproveClick={handleApprove}
+                    onApprovedClick={handleApprove}
                     onRejectClick={handleRejectClick}
                 />
             )}
@@ -32,4 +32,4 @@ const PendingCourseList = ({
     );
 };
 
-export default PendingCourseList;
+export default PendingRequestList;
