@@ -61,21 +61,21 @@ export default function CreateCourse({ mode: propMode }) {
                   <>
                     <button
                       onClick={() => handleSaveCourse()}
-                      className="px-5 py-2.5 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-bg-card transition-colors cursor-pointer"
+                      className="px-5 py-2.5 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-bg-card transition-colors cursor-pointer duration-200 transform hover:scale-95"
                     >
                       Lưu bản nháp
                     </button>
                     {resolvedMode === 'EDIT' ? (
                       <button
                         onClick={handleOpenConfirmModal}
-                        className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                        className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer duration-200 transform hover:scale-95"
                       >
                         Cập nhật Khóa Học
                       </button>
                     ) : (
                       <button
                         onClick={handleOpenConfirmModal}
-                        className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                        className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-sm hover:opacity-95 transition-all active:scale-95 cursor-pointer duration-200 transform hover:scale-95"
                       >
                         Tạo Khóa Học
                       </button>

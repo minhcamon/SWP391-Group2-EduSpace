@@ -61,7 +61,7 @@ export default function CourseManagement() {
         </div>
         <Link
           to="/creator/create-course"
-          className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer"
+          className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all transform cursor-pointer hover:scale-95"
         >
           <Plus className="text-base" /> Tạo khóa học mới
         </Link>
@@ -246,7 +246,7 @@ export default function CourseManagement() {
               {activeCourses.map(course => (
                 <Card
                   key={course.id}
-                  className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(117,187,71,0.06)] transition-all duration-300 group flex flex-col justify-between"
+                  className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(117,187,71,0.06)] transition-all duration-300 group flex flex-col justify-between transform hover:-translate-y-1.5"
                 >
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -284,7 +284,7 @@ export default function CourseManagement() {
                   <div className="p-5 pt-0">
                     <Button
                       onClick={() => handleManageClass(course.title)}
-                      className="w-full border border-primary/20 hover:border-primary text-primary hover:bg-primary hover:text-white font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      className="w-full border border-primary/20 hover:border-primary text-white hover:bg-primary font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       Quản lý lớp học
                     </Button>
