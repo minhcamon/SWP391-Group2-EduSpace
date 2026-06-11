@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ArrowUpRight, BookOpen, Clock, UserPlus, Users } from "lucide-react";
 
-const Stat = ({ pendingCourses, stats }) => {
-    const pendingCoursesLength = pendingCourses.length;
-
+const Stat = ({ stats }) => {
     return (
         <>
             <Card className="bg-white border-slate-200/80 shadow-sm">
@@ -17,7 +15,7 @@ const Stat = ({ pendingCourses, stats }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-slate-900">
-                        {stats.totalStudents}
+                        1240
                     </div>
                     <p className="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
                         <ArrowUpRight size={14} /> +4.8%{" "}
@@ -38,9 +36,7 @@ const Stat = ({ pendingCourses, stats }) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-3xl font-bold text-slate-900">
-                        {stats.totalCourses}
-                    </div>
+                    <div className="text-3xl font-bold text-slate-900">{stats.publisedCoursesLength}</div>
                     <p className="text-xs text-slate-400 font-medium mt-1">
                         Hệ thống lớp học 10 người
                     </p>
@@ -58,7 +54,7 @@ const Stat = ({ pendingCourses, stats }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-slate-900">
-                        {stats.pendingCreatorRequests}
+                        {stats.pendingRequestsLength}
                     </div>
                     <p className="text-xs text-amber-600 font-semibold mt-1 flex items-center gap-1">
                         <Clock size={12} /> Cần duyệt hồ sơ ứng tuyển
@@ -77,7 +73,7 @@ const Stat = ({ pendingCourses, stats }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-slate-900">
-                        {pendingCoursesLength}
+                        {stats.pendingCoursesLength}
                     </div>
                     <p className="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
                         <Clock size={12} /> Đang nằm trong hàng chờ giáo trình

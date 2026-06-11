@@ -15,13 +15,6 @@ import PendingRequestList from "../components/request/PendingRequestList";
 import useRequest from "../hooks/useRequest";
 import { useEffect } from "react";
 
-const MOCK_STATS = {
-    totalStudents: 1240,
-    totalCourses: 48,
-    pendingCreatorRequests: 2,
-    pendingCourses: 3,
-};
-
 const MOCK_RECENT_COURSES = [
     {
         id: 101,
@@ -71,14 +64,15 @@ const MOCK_CREATOR_REQUESTS = [
 
 const DashboardPage = () => {
     const { user } = useAuth();
-
     const {
+        publisedCourses,
         pendingCourses,
         isRejectDialogOpen: isCourseRejectOpen,
         isSubmittingReject: isSubmittingCourseReject,
         rejectReason: courseRejectReason,
         setIsRejectDialogOpen: setIsCourseRejectOpen,
         setRejectReason: setCourseRejectReason,
+        fetchPublisedCourses,
         fetchPendingCourses,
         handleApprove: handleApproveCourse,
         handleConfirmReject: handleConfirmCourseReject,
@@ -98,16 +92,24 @@ const DashboardPage = () => {
         handleRejectClick: handleRequestRejectClick,
     } = useRequest("Admin Dashboard");
 
+    const stats = {
+        publisedCoursesLength: publisedCourses.length,
+        pendingCoursesLength: pendingCourses.length,
+        pendingRequestsLength: pendingRequests.length,
+    };
+
     useEffect(() => {
+        fetchPublisedCourses();
         fetchPendingCourses();
         fetchPendingRequests();
-    }, [fetchPendingCourses, fetchPendingRequests]);
+    }, [fetchPendingCourses, fetchPublisedCourses, fetchPendingRequests]);
 
     const handleReload = () => {
+        fetchPublisedCourses()
         fetchPendingCourses();
         fetchPendingRequests();
     };
-    
+
     return (
         <>
             <Card className="p-6 bg-white border border-gray-200 shadow-sm">
@@ -122,7 +124,7 @@ const DashboardPage = () => {
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Stat pendingCourses={MOCK_RECENT_COURSES} stats={MOCK_STATS} />
+                <Stat pendingCourses={pendingCourses} stats={stats} />
             </div>
 
             <div className="flex justify-end">

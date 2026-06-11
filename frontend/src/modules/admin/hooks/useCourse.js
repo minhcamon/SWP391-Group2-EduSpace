@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 export const useCourse = (usingPage, adminId) => {
     const [pendingCourses, setPendingCourses] = useState([]);
+    const [publisedCourses, setPublisedCourses] = useState([]);
     const [courseRequestsHistory, setCourseRequestsHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,6 +27,21 @@ export const useCourse = (usingPage, adminId) => {
                 toast.error("Lỗi khi tải khóa học");
             }
         });
+    }, [usingPage])
+
+    const fetchPublisedCourses = useCallback(async () => {
+        await runWithLoading(setIsLoading, async () => {
+            try {
+                const data = await courseService.getPublishedCourses();
+                setPublisedCourses(data);
+            } catch (error) {
+                console.error(
+                    `Lỗi khi lấy khóa học công khai tại ${usingPage}: `,
+                    error,
+                );
+                toast.error("Lỗi khi lấy khóa học");
+            }
+        })
     }, [usingPage])
 
     const fetchCourseRequestsHistory = useCallback(async () => {
@@ -50,7 +66,8 @@ export const useCourse = (usingPage, adminId) => {
             setPendingCourses((prevCourse) =>
                 prevCourse.filter((course) => course.id !== courseId),
             );
-
+            
+            fetchPublisedCourses()
             fetchCourseRequestsHistory()
 
             toast.success("Duyệt khóa học thành công");
@@ -106,6 +123,7 @@ export const useCourse = (usingPage, adminId) => {
 
     return {
         pendingCourses,
+        publisedCourses,
         courseRequestsHistory,
         rejectReason,
         isRejectDialogOpen,
@@ -114,6 +132,7 @@ export const useCourse = (usingPage, adminId) => {
         setIsRejectDialogOpen,
         setRejectReason,
         fetchPendingCourses,
+        fetchPublisedCourses,
         fetchCourseRequestsHistory,
         handleApprove,
         handleConfirmReject,
