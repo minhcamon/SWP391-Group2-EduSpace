@@ -29,7 +29,6 @@ public class MatchingService {
         waitlistRepository.save(waitlist);
 
         
-        // Tạo mã định danh lớp tự động: Tên khóa học + Năm + Timestamp chạy ngầm
         String generatedClassName = waitlist.getCourse().getTitle().replaceAll("\\s+", "_").toUpperCase() 
                 + "_B" + System.currentTimeMillis() % 1000;
 
@@ -41,18 +40,18 @@ public class MatchingService {
                 .build();
         Class savedClass = classRepository.save(newClass);
 
-        // 3. LẤY DANH SÁCH 10 HỌC VIÊN ĐANG CHỜ RA
+        
         List<WaitlistEntry> entries = waitlistEntryRepository.findByWaitlistId(waitlistId);
 
-        // 4. ĐẨY 10 HỌC VIÊN SANG LỚP MỚI (Table 10: ClassMembers)
+        
         for (WaitlistEntry entry : entries) {
             ClassMember member = ClassMember.builder()
                     .clazz(savedClass)
                     .user(entry.getUser())
-                    .contextRole("LEARNER")       // Vai trò mặc định: Học viên
-                    .learnerStatus("ACTIVE")      // Trạng thái học tập: Đang hoạt động
-                    .rescueStartedAt(null)        // Mới vào lớp nên chưa kích hoạt cứu trợ trễ hạn
-                    .joinedAt(LocalDateTime.now()) // Thời gian chính thức vào lớp
+                    .contextRole("LEARNER")       
+                    .learnerStatus("ACTIVE")     
+                    .rescueStartedAt(null)        
+                    .joinedAt(LocalDateTime.now()) 
                     .build();
             classMemberRepository.save(member);
         }
