@@ -47,11 +47,13 @@ export const usePendingCourse = (usingPage, adminId) => {
         try {
             await courseService.approveCourse(courseId);
 
-            toast.success("Duyệt khóa học thành công");
-
             setPendingCourses((prevCourse) =>
                 prevCourse.filter((course) => course.id !== courseId),
             );
+
+            fetchCourseRequestsHistory()
+
+            toast.success("Duyệt khóa học thành công");
         } catch (error) {
             console.error(
                 `Lỗi khi duyệt khóa học tại ${usingPage}: `,
@@ -59,7 +61,7 @@ export const usePendingCourse = (usingPage, adminId) => {
             );
             toast.error("Lỗi khi duyệt khóa học");
         }
-    }, [usingPage])
+    }, [usingPage, fetchCourseRequestsHistory])
 
     const handleRejectClick = useCallback((courseId) => {
         setSelectedCourseId(courseId);
@@ -88,6 +90,8 @@ export const usePendingCourse = (usingPage, adminId) => {
                 prevCourse.filter((course) => course.id !== selectedCourseId),
             );
 
+            fetchCourseRequestsHistory()
+
             setIsRejectDialogOpen(false);
             setSelectedCourseId(null);
             setRejectReason("");
@@ -98,7 +102,7 @@ export const usePendingCourse = (usingPage, adminId) => {
         } finally {
             setIsSubmittingReject(false);
         }
-    }, [adminId, rejectReason, selectedCourseId, usingPage])
+    }, [adminId, rejectReason, selectedCourseId, fetchCourseRequestsHistory, usingPage])
 
     return {
         pendingCourses,

@@ -48,12 +48,14 @@ export const useRequest = (usingPage) => {
                 ),
             );
 
+            fetchAllRequests()
+
             toast.success(`Duyệt đơn #${requestId} thành công`);
         } catch (error) {
             console.error(`Lỗi khi duyệt đơn ở ${usingPage}: `, error);
             toast.error("Lỗi khi duyệt đơn");
         }
-    }, [usingPage])
+    }, [usingPage, fetchAllRequests])
 
     const handleRejectClick = useCallback((courseId) => {
         setSelectedRequestId(courseId);
@@ -86,6 +88,8 @@ export const useRequest = (usingPage) => {
                 ),
             );
 
+            fetchAllRequests()
+
             setIsRejectDialogOpen(false);
             setSelectedRequestId(null);
             setRejectReason("");
@@ -96,7 +100,7 @@ export const useRequest = (usingPage) => {
         } finally {
             setIsSubmittingReject(false);
         }
-    }, [rejectReason, selectedRequestId, usingPage])
+    }, [rejectReason, selectedRequestId, fetchAllRequests, usingPage])
 
     return {
         isRejectDialogOpen,
