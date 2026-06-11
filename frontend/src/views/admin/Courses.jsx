@@ -5,7 +5,7 @@ import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import ReloadButton from "@/components/ui/ReloadButton";
 import CardInformation from "@/components/ui/CardInformation";
 import EmptyState from "@/components/ui/EmptyState";
-import usePendingCourse from "@/modules/admin/hooks/usePendingCourse";
+import useCourse from "@/modules/admin/hooks/useCourse";
 
 const Courses = () => {
     const {
@@ -14,7 +14,7 @@ const Courses = () => {
         fetchPendingCourses,
         handleApprove,
         handleReject,
-    } = usePendingCourse("Admin Courses");
+    } = useCourse("Admin Courses");
 
     useEffect(() => {
         fetchPendingCourses();

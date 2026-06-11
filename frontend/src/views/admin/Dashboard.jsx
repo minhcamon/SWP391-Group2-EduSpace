@@ -30,7 +30,7 @@ import Button from "@/components/ui/Button";
 import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
 import ReloadButton from "@/components/ui/ReloadButton";
 import EmptyState from "@/components/ui/EmptyState";
-import usePendingCourse from "@/modules/admin/hooks/usePendingCourse";
+import useCourse from "@/modules/admin/hooks/useCourse";
 
 // 1. MOCKUP DATA GIẢ LẬP ĐỒNG BỘ VỚI DB DỰ ÁN EDUSPACE
 const MOCK_STATS = {
@@ -100,7 +100,7 @@ const Dashboard = () => {
         fetchPendingCourses,
         handleApprove,
         handleReject,
-    } = usePendingCourse("Admin Dashboard");
+    } = useCourse("Admin Dashboard");
 
     useEffect(() => {
         fetchPendingCourses();
@@ -200,7 +200,7 @@ const Dashboard = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="text-3xl font-bold text-slate-900">
-                                {stats.pendingCourses}
+                                {pendingCourses.length}
                             </div>
                             <p className="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
                                 <Clock size={12} /> Đang nằm trong hàng chờ giáo
