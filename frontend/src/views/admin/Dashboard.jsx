@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import {
     Card,
@@ -7,11 +7,30 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/Card";
-import { ArrowUpRight, BookOpen, Calendar, Check, Clock, GraduationCap, Mail, UserPlus, Users, X } from "lucide-react";
-import { toast } from "sonner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import {
+    ArrowUpRight,
+    BookOpen,
+    ClipboardList,
+    Clock,
+    Inbox,
+    Mail,
+    UserPlus,
+    Users,
+} from "lucide-react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/Table";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
+import ReloadButton from "@/components/ui/ReloadButton";
+import EmptyState from "@/components/ui/EmptyState";
+import usePendingCourse from "@/modules/admin/hooks/usePendingCourse";
 
 // 1. MOCKUP DATA GIẢ LẬP ĐỒNG BỘ VỚI DB DỰ ÁN EDUSPACE
 const MOCK_STATS = {
@@ -75,32 +94,17 @@ const Dashboard = () => {
     );
     const [stats, setStats] = useState(MOCK_STATS);
 
-    // Xử lý Duyệt / Từ chối Khóa học nhanh trên Dashboard
-    const handleCourseAction = (id, actionType) => {
-        toast.success(
-            `${actionType === "APPROVED" ? "Phê duyệt" : "Từ chối"} khóa học #${id} thành công`,
-        );
-        setRecentCourses((prev) => prev.filter((c) => c.id !== id));
-        setStats((prev) => ({
-            ...prev,
-            pendingCourses: Math.max(0, prev.pendingCourses - 1),
-        }));
-    };
+    const {
+        pendingCourses,
+        isLoading,
+        fetchPendingCourses,
+        handleApprove,
+        handleReject,
+    } = usePendingCourse("Admin Dashboard");
 
-    // Xử lý Duyệt / Từ chối Quyền Creator nhanh trên Dashboard
-    const handleCreatorAction = (id, actionType) => {
-        toast.success(
-            `${actionType === "APPROVED" ? "Chấp nhận" : "Từ chối"} yêu cầu nâng quyền đơn #${id}`,
-        );
-        setCreatorRequests((prev) => prev.filter((r) => r.id !== id));
-        setStats((prev) => ({
-            ...prev,
-            pendingCreatorRequests: Math.max(
-                0,
-                prev.pendingCreatorRequests - 1,
-            ),
-        }));
-    };
+    useEffect(() => {
+        fetchPendingCourses();
+    }, [fetchPendingCourses]);
 
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
@@ -206,128 +210,39 @@ const Dashboard = () => {
                     </Card>
                 </div>
 
+                <div className="flex justify-end">
+                    <ReloadButton
+                        action={fetchPendingCourses}
+                        isLoading={isLoading}
+                    />
+                </div>
+
                 {/* CẤU TRÚC GRID CHIA 2 KHỐI NỘI DUNG CHÍNH */}
                 <div className="flex flex-col gap-8">
                     {/* ==========================================================
                     PHẦN 2: BẢNG KIỂM DUYỆT KHÓA HỌC (RECENT COURSE REQUESTS)
                    ========================================================== */}
-                    <Card className="bg-white border-slate-200/80 shadow-sm flex flex-col justify-between overflow-hidden">
-                        <div>
-                            <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-4 px-6">
-                                <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                    <BookOpen
-                                        size={18}
-                                        className="text-indigo-600"
-                                    />{" "}
-                                    Khóa học vừa gửi lên chờ phê duyệt
-                                </CardTitle>
-                                <CardDescription>
-                                    Danh sách giáo trình khóa học cần thẩm định
-                                    nội dung cấu trúc.
-                                </CardDescription>
-                            </CardHeader>
-
-                            <CardContent className="p-0">
-                                {recentCourses.length === 0 ? (
-                                    <div className="p-12 text-center text-slate-400 text-sm font-medium">
-                                        Hàng chờ duyệt khóa học trống.
-                                    </div>
-                                ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-slate-50/30 hover:bg-transparent">
-                                                <TableHead className="w-20 pl-6 py-3 font-bold">
-                                                    ID
-                                                </TableHead>
-                                                <TableHead className="font-bold">
-                                                    Thông tin khóa học
-                                                </TableHead>
-                                                <TableHead className="w-24 text-center font-bold">
-                                                    Trạng thái
-                                                </TableHead>
-                                                <TableHead className="w-36 text-right pr-6 font-bold">
-                                                    Tác vụ
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {recentCourses.map((course) => (
-                                                <TableRow
-                                                    key={course.id}
-                                                    className="hover:bg-slate-50/40 transition-colors"
-                                                >
-                                                    <TableCell className="font-bold pl-6">
-                                                        #{course.id}
-                                                    </TableCell>
-                                                    <TableCell className="space-y-0.5">
-                                                        <div className="font-semibold text-slate-900 line-clamp-1">
-                                                            {course.title}
-                                                        </div>
-                                                        <div className="text-xs text-slate-500 flex items-center gap-3">
-                                                            <span className="flex items-center gap-1">
-                                                                <GraduationCap
-                                                                    size={13}
-                                                                />{" "}
-                                                                {
-                                                                    course.creatorFullName
-                                                                }
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <Calendar
-                                                                    size={13}
-                                                                />{" "}
-                                                                {new Date(
-                                                                    course.createdAt,
-                                                                ).toLocaleDateString(
-                                                                    "vi-VN",
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge className="bg-amber-50 text-amber-600 border border-amber-200/60 font-bold hover:bg-amber-50 rounded-md py-0.5 px-2">
-                                                            {course.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right pr-6">
-                                                        <div className="flex justify-end gap-1.5">
-                                                            <Button
-                                                                size="icon"
-                                                                onClick={() =>
-                                                                    handleCourseAction(
-                                                                        course.id,
-                                                                        "APPROVED",
-                                                                    )
-                                                                }
-                                                                className="h-8 w-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm shadow-emerald-600/10 cursor-pointer"
-                                                            >
-                                                                <Check
-                                                                    size={14}
-                                                                />
-                                                            </Button>
-                                                            <Button
-                                                                size="icon"
-                                                                variant="outline"
-                                                                onClick={() =>
-                                                                    handleCourseAction(
-                                                                        course.id,
-                                                                        "REJECTED",
-                                                                    )
-                                                                }
-                                                                className="h-8 w-8 text-red-600 border-slate-200 hover:bg-red-50 hover:border-red-200 rounded-lg cursor-pointer"
-                                                            >
-                                                                <X size={14} />
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                )}
-                            </CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-gray-900 px-1">
+                            <ClipboardList size={20} className="text-primary" />
+                            <h2 className="text-lg font-bold">
+                                Khóa học chờ duyệt
+                            </h2>
                         </div>
-                    </Card>
+                        {pendingCourses.length === 0 ? (
+                            <EmptyState
+                                icon={Inbox}
+                                description="Hàng chờ trống. Không có khóa học nào cần xử lý."
+                            />
+                        ) : (
+                            <CourseTable
+                                courses={pendingCourses}
+                                isHistory={false}
+                                onApproveClick={handleApprove}
+                                onRejectClick={handleReject}
+                            />
+                        )}
+                    </div>
 
                     {/* ==========================================================
                     PHẦN 3: BẢNG YÊU CẦU LÀM CREATOR (RECENT CREATOR REQUESTS)

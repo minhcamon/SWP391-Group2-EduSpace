@@ -1,74 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import { ClipboardList, Inbox, History } from "lucide-react";
 import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
-import { toast } from "sonner";
-import courseService from "@/services/courseService";
 import ReloadButton from "@/components/ui/ReloadButton";
 import CardInformation from "@/components/ui/CardInformation";
 import EmptyState from "@/components/ui/EmptyState";
-import { runWithLoading } from "@/utils/utils";
+import usePendingCourse from "@/modules/admin/hooks/usePendingCourse";
 
 const Courses = () => {
-    const [pendingCourses, setPendingCourses] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const {
+        pendingCourses,
+        isLoading,
+        fetchPendingCourses,
+        handleApprove,
+        handleReject,
+    } = usePendingCourse("Admin Courses");
 
     useEffect(() => {
         fetchPendingCourses();
-    }, []);
-
-    const fetchPendingCourses = async () => {
-        await runWithLoading(setIsLoading, async () => {
-            try {
-                const data = await courseService.getPendingCourses();
-                setPendingCourses(data);
-            } catch (error) {
-                console.error(
-                    "Lỗi khi lấy khóa học Pending tại Courses: ",
-                    error,
-                );
-                toast.error("Lỗi khi tải khóa học");
-            }
-        });
-    };
-
-    const handleApprove = async (courseId) => {
-        try {
-            await courseService.approveCourse(courseId);
-
-            toast.success("Duyệt khóa học thành công");
-
-            setPendingCourses((prevCourse) =>
-                prevCourse.filter((course) => course.id !== courseId),
-            );
-        } catch (error) {
-            console.error(
-                "Lỗi khi duyệt khóa học thành công tại Courses: ",
-                error,
-            );
-            toast.error("Lỗi khi duyệt khóa học");
-        }
-    };
-
-    const handleReject = async (courseId) => {
-        try {
-            const payload = {
-                reason: "Alo Vu a Vu",
-                adminId: 4,
-            };
-
-            await courseService.rejectCourse(courseId, payload);
-
-            toast.success("Từ chối khóa học thành công");
-
-            setPendingCourses((prevCourse) =>
-                prevCourse.filter((course) => course.id !== courseId),
-            );
-        } catch (error) {
-            console.error("Lỗi lấy khóa học từ chối tại Courses: ", error);
-            toast.error("Lỗi khi từ chối khóa học");
-        }
-    };
+    }, [fetchPendingCourses]);
 
     return (
         <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
