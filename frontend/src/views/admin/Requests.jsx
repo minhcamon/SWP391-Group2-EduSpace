@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/layouts/Sidebar";
 import { ClipboardList, History, Inbox } from "lucide-react";
-import RequestTable from "@/modules/course-lifecycle/components/RequestTable";
+
 import { toast } from "sonner";
 import creatorService from "@/services/creatorService";
 import ReloadButton from "@/components/ui/ReloadButton";
@@ -21,6 +21,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/Card";
+import RequestTable from "@/modules/admin/components/request/RequestTable";
 
 const Requests = () => {
     const [pendingRequests, setPendingRequests] = useState([]);

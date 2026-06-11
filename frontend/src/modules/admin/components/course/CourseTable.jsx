@@ -60,7 +60,11 @@ const CourseTable = ({
                             const isPublished = course.status === "APPROVED";
                             return (
                                 <TableRow
-                                    key={!isHistory ? course.id : course.courseRequestId}
+                                    key={
+                                        !isHistory
+                                            ? course.id
+                                            : course.courseRequestId
+                                    }
                                     className={`transition-colors border-b border-gray-200 ${
                                         isHistory
                                             ? isPublished

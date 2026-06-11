@@ -25,12 +25,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/Table";
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import CourseTable from "@/modules/course-lifecycle/components/CourseTable";
+import CourseTable from "@/modules/admin/components/course/CourseTable";
 import ReloadButton from "@/components/ui/ReloadButton";
 import EmptyState from "@/components/ui/EmptyState";
 import useCourse from "@/modules/admin/hooks/useCourse";
+import { useAuth } from "@/contexts/AuthContext";
+import CourseRejectDialog from "@/modules/admin/components/course/CourseRejectDialog";
 
 // 1. MOCKUP DATA GIẢ LẬP ĐỒNG BỘ VỚI DB DỰ ÁN EDUSPACE
 const MOCK_STATS = {
@@ -94,13 +95,23 @@ const Dashboard = () => {
     );
     const [stats, setStats] = useState(MOCK_STATS);
 
+    const { user } = useAuth();
+
     const {
         pendingCourses,
+        courseRequestsHistory,
+        rejectReason,
+        isRejectDialogOpen,
+        isSubmittingReject,
         isLoading,
+        setIsRejectDialogOpen,
+        setRejectReason,
         fetchPendingCourses,
+        fetchCourseRequestsHistory,
         handleApprove,
-        handleReject,
-    } = useCourse("Admin Dashboard");
+        handleConfirmReject,
+        handleRejectClick,
+    } = useCourse("Admin Dashboard", user.id);
 
     useEffect(() => {
         fetchPendingCourses();
@@ -215,10 +226,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="flex justify-end">
-                    <ReloadButton
-                        action={handleReload}
-                        isLoading={isLoading}
-                    />
+                    <ReloadButton action={handleReload} isLoading={isLoading} />
                 </div>
 
                 {/* CẤU TRÚC GRID CHIA 2 KHỐI NỘI DUNG CHÍNH */}
@@ -243,7 +251,7 @@ const Dashboard = () => {
                                 courses={pendingCourses}
                                 isHistory={false}
                                 onApproveClick={handleApprove}
-                                onRejectClick={handleReject}
+                                onRejectClick={handleRejectClick}
                             />
                         )}
                     </div>
@@ -353,6 +361,15 @@ const Dashboard = () => {
                         </div>
                     </Card>
                 </div>
+
+                <CourseRejectDialog
+                    isRejectDialogOpen={isRejectDialogOpen}
+                    isSubmittingReject={isSubmittingReject}
+                    rejectReason={rejectReason}
+                    setIsRejectDialogOpen={setIsRejectDialogOpen}
+                    setRejectReason={setRejectReason}
+                    handleConfirmReject={handleConfirmReject}
+                />
             </main>
         </div>
     );
