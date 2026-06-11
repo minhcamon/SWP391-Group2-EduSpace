@@ -3,7 +3,7 @@ import { runWithLoading } from "@/utils/utils";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-export const usePendingCourse = (usingPage, adminId) => {
+export const useCourse = (usingPage, adminId) => {
     const [pendingCourses, setPendingCourses] = useState([]);
     const [courseRequestsHistory, setCourseRequestsHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -121,4 +121,4 @@ export const usePendingCourse = (usingPage, adminId) => {
     }
 }
 
-export default usePendingCourse
+export default useCourse

@@ -35,7 +35,7 @@ const Sidebar = () => {
             groupName: "Tổng quan",
             items: [
                 {
-                    text: "Dashboard",
+                    text: "Tổng quan",
                     icon: LayoutDashboard,
                     path: "/admin",
                 },
