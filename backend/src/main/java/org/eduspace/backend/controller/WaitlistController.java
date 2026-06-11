@@ -24,4 +24,12 @@ public class WaitlistController {
         List<UserResponse> members = waitlistService.getMembersInWaitlist(userId, courseId);
         return ResponseEntity.ok(APIResponse.success("Retrieve all members in waitlist successfully!", members));
     }
+    
+    @DeleteMapping("/leave/{courseId}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<APIResponse<Object>> leaveWaitlist(@PathVariable Long courseId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        waitlistService.leaveWaitlist(userId, courseId);
+        return ResponseEntity.ok(APIResponse.success("Leave waitlist successfully!", null));
+    }
 }

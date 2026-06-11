@@ -4,6 +4,7 @@ import org.eduspace.backend.entity.User;
 import org.eduspace.backend.entity.Waitlist;
 import org.eduspace.backend.enums.WaitlistStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -28,4 +29,12 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
             """)
     List<User> findUsersByWaitListId(Long waitlistId);
     Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
+
+    @Modifying
+    @Query("""
+                DELETE FROM WaitlistEntry we
+                WHERE we.user.id = :userId
+                AND we.waitlist.id = :waitlistId
+            """)
+    int deleteEntryByUserAndWaitlist(Long userId, Long waitlistId);
 }

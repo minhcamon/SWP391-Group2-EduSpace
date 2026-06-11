@@ -89,6 +89,22 @@ public class WaitlistService {
 
         return "Tham gia khóa học thành công! Bạn đang ở trong hàng chờ (Hiện có " + currentCount + "/10 người).";
     }
+
+        
+        @Transactional
+        public void leaveWaitlist(Long userId, Long courseId) {
+                Long waitlistId = waitlistRepository.findWaitlistByUserAndCourse(userId, courseId)
+                                .orElseThrow(() -> new RuntimeException("You are not in the waitlist of this course"));
+
+                Waitlist waitlist = waitlistRepository.findById(waitlistId)
+                                .orElseThrow(() -> new RuntimeException("Waitlist not found"));
+
+                if (waitlist.getStatus() == WaitlistStatus.CLOSED) {
+                        throw new RuntimeException("This waitlist is closed, you can no longer leave it");
+                }
+
+                waitlistRepository.deleteEntryByUserAndWaitlist(userId, waitlistId);
+        }
 }
 
 
