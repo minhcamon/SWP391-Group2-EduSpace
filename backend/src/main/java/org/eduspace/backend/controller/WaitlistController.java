@@ -24,12 +24,24 @@ public class WaitlistController {
         List<UserResponse> members = waitlistService.getMembersInWaitlist(userId, courseId);
         return ResponseEntity.ok(APIResponse.success("Retrieve all members in waitlist successfully!", members));
     }
-    
+
     @DeleteMapping("/leave/{courseId}")
     @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<Object>> leaveWaitlist(@PathVariable Long courseId) {
         Long userId = SecurityUtil.getCurrentUserId();
         waitlistService.leaveWaitlist(userId, courseId);
         return ResponseEntity.ok(APIResponse.success("Leave waitlist successfully!", null));
+    }
+
+    @PostMapping("/enroll/{courseId}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<APIResponse<Object>> enrollWaitlist(@PathVariable Long courseId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        boolean check = waitlistService.enrollToWaitlist(courseId, userId);
+        if (check) {
+            return ResponseEntity.ok(APIResponse.success("Enroll to waitlist successfully!", null));
+        }
+        return ResponseEntity.badRequest()
+                .body(APIResponse.error(400, "Fail to enroll to waitlist. Please try again!", null));
     }
 }

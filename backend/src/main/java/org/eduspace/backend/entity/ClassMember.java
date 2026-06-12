@@ -19,11 +19,11 @@ public class ClassMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
-    private Class clazz; 
+    private CourseClass courseClass;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user; 
+    private User user;
 
     @Column(name = "context_role")
     private String contextRole;
@@ -32,8 +32,8 @@ public class ClassMember {
     private String learnerStatus;
 
     @Column(name = "rescue_started_at")
-    private LocalDateTime rescueStartedAt; 
+    private LocalDateTime rescueStartedAt;
 
     @Column(name = "joined_at")
-    private LocalDateTime joinedAt; 
+    private LocalDateTime joinedAt;
 }
