@@ -76,7 +76,7 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
-                if (currentCount == 2) {
+                if (currentCount == 10) {
                         activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         systemService.createClassFromWaitlist(activeWaitlist.getId());
                         activeWaitlist.setStatus(WaitlistStatus.CLOSED);
