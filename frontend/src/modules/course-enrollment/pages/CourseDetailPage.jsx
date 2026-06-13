@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router";
 import { useCourseEnrollment } from "../hooks/useCourseEnrollment";
 import SyllabusAccordion from "../components/SyllabusAccordion";
 import EnrollmentSidebar from "../components/EnrollmentSidebar";
-import { BookOpen, Clock, Award, ChevronRight } from "lucide-react";
+import { BookOpen, Clock, Award } from "lucide-react";
+import Breadcrumbs from "@/components/common/Breadcrumbs";
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
@@ -42,15 +43,13 @@ export const CourseDetailPage = () => {
   return (
     <main className="flex-grow max-w-[1280px] mx-auto w-full px-4 md:px-8 py-8">
       {/* Breadcrumbs */}
-      <div className="flex items-center gap-1.5 mb-6 text-neutral-medium text-xs font-semibold">
-        <Link to="/courses" className="hover:text-primary transition-colors">
-          Khóa học
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-neutral-light">Lớp học tương tác</span>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-neutral-dark">{course.title}</span>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: "Khóa học", to: "/courses" },
+          { label: course.title, className: "text-neutral-dark" }
+        ]}
+        className="mb-6"
+      />
 
       {/* 7:3 Grid Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
@@ -94,7 +93,7 @@ export const CourseDetailPage = () => {
 
           {/* Syllabus Section */}
           <div className="mt-2">
-            <SyllabusAccordion syllabus={course.syllabus} />
+            <SyllabusAccordion syllabus={course.modules} />
           </div>
         </div>
 

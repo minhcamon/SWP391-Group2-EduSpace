@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/Table';
+import Breadcrumbs from '@/components/common/Breadcrumbs';
 
 export default function CourseDetail() {
   const { courseId } = useParams();
@@ -75,11 +76,13 @@ export default function CourseDetail() {
     <div className="w-full space-y-8 animate-in fade-in duration-300">
 
       {/* Breadcrumb Navigation */}
-      <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500">
-        <Link to="/creator/courses" className="hover:text-primary transition-colors">Quản lý khóa học</Link>
-        <span>/</span>
-        <span className="text-primary font-bold">Chi tiết khóa học</span>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: "Quản lý khóa học", to: "/creator/courses" },
+          { label: "Chi tiết khóa học" }
+        ]}
+        className="mb-4 text-gray-500"
+      />
 
       {/* Header Action Section */}
       <Card className="p-6 bg-white border border-gray-200 shadow-sm">
