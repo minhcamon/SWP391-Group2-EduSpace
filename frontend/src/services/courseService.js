@@ -11,18 +11,7 @@ const courseService = {
       throw new Error(errorMsg);
     }
   },
-
-  saveDraft: async (courseData) => {
-    try {
-      const response = await api.post('/courses/draft', courseData);
-      return response.data.data;
-    } catch (error) {
-      console.error('Save draft error at CourseService:', error);
-      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lưu bản nháp!';
-      throw new Error(errorMsg);
-    }
-  },
-
+  
   getCourseByCreator: async () => {
     try {
       const response = await api.get('/course/my-courses');
