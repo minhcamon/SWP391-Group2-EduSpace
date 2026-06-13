@@ -23,19 +23,43 @@ export const ClassStatusSidebar = ({
 
       {/* Avatar Grid */}
       <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-6">
-        {members.map((member) => (
-          <div
-            key={member.id}
-            title={member.name}
-            className={`aspect-square rounded-full border border-border-light/20 flex items-center justify-center overflow-hidden shadow-sm font-bold text-xs uppercase ${member.color}`}
-          >
-            {member.initials}
-          </div>
-        ))}
+        {members.map((member, i) => {
+          if (member.avatarUrl) {
+            return (
+              <img
+                key={member.id || i}
+                title={member.fullName || member.name || "Học viên"}
+                alt={member.fullName || member.name || "Student Avatar"}
+                className="w-10 h-10 rounded-full border border-border-light/20 object-cover shadow-sm"
+                src={member.avatarUrl}
+              />
+            );
+          } else if (member.initials) {
+            return (
+              <div
+                key={member.id || i}
+                title={member.name}
+                className={`w-10 h-10 rounded-full border border-border-light/20 flex items-center justify-center overflow-hidden shadow-sm font-bold text-xs uppercase ${member.color}`}
+              >
+                {member.initials}
+              </div>
+            );
+          } else {
+            return (
+              <img
+                key={member.id || i}
+                title={member.fullName || member.name || "Học viên"}
+                alt={member.fullName || member.name || "Student Avatar"}
+                className="w-10 h-10 rounded-full border border-border-light/20 object-cover shadow-sm"
+                src="/images/default-avatar.png"
+              />
+            );
+          }
+        })}
         {Array.from({ length: emptySlots }).map((_, i) => (
           <div
             key={i}
-            className="aspect-square rounded-full border-2 border-dashed border-border-light/60 bg-bg-base flex items-center justify-center text-neutral-light hover:text-primary transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-full border-2 border-dashed border-border-light/60 bg-bg-base flex items-center justify-center text-neutral-light hover:text-primary transition-colors cursor-pointer"
             title="Đang đợi người tham gia"
           >
             <Plus className="w-4 h-4" />

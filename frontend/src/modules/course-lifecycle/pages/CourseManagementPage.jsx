@@ -46,8 +46,7 @@ export default function CourseManagement() {
     setIsDeleteModalOpen,
     deleteCourseTitle,
     handleArchive,
-    handleRestore,
-    handleManageClass
+    handleRestore
   } = useCourseManagement();
 
   return (
@@ -287,12 +286,23 @@ export default function CourseManagement() {
                     </div>
                   </CardContent>
 
-                  <div className="p-5 pt-0">
+                  <div className="px-5 pb-5 pt-0 flex gap-3">
                     <Button
-                      onClick={() => handleManageClass(course.title)}
-                      className="w-full border border-primary/20 hover:border-primary text-primary hover:bg-primary hover:text-white font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      variant="outline"
+                      asChild
+                      className="flex-1 border border-primary/20 hover:border-primary text-primary hover:bg-primary/5 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
-                      Quản lý lớp học
+                      <Link to={`/creator/courses/${course.id}/view`}>
+                        Xem chi tiết
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="flex-1 bg-primary text-white hover:bg-primary/90 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Link to={`/creator/courses/${course.id}`}>
+                        Quản lý lớp học
+                      </Link>
                     </Button>
                   </div>
                 </Card>

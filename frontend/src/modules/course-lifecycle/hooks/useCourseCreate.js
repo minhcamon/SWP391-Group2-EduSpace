@@ -5,29 +5,43 @@ import courseService from "@/services/courseService";
 
 // Helper function to build course payload to avoid duplicate mapping logic
 const buildCoursePayload = (formData, modules, status) => {
+    const parseDbId = (id) => {
+        return typeof id === 'number' ? id : null;
+    };
+
     return {
         title: formData.title,
         description: formData.description,
         status: status,
-        modules: modules.map((mod, modIdx) => ({
-            title: mod.title,
-            priority: mod.priority,
-            days: mod.days,
-            baseExp: mod.baseExp,
-            speedBonusExp: mod.speedBonusExp,
-            sortOrder: modIdx + 1,
-            assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
+        modules: modules.map((mod, modIdx) => {
+            const moduleId = parseDbId(mod.id);
+            const assignmentId = typeof mod.assignments?.id === 'number' ? mod.assignments.id : null;
+            const assignmentPayload = (mod.assignments && mod.assignments.title?.trim()) ? {
+                id: assignmentId,
                 title: mod.assignments.title,
                 description: mod.assignments.description,
                 rubricCriteria: mod.assignments.rubricCriteria
-            } : null,
-            lessons: (mod.lessons || []).map((les, lesIdx) => ({
-                title: les.title,
-                contentType: les.content_type,
-                contentUrl: les.content_type === 'TEXT' ? 'N/A' : (les.content_url || 'N/A'),
-                sortOrder: lesIdx + 1
-            }))
-        }))
+            } : null;
+
+            return {
+                id: moduleId,
+                title: mod.title,
+                priority: mod.priority,
+                days: mod.days,
+                baseExp: mod.baseExp,
+                speedBonusExp: mod.speedBonusExp,
+                sortOrder: modIdx + 1,
+                assignment: assignmentPayload,
+                assignments: assignmentPayload,
+                lessons: (mod.lessons || []).map((les, lesIdx) => ({
+                    id: parseDbId(les.id),
+                    title: les.title,
+                    contentType: les.content_type,
+                    contentUrl: les.content_type === 'TEXT' ? 'N/A' : (les.content_url || 'N/A'),
+                    sortOrder: lesIdx + 1
+                }))
+            };
+        })
     };
 };
 
@@ -73,7 +87,7 @@ export default function useCourseCreate(propMode) {
 
                     if (courseData.modules && courseData.modules.length > 0) {
                         const mappedModules = courseData.modules.map(mod => ({
-                            id: mod.id?.toString() || `mod-${Date.now()}-${Math.random()}`,
+                            id: mod.id || `mod-${Date.now()}-${Math.random()}`,
                             title: mod.title,
                             priority: mod.priority || 'LOW',
                             days: mod.days || 7,
@@ -87,7 +101,7 @@ export default function useCourseCreate(propMode) {
                                 rubricCriteria: mod.assignments.rubricCriteria || []
                             } : { title: '', description: '', rubricCriteria: [] },
                             lessons: (mod.lessons || []).map(lesson => ({
-                                id: lesson.id?.toString() || `les-${Date.now()}-${Math.random()}`,
+                                id: lesson.id || `les-${Date.now()}-${Math.random()}`,
                                 title: lesson.title,
                                 content_type: lesson.contentType,
                                 content_url: lesson.contentUrl,
@@ -306,7 +320,7 @@ export default function useCourseCreate(propMode) {
 
             if (sourceModuleId === destModuleId) {
                 const updated = modules.map(mod => {
-                    if (mod.id === sourceModuleId) {
+                    if (mod.id.toString() === sourceModuleId.toString()) {
                         const reorderedLessons = Array.from(mod.lessons);
                         const [removedLesson] = reorderedLessons.splice(source.index, 1);
                         reorderedLessons.splice(destination.index, 0, removedLesson);
@@ -321,8 +335,8 @@ export default function useCourseCreate(propMode) {
                 });
                 setModules(updated);
             } else {
-                const sourceModule = modules.find(m => m.id === sourceModuleId);
-                const destModule = modules.find(m => m.id === destModuleId);
+                const sourceModule = modules.find(m => m.id.toString() === sourceModuleId.toString());
+                const destModule = modules.find(m => m.id.toString() === destModuleId.toString());
 
                 if (!sourceModule || !destModule) return;
 
@@ -345,10 +359,10 @@ export default function useCourseCreate(propMode) {
                 }));
 
                 const updatedModules = modules.map(mod => {
-                    if (mod.id === sourceModuleId) {
+                    if (mod.id.toString() === sourceModuleId.toString()) {
                         return { ...mod, lessons: updatedSourceLessons };
                     }
-                    if (mod.id === destModuleId) {
+                    if (mod.id.toString() === destModuleId.toString()) {
                         return { ...mod, lessons: updatedDestLessons };
                     }
                     return mod;

@@ -1,25 +1,17 @@
 import React from "react";
 import { Users, ArrowRight, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Link } from "react-router";
 
 export const EnrollmentSidebar = ({
-  currentStudents = 7,
+  waitlistMembers = [],
   maxStudents = 10,
   onEnroll,
+  onLeave,
   isEnrolled = false,
 }) => {
+  const currentStudents = waitlistMembers.length;
   const percent = Math.min(100, Math.round((currentStudents / maxStudents) * 100));
-  
-  // Fake avatars for UI display
-  const avatars = [
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=100&auto=format&fit=crop",
-  ];
 
   // Number of empty slots
   const emptySlots = Math.max(0, maxStudents - currentStudents);
@@ -35,7 +27,7 @@ export const EnrollmentSidebar = ({
           <span className="text-secondary font-extrabold">{currentStudents}/{maxStudents}</span>{" "}
           học viên
         </h3>
-        
+
         {/* Progress Bar */}
         <div className="w-full h-2.5 bg-bg-card rounded-full overflow-hidden mb-4">
           <div
@@ -46,14 +38,18 @@ export const EnrollmentSidebar = ({
 
         {/* Avatars & Slots */}
         <div className="flex flex-wrap gap-2 mb-2">
-          {avatars.slice(0, currentStudents).map((url, i) => (
-            <img
-              key={i}
-              alt="Student Avatar"
-              className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
-              src={url}
-            />
-          ))}
+          {waitlistMembers.map((member, i) => {
+            const avatarSrc = member.avatarUrl || '/images/default-avatar.png';
+            return (
+              <img
+                key={member.id || i}
+                title={member.fullName || "Học viên"}
+                alt={member.fullName || "Student Avatar"}
+                className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
+                src={avatarSrc}
+              />
+            );
+          })}
           {Array.from({ length: emptySlots }).map((_, i) => (
             <div
               key={i}
@@ -69,13 +65,19 @@ export const EnrollmentSidebar = ({
 
       <div className="flex flex-col gap-4">
         {isEnrolled ? (
-          <Button
-            variant="outline"
-            className="w-full py-6 font-semibold flex items-center justify-center gap-2 text-primary border-primary bg-primary/5 cursor-default hover:bg-primary/5 active:translate-y-0"
-            disabled
-          >
-            Đã đăng ký lớp học
-          </Button>
+          <div className="flex flex-col gap-2.5">
+            <div className="w-full py-3 px-4 font-semibold rounded-xl flex items-center justify-center gap-2 text-emerald-600 border border-emerald-100 bg-emerald-50 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span>Đã đăng ký tham gia hàng chờ</span>
+            </div>
+            <Link
+              to="/classes/1"
+              className="w-full py-4 font-semibold flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/95 rounded-xl shadow-sm transition-all text-sm text-center"
+            >
+              <span>Đến lớp học</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         ) : (
           <Button
             onClick={onEnroll}

@@ -8,7 +8,7 @@ import Breadcrumbs from "@/components/common/Breadcrumbs";
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
-  const { course, isLoading, error, isEnrolled, joinCourse } = useCourseEnrollment(id);
+  const { course, isLoading, error, isEnrolled, joinCourse, waitlistMembers } = useCourseEnrollment(id);
 
   if (isLoading) {
     return (
@@ -100,8 +100,8 @@ export const CourseDetailPage = () => {
         {/* Right Column (30%) */}
         <div className="lg:w-[30%]">
           <EnrollmentSidebar
-            currentStudents={course.currentStudents}
-            maxStudents={course.maxStudents}
+            waitlistMembers={waitlistMembers}
+            maxStudents={course.maxStudents || 10}
             onEnroll={joinCourse}
             isEnrolled={isEnrolled}
           />

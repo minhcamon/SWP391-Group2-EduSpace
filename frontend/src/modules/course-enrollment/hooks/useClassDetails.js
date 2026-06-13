@@ -1,31 +1,56 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router"; // react-router-dom v6/7 usually uses useSearchParams
+import { useSearchParams, useNavigate } from "react-router"; 
 import { mockClasses } from "@/lib/mockData";
 import { toast } from "sonner";
+import waitlistService from "@/services/waitlistService";
 
 export const useClassDetails = (classId) => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [classData, setClassData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setIsLoading(true);
-    // Fetch mock class data
-    const rawClass = mockClasses[classId] || mockClasses["1"];
-    if (rawClass) {
-      // Allow URL override for testing: ?status=active or ?status=waiting
-      const urlStatus = searchParams.get("status");
-      const finalStatus = urlStatus ? urlStatus.toUpperCase() : rawClass.status;
-      
-      setClassData({
-        ...rawClass,
-        status: finalStatus,
-      });
-    } else {
-      setError("Không tìm thấy thông tin lớp học.");
-    }
-    setIsLoading(false);
+    const fetchClassDetails = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch mock class data
+        const rawClass = mockClasses[classId] || mockClasses["1"];
+        if (rawClass) {
+          // Allow URL override for testing: ?status=active or ?status=waiting
+          const urlStatus = searchParams.get("status");
+          const finalStatus = urlStatus ? urlStatus.toUpperCase() : rawClass.status;
+          
+          const updatedClassData = {
+            ...rawClass,
+            status: finalStatus,
+          };
+
+          if (finalStatus === "WAITING") {
+            try {
+              const members = await waitlistService.getMembersInWaitlist(rawClass.courseId);
+              if (members) {
+                updatedClassData.currentStudents = members.length;
+                updatedClassData.membersWaiting = members;
+              }
+            } catch (waitlistErr) {
+              console.warn("Failed to fetch waitlist members for class details:", waitlistErr);
+            }
+          }
+
+          setClassData(updatedClassData);
+        } else {
+          setError("Không tìm thấy thông tin lớp học.");
+        }
+      } catch (err) {
+        setError(err.message || "Không thể tải thông tin lớp học.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClassDetails();
   }, [classId, searchParams]);
 
   const addReaction = (feedId, emoji) => {
@@ -51,8 +76,19 @@ export const useClassDetails = (classId) => {
     });
   };
 
-  const cancelSearch = () => {
-    toast.info("Đã hủy tìm kiếm lớp học ghép cặp.");
+  const cancelSearch = async () => {
+    try {
+      if (!classData || !classData.courseId) {
+        toast.error("Không tìm thấy thông tin khóa học để hủy hàng chờ.");
+        return;
+      }
+      await waitlistService.leaveWaitlist(classData.courseId);
+      toast.success("Hủy tìm kiếm và rời hàng chờ thành công!");
+      navigate(`/courses/${classData.courseId}`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Hủy hàng chờ thất bại. Vui lòng thử lại!");
+    }
   };
 
   const findStudyBuddy = () => {
