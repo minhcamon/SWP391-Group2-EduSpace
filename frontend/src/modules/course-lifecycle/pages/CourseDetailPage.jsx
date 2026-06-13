@@ -72,7 +72,7 @@ export default function CourseDetail() {
   ];
 
   return (
-    <div className="max-w-275 mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-8 animate-in fade-in duration-300">
 
       {/* Breadcrumb Navigation */}
       <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-gray-500">
@@ -82,12 +82,16 @@ export default function CourseDetail() {
       </div>
 
       {/* Header Action Section */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-dark">{course.title}</h1>
-          <p className="text-sm text-neutral-medium mt-1">Xem chi tiết thông tin lớp học active, đội ngũ mentor, và hàng chờ tạo lớp học mới.</p>
-        </div>
-      </div>
+      <Card className="p-6 bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="p-0 w-full">
+          <CardTitle className="text-2xl font-bold text-secondary">
+            {course.title}
+          </CardTitle>
+          <CardDescription className="text-sm text-neutral-medium mt-1">
+            Xem chi tiết thông tin lớp học active, đội ngũ mentor, và hàng chờ tạo lớp học mới.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       {/* Banner Section Info */}
       <div className="p-6 bg-linear-to-r from-primary/90 to-[#6366f1]/90 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
