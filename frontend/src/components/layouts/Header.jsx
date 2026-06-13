@@ -22,41 +22,44 @@ const Header = () => {
 
                     {/* Desktop Navigation Links */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <NavLink
+                        {/* <NavLink
                             to="/roadmaps"
                             className={({ isActive }) =>
-                                `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                                    ? "text-primary border-b-2 border-primary"
-                                    : "text-neutral-medium hover:text-primary"
+                                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                                    isActive
+                                        ? "text-primary border-b-2 border-primary"
+                                        : "text-neutral-medium hover:text-primary"
                                 }`
                             }
                         >
                             Lộ trình
-                        </NavLink>
+                        </NavLink> */}
                         <NavLink
                             to="/courses"
                             className={({ isActive }) =>
-                                `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                                    ? "text-primary border-b-2 border-primary"
-                                    : "text-neutral-medium hover:text-primary"
+                                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                                    isActive
+                                        ? "text-primary border-b-2 border-primary"
+                                        : "text-neutral-medium hover:text-primary"
                                 }`
                             }
                         >
                             Khóa học
                         </NavLink>
-                        {user && (
+                        {/* {user && (
                             <NavLink
                                 to="/leaderboard"
                                 className={({ isActive }) =>
-                                    `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                                        ? "text-primary border-b-2 border-primary"
-                                        : "text-neutral-medium hover:text-primary"
+                                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                                        isActive
+                                            ? "text-primary border-b-2 border-primary"
+                                            : "text-neutral-medium hover:text-primary"
                                     }`
                                 }
                             >
                                 Bảng xếp hạng
                             </NavLink>
-                        )}
+                        )} */}
                     </nav>
 
                     {/* Search Bar (Desktop) */}
@@ -74,18 +77,20 @@ const Header = () => {
                     {/* Right Action Section */}
                     <div className="flex items-center gap-3">
                         {/* Notification Bell (Only if Logged In) */}
-                        {user && (
+                        {/* {user && (
                             <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
                                 <Bell size={22} />
                                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary rounded-full"></span>
                             </button>
-                        )}
+                        )} */}
 
                         {/* User Profile Dropdown or Authentication Buttons */}
                         {user ? (
                             <div className="relative inline-block text-left">
                                 <button
-                                    onClick={() => setShowDropDown(!showDropDown)}
+                                    onClick={() =>
+                                        setShowDropDown(!showDropDown)
+                                    }
                                     className="hover:cursor-pointer flex items-center justify-center rounded-full p-0.5 border border-slate-200 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                                 >
                                     <Avatar
@@ -98,7 +103,9 @@ const Header = () => {
                                     <>
                                         <div
                                             className="fixed inset-0 z-10"
-                                            onClick={() => setShowDropDown(false)}
+                                            onClick={() =>
+                                                setShowDropDown(false)
+                                            }
                                         ></div>
                                         <AvatarDropDown />
                                     </>
@@ -126,7 +133,11 @@ const Header = () => {
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                             className="md:hidden text-neutral-medium hover:text-primary focus:outline-none p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
                         >
-                            {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
+                            {showMobileMenu ? (
+                                <X size={22} />
+                            ) : (
+                                <Menu size={22} />
+                            )}
                         </button>
                     </div>
                 </div>
@@ -148,7 +159,7 @@ const Header = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <NavLink
+                        {/* <NavLink
                             to="/roadmaps"
                             onClick={() => setShowMobileMenu(false)}
                             className={({ isActive }) =>
@@ -159,20 +170,21 @@ const Header = () => {
                             }
                         >
                             Lộ trình
-                        </NavLink>
+                        </NavLink> */}
                         <NavLink
                             to="/courses"
                             onClick={() => setShowMobileMenu(false)}
                             className={({ isActive }) =>
-                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-neutral-medium hover:bg-slate-50 hover:text-primary"
+                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                                    isActive
+                                        ? "bg-primary/10 text-primary"
+                                        : "text-neutral-medium hover:bg-slate-50 hover:text-primary"
                                 }`
                             }
                         >
                             Khóa học
                         </NavLink>
-                        {user && (
+                        {/* {user && (
                             <NavLink
                                 to="/leaderboard"
                                 onClick={() => setShowMobileMenu(false)}
@@ -185,7 +197,7 @@ const Header = () => {
                             >
                                 Bảng xếp hạng
                             </NavLink>
-                        )}
+                        )} */}
                     </div>
 
                     {!user && (

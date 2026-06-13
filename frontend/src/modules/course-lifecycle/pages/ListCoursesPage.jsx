@@ -8,6 +8,8 @@ import CourseItem from "../components/CourseItem";
 import courseService from "@/services/courseService";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import EmptyState from "@/components/ui/EmptyState";
+import { Inbox } from "lucide-react";
 
 const ListCoursesPage = () => {
     const [courses, setCourses] = useState([]);
@@ -29,8 +31,8 @@ const ListCoursesPage = () => {
     const getCourseLength = courses.length;
 
     return (
-        <main className="w-full mx-auto px-4 py-12 grow container">
-            <Card className="p-6 bg-white border border-gray-200 shadow-sm ">
+        <main className="w-full mx-auto px-4 grow container">
+            <Card className="p-6 bg-white border border-gray-200 shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">
                         Khám phá các khóa học tại{" "}
@@ -50,11 +52,19 @@ const ListCoursesPage = () => {
                 khóa học
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
-                {courses.map((course) => (
-                    <CourseItem key={course.id} course={course} />
-                ))}
-            </div>
+            {courses.length == 0 ? (
+                <div className="mt-4 pb-2">
+                    <EmptyState icon={Inbox}>
+                        Hiện tại chưa có khóa học nào
+                    </EmptyState>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
+                    {courses.map((course) => (
+                        <CourseItem key={course.id} course={course} />
+                    ))}
+                </div>
+            )}
         </main>
     );
 };

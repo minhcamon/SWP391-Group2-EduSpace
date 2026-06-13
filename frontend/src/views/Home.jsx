@@ -11,7 +11,7 @@ const Home = () => {
                 <Header />
                 <main className="mx-auto w-full px-4 py-12 grow max-w-300">
                     <CourseContainer />
-                    <RoadmapContainer />
+                    {/* <RoadmapContainer /> */}
                 </main>
                 <Footer />
             </div>
