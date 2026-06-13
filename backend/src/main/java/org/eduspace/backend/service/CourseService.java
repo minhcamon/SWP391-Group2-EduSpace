@@ -31,6 +31,8 @@ import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -211,8 +213,8 @@ public class CourseService {
                         }
 
                         // Assignments
-                        if (moduleRequest.getAssignments() != null) {
-                                CreateAssignmentRequest assignmentRequest = moduleRequest.getAssignments();
+                        if (moduleRequest.getAssignment() != null) {
+                                CreateAssignmentRequest assignmentRequest = moduleRequest.getAssignment();
                                 Assignment assignment = Assignment.builder()
                                                 .module(module)
                                                 .title(assignmentRequest.getTitle())
@@ -358,20 +360,15 @@ public class CourseService {
                                 .build();
         }
 
-        public void deleteCourse(Long courseId, User currentUser) {
+        public void deleteCourse(Long courseId) {
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
-
-                if (!currentUser.getRole().name().equals("ADMIN") &&
-                                !course.getCreator().getId().equals(currentUser.getId())) {
-
-                        throw new RuntimeException("Bạn không có quyền xóa khóa học của người khác!");
-                }
 
                 course.setDeleted(true);
                 courseRepository.save(course);
         }
 
+        @Transactional
         public boolean updateCourse(Long courseId, UpdateCourseRequest request, Long creatorId) {
                 Course course = courseRepository.findById(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
@@ -380,8 +377,9 @@ public class CourseService {
                         throw new RuntimeException("Only course creator can update this course");
                 }
 
-                if (course.getStatus() != CourseStatus.DRAFT && course.getStatus() != CourseStatus.REJECTED && course.getStatus() != CourseStatus.ARCHIVED) {
-                        throw new RuntimeException("Can only update courses in DRAFT or REJECTED status");
+                if (course.getStatus() != CourseStatus.DRAFT && course.getStatus() != CourseStatus.REJECTED
+                                && course.getStatus() != CourseStatus.ARCHIVED) {
+                        throw new RuntimeException("Can only update courses in DRAFT, REJECTED, or ARCHIVED status");
                 }
 
                 if (request.getTitle() != null && !request.getTitle().isEmpty()) {
@@ -395,80 +393,96 @@ public class CourseService {
                 }
                 courseRepository.save(course);
 
-                // Update modules if provided
                 if (request.getModules() != null) {
                         for (UpdateModuleRequest moduleRequest : request.getModules()) {
+
+                                CourseModule module;
+                                // CHECK ID CỦA MODULE TRONG REQUEST
                                 if (moduleRequest.getId() != null) {
-                                        CourseModule module = moduleRepository.findById(moduleRequest.getId())
-                                                        .orElseThrow(() -> new RuntimeException("Module not found"));
+                                        // Có ID -> Cập nhật module cũ
+                                        module = moduleRepository.findById(moduleRequest.getId())
+                                                        .orElseThrow(() -> new RuntimeException(
+                                                                        "Module not found with ID: "
+                                                                                        + moduleRequest.getId()));
+                                } else {
+                                        // KHÔNG có ID -> Tạo module mới tinh và gán vào course
+                                        module = new CourseModule();
+                                        module.setCourse(course);
+                                }
 
-                                        if (moduleRequest.getTitle() != null)
-                                                module.setTitle(moduleRequest.getTitle());
-                                        if (moduleRequest.getPriority() != null)
-                                                module.setPriority(moduleRequest.getPriority());
-                                        if (moduleRequest.getDays() != null)
-                                                module.setDays(moduleRequest.getDays());
-                                        if (moduleRequest.getBaseExp() != null)
-                                                module.setBaseExp(moduleRequest.getBaseExp());
-                                        if (moduleRequest.getSpeedBonusExp() != null)
-                                                module.setSpeedBonusExp(moduleRequest.getSpeedBonusExp());
-                                        if (moduleRequest.getSortOrder() != null)
-                                                module.setSortOrder(moduleRequest.getSortOrder());
+                                // Set các thuộc tính cho Module (Dùng chung cho cả tạo mới lẫn update)
+                                if (moduleRequest.getTitle() != null)
+                                        module.setTitle(moduleRequest.getTitle());
+                                if (moduleRequest.getPriority() != null)
+                                        module.setPriority(moduleRequest.getPriority());
+                                if (moduleRequest.getDays() != null)
+                                        module.setDays(moduleRequest.getDays());
+                                if (moduleRequest.getBaseExp() != null)
+                                        module.setBaseExp(moduleRequest.getBaseExp());
+                                if (moduleRequest.getSpeedBonusExp() != null)
+                                        module.setSpeedBonusExp(moduleRequest.getSpeedBonusExp());
+                                if (moduleRequest.getSortOrder() != null)
+                                        module.setSortOrder(moduleRequest.getSortOrder());
 
-                                        moduleRepository.save(module);
+                                moduleRepository.save(module);
 
-                                        // Update lessons
-                                        if (moduleRequest.getLessons() != null) {
-                                                for (UpdateLessonRequest lessonRequest : moduleRequest.getLessons()) {
-                                                        if (lessonRequest.getId() != null) {
-                                                                Lesson lesson = lessonRepository
-                                                                                .findById(lessonRequest.getId())
-                                                                                .orElseThrow(() -> new RuntimeException(
-                                                                                                "Lesson not found"));
-
-                                                                if (lessonRequest.getTitle() != null)
-                                                                        lesson.setTitle(lessonRequest.getTitle());
-                                                                if (lessonRequest.getContentType() != null)
-                                                                        lesson.setContentType(
-                                                                                        lessonRequest.getContentType());
-                                                                if (lessonRequest.getContentUrl() != null)
-                                                                        lesson.setContentUrl(
-                                                                                        lessonRequest.getContentUrl());
-                                                                if (lessonRequest.getSortOrder() != null)
-                                                                        lesson.setSortOrder(
-                                                                                        lessonRequest.getSortOrder());
-
-                                                                lessonRepository.save(lesson);
-                                                        }
-                                                }
-                                        }
-
-                                        // Update assignment
-                                        if (moduleRequest.getAssignment() != null) {
-                                                UpdateAssignmentRequest assignmentRequest = moduleRequest
-                                                                .getAssignment();
-                                                if (assignmentRequest.getId() != null) {
-                                                        Assignment assignment = assignmentRepository
-                                                                        .findById(assignmentRequest.getId())
+                                // 4. Xử lý Lessons trong Module này
+                                if (moduleRequest.getLessons() != null) {
+                                        for (UpdateLessonRequest lessonRequest : moduleRequest.getLessons()) {
+                                                Lesson lesson;
+                                                if (lessonRequest.getId() != null) {
+                                                        // Có ID -> Sửa bài học cũ
+                                                        lesson = lessonRepository.findById(lessonRequest.getId())
                                                                         .orElseThrow(() -> new RuntimeException(
-                                                                                        "Assignment not found"));
-
-                                                        if (assignmentRequest.getTitle() != null)
-                                                                assignment.setTitle(assignmentRequest.getTitle());
-                                                        if (assignmentRequest.getDescription() != null)
-                                                                assignment.setDescription(
-                                                                                assignmentRequest.getDescription());
-                                                        if (assignmentRequest.getRubricCriteria() != null)
-                                                                assignment.setRubricCriteria(
-                                                                                assignmentRequest.getRubricCriteria());
-
-                                                        assignmentRepository.save(assignment);
+                                                                                        "Lesson not found with ID: "
+                                                                                                        + lessonRequest.getId()));
+                                                } else {
+                                                        // Không có ID -> Tạo bài học mới gán vào module này
+                                                        lesson = new Lesson();
+                                                        lesson.setModule(module);
                                                 }
+
+                                                if (lessonRequest.getTitle() != null)
+                                                        lesson.setTitle(lessonRequest.getTitle());
+                                                if (lessonRequest.getContentType() != null)
+                                                        lesson.setContentType(lessonRequest.getContentType());
+                                                if (lessonRequest.getContentUrl() != null)
+                                                        lesson.setContentUrl(lessonRequest.getContentUrl());
+                                                if (lessonRequest.getSortOrder() != null)
+                                                        lesson.setSortOrder(lessonRequest.getSortOrder());
+
+                                                lessonRepository.save(lesson);
                                         }
+                                }
+
+                                // 5. Xử lý Assignment trong Module này
+                                if (moduleRequest.getAssignment() != null) {
+                                        UpdateAssignmentRequest assignmentRequest = moduleRequest.getAssignment();
+                                        Assignment assignment;
+                                        if (assignmentRequest.getId() != null) {
+                                                // Có ID -> Sửa bài tập cũ
+                                                assignment = assignmentRepository.findById(assignmentRequest.getId())
+                                                                .orElseThrow(() -> new RuntimeException(
+                                                                                "Assignment not found with ID: "
+                                                                                                + assignmentRequest
+                                                                                                                .getId()));
+                                        } else {
+                                                // Không có ID -> Tạo bài tập mới gán vào module này
+                                                assignment = new Assignment();
+                                                assignment.setModule(module);
+                                        }
+
+                                        if (assignmentRequest.getTitle() != null)
+                                                assignment.setTitle(assignmentRequest.getTitle());
+                                        if (assignmentRequest.getDescription() != null)
+                                                assignment.setDescription(assignmentRequest.getDescription());
+                                        if (assignmentRequest.getRubricCriteria() != null)
+                                                assignment.setRubricCriteria(assignmentRequest.getRubricCriteria());
+
+                                        assignmentRepository.save(assignment);
                                 }
                         }
                 }
-
                 return true;
         }
 

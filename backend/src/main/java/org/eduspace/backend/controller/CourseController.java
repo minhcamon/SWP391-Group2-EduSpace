@@ -13,13 +13,10 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseResponse;
-import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -142,6 +139,21 @@ public class CourseController {
                                 APIResponse.success("Course updated successfully", null));
         }
 
+        // ADMIN + CREATOR
+        @Operation(summary = "Xóa khóa học (CREATOR, ADMIN)")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Xóa thành công"),
+                        @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
+                        @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR hoặc ADMIN")
+        })
+        @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+        @DeleteMapping("/{id}/delete")
+        public ResponseEntity<APIResponse<Object>> deleteCourse(@PathVariable("id") Long courseId) {
+                courseService.deleteCourse(courseId);
+                return ResponseEntity.ok(APIResponse.success("Deleted successfully", null));
+        }
+
         // Public
         @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
         @ApiResponses(value = {
@@ -165,15 +177,5 @@ public class CourseController {
                 CourseResponse course = courseService.getCourseById(id);
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
-        }
-
-        @DeleteMapping("/{id}/delete")
-        public ResponseEntity<?> deleteCourse(@PathVariable("id") Long courseId) {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-                User currentUser = (User) authentication.getPrincipal();
-
-                courseService.deleteCourse(courseId, currentUser);
-                return ResponseEntity.ok("Deleted");
         }
 }
