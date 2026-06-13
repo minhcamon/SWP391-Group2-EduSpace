@@ -19,7 +19,7 @@ import useCourseManagement from '../hooks/useCourseManagement';
 import CourseDeleteModal from '../components/CourseDeleteModal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import EmptyState from '@/components/ui/EmptyState';
 import Button from '@/components/ui/Button';
 
@@ -51,21 +51,27 @@ export default function CourseManagement() {
   } = useCourseManagement();
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-8 animate-in fade-in duration-300">
 
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-dark">Quản lý Khóa học</h1>
-          <p className="text-sm text-neutral-medium mt-1">Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa học.</p>
+      <Card className="p-6 bg-white border border-gray-200 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+          <CardHeader className="p-0 flex-1">
+            <CardTitle className="text-2xl font-bold text-secondary">
+              Quản lý Khóa học
+            </CardTitle>
+            <CardDescription className="text-sm text-neutral-medium mt-1">
+              Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa học.
+            </CardDescription>
+          </CardHeader>
+          <Link
+            to="/creator/create-course"
+            className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all transform cursor-pointer hover:scale-95 shrink-0"
+          >
+            <Plus className="text-base" /> Tạo khóa học mới
+          </Link>
         </div>
-        <Link
-          to="/creator/create-course"
-          className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer"
-        >
-          <Plus className="text-base" /> Tạo khóa học mới
-        </Link>
-      </div>
+      </Card>
 
       {/* KPI Stats Summary Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
