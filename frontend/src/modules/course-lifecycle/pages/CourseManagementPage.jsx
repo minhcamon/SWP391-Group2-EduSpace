@@ -19,7 +19,7 @@ import useCourseManagement from '../hooks/useCourseManagement';
 import CourseDeleteModal from '../components/CourseDeleteModal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import EmptyState from '@/components/ui/EmptyState';
 import Button from '@/components/ui/Button';
 
@@ -51,21 +51,27 @@ export default function CourseManagement() {
   } = useCourseManagement();
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-8 animate-in fade-in duration-300">
 
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-dark">Quản lý Khóa học</h1>
-          <p className="text-sm text-neutral-medium mt-1">Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa học.</p>
+      <Card className="p-6 bg-white border border-gray-200 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+          <CardHeader className="p-0 flex-1">
+            <CardTitle className="text-2xl font-bold text-secondary">
+              Quản lý Khóa học
+            </CardTitle>
+            <CardDescription className="text-sm text-neutral-medium mt-1">
+              Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa học.
+            </CardDescription>
+          </CardHeader>
+          <Link
+            to="/creator/create-course"
+            className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all transform cursor-pointer hover:scale-95 shrink-0"
+          >
+            <Plus className="text-base" /> Tạo khóa học mới
+          </Link>
         </div>
-        <Link
-          to="/creator/create-course"
-          className="flex items-center gap-2 bg-primary hover:bg-[#0785b1] text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition-all transform cursor-pointer hover:scale-95"
-        >
-          <Plus className="text-base" /> Tạo khóa học mới
-        </Link>
-      </div>
+      </Card>
 
       {/* KPI Stats Summary Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -246,7 +252,7 @@ export default function CourseManagement() {
               {activeCourses.map(course => (
                 <Card
                   key={course.id}
-                  className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(117,187,71,0.06)] transition-all duration-300 group flex flex-col justify-between transform hover:-translate-y-1.5"
+                  className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(117,187,71,0.06)] transition-all duration-300 group flex flex-col justify-between"
                 >
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -284,7 +290,7 @@ export default function CourseManagement() {
                   <div className="p-5 pt-0">
                     <Button
                       onClick={() => handleManageClass(course.title)}
-                      className="w-full border border-primary/20 hover:border-primary text-white hover:bg-primary font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      className="w-full border border-primary/20 hover:border-primary text-primary hover:bg-primary hover:text-white font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       Quản lý lớp học
                     </Button>

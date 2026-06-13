@@ -3,7 +3,7 @@ import {
   LuUsers, LuGraduationCap, LuInfo, LuTrendingUp,
   LuSearch, LuFilter, LuBookOpen, LuChevronDown, LuActivity
 } from 'react-icons/lu';
-import { Card, CardContent } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import {
   Table,
   TableHeader,
@@ -46,44 +46,46 @@ export default function CreatorAnalytics() {
   ];
 
   return (
-    <div className="max-w-275 mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-8 animate-in fade-in duration-300">
 
             {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-neutral-dark flex items-center gap-2">
-                  <LuActivity className="text-primary" /> Thống kê phân tích
-                </h1>
-                <p className="text-sm text-neutral-medium mt-1">
-                  Đánh giá toàn diện lượng người học, tỷ lệ hoàn thành chương trình, và phân bổ điểm số.
-                </p>
-              </div>
+            <Card className="p-6 bg-white border border-gray-200 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+                <CardHeader className="p-0 flex-1">
+                  <CardTitle className="text-2xl font-bold text-secondary flex items-center gap-2">
+                    <LuActivity className="text-primary" /> Thống kê phân tích
+                  </CardTitle>
+                  <CardDescription className="text-sm text-neutral-medium mt-1">
+                    Đánh giá toàn diện lượng người học, tỷ lệ hoàn thành chương trình, và phân bổ điểm số.
+                  </CardDescription>
+                </CardHeader>
 
-              {/* Controls */}
-              <div className="flex flex-wrap items-center gap-3">
-                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                  <SelectTrigger className="bg-white border border-border-light/40 pl-4 pr-10 py-2.5 h-auto rounded-xl text-xs font-semibold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer transition-all shadow-xs select-none gap-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courseOptions.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Controls */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                    <SelectTrigger className="bg-white border border-border-light/40 pl-4 pr-10 py-2.5 h-auto rounded-xl text-xs font-semibold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer transition-all shadow-xs select-none gap-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courseOptions.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="bg-white border border-border-light/40 pl-4 pr-10 py-2.5 h-auto rounded-xl text-xs font-semibold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer transition-all shadow-xs select-none gap-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7days">7 ngày qua</SelectItem>
-                    <SelectItem value="30days">30 ngày qua</SelectItem>
-                    <SelectItem value="alltime">Tất cả thời gian</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={timeRange} onValueChange={setTimeRange}>
+                    <SelectTrigger className="bg-white border border-border-light/40 pl-4 pr-10 py-2.5 h-auto rounded-xl text-xs font-semibold focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer transition-all shadow-xs select-none gap-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7days">7 ngày qua</SelectItem>
+                      <SelectItem value="30days">30 ngày qua</SelectItem>
+                      <SelectItem value="alltime">Tất cả thời gian</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            </Card>
 
             {/* KPI Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
