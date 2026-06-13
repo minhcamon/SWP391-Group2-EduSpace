@@ -3,6 +3,7 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.entity.*;
 import org.eduspace.backend.enums.ClassStatus;
+import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.WaitlistStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class SystemService {
                                         .courseClass(savedClass)
                                         .user(entry.getUser())
                                         .contextRole("LEARNER")
-                                        .learnerStatus("ACTIVE")
+                                        .learnerStatus(LearnerStatus.ACTIVE)
                                         .rescueStartedAt(null)
                                         .joinedAt(LocalDateTime.now())
                                         .build();

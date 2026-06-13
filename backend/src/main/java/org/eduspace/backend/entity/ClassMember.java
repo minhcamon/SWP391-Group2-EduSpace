@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import org.eduspace.backend.enums.LearnerStatus;
+
 @Data
 @Entity
 @Table(name = "class_members")
@@ -29,7 +31,9 @@ public class ClassMember {
     private String contextRole;
 
     @Column(name = "learner_status")
-    private String learnerStatus;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private LearnerStatus learnerStatus = LearnerStatus.ACTIVE;
 
     @Column(name = "rescue_started_at")
     private LocalDateTime rescueStartedAt;

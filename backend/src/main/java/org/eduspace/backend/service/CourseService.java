@@ -397,20 +397,16 @@ public class CourseService {
                         for (UpdateModuleRequest moduleRequest : request.getModules()) {
 
                                 CourseModule module;
-                                // CHECK ID CỦA MODULE TRONG REQUEST
                                 if (moduleRequest.getId() != null) {
-                                        // Có ID -> Cập nhật module cũ
                                         module = moduleRepository.findById(moduleRequest.getId())
                                                         .orElseThrow(() -> new RuntimeException(
                                                                         "Module not found with ID: "
                                                                                         + moduleRequest.getId()));
                                 } else {
-                                        // KHÔNG có ID -> Tạo module mới tinh và gán vào course
                                         module = new CourseModule();
                                         module.setCourse(course);
                                 }
 
-                                // Set các thuộc tính cho Module (Dùng chung cho cả tạo mới lẫn update)
                                 if (moduleRequest.getTitle() != null)
                                         module.setTitle(moduleRequest.getTitle());
                                 if (moduleRequest.getPriority() != null)
@@ -426,18 +422,15 @@ public class CourseService {
 
                                 moduleRepository.save(module);
 
-                                // 4. Xử lý Lessons trong Module này
                                 if (moduleRequest.getLessons() != null) {
                                         for (UpdateLessonRequest lessonRequest : moduleRequest.getLessons()) {
                                                 Lesson lesson;
                                                 if (lessonRequest.getId() != null) {
-                                                        // Có ID -> Sửa bài học cũ
                                                         lesson = lessonRepository.findById(lessonRequest.getId())
                                                                         .orElseThrow(() -> new RuntimeException(
                                                                                         "Lesson not found with ID: "
                                                                                                         + lessonRequest.getId()));
                                                 } else {
-                                                        // Không có ID -> Tạo bài học mới gán vào module này
                                                         lesson = new Lesson();
                                                         lesson.setModule(module);
                                                 }
@@ -455,19 +448,16 @@ public class CourseService {
                                         }
                                 }
 
-                                // 5. Xử lý Assignment trong Module này
                                 if (moduleRequest.getAssignment() != null) {
                                         UpdateAssignmentRequest assignmentRequest = moduleRequest.getAssignment();
                                         Assignment assignment;
                                         if (assignmentRequest.getId() != null) {
-                                                // Có ID -> Sửa bài tập cũ
                                                 assignment = assignmentRepository.findById(assignmentRequest.getId())
                                                                 .orElseThrow(() -> new RuntimeException(
                                                                                 "Assignment not found with ID: "
                                                                                                 + assignmentRequest
                                                                                                                 .getId()));
                                         } else {
-                                                // Không có ID -> Tạo bài tập mới gán vào module này
                                                 assignment = new Assignment();
                                                 assignment.setModule(module);
                                         }
