@@ -30,7 +30,7 @@ export const useCourseEnrollment = (courseId) => {
         const fallbackCourse = mockCourses.find(
           (c) => c.id === parseInt(courseId)
         ) || mockCourses[0];
-        
+
         if (fallbackCourse) {
           setCourse(fallbackCourse);
         } else {
