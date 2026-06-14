@@ -2,7 +2,7 @@ name: CI/CD Pipeline for Monorepo
 
 on:
   push:
-    branches: [ "main" ] # Kích hoạt khi bạn push hoặc merge code vào nhánh main
+    branches: [ "main" ] 
   pull_request:
     branches: [ "main" ]
 
@@ -27,31 +27,35 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Chạy test độc lập trước, nếu lỗi bước này hệ thống sẽ STOP ngay lập tức
       - name: Run Backend Tests
+        env:
+          PORT: 8080
+          DB_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+          DB_USERNAME: sa
+          DB_PASSWORD: ""
+          EMAIL_HOST: localhost
+          EMAIL_PORT: 587
+          EMAIL_SMTP: true
+          EMAIL_PASSWORD: mock_email_password
+          GOOGLE_CLIENT_ID: mock_google_client_id
+          GOOGLE_CLIENT_SECRET: mock_google_client_secret
+          FRONTEND_URL: http://localhost:3000
         run: mvn clean test
-
-      # Test pass mới tiến hành đóng gói file JAR sinh ra trong thư mục target/
       - name: Build JAR with Maven
         run: mvn package -DskipTests
 
-      # Đăng nhập vào Docker Hub bằng 2 biến Secret bạn vừa tạo
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Đóng gói Dockerfile và đẩy lên repo minhcamon1/edu-space
       - name: Build and push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }} # Chỉ push khi merge vào main, chạy PR thì chỉ build thử xem lỗi không
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/edu-space:latest
-
-      # Gọi Webhook của Render để kích hoạt tự động redeploy khi image mới được đẩy lên Docker Hub
       - name: Trigger Render Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
