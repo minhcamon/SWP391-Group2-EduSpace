@@ -381,6 +381,64 @@ export { default as FeatureListPage } from "./pages/FeatureListPage";
 
 ---
 
+## 2.13. Quy Trình Xây Dựng Một Trang Frontend Hoàn Chỉnh (Frontend Page Development Flow)
+
+Khi phát triển một trang hoặc một tính năng Frontend mới (dù là tự dựng hay lấy giao diện từ Stitch MCP), AI Agent **bắt buộc** phải tuân thủ đúng quy trình 9 bước tuần tự sau:
+
+```mermaid
+graph TD
+    A["Bước 1: Kéo code thiết kế từ Stitch MCP"] --> B["Bước 2: Khảo sát Design Tokens (index.css)"]
+    B --> C["Bước 3: Tách Mock Data (mockData.js)"]
+    C --> D["Bước 4: Thiết lập Service Layer"]
+    D --> E["Bước 5: Tạo Custom Hook quản lý State"]
+    E --> F["Bước 6: Tạo các Dumb Components"]
+    F --> G["Bước 7: Dựng Smart Page Container"]
+    G --> H["Bước 8: Tạo View Wrapper & Định tuyến"]
+    H --> I["Bước 9: Xác thực & Build Dự án"]
+```
+
+### Hướng dẫn chi tiết từng bước:
+
+1. **Bước 1: Kéo code/layout thiết kế từ Stitch MCP**
+   - Trước khi tiến hành lập trình, AI Agent cần tìm hiểu màn hình thiết kế mẫu trong dự án Stitch bằng cách chạy các công cụ như `list_screens` hoặc `get_project`.
+   - Chạy công cụ `get_screen` để tải về mã nguồn UI của thiết kế thô (hoặc sử dụng `generate_screen_from_text` nếu cần thiết kế mới dựa trên mô tả) nhằm có một khung giao diện thô hoàn chỉnh để chuẩn bị bóc tách logic.
+
+2. **Bước 2: Khảo sát Design Tokens & Màu sắc (`index.css`)**
+   - Trước khi sửa đổi mã nguồn thô vừa kéo về, cần mở file `index.css` để kiểm tra các biến HSL và màu sắc có sẵn.
+   - **Tuyệt đối cấm** tự thêm màu sắc tùy ý ngoài bảng màu chuẩn của dự án. Hãy đối chiếu giao diện thô từ MCP và đổi các màu sắc của nó sang các class Tailwind có sẵn như `bg-primary`, `bg-secondary`, `bg-bg-base`, `text-neutral-dark`, `border-border-light`, v.v.
+
+3. **Bước 3: Tách & định nghĩa Mock Data (`src/modules/<feature>/utils/mockData.js`)**
+   - Trích xuất tất cả các đoạn văn bản hiển thị tĩnh, danh sách bài học, thông tin người dùng giả lập ra khỏi mã nguồn thô của component vừa kéo từ MCP về.
+   - Định nghĩa chúng thành các biến JSON/Array xuất khẩu (`export`) rõ ràng để chuẩn bị cấu trúc dữ liệu tương thích với API Backend sau này.
+
+4. **Bước 4: Thiết lập Service Layer (`src/services/<feature>Service.js`)**
+   - Xây dựng tầng service chứa các phương thức tương tác API thông qua instance `api` đã được cấu hình từ `@/lib/axios.js`.
+   - Nếu API Backend chưa sẵn sàng, hãy viết hàm giả lập với thời gian trễ (`delay`) mạng khoảng 200ms bằng `Promise` và trả về mock data từ **Bước 3**. Khi Backend hoàn thành, chỉ cần thay thế hàm giả lập bằng request Axios (`api.get`, `api.post`) là xong.
+
+5. **Bước 5: Tạo Custom Hook quản lý State (`src/modules/<feature>/hooks/use<Feature>.js`)**
+   - Khai báo tất cả các state (danh sách, tabs, đóng mở modal, dữ liệu nhập liệu) và các handler logic (gửi form, đổi trang, đánh dấu hoàn thành).
+   - Tải dữ liệu bất đồng bộ từ Service Layer thông qua helper `runWithLoading` để tự động hóa việc hiển thị thanh chờ.
+   - Trả về toàn bộ state và handler để tách biệt hoàn toàn phần Logic khỏi Giao diện hiển thị.
+
+6. **Bước 6: Tạo các Dumb Components (Component Trình Diễn) (`src/modules/<feature>/components/`)**
+   - Phân tách giao diện thô kéo từ MCP ở **Bước 1** thành các Dumb Components độc lập (ví dụ: `VideoPlayer.jsx`, `PairChat.jsx`, `CourseSidebar.jsx`).
+   - Các components này **chỉ nhận dữ liệu** qua `props`, báo hiệu hành động qua callbacks, và sử dụng các UI components có sẵn như `<Badge />`, `<Button />` kết hợp với thư viện `lucide-react` thay vì tự vẽ SVG hoặc tự import Axios để gọi API.
+
+7. **Bước 7: Dựng Smart Page Container (`src/modules/<feature>/pages/<Feature>Page.jsx`)**
+   - Smart Page đóng vai trò làm trang tổng hợp: Gọi Custom Hook (đã dựng ở **Bước 5**) để lấy dữ liệu.
+   - Quản lý trạng thái tải trang chung (nếu `isLoading` bằng `true` thì render màn hình chờ).
+   - Sắp xếp layout chính của trang và truyền props tương ứng xuống các Dumb Components (đã dựng ở **Bước 6**).
+
+8. **Bước 8: Tạo View Wrapper & Định tuyến (`src/views/`)**
+   - Tạo file view wrapper tại `src/views/<feature>/<Feature>.jsx`. Đây là "Router Entry Point" dùng để bọc layout toàn trang (Header, Footer, hoặc Sidebar của hệ thống).
+   - Đăng ký đường dẫn Router mới trong `src/App.jsx` dưới nhóm `ProtectedRoute` (nếu yêu cầu phân quyền) và chỉ định các role được truy cập.
+
+9. **Bước 9: Xác thực & Build Dự án (`npm run build`)**
+   - Sau khi hoàn thành, Agent bắt buộc phải chạy lệnh `npm run build` ở thư mục frontend.
+   - Việc build giúp đảm bảo không phát sinh bất kỳ lỗi cú pháp nào, không import sai chữ hoa/chữ thường (gây lỗi khi triển khai CI/CD Linux), và không bị lỗi trùng lặp thuộc tính CSS/React.
+
+---
+
 ## 3. Tích Hợp Stitch MCP & Thiết Kế (Stitch MCP Integration)
 
 Dự án sử dụng **Stitch MCP** để quản lý các màn hình thiết kế (screens), các biến thể giao diện (variants), và hệ thống thiết kế (design system) đồng bộ với code. AI Agent được khuyến khích sử dụng các công cụ Stitch MCP để tự động hóa quá trình dựng giao diện.
@@ -422,14 +480,11 @@ Dự án sử dụng **Stitch MCP** để quản lý các màn hình thiết k�
   ```jsx
   <Button variant="default" />
   ```
-  Agent phải tái sử dụng component hiện có thay vì sinh:
-  ```html
-  <button className="bg-blue-600 text-white">
-  ```
+  Agent phải tái sử dụng component hiện có thay vì sinh mới.
+  
 - Nếu project đang sử dụng token:
   `--primary`, `--secondary`, `--muted`
-  Agent phải ưu tiên các token này thay vì sử dụng trực tiếp:
-  `bg-blue-500`, `bg-purple-600`, `text-green-700`
+  Agent phải ưu tiên các token này
 
 ---
 

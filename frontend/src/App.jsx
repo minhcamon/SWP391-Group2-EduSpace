@@ -21,6 +21,8 @@ import AdminDashboard from "@/views/admin/Dashboard";
 import AdminRequests from "@/views/admin/Requests";
 import AdminCourses from "@/views/admin/Courses";
 import Error from "@/views/Error";
+import LearningArea from "@/views/learning/LearningArea";
+import ProgressDashboard from "@/views/learning/ProgressDashboard";
 
 function App() {
     return (
@@ -46,6 +48,14 @@ function App() {
                     {/* Authenticated user routes */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/profile" element={<Profile />}></Route>
+                        <Route
+                            path="/courses/:courseId/learn"
+                            element={<LearningArea />}
+                        ></Route>
+                        <Route
+                            path="/courses/:courseId/dashboard"
+                            element={<ProgressDashboard />}
+                        ></Route>
                     </Route>
 
                     {/* admin route */}
