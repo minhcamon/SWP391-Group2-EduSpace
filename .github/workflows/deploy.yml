@@ -28,18 +28,6 @@ jobs:
           cache: 'maven'
 
       - name: Run Backend Tests
-        env:
-          PORT: 8080
-          DB_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
-          DB_USERNAME: sa
-          DB_PASSWORD: ""
-          EMAIL_HOST: localhost
-          EMAIL_PORT: 587
-          EMAIL_SMTP: true
-          EMAIL_PASSWORD: mock_email_password
-          GOOGLE_CLIENT_ID: mock_google_client_id
-          GOOGLE_CLIENT_SECRET: mock_google_client_secret
-          FRONTEND_URL: http://localhost:3000
         run: mvn clean test
       - name: Build JAR with Maven
         run: mvn package -DskipTests
