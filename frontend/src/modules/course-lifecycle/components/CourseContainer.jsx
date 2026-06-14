@@ -1,9 +1,10 @@
 import CourseItem from "./CourseItem";
 import { Link } from "react-router";
-import { MoveRight } from "lucide-react";
+import { Inbox, MoveRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import courseService from "@/services/courseService";
 import { toast } from "sonner";
+import EmptyState from "@/components/ui/EmptyState";
 
 const CourseContainer = () => {
     const [courses, setCourses] = useState([]);
@@ -42,11 +43,20 @@ const CourseContainer = () => {
                     </div>
                 </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
-                {courses.slice(0, 4).map((course) => (
-                    <CourseItem key={course.id} course={course} />
-                ))}
-            </div>
+
+            {courses.length == 0 ? (
+                <div className="mt-4 pb-2">
+                    <EmptyState icon={Inbox}>
+                        Hiện tại chưa có khóa học nào
+                    </EmptyState>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
+                    {courses.slice(0, 4).map((course) => (
+                        <CourseItem key={course.id} course={course} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

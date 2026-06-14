@@ -1,19 +1,19 @@
 import { RxReload } from "react-icons/rx";
+import Button from "./Button";
 
-const ReloadButton = ({ action }) => {
+const ReloadButton = ({ action, isLoading, ...props }) => {
     return (
-        <button
-            onClick={() => {
-                action();
-            }}
-            className="flex rounded-2xl bg-primary text-white px-4 py-2 hover:cursor-pointer hover:scale-95"
+        <Button
+            onClick={action}
+            isLoading={isLoading}
+            className="flex rounded-2xl bg-primary text-white px-4 py-2 hover:cursor-pointer hover:scale-95 gap-2 items-center"
+            {...props}
         >
-            <RxReload size={16} className="mt-1" />{" "}
-            <p className="ml-2 flex justify-center my-auto text-center">
-                Làm mới
-            </p>
-        </button>
+            {!isLoading && <RxReload size={16} />}
+            <span>Làm mới</span>
+        </Button>
     );
 };
 
 export default ReloadButton;
+

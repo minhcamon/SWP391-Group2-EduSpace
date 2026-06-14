@@ -1,13 +1,18 @@
 import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/Dialog';
 
 export default function CourseSubmitModal({ isOpen, onClose, onSubmit, mode }) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl border border-border-light/30 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md w-full p-0 overflow-hidden gap-0 border border-border-light/35" showCloseButton={false}>
         {/* Modal Header */}
-        <div className={`p-6 text-white relative shrink-0 bg-primary`}>
+        <div className="p-6 text-white relative shrink-0 bg-primary">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white text-xl font-bold cursor-pointer transition-colors"
@@ -15,14 +20,14 @@ export default function CourseSubmitModal({ isOpen, onClose, onSubmit, mode }) {
           >
             &times;
           </button>
-          <h3 className="text-lg font-bold">
+          <DialogTitle className="text-lg font-bold text-white">
             {mode === 'EDIT' ? 'Cập nhật khóa học' : 'Xác nhận tạo khóa học mới'}
-          </h3>
-          <p className="text-xs text-white/80 mt-1">
+          </DialogTitle>
+          <DialogDescription className="text-xs text-white/85 mt-1">
             {mode === 'EDIT'
               ? 'Chọn hình thức cập nhật cho các thay đổi của khóa học.'
               : 'Vui lòng chọn hình thức gửi khóa học của bạn để tiếp tục.'}
-          </p>
+          </DialogDescription>
         </div>
 
         {/* Modal Body */}
@@ -72,7 +77,7 @@ export default function CourseSubmitModal({ isOpen, onClose, onSubmit, mode }) {
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
+        <DialogFooter className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 -mx-0 -mb-0 rounded-t-none">
           <button
             type="button"
             onClick={onClose}
@@ -80,8 +85,8 @@ export default function CourseSubmitModal({ isOpen, onClose, onSubmit, mode }) {
           >
             Hủy bỏ
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
