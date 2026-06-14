@@ -11,7 +11,6 @@ import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.UserRepository;
 import org.eduspace.backend.repository.WaitlistRepository;
 import org.eduspace.backend.repository.WaitlistEntryRepository;
-
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -76,10 +75,12 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
-                if (currentCount == 10) {
+                if (currentCount >= 10) {
                         activeWaitlist.setStatus(WaitlistStatus.FULLED);
-                        systemService.createClassFromWaitlist(activeWaitlist.getId());
+                        Long createdClassId = systemService.createClassFromWaitlist(activeWaitlist.getId());
                         activeWaitlist.setStatus(WaitlistStatus.CLOSED);
+                        // set ClassTimeline for the created class
+                        systemService.createTimelineForClass(createdClassId);
                         return true;
                 }
 

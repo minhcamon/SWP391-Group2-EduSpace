@@ -19,9 +19,11 @@ public class SystemService {
         private final WaitlistEntryRepository waitlistEntryRepository;
         private final ClassRepository classRepository;
         private final ClassMemberRepository classMemberRepository;
+        private final ModuleRepository moduleRepository;
+        private final ClassTimelineRepository classTimelineRepository;
 
         @Transactional
-        public void createClassFromWaitlist(Long waitlistId) {
+        public Long createClassFromWaitlist(Long waitlistId) {
 
                 Waitlist waitlist = waitlistRepository.findById(waitlistId)
                                 .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
@@ -52,6 +54,46 @@ public class SystemService {
                                         .joinedAt(LocalDateTime.now())
                                         .build();
                         classMemberRepository.save(member);
+                }
+                return savedClass.getId();     
+        }
+
+        /**
+         * Tạo timeline cho một lớp học.
+         * Lấy thời điểm kích hoạt lớp (activatedAt) làm mốc, sau đó duyệt qua các
+         * module của khóa học theo sortOrder và cộng dồn số ngày (days) của từng
+         * module để tính ra due date tương ứng.
+         *
+         * VD: mốc = 14/06, module 1 (3 ngày) -> due 17/06,
+         *     module 2 (5 ngày) -> due 22/06, ...
+         */
+        @Transactional
+        public void createTimelineForClass(Long classId) {
+
+                if (!classTimelineRepository.findByCourseClassId(classId).isEmpty()) {
+                        return; // hoặc xóa cũ rồi tạo lại
+                }
+
+                CourseClass courseClass = classRepository.findById(classId)
+                                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+
+                LocalDateTime anchor = courseClass.getActivatedAt() != null
+                                ? courseClass.getActivatedAt()
+                                : LocalDateTime.now();
+
+                List<CourseModule> modules = moduleRepository
+                                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
+
+                LocalDateTime cursor = anchor;
+                for (CourseModule module : modules) {
+                        cursor = cursor.plusDays(module.getDays());
+
+                        ClassTimeline timeline = ClassTimeline.builder()
+                                        .courseClass(courseClass)
+                                        .module(module)
+                                        .dueDate(cursor)
+                                        .build();
+                        classTimelineRepository.save(timeline);
                 }
         }
 }
