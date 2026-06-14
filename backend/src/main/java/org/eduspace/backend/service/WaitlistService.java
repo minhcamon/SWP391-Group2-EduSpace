@@ -11,6 +11,7 @@ import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.UserRepository;
 import org.eduspace.backend.repository.WaitlistRepository;
 import org.eduspace.backend.repository.WaitlistEntryRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -27,6 +28,10 @@ public class WaitlistService {
         private final CourseRepository courseRepository;
         private final UserRepository userRepository;
         private final SystemService systemService;
+
+        // Sĩ số tối đa của waitlist trước khi tự động tạo lớp, cấu hình ở application.properties
+        @Value("${app.waitlist.capacity:10}")
+        private int waitlistCapacity;
 
         public List<UserResponse> getMembersInWaitlist(Long userId, Long courseId) {
                 Long waitlistId = waitlistRepository.findWaitlistByUserAndCourse(userId, courseId)
@@ -75,7 +80,7 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
-                if (currentCount >= 10) {
+                if (currentCount >= waitlistCapacity) {
                         activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         Long createdClassId = systemService.createClassFromWaitlist(activeWaitlist.getId());
                         activeWaitlist.setStatus(WaitlistStatus.CLOSED);
