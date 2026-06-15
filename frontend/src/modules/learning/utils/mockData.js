@@ -91,7 +91,11 @@ export const studyGroup = [
         id: 1,
         name: "Sarah M.",
         avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-        status: "online"
+        status: "online",
+        email: "sarah.m@eduspace.com",
+        goal: "IELTS 7.5 - Speaking & Listening focus",
+        bio: "Đam mê học tiếng Anh giao tiếp và thảo luận nhóm. Rất vui được học tập và rèn luyện cùng các bạn để đạt mục tiêu!",
+        currentLesson: "2. Effective Active Listening"
     },
     {
         id: 2,
@@ -100,7 +104,11 @@ export const studyGroup = [
         initials: "BK",
         status: "idle",
         bgColor: "bg-orange-100",
-        textColor: "text-secondary"
+        textColor: "text-secondary",
+        email: "bk.nguyen@eduspace.com",
+        goal: "IELTS 8.0 - Academic Writing focus",
+        bio: "Thích viết luận tiếng Anh, phân tích cấu trúc ngữ pháp. Thường trực tuyến vào các buổi tối để cùng chữa bài.",
+        currentLesson: "3. Non-verbal Cues"
     },
     {
         id: 3,
@@ -109,7 +117,11 @@ export const studyGroup = [
         initials: "TL",
         status: "offline",
         bgColor: "bg-slate-100",
-        textColor: "text-neutral-medium"
+        textColor: "text-neutral-medium",
+        email: "tl.tran@eduspace.com",
+        goal: "IELTS 6.5 - General English Improvement",
+        bio: "Đang cải thiện khả năng phát âm và phản xạ nói. Rất thích các chủ đề bài học thực tế, mong muốn được giao lưu.",
+        currentLesson: "1. Course Intro"
     }
 ];
 
@@ -130,38 +142,78 @@ export const lessonDetails = {
 export const sidebarSections = [
     {
         id: 1,
-        title: "Foundations",
-        statusText: "Phần 1 • Đã Hoàn Thành",
+        title: "Module 1: Foundations of Communication",
+        statusText: "Module 1 • Đã Hoàn Thành",
+        status: "COMPLETED",
         lessons: [
             {
                 id: 101,
                 title: "1. Course Intro",
                 duration: "08:45",
                 isCompleted: true,
-                completedBy: ["Sarah", "Ben"]
+                completedBy: ["Sarah", "Ben"],
+                currentPartners: [
+                    {
+                        name: "TL",
+                        initials: "TL",
+                        avatar: null,
+                        bgColor: "bg-slate-100",
+                        textColor: "text-neutral-medium",
+                        status: "offline"
+                    }
+                ]
             }
         ]
     },
     {
         id: 2,
-        title: "Core Skills",
-        statusText: "Phần 2 • Đang Học",
+        title: "Module 2: Core Listening Skills",
+        statusText: "Module 2 • Đang Học",
+        status: "IN_PROGRESS",
         lessons: [
             {
                 id: 102,
                 title: "2. Active Listening",
                 duration: "15:30",
                 isActive: true,
-                partnerLearning: {
-                    name: "Sarah M.",
-                    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
-                }
+                currentPartners: [
+                    {
+                        name: "Sarah M.",
+                        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+                        status: "online"
+                    }
+                ]
             },
             {
                 id: 103,
                 title: "3. Non-verbal Cues",
                 duration: "20:15",
-                isLocked: true
+                isLocked: false,
+                currentPartners: [
+                    {
+                        name: "BK",
+                        initials: "BK",
+                        avatar: null,
+                        bgColor: "bg-orange-100",
+                        textColor: "text-secondary",
+                        status: "idle"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 3,
+        title: "Module 3: Advanced Interaction",
+        statusText: "Module 3 • Chưa Bắt Đầu",
+        status: "NOT_STARTED",
+        lessons: [
+            {
+                id: 104,
+                title: "4. Feedback & Questioning",
+                duration: "18:00",
+                isLocked: true,
+                currentPartners: []
             }
         ]
     }

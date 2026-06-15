@@ -10,7 +10,10 @@ const useLearningArea = () => {
 
     // UI States
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [activeTab, setActiveTab] = useState("chat");
+    const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
+    const [isGroupListOpen, setIsGroupListOpen] = useState(false);
+    const [selectedPartner, setSelectedPartner] = useState(null);
+    const [activeTab, setActiveTab] = useState("notes"); // Default to notes since Chat is moved to the left sidebar
     const [isSynced, setIsSynced] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
@@ -92,6 +95,12 @@ const useLearningArea = () => {
     return {
         isSidebarOpen,
         setIsSidebarOpen,
+        isChatSidebarOpen,
+        setIsChatSidebarOpen,
+        isGroupListOpen,
+        setIsGroupListOpen,
+        selectedPartner,
+        setSelectedPartner,
         activeTab,
         setActiveTab,
         isSynced,
