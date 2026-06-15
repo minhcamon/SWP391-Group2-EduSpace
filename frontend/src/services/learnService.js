@@ -9,7 +9,10 @@ import {
     courseTitle,
     studyGroup,
     lessonDetails,
-    sidebarSections
+    sidebarSections,
+    modulesData,
+    myLearningActiveCourses,
+    myLearningAvailableCourses
 } from "@/modules/learning/utils/mockData";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -47,11 +50,25 @@ const learnService = {
             return {
                 partner: partnerData,
                 progress: courseProgress,
-                roadmap: roadmapNodes
+                roadmap: roadmapNodes,
+                modules: modulesData
             };
         } catch (error) {
             console.error("Lỗi lấy thông tin Dashboard tại learnService:", error);
             throw new Error(error.response?.data?.message || "Không thể tải thông tin bảng tiến độ");
+        }
+    },
+
+    getMyLearning: async () => {
+        try {
+            await delay(200);
+            return {
+                activeCourses: myLearningActiveCourses,
+                availableCourses: myLearningAvailableCourses
+            };
+        } catch (error) {
+            console.error("Lỗi lấy thông tin học tập tại learnService:", error);
+            throw new Error(error.response?.data?.message || "Không thể tải thông tin học tập của bạn");
         }
     }
 };

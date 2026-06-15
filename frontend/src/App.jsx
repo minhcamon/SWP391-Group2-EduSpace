@@ -23,6 +23,7 @@ import AdminCourses from "@/views/admin/Courses";
 import Error from "@/views/Error";
 import LearningArea from "@/views/learning/LearningArea";
 import ProgressDashboard from "@/views/learning/ProgressDashboard";
+import MyLearning from "@/views/learning/MyLearning";
 
 function App() {
     return (
@@ -55,6 +56,10 @@ function App() {
                         <Route
                             path="/courses/:courseId/dashboard"
                             element={<ProgressDashboard />}
+                        ></Route>
+                        <Route
+                            path="/my-learning"
+                            element={<MyLearning />}
                         ></Route>
                     </Route>
 

@@ -12,7 +12,7 @@ const Header = () => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     return (
-        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[var(--color-border-light)]/35 shadow-sm transition-all duration-200">
+        <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-border-light/35 shadow-sm transition-all duration-200">
             <div className="max-w-screen mx-auto px-4">
                 <div className="flex items-center justify-around h-16">
                     {/* Logo Section */}
@@ -46,7 +46,7 @@ const Header = () => {
                         </NavLink>
                         {user && (
                             <NavLink
-                                to="/leaderboard"
+                                to="/my-learning"
                                 className={({ isActive }) =>
                                     `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
                                         ? "text-primary border-b-2 border-primary"
@@ -54,7 +54,7 @@ const Header = () => {
                                     }`
                                 }
                             >
-                                Bảng xếp hạng
+                                Học tập của tôi
                             </NavLink>
                         )}
                     </nav>
@@ -172,6 +172,20 @@ const Header = () => {
                         >
                             Khóa học
                         </NavLink>
+                        {user && (
+                            <NavLink
+                                to="/my-learning"
+                                onClick={() => setShowMobileMenu(false)}
+                                className={({ isActive }) =>
+                                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
+                                        ? "bg-primary/10 text-primary"
+                                        : "text-neutral-medium hover:bg-slate-50 hover:text-primary"
+                                    }`
+                                }
+                            >
+                                Học tập của tôi
+                            </NavLink>
+                        )}
                         {user && (
                             <NavLink
                                 to="/leaderboard"

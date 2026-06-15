@@ -10,8 +10,7 @@ const useProgressDashboard = () => {
     // UI States
     const [isLoading, setIsLoading] = useState(true);
     const [partner, setPartner] = useState(null);
-    const [progress, setProgress] = useState(null);
-    const [roadmap, setRoadmap] = useState([]);
+    const [modules, setModules] = useState([]);
 
     // Fetch Details on Mount
     useEffect(() => {
@@ -20,8 +19,7 @@ const useProgressDashboard = () => {
                 try {
                     const data = await learnService.getProgressDashboard(courseId || 1);
                     setPartner(data.partner);
-                    setProgress(data.progress);
-                    setRoadmap(data.roadmap || []);
+                    setModules(data.modules || []);
                 } catch (error) {
                     toast.error(error.message || "Không thể tải thông tin tiến độ nhóm.");
                 }
@@ -37,11 +35,14 @@ const useProgressDashboard = () => {
         });
     };
 
+    // Tìm Module đang học (IN_PROGRESS), nếu không tìm thấy thì lấy Module đầu tiên chưa hoàn thành
+    const currentModule = modules.find((m) => m.status === "IN_PROGRESS") || modules[0];
+
     return {
         isLoading,
         partner,
-        progress,
-        roadmap,
+        modules,
+        currentModule,
         handleSayHi,
         courseId
     };

@@ -167,3 +167,136 @@ export const sidebarSections = [
     }
 ];
 
+export const modulesData = [
+    {
+        id: 1,
+        title: "Module 1: Foundations of Web Architecture",
+        description: "Tìm hiểu về mô hình Client-Server, giao thức HTTP và thiết kế CSDL quan hệ.",
+        status: "COMPLETED",
+        sortOrder: 1,
+        lessons: [
+            {
+                id: 101,
+                title: "Tổng quan về Kiến trúc Web",
+                duration: "15 phút",
+                isCompleted: true,
+                completedByPartner: true,
+                sortOrder: 1
+            },
+            {
+                id: 102,
+                title: "Thiết kế Cơ sở dữ liệu Relational",
+                duration: "20 phút",
+                isCompleted: true,
+                completedByPartner: true,
+                sortOrder: 2
+            }
+        ]
+    },
+    {
+        id: 2,
+        title: "Module 2: RESTful API Development",
+        description: "Xây dựng backend APIs với Node.js, Express, Middleware và xác thực JWT.",
+        status: "IN_PROGRESS",
+        sortOrder: 2,
+        lessons: [
+            {
+                id: 201,
+                title: "Xây dựng API với Node.js & Express",
+                duration: "25 phút",
+                isCompleted: true,
+                completedByPartner: false,
+                sortOrder: 1
+            },
+            {
+                id: 202,
+                title: "Xác thực & Phân quyền với JWT",
+                duration: "30 phút",
+                isCompleted: false,
+                completedByPartner: true,
+                isPartnerCurrent: true,
+                sortOrder: 2
+            },
+            {
+                id: 203,
+                title: "RESTful API Advanced & Middleware",
+                duration: "22 phút",
+                isCompleted: false,
+                completedByPartner: false,
+                sortOrder: 3
+            }
+        ]
+    },
+    {
+        id: 3,
+        title: "Module 3: Frontend Foundations & Integration",
+        description: "Làm quen với React framework, hooks và tích hợp call API đồng bộ.",
+        status: "NOT_STARTED",
+        sortOrder: 3,
+        lessons: [
+            {
+                id: 301,
+                title: "React Foundation & Lifecycle",
+                duration: "28 phút",
+                isCompleted: false,
+                completedByPartner: false,
+                sortOrder: 1
+            },
+            {
+                id: 302,
+                title: "State Management with Context API",
+                duration: "35 phút",
+                isCompleted: false,
+                completedByPartner: false,
+                sortOrder: 2
+            },
+            {
+                id: 303,
+                title: "Tích hợp Frontend & Backend & CORS",
+                duration: "25 phút",
+                isCompleted: false,
+                completedByPartner: false,
+                sortOrder: 3
+            }
+        ]
+    }
+];
+
+export const myLearningActiveCourses = [
+    {
+        id: 1,
+        title: "React & Node.js Mastery",
+        category: "Fullstack",
+        icon: "code",
+        description: "Cohorts 24 - Đang diễn ra",
+        progress: 45
+    },
+    {
+        id: 2,
+        title: "Scalable Architecture",
+        category: "System Design",
+        icon: "settings_input_component",
+        description: "Advanced Bootcamp",
+        progress: 10
+    }
+];
+
+export const myLearningAvailableCourses = [
+    {
+        id: 3,
+        title: "CS Fundamentals",
+        description: "Nền tảng vững chắc cho dev",
+        studentCount: "1.2k",
+        image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=60"
+    },
+    {
+        id: 4,
+        title: "Cloud Engineering",
+        description: "AWS, Docker & Kubernetes",
+        studentCount: "800",
+        image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=60"
+    }
+];
+
+
+
