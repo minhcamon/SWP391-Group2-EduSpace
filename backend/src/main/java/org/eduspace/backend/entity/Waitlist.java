@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import org.eduspace.backend.enums.WaitlistStatus;
+
 @Data
 @Entity
 @Table(name = "waitlists")
@@ -22,10 +24,10 @@ public class Waitlist {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @Column(name = "enrolled_at")
-    private LocalDateTime enrolledAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User learner;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private WaitlistStatus status;
 }
