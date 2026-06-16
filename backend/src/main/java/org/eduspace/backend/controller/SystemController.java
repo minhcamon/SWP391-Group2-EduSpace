@@ -44,4 +44,12 @@ public class SystemController {
             return ResponseEntity.badRequest().body(APIResponse.error(400, "Lỗi: " + e.getMessage(), null));
         }
     }
+
+    // Endpoint test luồng xử lý dồn dịch người lẻ khi có học viên bị Drop giữa chừng
+    @PostMapping("/rematch-after-drop/{classId}")
+    public ResponseEntity<String> rematchAfterDrop(@PathVariable Long classId, @RequestParam Long moduleId) {
+        systemService.reMatchGroupsAfterDrop(classId, moduleId);
+        return ResponseEntity.ok("Xử lý dồn dịch nhóm sau khi học viên out thành công!");
+    }
+
 }

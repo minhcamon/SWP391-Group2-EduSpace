@@ -1,34 +1,48 @@
 package org.eduspace.backend.repository;
 
 import org.eduspace.backend.entity.StudyGroup;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.util.List;
 import java.util.Optional;
 
 public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
 
-    // Hàm xóa các nhóm trống không còn ai (Trường hợp out cả 2 người)
+    // 1. Hàm xóa các nhóm trống không còn ai (Lọc theo Class và Module hiện tại)
     @Modifying
-    @Query("DELETE FROM StudyGroup sg WHERE sg.classId = :classId " +
-           "AND sg.id NOT IN (SELECT DISTINCT gm.studyGroupId FROM GroupMember gm)")
-    void deleteEmptyGroups(@Param("classId") Long classId);
+    @Query("DELETE FROM StudyGroup sg " +
+           "WHERE sg.courseClass.id = :classId " +
+           "AND sg.module.id = :moduleId " +
+           "AND sg.id NOT IN (SELECT DISTINCT gm.studyGroup.id FROM GroupMember gm)")
+    void deleteEmptyGroups(@Param("classId") Long classId, @Param("moduleId") Long moduleId);
 
-    // Hàm giải tán các nhóm bị khuyết (chỉ còn 1 người) để tí nữa gom người đó đi xếp lại nhóm mới
+    // 2. Hàm giải tán các nhóm bị khuyết chỉ còn 1 người (Lọc theo Class và Module hiện tại)
     @Modifying
-    @Query("DELETE FROM StudyGroup sg WHERE sg.classId = :classId " +
-           "AND sg.id IN (SELECT gm.studyGroupId FROM GroupMember gm GROUP BY gm.studyGroupId HAVING COUNT(gm.id) = 1)")
-    void deleteGroupsWithSingleMember(@Param("classId") Long classId);
+    @Query("DELETE FROM StudyGroup sg " +
+           "WHERE sg.courseClass.id = :classId " +
+           "AND sg.module.id = :moduleId " +
+           "AND sg.id IN (SELECT gm.studyGroup.id FROM GroupMember gm GROUP BY gm.studyGroup.id HAVING COUNT(gm.id) = 1)")
+    void deleteGroupsWithSingleMember(@Param("classId") Long classId, @Param("moduleId") Long moduleId);
 
-    // Thuật toán tìm nhóm có đúng 2 người và tổng EXP thấp nhất (Dùng cho case n == 1)
+    // 3. Thuật toán tìm các nhóm có đúng 2 người xếp từ EXP thấp nhất lên cao
     @Query("SELECT sg FROM StudyGroup sg " +
-           "JOIN GroupMember gm ON gm.studyGroupId = sg.id " +
-           "JOIN ClassMember cm ON gm.classMemberId = cm.id " +
-           "JOIN User u ON cm.userId = u.id " +
-           "WHERE sg.classId = :classId " +
+           "JOIN GroupMember gm ON gm.studyGroup = sg " +
+           "WHERE sg.courseClass.id = :classId " +
+           "AND sg.module.id = :moduleId " +
            "GROUP BY sg.id " +
-           "HAVING COUNT(gm.id) = 2 " + 
-           "ORDER BY SUM(u.totalExp) ASC LIMIT 1")
-    Optional<StudyGroup> findAvailableGroupWithLowestExp(@Param("classId") Long classId);
+           "HAVING COUNT(gm.id) = 2 " +
+           "ORDER BY SUM(gm.classMember.user.totalExp) ASC")
+    List<StudyGroup> findAvailableGroupsWithLowestExpInternal(@Param("classId") Long classId, @Param("moduleId") Long moduleId, Pageable pageable);
+
+    // 4. Hàm Default đại diện để Service gọi trực tiếp lấy ra ĐÚNG 1 nhóm thấp nhất mà không bị crash
+    default Optional<StudyGroup> findAvailableGroupWithLowestExp(Long classId, Long moduleId) {
+        List<StudyGroup> results = findAvailableGroupsWithLowestExpInternal(classId, moduleId, org.springframework.data.domain.PageRequest.of(0, 1));
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+    
+    // Tìm nhóm vừa tạo gần nhất (Phục vụ luồng chuyển module)
+    Optional<StudyGroup> findTopByCourseClassIdAndModuleIdOrderByIdDesc(Long classId, Long moduleId);
 }

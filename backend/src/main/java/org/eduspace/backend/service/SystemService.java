@@ -186,20 +186,20 @@ public class SystemService {
         }
 
         @Transactional
-        public void reMatchGroupsAfterDrop(Long classId) {
+        public void reMatchGroupsAfterDrop(Long classId, Long moduleId) {
                 // 1. Xóa tất cả group_members của những học viên đã bị DROPPED hoặc FAILED
-                groupMemberRepository.deleteByLearnerStatusNotActive(classId);
+                groupMemberRepository.deleteByLearnerStatusNotActive(classId, moduleId);
 
                 // 2. Xóa các study_groups không còn thành viên nào (Trường hợp out cả 2)
-                studyGroupRepository.deleteEmptyGroups(classId);
+                studyGroupRepository.deleteEmptyGroups(classId, moduleId);
 
                 // 3. Tìm các học viên "mồ côi" (nhóm hiện tại chỉ còn đúng 1 người)
                 // Lưu ý: Repository trả ra danh sách ClassMember để đồng bộ với cấu trúc thực thể của Ngọc
-                List<ClassMember> orphanList = groupMemberRepository.findOrphansByClassId(classId);
+                List<ClassMember> orphanList = groupMemberRepository.findOrphansByClassId(classId, moduleId);
 
                 // 4. Giải tán các nhóm bị khuyết này để chuẩn bị xếp lại nhóm mới cho họ
                 if (!orphanList.isEmpty()) {
-                        studyGroupRepository.deleteGroupsWithSingleMember(classId);
+                        studyGroupRepository.deleteGroupsWithSingleMember(classId, moduleId);
                 }
 
                 // 5. SẮP XẾP: Sắp xếp danh sách học viên mồ côi theo EXP từ cao xuống thấp
@@ -213,7 +213,7 @@ public class SystemService {
 
                 if (n == 1) {
                         // Nhét vào nhóm 2 người có EXP thấp nhất đang tồn tại trong lớp
-                        StudyGroup lowestGroup = studyGroupRepository.findAvailableGroupWithLowestExp(classId)
+                        StudyGroup lowestGroup = studyGroupRepository.findAvailableGroupWithLowestExp(classId, moduleId)
                                         .orElseThrow(() -> new RuntimeException("Error: Không tìm thấy nhóm phù hợp để ghép thêm."));
 
                         GroupMember newMember = GroupMember.builder()
