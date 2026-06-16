@@ -26,7 +26,7 @@ public class LessonProgress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_member_id")
-    private ClassMember classmember;
+    private ClassMember classMember;
 
     @Column(name = "is_completed")
     private boolean isCompleted;

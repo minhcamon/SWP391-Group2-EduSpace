@@ -13,9 +13,11 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseResponse;
+import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
+import org.eduspace.backend.service.ProgressService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
         private final CourseService courseService;
+        private final ProgressService progressService;
 
         // ADMIN
         @Operation(summary = "Lấy danh sách khóa học đang chờ duyệt (ADMIN)", description = "Trả về danh sách tất cả các khóa học có trạng thái PENDING để Admin phê duyệt.")
@@ -64,7 +67,7 @@ public class CourseController {
                 CourseResponse response = courseService.approveCourse(id, adminId);
 
                 return ResponseEntity.ok(APIResponse.success("Approve course successfully", response));
-    }
+        }
 
         @Operation(summary = "Từ chối khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang REJECTED.")
         @ApiResponses(value = {
@@ -79,10 +82,11 @@ public class CourseController {
                         @PathVariable Long id,
                         @RequestBody AdminRejectCourseRequest request) {
 
-                Long adminId = SecurityUtil.getCurrentUserId(); 
-    
+                Long adminId = SecurityUtil.getCurrentUserId();
+
                 CourseResponse response = courseService.rejectCourse(id, adminId, request);
-                return ResponseEntity.ok(APIResponse.success("Reject course successfully", response));        }
+                return ResponseEntity.ok(APIResponse.success("Reject course successfully", response));
+        }
 
         // ---------------CREATOR-----------------
         @Operation(summary = "Lấy danh sách khóa học của tôi (CREATOR)", description = "Lấy danh sách toàn bộ các khóa học do Creator hiện tại tạo và quản lý.")
@@ -175,4 +179,25 @@ public class CourseController {
                 courseService.deleteCourse(courseId, currentUser);
                 return ResponseEntity.ok("Deleted");
         }
+
+        // ---------------LEARNER-----------------
+        @Operation(summary = "Lấy tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+        })
+        @GetMapping("/enroll/{classId}")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressDashboard(
+                        @PathVariable Long classId) {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get progress dashboard successfully", response));
+        }
+
 }
