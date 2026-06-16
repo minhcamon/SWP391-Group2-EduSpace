@@ -63,4 +63,8 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "total_exp")
+    @Builder.Default
+    private Integer totalExp = 0;
+    
 }

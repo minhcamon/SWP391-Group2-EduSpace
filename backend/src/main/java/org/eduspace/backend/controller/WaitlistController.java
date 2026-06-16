@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.security.SecurityUtil;
-import org.eduspace.backend.service.SystemService;
 import org.eduspace.backend.service.WaitlistService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
