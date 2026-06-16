@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PartnerLocationDTO {
     private Long moduleId;
+    private Long lessonId;
     private String lessonName;
 }

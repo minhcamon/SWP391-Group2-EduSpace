@@ -143,6 +143,7 @@ public class ProgressService {
                         .description(partnerUser.getBio())
                         .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()
                                 .moduleId(focusModuleId)
+                                .lessonId(partnerCurrentLessonId)
                                 .lessonName(getLessonTitle(lessons, partnerCurrentLessonId))
                                 .build() : null)
                         .build();
