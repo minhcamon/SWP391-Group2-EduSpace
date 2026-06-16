@@ -24,7 +24,7 @@ public class SystemService {
         private final ClassTimelineRepository classTimelineRepository;
         private final StudyGroupRepository studyGroupRepository;
         private final GroupMemberRepository groupMemberRepository;
-
+        
         @Transactional
         public Long createClassFromWaitlist(Long waitlistId) {
 
@@ -182,6 +182,87 @@ public class SystemService {
                         left++;
                         right--;
                         groupIndex++;
+                }
+        }
+
+        @Transactional
+        public void reMatchGroupsAfterDrop(Long classId) {
+                // 1. Xóa tất cả group_members của những học viên đã bị DROPPED hoặc FAILED
+                groupMemberRepository.deleteByLearnerStatusNotActive(classId);
+
+                // 2. Xóa các study_groups không còn thành viên nào (Trường hợp out cả 2)
+                studyGroupRepository.deleteEmptyGroups(classId);
+
+                // 3. Tìm các học viên "mồ côi" (nhóm hiện tại chỉ còn đúng 1 người)
+                // Lưu ý: Repository trả ra danh sách ClassMember để đồng bộ với cấu trúc thực thể của Ngọc
+                List<ClassMember> orphanList = groupMemberRepository.findOrphansByClassId(classId);
+
+                // 4. Giải tán các nhóm bị khuyết này để chuẩn bị xếp lại nhóm mới cho họ
+                if (!orphanList.isEmpty()) {
+                        studyGroupRepository.deleteGroupsWithSingleMember(classId);
+                }
+
+                // 5. SẮP XẾP: Sắp xếp danh sách học viên mồ côi theo EXP từ cao xuống thấp
+                orphanList.sort((a, b) -> {
+                        int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
+                        int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
+                        return Integer.compare(expB, expA);
+                });
+
+                int n = orphanList.size();
+
+                if (n == 1) {
+                        // Nhét vào nhóm 2 người có EXP thấp nhất đang tồn tại trong lớp
+                        StudyGroup lowestGroup = studyGroupRepository.findAvailableGroupWithLowestExp(classId)
+                                        .orElseThrow(() -> new RuntimeException("Error: Không tìm thấy nhóm phù hợp để ghép thêm."));
+
+                        GroupMember newMember = GroupMember.builder()
+                                        .studyGroup(lowestGroup)
+                                        .classMember(orphanList.get(0))
+                                        .build();
+                        groupMemberRepository.save(newMember);
+                } 
+                else if (n == 2) {
+                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1)));
+                } 
+                else if (n == 3) {
+                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1), orphanList.get(2)));
+                } 
+                else if (n == 4) {
+                        // Phân cặp Đầu - Cuối: Nhóm 1 (0-3), Nhóm 2 (1-2)
+                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(3)));
+                        createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2)));
+                } 
+                else if (n == 5) {
+                        // Phân cặp 2 - 3: Nhóm 2 người (0-4), Nhóm 3 người (1-2-3)
+                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(4)));
+                        createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2), orphanList.get(3)));
+                }
+        }
+        // --- HÀM BỔ TRỢ CỤC BỘ: Tự động khởi tạo StudyGroup và gán danh sách thành viên ---
+        private void createCustomGroup(Long classId, List<ClassMember> groupMembers) {
+                CourseClass courseClass = classRepository.findById(classId)
+                                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+
+                // Lấy module hiện tại của lớp (lấy module đầu tiên hoặc cấu hình động theo nhu cầu)
+                List<CourseModule> modules = moduleRepository.findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
+                CourseModule currentModule = modules.isEmpty() ? null : modules.get(0);
+
+                long timestamp = System.currentTimeMillis() % 1000;
+                StudyGroup studyGroup = StudyGroup.builder()
+                                .courseClass(courseClass)
+                                .module(currentModule)
+                                .chatChannelId("rematch_chat_g" + timestamp + "_" + classId)
+                                .chatStatus("ACTIVE")
+                                .build();
+                StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+
+                for (ClassMember cm : groupMembers) {
+                        GroupMember gm = GroupMember.builder()
+                                        .studyGroup(savedGroup)
+                                        .classMember(cm)
+                                        .build();
+                        groupMemberRepository.save(gm);
                 }
         }
 }
