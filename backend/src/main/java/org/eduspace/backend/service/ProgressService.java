@@ -20,11 +20,14 @@ import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.StudyGroup;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.LearnerStatus;
+import org.eduspace.backend.enums.SubmissionStatus;
+import org.eduspace.backend.repository.AssignmentRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.LessonProgressRepository;
 import org.eduspace.backend.repository.LessonRepository;
 import org.eduspace.backend.repository.ModuleRepository;
+import org.eduspace.backend.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +42,14 @@ public class ProgressService {
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final SubmissionRepository submissionRepository;
 
     /**
      * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
-     * tiến trình hoàn thành trên toàn bộ khóa học. Các khóa đã hoàn thành 100% được
-     * loại ra (sẽ hiển thị ở trang "đã hoàn thành" riêng).
+     * tiến trình hoàn thành trên toàn bộ khóa học. Tiến trình tính trên cả lesson và
+     * assignment (assignment coi là hoàn thành khi có submission GRADED). Các khóa đã
+     * hoàn thành 100% được loại ra (sẽ hiển thị ở trang "đã hoàn thành" riêng).
      */
     public List<CourseProgressResponse> getInProgressCourses(Long userId) {
         List<ClassMember> memberships = classMemberRepository.findByUserId(userId);
@@ -93,13 +99,21 @@ public class ProgressService {
                 }
             }
 
+            // Assignment cũng được tính vào tiến trình như lesson.
+            long totalAssignments = assignmentRepository.countByCourseId(course.getId());
+            long completedAssignments = submissionRepository.countCompletedAssignments(
+                    classMember.getId(), course.getId(), SubmissionStatus.GRADED);
+
+            long totalUnits = totalLessons + totalAssignments;
+            long completedUnits = completedLessons + completedAssignments;
+
             // Đã hoàn thành toàn bộ khóa học -> không thuộc danh sách "đang học"
-            if (totalLessons > 0 && currentLesson == null) {
+            if (totalUnits > 0 && completedUnits >= totalUnits) {
                 continue;
             }
 
-            double progressPercentage = totalLessons > 0
-                    ? ((double) completedLessons / totalLessons) * 100
+            double progressPercentage = totalUnits > 0
+                    ? ((double) completedUnits / totalUnits) * 100
                     : 0.0;
             progressPercentage = Math.round(progressPercentage * 10) / 10.0;
 
