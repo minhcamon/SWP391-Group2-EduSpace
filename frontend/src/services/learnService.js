@@ -12,7 +12,7 @@ import {
     sidebarSections,
     modulesData,
     myLearningActiveCourses,
-    myLearningAvailableCourses
+    myLearningAvailableCourses,
 } from "@/modules/learning/utils/mockData";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -32,11 +32,17 @@ const learnService = {
                 sidebarSections,
                 messages: initialMessages,
                 notes: initialNotes,
-                materials: materialsList
+                materials: materialsList,
             };
         } catch (error) {
-            console.error("Lỗi lấy thông tin Learning Area tại learnService:", error);
-            throw new Error(error.response?.data?.message || "Không thể tải thông tin bài học");
+            console.error(
+                "Lỗi lấy thông tin Learning Area tại learnService:",
+                error,
+            );
+            throw new Error(
+                error.response?.data?.message ||
+                    "Không thể tải thông tin bài học",
+            );
         }
     },
 
@@ -51,26 +57,35 @@ const learnService = {
                 partner: partnerData,
                 progress: courseProgress,
                 roadmap: roadmapNodes,
-                modules: modulesData
+                modules: modulesData,
             };
         } catch (error) {
-            console.error("Lỗi lấy thông tin Dashboard tại learnService:", error);
-            throw new Error(error.response?.data?.message || "Không thể tải thông tin bảng tiến độ");
+            console.error(
+                "Lỗi lấy thông tin Dashboard tại learnService:",
+                error,
+            );
+            throw new Error(
+                error.response?.data?.message ||
+                    "Không thể tải thông tin bảng tiến độ",
+            );
         }
     },
 
-    getMyLearning: async () => {
+    getMyLearningCourses: async () => {
         try {
-            await delay(200);
-            return {
-                activeCourses: myLearningActiveCourses,
-                availableCourses: myLearningAvailableCourses
-            };
+            const res = await api.get("/course/my-learning/in-progress");
+            return res.data.data;
         } catch (error) {
-            console.error("Lỗi lấy thông tin học tập tại learnService:", error);
-            throw new Error(error.response?.data?.message || "Không thể tải thông tin học tập của bạn");
+            console.error(
+                "Lỗi lấy các khóa học đang học tại learnService:",
+                error,
+            );
+            throw new Error(
+                error.response?.data?.message ||
+                    "Đã xảy ra lỗi khi lấy các khóa học đang học!",
+            );
         }
-    }
+    },
 };
 
 export default learnService;

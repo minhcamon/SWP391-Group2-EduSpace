@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CourseProgressResponse {
     private Long courseId;
     private String courseName;
+    private String courseDescription;
     private double progressPercentage;
     private Long classId;
     private Long currentLessonId;

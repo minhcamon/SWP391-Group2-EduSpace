@@ -123,6 +123,7 @@ public class ProgressService {
             result.add(CourseProgressResponse.builder()
                     .courseId(course.getId())
                     .courseName(course.getTitle())
+                    .courseDescription(course.getDescription())
                     .progressPercentage(progressPercentage)
                     .classId(courseClass.getId())
                     .currentLessonId(currentLesson != null ? currentLesson.getId() : null)
