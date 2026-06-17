@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
 import org.eduspace.backend.dto.progress.response.LessonProgressResponse;
 import org.eduspace.backend.dto.progress.response.ModuleProgressResponse;
@@ -12,11 +13,13 @@ import org.eduspace.backend.dto.user.PartnerLocationDTO;
 import org.eduspace.backend.dto.user.response.PartnerResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Course;
+import org.eduspace.backend.entity.CourseClass;
 import org.eduspace.backend.entity.CourseModule;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.StudyGroup;
 import org.eduspace.backend.entity.User;
+import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.LessonProgressRepository;
@@ -36,6 +39,83 @@ public class ProgressService {
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final GroupMemberRepository groupMemberRepository;
+
+    /**
+     * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
+     * tiến trình hoàn thành trên toàn bộ khóa học. Các khóa đã hoàn thành 100% được
+     * loại ra (sẽ hiển thị ở trang "đã hoàn thành" riêng).
+     */
+    public List<CourseProgressResponse> getInProgressCourses(Long userId) {
+        List<ClassMember> memberships = classMemberRepository.findByUserId(userId);
+
+        List<CourseProgressResponse> result = new ArrayList<>();
+
+        for (ClassMember classMember : memberships) {
+            // Đã nghỉ học (DROPPED) hoặc rớt (FAILED) -> không còn "đang học"
+            LearnerStatus learnerStatus = classMember.getLearnerStatus();
+            if (learnerStatus == LearnerStatus.DROPPED || learnerStatus == LearnerStatus.FAILED) {
+                continue;
+            }
+
+            CourseClass courseClass = classMember.getCourseClass();
+            if (courseClass == null) {
+                continue;
+            }
+
+            Course course = courseClass.getCourse();
+            if (course == null || course.isDeleted()) {
+                continue;
+            }
+
+            // Duyệt module theo thứ tự để vừa tính tiến trình, vừa tìm bài học hiện tại
+            // (bài đầu tiên chưa hoàn thành theo thứ tự module -> lesson).
+            List<CourseModule> modules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
+
+            long totalLessons = 0;
+            long completedLessons = 0;
+            Lesson currentLesson = null;
+            CourseModule currentModule = null;
+
+            for (CourseModule module : modules) {
+                List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
+                Set<Long> completedSet = new HashSet<>(lessonProgressRepository
+                        .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId()));
+
+                totalLessons += lessons.size();
+
+                for (Lesson lesson : lessons) {
+                    if (completedSet.contains(lesson.getId())) {
+                        completedLessons++;
+                    } else if (currentLesson == null) {
+                        currentLesson = lesson;
+                        currentModule = module;
+                    }
+                }
+            }
+
+            // Đã hoàn thành toàn bộ khóa học -> không thuộc danh sách "đang học"
+            if (totalLessons > 0 && currentLesson == null) {
+                continue;
+            }
+
+            double progressPercentage = totalLessons > 0
+                    ? ((double) completedLessons / totalLessons) * 100
+                    : 0.0;
+            progressPercentage = Math.round(progressPercentage * 10) / 10.0;
+
+            result.add(CourseProgressResponse.builder()
+                    .courseId(course.getId())
+                    .courseName(course.getTitle())
+                    .progressPercentage(progressPercentage)
+                    .classId(courseClass.getId())
+                    .currentLessonId(currentLesson != null ? currentLesson.getId() : null)
+                    .currentLessonTitle(currentLesson != null ? currentLesson.getTitle() : null)
+                    .currentModuleTitle(currentModule != null ? currentModule.getTitle() : null)
+                    .build());
+        }
+
+        return result;
+    }
 
     public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId) {
         // Tìm id của ClassMember mà Learner đang trỏ tới ở class đó

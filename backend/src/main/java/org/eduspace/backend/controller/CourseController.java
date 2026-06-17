@@ -12,6 +12,7 @@ import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
+import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
 import org.eduspace.backend.entity.User;
@@ -181,6 +182,25 @@ public class CourseController {
         }
 
         // ---------------LEARNER-----------------
+        @Operation(summary = "Lấy danh sách khóa học đang học (LEARNER)", description = "Trả về danh sách các khóa học mà Learner hiện tại đang tham gia kèm phần trăm tiến trình hoàn thành, dùng cho trang 'Khóa học của tôi'.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học đang học thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
+        })
+        @GetMapping("/my-learning/in-progress")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<List<CourseProgressResponse>>> getMyLearningCourses() {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                List<CourseProgressResponse> response = progressService.getInProgressCourses(userId);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get in-progress courses successfully", response));
+        }
+
+
         @Operation(summary = "Lấy tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
