@@ -1,5 +1,8 @@
 package org.eduspace.backend.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +21,7 @@ public class GroupMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_group_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE) // Thêm annotation này của Hibernate (org.hibernate.annotations.OnDelete)
     private StudyGroup studyGroup;
 
     @ManyToOne(fetch = FetchType.LAZY)
