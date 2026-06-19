@@ -74,7 +74,8 @@ public class ProgressHelper {
     }
 
     /**
-     * Build PartnerResponse từ partner ClassMember, tính vị trí hiện tại của partner
+     * Build PartnerResponse từ partner ClassMember, tính vị trí hiện tại của
+     * partner
      * trong module
      */
     public PartnerResponse buildPartnerResponse(
@@ -110,30 +111,8 @@ public class ProgressHelper {
                         .lessonId(partnerCurrentLessonId)
                         .lessonName(findLessonTitle(lessons, partnerCurrentLessonId))
                         .build() : null)
+                .completedLessons(partnerCompletedLessonIds)
                 .build();
-    }
-
-    /**
-     * Trả về Set<Long> completedLessonIds của partner, dùng cho buildLessonProgressResponses
-     */
-    public Set<Long> getPartnerCompletedSet(ClassMember partnerClassMember, Long moduleId) {
-        if (partnerClassMember == null) {
-            return new HashSet<>();
-        }
-        return new HashSet<>(lessonProgressRepository
-                .findCompletedLessonIdsByClassMemberIdAndModuleId(partnerClassMember.getId(), moduleId));
-    }
-
-    /**
-     * Tìm lessonId hiện tại mà partner đang học (bài đầu tiên chưa complete)
-     */
-    public Long getPartnerCurrentLessonId(List<Lesson> lessons, Set<Long> partnerCompletedSet) {
-        for (Lesson lesson : lessons) {
-            if (!partnerCompletedSet.contains(lesson.getId())) {
-                return lesson.getId();
-            }
-        }
-        return null;
     }
 
     private String findLessonTitle(List<Lesson> lessons, Long lessonId) {
@@ -143,4 +122,4 @@ public class ProgressHelper {
                 .findFirst()
                 .orElse("");
     }
-}
+}

@@ -1,5 +1,7 @@
 package org.eduspace.backend.dto.user.response;
 
+import java.util.List;
+
 import org.eduspace.backend.dto.user.PartnerLocationDTO;
 
 import lombok.AllArgsConstructor;
@@ -17,4 +19,5 @@ public class PartnerResponse {
     private String avatarUrl;
     private String description;
     private PartnerLocationDTO location;
+    private List<Long> completedLessons;
 }

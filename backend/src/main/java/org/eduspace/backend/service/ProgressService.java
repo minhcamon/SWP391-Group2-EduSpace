@@ -8,9 +8,8 @@ import java.util.Set;
 
 import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
-import org.eduspace.backend.dto.progress.response.LessonProgressResponse;
-import org.eduspace.backend.dto.progress.response.ModuleDetailResponse;
 import org.eduspace.backend.dto.progress.response.ModuleProgressResponse;
+import org.eduspace.backend.dto.progress.response.LessonProgressResponse;
 import org.eduspace.backend.dto.user.response.PartnerResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Course;
@@ -43,8 +42,8 @@ public class ProgressService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
     private final ClassTimelineRepository classTimelineRepository;
-    private final GroupService groupService;
     private final ProgressHelper progressHelper;
+    private final GroupService groupService;
 
     /**
      * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
@@ -135,11 +134,6 @@ public class ProgressService {
         return result;
     }
 
-    /**
-     * Sidebar API: Trả về danh sách modules kèm tiến trình + focusModuleId.
-     * KHÔNG load chi tiết lessons hay partner — việc đó do getModuleDetail đảm
-     * nhận.
-     */
     public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId) {
         ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
@@ -185,6 +179,38 @@ public class ProgressService {
             }
             previousModuleAllowsNext = isCompletedLessons || isOverdue;
 
+            // Load list of lessons and completed status
+            List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
+            List<Long> completedLessonIds = lessonProgressRepository
+                    .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
+            Set<Long> completedSet = new HashSet<>(completedLessonIds);
+
+            // Find partner and build partner response
+            ClassMember partnerClassMember = groupService.findPartnerForModule(classMember, module.getId());
+            PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
+                    module.getId());
+
+            Set<Long> partnerCompletedSet = new HashSet<>();
+            Long partnerCurrentLessonId = null;
+
+            if (partnerResponse != null) {
+                partnerCompletedSet = new HashSet<>(partnerResponse.getCompletedLessons());
+                if (partnerResponse.getLocation() != null) {
+                    partnerCurrentLessonId = partnerResponse.getLocation().getLessonId();
+                }
+            }
+
+            // Build lesson responses with partner progress info
+            List<LessonProgressResponse> lessonResponses = progressHelper.buildLessonProgressResponses(
+                    lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
+
+            if (isLocked) {
+                lessonResponses.forEach(l -> l.setLocked(true));
+            }
+
+            List<LessonProgressResponse> finalLessonResponses = isLocked ? new ArrayList<>() : lessonResponses;
+            PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
+
             modulesProgress.add(ModuleProgressResponse.builder()
                     .id(module.getId())
                     .title(module.getTitle())
@@ -194,7 +220,8 @@ public class ProgressService {
                     .sortOrder(module.getSortOrder())
                     .completedLessons((int) completedLessons)
                     .totalLessons((int) totalLessons)
-                    .lessons(null)
+                    .lessons(finalLessonResponses)
+                    .partner(finalPartnerResponse)
                     .build());
         }
 
@@ -216,93 +243,4 @@ public class ProgressService {
                 .build();
     }
 
-    /**
-     * Module Detail API: Trả về chi tiết 1 module (lessons + partner).
-     * Được gọi khi FE cần hiển thị nội dung module cụ thể.
-     */
-    public ModuleDetailResponse getModuleDetail(Long userId, Long classId, Long moduleId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
-
-        CourseModule module = moduleRepository.findById(moduleId)
-                .orElseThrow(() -> new RuntimeException("This module does not exist"));
-
-        // Kiểm tra quyền truy cập module
-        boolean isAccessible = checkModuleAccessibility(classMember, classId, module);
-        if (!isAccessible) {
-            throw new RuntimeException("This module is currently locked, you are not allowed to access.");
-        }
-
-        // Thống kê tiến trình của module
-        long totalLessons = lessonRepository.countByModuleId(module.getId());
-        long completedLessons = lessonProgressRepository
-                .countCompletedLessonsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
-
-        double progressPercent = totalLessons > 0 ? ((double) completedLessons / totalLessons) * 100 : 0.0;
-        progressPercent = Math.round(progressPercent * 10) / 10.0;
-
-        boolean isCompletedAll = (totalLessons > 0 && completedLessons == totalLessons);
-        String status = progressHelper.determineModuleStatus(isCompletedAll);
-
-        // Load danh sách lessons kèm trạng thái hoàn thành
-        List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(moduleId);
-
-        List<Long> completedLessonIds = lessonProgressRepository
-                .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), moduleId);
-        Set<Long> completedSet = new HashSet<>(completedLessonIds);
-
-        // Tìm partner và build response
-        ClassMember partnerClassMember = groupService.findPartnerForModule(classMember, moduleId);
-
-        PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons, moduleId);
-
-        Set<Long> partnerCompletedSet = progressHelper.getPartnerCompletedSet(partnerClassMember, moduleId);
-        Long partnerCurrentLessonId = progressHelper.getPartnerCurrentLessonId(lessons, partnerCompletedSet);
-
-        // Build lesson responses kèm trạng thái partner
-        List<LessonProgressResponse> lessonResponses = progressHelper.buildLessonProgressResponses(
-                lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
-
-        return ModuleDetailResponse.builder()
-                .moduleId(module.getId())
-                .title(module.getTitle())
-                .progress(progressPercent)
-                .status(status)
-                .completedLessons((int) completedLessons)
-                .totalLessons((int) totalLessons)
-                .lessons(lessonResponses)
-                .partner(partnerResponse)
-                .build();
-    }
-
-    /**
-     * Kiểm tra xem learner có quyền truy cập module này không.
-     * Module chỉ được truy cập nếu tất cả module trước đó đã hoàn thành hoặc đã quá
-     * hạn.
-     */
-    private boolean checkModuleAccessibility(ClassMember classMember, Long classId, CourseModule targetModule) {
-        Course course = targetModule.getCourse();
-        List<CourseModule> allModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
-
-        LocalDateTime now = LocalDateTime.now();
-        boolean previousModuleAllowsNext = true;
-
-        for (CourseModule module : allModules) {
-            if (module.getId().equals(targetModule.getId())) {
-                return previousModuleAllowsNext;
-            }
-
-            long totalLessons = lessonRepository.countByModuleId(module.getId());
-            long completedLessons = lessonProgressRepository
-                    .countCompletedLessonsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
-            boolean isCompletedLessons = (totalLessons > 0 && completedLessons == totalLessons);
-
-            LocalDateTime timeline = classTimelineRepository.findByCourseClassIdAndModuleId(classId, module.getId());
-            boolean isOverdue = timeline != null && now.isAfter(timeline);
-
-            previousModuleAllowsNext = isCompletedLessons || isOverdue;
-        }
-
-        return false;
-    }
 }

@@ -1,6 +1,7 @@
 package org.eduspace.backend.dto.progress.response;
 
 import java.util.List;
+import org.eduspace.backend.dto.user.response.PartnerResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,4 +22,5 @@ public class ModuleProgressResponse {
     private int completedLessons;
     private int totalLessons;
     private List<LessonProgressResponse> lessons;
+    private PartnerResponse partner;
 }
