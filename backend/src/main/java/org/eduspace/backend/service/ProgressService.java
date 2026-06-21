@@ -134,7 +134,7 @@ public class ProgressService {
         return result;
     }
 
-    public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId) {
+    public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId, Long moduleId) {
         ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
 
@@ -184,7 +184,6 @@ public class ProgressService {
             List<Long> completedLessonIds = lessonProgressRepository
                     .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
             Set<Long> completedSet = new HashSet<>(completedLessonIds);
-
             // Find partner and build partner response
             ClassMember partnerClassMember = groupService.findPartnerForModule(classMember, module.getId());
             PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
@@ -232,13 +231,43 @@ public class ProgressService {
             focusIndex = modulesProgress.size() - 1;
         }
 
-        Long focusModuleId = null;
-        if (focusIndex >= 0 && focusIndex < modulesProgress.size()) {
-            focusModuleId = modulesProgress.get(focusIndex).getId();
+        Long focusModuleId;
+        Long focusLessonId = null;
+
+        if (moduleId == null) {
+            if (focusIndex >= 0 && focusIndex < modulesProgress.size()) {
+                focusModuleId = modulesProgress.get(focusIndex).getId();
+            } else {
+                focusModuleId = null;
+            }
+        } else {
+            ModuleProgressResponse targetModule = modulesProgress.stream()
+                    .filter(m -> m.getId().equals(moduleId) && !m.isLocked())
+                    .findFirst()
+                    .orElse(null);
+
+            if (targetModule != null) {
+                focusModuleId = targetModule.getId();
+                if (!targetModule.getLessons().isEmpty()) {
+                    focusLessonId = targetModule.getLessons().stream()
+                            .filter(l -> !l.isCompleted())
+                            .map(LessonProgressResponse::getId)
+                            .findFirst()
+                            .orElse(targetModule.getLessons().get(0).getId());
+                }
+            } else {
+                if (focusIndex >= 0 && focusIndex < modulesProgress.size()) {
+                    focusModuleId = modulesProgress.get(focusIndex).getId();
+                } else {
+                    focusModuleId = null;
+                }
+            }
+
         }
 
         return CourseProgressDashboardResponse.builder()
                 .focusModuleId(focusModuleId)
+                .focusLessonId(focusLessonId)
                 .modules(modulesProgress)
                 .build();
     }

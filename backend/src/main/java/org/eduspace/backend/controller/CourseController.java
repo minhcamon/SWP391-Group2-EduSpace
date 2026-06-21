@@ -213,7 +213,27 @@ public class CourseController {
 
                 Long userId = SecurityUtil.getCurrentUserId();
 
-                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId);
+                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId, null);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get progress dashboard successfully", response));
+        }
+
+        @Operation(summary = "Sidebar tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+        })
+        @GetMapping("/enroll/{classId}/learning/{moduleId}")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressSidebarLearningSpace(
+                        @PathVariable Long classId, @PathVariable Long moduleId) {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId,
+                                moduleId);
 
                 return ResponseEntity.ok(
                                 APIResponse.success("Get progress dashboard successfully", response));
