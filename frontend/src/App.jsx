@@ -26,94 +26,78 @@ import ProgressDashboard from "@/views/learning/ProgressDashboard";
 import MyLearning from "@/views/learning/MyLearning";
 
 function App() {
-    return (
-        <AuthProvider>
-            <BrowserRouter>
-                <RouteProgressBar />
-                <Toaster position="bottom-right" richColors />
-                <Routes>
-                    {/* public route */}
-                    <Route path="/" element={<Home />}></Route>
-                    <Route path="/signup" element={<Register />}></Route>
-                    <Route path="/login" element={<Login />}></Route>
-                    <Route
-                        path="/oauth2/redirect"
-                        element={<GoogleCallback />}
-                    ></Route>
-                    <Route path="/roadmaps" element={<Roadmaps />}></Route>
-                    <Route
-                        path="/courses"
-                        element={<Courses />}
-                    ></Route>
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <RouteProgressBar />
+        <Toaster position="bottom-right" richColors />
+        <Routes>
+          {/* public route */}
+          <Route path="/" element={<Home />}></Route>
+          <Route path="/signup" element={<Register />}></Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route path="/oauth2/redirect" element={<GoogleCallback />}></Route>
+          <Route path="/roadmaps" element={<Roadmaps />}></Route>
+          <Route path="/courses" element={<Courses />}></Route>
 
-                    {/* Authenticated user routes */}
-                    <Route element={<ProtectedRoute />}>
-                        <Route path="/profile" element={<Profile />}></Route>
-                        <Route
-                            path="/courses/:courseId/learn"
-                            element={<LearningArea />}
-                        ></Route>
-                        <Route
-                            path="/courses/:courseId/dashboard"
-                            element={<ProgressDashboard />}
-                        ></Route>
-                        <Route
-                            path="/my-learning"
-                            element={<MyLearning />}
-                        ></Route>
-                    </Route>
+          {/* Authenticated user routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />}></Route>
+            <Route
+              path="/courses/:courseId/learn"
+              element={<LearningArea />}
+            ></Route>
+            <Route
+              path="/courses/:courseId/dashboard"
+              element={<ProgressDashboard />}
+            ></Route>
+            <Route path="/my-learning" element={<MyLearning />}></Route>
+          </Route>
 
-                    {/* admin route */}
-                    <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-                        <Route path="/admin" element={<AdminDashboard />}></Route>
-                        <Route
-                            path="/admin/creator-requests"
-                            element={<AdminRequests />}
-                        ></Route>
-                        <Route
-                            path="/admin/courses-management"
-                            element={<AdminCourses />}
-                        ></Route>
-                    </Route>
+          {/* admin route */}
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+            <Route path="/admin" element={<AdminDashboard />}></Route>
+            <Route
+              path="/admin/creator-requests"
+              element={<AdminRequests />}
+            ></Route>
+            <Route
+              path="/admin/courses-management"
+              element={<AdminCourses />}
+            ></Route>
+          </Route>
 
-                    {/* creator route */}
-                    <Route element={<ProtectedRoute allowedRoles={["CREATOR"]} />}>
-                        <Route
-                            path="/creator"
-                            element={<CreatorHome />}
-                        ></Route>
-                        <Route
-                            path="/creator/courses"
-                            element={<CreatorCourses />}
-                        ></Route>
-                        <Route
-                            path="/creator/courses/:id"
-                            element={<CreatorCourseDetail />}
-                        ></Route>
-                        <Route
-                            path="/creator/courses/:id/edit"
-                            element={<CreatorCourseBuilder mode="EDIT" />}
-                        ></Route>
-                        <Route
-                            path="/creator/courses/:id/view"
-                            element={<CreatorCourseBuilder mode="VIEW" />}
-                        ></Route>
-                        <Route
-                            path="/creator/analytics"
-                            element={<CreatorAnalytics />}
-                        ></Route>
-                        <Route
-                            path="/creator/create-course"
-                            element={<CreatorCourseBuilder mode="CREATE" />}
-                        ></Route>
-                    </Route>
+          {/* creator route */}
+          <Route element={<ProtectedRoute allowedRoles={["CREATOR"]} />}>
+            <Route path="/creator" element={<CreatorHome />}></Route>
+            <Route path="/creator/courses" element={<CreatorCourses />}></Route>
+            <Route
+              path="/creator/courses/:id"
+              element={<CreatorCourseDetail />}
+            ></Route>
+            <Route
+              path="/creator/courses/:id/edit"
+              element={<CreatorCourseBuilder mode="EDIT" />}
+            ></Route>
+            <Route
+              path="/creator/courses/:id/view"
+              element={<CreatorCourseBuilder mode="VIEW" />}
+            ></Route>
+            <Route
+              path="/creator/analytics"
+              element={<CreatorAnalytics />}
+            ></Route>
+            <Route
+              path="/creator/create-course"
+              element={<CreatorCourseBuilder mode="CREATE" />}
+            ></Route>
+          </Route>
 
-                    <Route path="*" element={<Error />}></Route>
-
-                </Routes>
-            </BrowserRouter>
-        </AuthProvider>
-    );
+          <Route path="*" element={<Error />}></Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
 export default App;

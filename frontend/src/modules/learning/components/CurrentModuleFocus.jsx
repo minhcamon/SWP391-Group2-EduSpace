@@ -7,7 +7,7 @@ import {
   Award,
   CheckCircle,
   PlayCircle,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 // Helper function to map lesson state to UI config, avoiding nested ternaries in JSX
@@ -20,18 +20,20 @@ const getLessonStateConfig = (lesson, isUnlocked) => {
           <Check size={12} strokeWidth={3} />
         </div>
       ),
-      titleClass: "text-neutral-medium line-through decoration-neutral-light/45",
+      titleClass:
+        "text-neutral-medium line-through decoration-neutral-light/45",
       badgeClass: "bg-emerald-100 text-emerald-800",
       badgeText: "Đã xem",
       btnClass: "bg-slate-100 hover:bg-slate-200/80 text-neutral-medium",
       btnIcon: <PlayCircle size={14} />,
-      btnText: "Vào học"
+      btnText: "Vào học",
     };
   }
 
   if (!isUnlocked) {
     return {
-      containerClass: "bg-slate border-slate-100 opacity-100 cursor-not-allowed",
+      containerClass:
+        "bg-slate border-slate-100 opacity-100 cursor-not-allowed",
       icon: (
         <div className="w-5 h-5 rounded-full bg-slate border border-slate flex items-center justify-center">
           <Lock size={10} />
@@ -42,7 +44,7 @@ const getLessonStateConfig = (lesson, isUnlocked) => {
       badgeText: "Đang khóa",
       btnClass: "bg-slate-100 text-neutral-light cursor-not-allowed opacity-80",
       btnIcon: <Lock size={12} />,
-      btnText: "Đang khóa"
+      btnText: "Đang khóa",
     };
   }
 
@@ -55,32 +57,42 @@ const getLessonStateConfig = (lesson, isUnlocked) => {
     titleClass: "text-neutral-dark",
     badgeClass: "bg-slate-100 text-neutral-medium",
     badgeText: "Đang xem",
-    btnClass: "bg-primary hover:bg-primary/95 text-white shadow-sm hover:scale-[1.02]",
+    btnClass:
+      "bg-primary hover:bg-primary/95 text-white shadow-sm hover:scale-[1.02]",
     btnIcon: <PlayCircle size={14} />,
-    btnText: "Vào học"
+    btnText: "Vào học",
   };
 };
 
-const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) => {
+const CurrentModuleFocus = ({
+  currentModule,
+  partner,
+  handleContinueLearning,
+}) => {
   if (!currentModule) {
     return (
       <div className="bg-white rounded-2xl p-10 text-center shadow-sm border border-border-light/35 flex flex-col items-center justify-center space-y-3">
         <Award size={48} className="text-secondary animate-bounce" />
-        <h2 className="text-lg font-bold text-neutral-dark">Chúc mừng bạn đã hoàn thành khóa học!</h2>
+        <h2 className="text-lg font-bold text-neutral-dark">
+          Chúc mừng bạn đã hoàn thành khóa học!
+        </h2>
         <p className="text-sm text-neutral-medium max-w-md">
-          Bạn đã xuất sắc vượt qua toàn bộ các module trong lộ trình này. Hãy chuyển sang phần học tập nâng cao khác!
+          Bạn đã xuất sắc vượt qua toàn bộ các module trong lộ trình này. Hãy
+          chuyển sang phần học tập nâng cao khác!
         </p>
       </div>
     );
   }
 
   const totalLessons = currentModule.lessons?.length || 0;
-  const completedLessons = currentModule.lessons?.filter(l => l.isCompleted).length || 0;
-  const currentModulePercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const completedLessons =
+    currentModule.lessons?.filter((l) => l.isCompleted).length || 0;
+  const currentModulePercent =
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   // Sort lessons by sortOrder field
   const sortedLessons = [...(currentModule.lessons || [])].sort(
-    (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)
+    (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
   );
 
   return (
@@ -109,8 +121,13 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
         {/* Progress Bar inside Current Module Focus */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
           <div className="flex justify-between items-center text-xs font-bold">
-            <span className="text-neutral-medium">Tiến độ hoàn thành Module</span>
-            <span className="text-secondary">{completedLessons}/{totalLessons} Bài học ({currentModulePercent}%)</span>
+            <span className="text-neutral-medium">
+              Tiến độ hoàn thành Module
+            </span>
+            <span className="text-secondary">
+              {completedLessons}/{totalLessons} Bài học ({currentModulePercent}
+              %)
+            </span>
           </div>
           <div className="w-full h-3 bg-slate-200/70 rounded-full overflow-hidden relative">
             <div
@@ -131,7 +148,8 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
         <div className="space-y-3">
           {sortedLessons.map((lesson, index, arr) => {
             // Lesson is unlocked if it is the first lesson OR all previous lessons are completed
-            const isUnlocked = index === 0 || arr.slice(0, index).every(l => l.isCompleted);
+            const isUnlocked =
+              index === 0 || arr.slice(0, index).every((l) => l.isCompleted);
             const config = getLessonStateConfig(lesson, isUnlocked);
 
             return (
@@ -141,9 +159,7 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
               >
                 <div className="flex items-center gap-3.5">
                   {/* Checkbox / Lock icon */}
-                  <div className="shrink-0">
-                    {config.icon}
-                  </div>
+                  <div className="shrink-0">{config.icon}</div>
 
                   <div className="space-y-1">
                     <h4 className={`text-sm font-bold ${config.titleClass}`}>
@@ -154,7 +170,9 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
                         <Clock size={12} />
                         {lesson.duration}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${config.badgeClass}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${config.badgeClass}`}
+                      >
                         {config.badgeText}
                       </span>
                     </div>
@@ -172,22 +190,28 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="hidden sm:inline">Đối tác đang ở đây</span>
+                      <span className="hidden sm:inline">
+                        Đối tác đang ở đây
+                      </span>
                     </div>
                   )}
 
-                  {lesson.completedByPartner && !lesson.isPartnerCurrent && partner && (
-                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full text-[10px] font-semibold text-neutral-medium">
-                      <div className="w-4 h-4 rounded-full overflow-hidden grayscale opacity-70">
-                        <img
-                          alt="Partner completed"
-                          src={partner.avatar}
-                          className="w-full h-full object-cover"
-                        />
+                  {lesson.completedByPartner &&
+                    !lesson.isPartnerCurrent &&
+                    partner && (
+                      <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full text-[10px] font-semibold text-neutral-medium">
+                        <div className="w-4 h-4 rounded-full overflow-hidden grayscale opacity-70">
+                          <img
+                            alt="Partner completed"
+                            src={partner.avatar}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="hidden sm:inline text-[9px]">
+                          Đối tác xong
+                        </span>
                       </div>
-                      <span className="hidden sm:inline text-[9px]">Đối tác xong</span>
-                    </div>
-                  )}
+                    )}
 
                   <button
                     disabled={!isUnlocked}
@@ -210,7 +234,7 @@ const CurrentModuleFocus = ({ currentModule, partner, handleContinueLearning }) 
           onClick={handleContinueLearning}
           className="bg-secondary hover:bg-secondary/95 text-white font-extrabold text-sm px-6 py-3 rounded-full flex items-center gap-2 transition-all cursor-pointer shadow-md hover:scale-[1.02] active:scale-95"
         >
-          Tiếp tục lộ trình
+          Tiếp tục bài học
           <ChevronRight size={16} />
         </button>
       </div>

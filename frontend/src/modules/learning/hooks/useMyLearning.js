@@ -5,51 +5,50 @@ import learnService from "@/services/learnService";
 import { runWithLoading } from "@/utils/utils";
 
 const useMyLearning = (usingPage) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    // UI States
-    const [isLoading, setIsLoading] = useState(true);
-    const [activeCourses, setActiveCourses] = useState([]);
-    const [availableCourses, setAvailableCourses] = useState([]);
-    const [myLearningCourses, setMyLearningCourses] = useState([]);
+  // UI States
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeCourses, setActiveCourses] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]);
+  const [myLearningCourses, setMyLearningCourses] = useState([]);
 
-    const fetchMyLearningCourses = useCallback(async () => {
-        try {
-            const data = await learnService.getMyLearningCourses();
-            setMyLearningCourses(data);
-        } catch (error) {
-            toast.error(
-                error.message ||
-                    `Không thể lấy thông tin khóa học tại ${usingPage}.`,
-            );
-        }
-    }, [usingPage]);
+  const fetchMyLearningCourses = useCallback(async () => {
+    try {
+      const data = await learnService.getMyLearningCourses();
+      setMyLearningCourses(data);
+    } catch (error) {
+      toast.error(
+        error.message || `Không thể lấy thông tin khóa học tại ${usingPage}.`,
+      );
+    }
+  }, [usingPage]);
 
-    // Fetch learning data on mount
-    useEffect(() => {
-        setIsLoading(false);
-    }, []);
+  // Fetch learning data on mount
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
-    // Action handlers
-    const handleContinueLearning = (courseId) => {
-        navigate(`/courses/${courseId}/learn`);
-    };
+  // Action handlers
+  const handleContinueLearning = (courseId) => {
+    navigate(`/courses/${courseId}/learn`);
+  };
 
-    const handleJoinCohort = (courseId, courseTitle) => {
-        toast.success(`Đăng ký thành công!`, {
-            description: `Bạn đã tham gia vào Cohort của khóa học "${courseTitle}".`,
-        });
-    };
+  const handleJoinCohort = (courseId, courseTitle) => {
+    toast.success(`Đăng ký thành công!`, {
+      description: `Bạn đã tham gia vào Cohort của khóa học "${courseTitle}".`,
+    });
+  };
 
-    return {
-        isLoading,
-        activeCourses,
-        availableCourses,
-        myLearningCourses,
-        handleContinueLearning,
-        handleJoinCohort,
-        fetchMyLearningCourses,
-    };
+  return {
+    isLoading,
+    activeCourses,
+    availableCourses,
+    myLearningCourses,
+    handleContinueLearning,
+    handleJoinCohort,
+    fetchMyLearningCourses,
+  };
 };
 
 export default useMyLearning;
