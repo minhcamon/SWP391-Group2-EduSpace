@@ -15,12 +15,12 @@ const buildCoursePayload = (formData, modules, status) => {
         status: status,
         modules: modules.map((mod, modIdx) => {
             const moduleId = parseDbId(mod.id);
-            const assignmentId = typeof mod.assignments?.id === 'number' ? mod.assignments.id : null;
-            const assignmentPayload = (mod.assignments && mod.assignments.title?.trim()) ? {
+            const assignmentId = typeof mod.assignment?.id === 'number' ? mod.assignment.id : null;
+            const assignmentPayload = (mod.assignment && mod.assignment.title?.trim()) ? {
                 id: assignmentId,
-                title: mod.assignments.title,
-                description: mod.assignments.description,
-                rubricCriteria: mod.assignments.rubricCriteria
+                title: mod.assignment.title,
+                description: mod.assignment.description,
+                rubricCriteria: mod.assignment.rubricCriteria
             } : null;
 
             return {
@@ -32,7 +32,6 @@ const buildCoursePayload = (formData, modules, status) => {
                 speedBonusExp: mod.speedBonusExp,
                 sortOrder: modIdx + 1,
                 assignment: assignmentPayload,
-                assignments: assignmentPayload,
                 lessons: (mod.lessons || []).map((les, lesIdx) => ({
                     id: parseDbId(les.id),
                     title: les.title,
@@ -94,11 +93,11 @@ export default function useCourseCreate(propMode) {
                             baseExp: mod.baseExp || 50,
                             speedBonusExp: mod.speedBonusExp || 10,
                             sortOrder: mod.sortOrder,
-                            assignments: mod.assignments ? {
-                                id: mod.assignments.id,
-                                title: mod.assignments.title || '',
-                                description: mod.assignments.description || '',
-                                rubricCriteria: mod.assignments.rubricCriteria || []
+                            assignment: mod.assignment ? {
+                                id: mod.assignment.id,
+                                title: mod.assignment.title || '',
+                                description: mod.assignment.description || '',
+                                rubricCriteria: mod.assignment.rubricCriteria || []
                             } : { title: '', description: '', rubricCriteria: [] },
                             lessons: (mod.lessons || []).map(lesson => ({
                                 id: lesson.id || `les-${Date.now()}-${Math.random()}`,
@@ -241,7 +240,7 @@ export default function useCourseCreate(propMode) {
             days: 7,
             baseExp: 50,
             speedBonusExp: 10,
-            assignments: { title: 'Bài tập thực hành tổng kết tuần', description: '', rubricCriteria: [] },
+            assignment: { title: 'Bài tập thực hành tổng kết tuần', description: '', rubricCriteria: [] },
             lessons: [],
             sortOrder: modules.length + 1,
         }]);

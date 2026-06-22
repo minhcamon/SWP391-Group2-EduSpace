@@ -67,10 +67,10 @@ export default function useCourseManagement() {
         baseExp: mod.baseExp || 50,
         speedBonusExp: mod.speedBonusExp || 10,
         sortOrder: mod.sortOrder,
-        assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
-          title: mod.assignments.title,
-          description: mod.assignments.description,
-          rubricCriteria: mod.assignments.rubricCriteria
+        assignment: (mod.assignment && mod.assignment.title?.trim()) ? {
+          title: mod.assignment.title,
+          description: mod.assignment.description,
+          rubricCriteria: mod.assignment.rubricCriteria
         } : null,
         lessons: (mod.lessons || []).map(les => ({
           title: les.title,
@@ -107,10 +107,10 @@ export default function useCourseManagement() {
         baseExp: mod.baseExp || 50,
         speedBonusExp: mod.speedBonusExp || 10,
         sortOrder: mod.sortOrder,
-        assignments: (mod.assignments && mod.assignments.title?.trim()) ? {
-          title: mod.assignments.title,
-          description: mod.assignments.description,
-          rubricCriteria: mod.assignments.rubricCriteria
+        assignment: (mod.assignment && mod.assignment.title?.trim()) ? {
+          title: mod.assignment.title,
+          description: mod.assignment.description,
+          rubricCriteria: mod.assignment.rubricCriteria
         } : null,
         lessons: (mod.lessons || []).map(les => ({
           title: les.title,
