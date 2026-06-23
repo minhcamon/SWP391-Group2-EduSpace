@@ -18,6 +18,7 @@ public class WaitlistController {
     private final WaitlistService waitlistService;
 
     @GetMapping("/members/{courseId}")
+    @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<List<UserResponse>>> getMembersInWaitlist(@PathVariable Long courseId) {
         Long userId = SecurityUtil.getCurrentUserId();
         List<UserResponse> members = waitlistService.getMembersInWaitlist(userId, courseId);

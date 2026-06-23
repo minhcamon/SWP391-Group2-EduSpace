@@ -33,6 +33,7 @@ public class WaitlistService {
         @Value("${app.waitlist.capacity:10}")
         private int waitlistCapacity;
 
+        
         public List<UserResponse> getMembersInWaitlist(Long userId, Long courseId) {
                 Long waitlistId = waitlistRepository.findWaitlistByUserAndCourse(userId, courseId)
                                 .orElseThrow(() -> new RuntimeException("Error at finding your waitlist"));
@@ -80,12 +81,11 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
+        
                 if (currentCount >= waitlistCapacity) {
                         activeWaitlist.setStatus(WaitlistStatus.FULLED);
-                        Long createdClassId = systemService.createClassFromWaitlist(activeWaitlist.getId());
-                        activeWaitlist.setStatus(WaitlistStatus.CLOSED);
-                        // set ClassTimeline for the created class
-                        systemService.createTimelineForClass(createdClassId);
+                        systemService.createClassFromWaitlist(activeWaitlist.getId());
+                        activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         return true;
                 }
 
@@ -100,8 +100,8 @@ public class WaitlistService {
                 Waitlist waitlist = waitlistRepository.findById(waitlistId)
                                 .orElseThrow(() -> new RuntimeException("Waitlist not found"));
 
-                if (waitlist.getStatus() == WaitlistStatus.CLOSED) {
-                        throw new RuntimeException("This waitlist is closed, you can no longer leave it");
+                if (waitlist.getStatus() == WaitlistStatus.FULLED) {
+                        throw new RuntimeException("This waitlist is full, you can no longer leave it");
                 }
 
                 waitlistRepository.deleteEntryByUserAndWaitlist(userId, waitlistId);

@@ -1,5 +1,7 @@
 package org.eduspace.backend.entity;
 
+import lombok.Data;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -13,7 +15,6 @@ import org.eduspace.backend.enums.LearnerStatus;
 @NoArgsConstructor
 @Builder
 public class ClassMember {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

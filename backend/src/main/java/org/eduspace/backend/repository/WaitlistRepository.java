@@ -14,29 +14,29 @@ import java.util.Optional;
 
 @Repository
 public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
-        @Query("""
-                            SELECT we.waitlist.id
-                            FROM WaitlistEntry we
-                            WHERE we.user.id = :userId
-                            AND we.waitlist.course.id = :courseId
-                        """)
-        Optional<Long> findWaitlistByUserAndCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
+    @Query("""
+                SELECT we.waitlist.id
+                FROM WaitlistEntry we
+                WHERE we.user.id = :userId
+                AND we.waitlist.course.id = :courseId
+            """)
+    Optional<Long> findWaitlistByUserAndCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
 
-        @Query("""
-                            SELECT we.user
-                            FROM WaitlistEntry we
-                            WHERE we.waitlist.id = :waitlistId
-                            ORDER BY we.enrolledAt ASC
-                        """)
-        List<User> findUsersByWaitListId(@Param("waitlistId") Long waitlistId);
+    @Query("""
+                SELECT we.user
+                FROM WaitlistEntry we
+                WHERE we.waitlist.id = :waitlistId
+                ORDER BY we.enrolledAt ASC
+            """)
+    List<User> findUsersByWaitListId(@Param("waitlistId") Long waitlistId);
 
-        Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
+    Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
 
-        @Modifying
-        @Query("""
-                        DELETE FROM WaitlistEntry we
-                        WHERE we.user.id = :userId
-                        AND we.waitlist.id = :waitlistId
-                        """)
-        int deleteEntryByUserAndWaitlist(@Param("userId") Long userId, @Param("waitlistId") Long waitlistId);
+    @Modifying
+    @Query("""
+            DELETE FROM WaitlistEntry we
+            WHERE we.user.id = :userId
+            AND we.waitlist.id = :waitlistId
+            """)
+    int deleteEntryByUserAndWaitlist(@Param("userId") Long userId, @Param("waitlistId") Long waitlistId);
 }

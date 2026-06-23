@@ -12,9 +12,13 @@ import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
+import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
+import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
+import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
+import org.eduspace.backend.service.ProgressService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
         private final CourseService courseService;
+        private final ProgressService progressService;
 
         // ADMIN
         @Operation(summary = "Lấy danh sách khóa học đang chờ duyệt (ADMIN)", description = "Trả về danh sách tất cả các khóa học có trạng thái PENDING để Admin phê duyệt.")
@@ -177,5 +182,64 @@ public class CourseController {
                 CourseResponse course = courseService.getCourseById(id);
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
+        }
+
+
+        // ---------------LEARNER-----------------
+        @Operation(summary = "Lấy danh sách khóa học đang học (LEARNER)", description = "Trả về danh sách các khóa học mà Learner hiện tại đang tham gia kèm phần trăm tiến trình hoàn thành, dùng cho trang 'Khóa học của tôi'.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học đang học thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
+        })
+        @GetMapping("/my-learning/in-progress")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<List<CourseProgressResponse>>> getMyLearningCourses() {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                List<CourseProgressResponse> response = progressService.getInProgressCourses(userId);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get in-progress courses successfully", response));
+        }
+
+        @Operation(summary = "Dashboard tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+        })
+        @GetMapping("/enroll/{classId}/dashboard")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressDashboard(
+                        @PathVariable Long classId) {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId, null);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get progress dashboard successfully", response));
+        }
+
+        @Operation(summary = "Sidebar tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+                        @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+                        @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+        })
+        @GetMapping("/enroll/{classId}/learning/{moduleId}")
+        @PreAuthorize("hasRole('LEARNER')")
+        public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressSidebarLearningSpace(
+                        @PathVariable Long classId, @PathVariable Long moduleId) {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+
+                CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId,
+                                moduleId);
+
+                return ResponseEntity.ok(
+                                APIResponse.success("Get progress dashboard successfully", response));
         }
 }
