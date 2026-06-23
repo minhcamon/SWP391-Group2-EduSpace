@@ -15,7 +15,6 @@ import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
-import org.eduspace.backend.entity.User;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.eduspace.backend.service.ProgressService;
@@ -183,7 +182,6 @@ public class CourseController {
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
         }
-
 
         // ---------------LEARNER-----------------
         @Operation(summary = "Lấy danh sách khóa học đang học (LEARNER)", description = "Trả về danh sách các khóa học mà Learner hiện tại đang tham gia kèm phần trăm tiến trình hoàn thành, dùng cho trang 'Khóa học của tôi'.")

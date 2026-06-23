@@ -1,0 +1,65 @@
+package org.eduspace.backend.controller;
+
+import java.util.List;
+
+import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.study_group.request.SendMessageRequest;
+import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
+import org.eduspace.backend.security.SecurityUtil;
+import org.eduspace.backend.service.StudyGroupService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/group")
+@RequiredArgsConstructor
+public class StudyGroupController {
+
+    private final StudyGroupService studyGroupService;
+
+    @PostMapping("/send-message/{studyGroupId}/{classId}")
+    public ResponseEntity<APIResponse<?>> sendMessage(
+            @RequestBody SendMessageRequest request,
+            @PathVariable Long studyGroupId,
+            @PathVariable Long classId) {
+
+        Long currentId = SecurityUtil.getCurrentUserId();
+
+        try {
+            studyGroupService.sendMessage(studyGroupId, request, currentId, classId);
+            return ResponseEntity
+                    .ok()
+                    .body(APIResponse.success("Message sent successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(APIResponse.error(400, e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/messages/{studyGroupId}/{classId}")
+    public ResponseEntity<APIResponse<?>> getMessages(
+            @PathVariable Long studyGroupId,
+            @PathVariable Long classId) {
+
+        Long currentId = SecurityUtil.getCurrentUserId();
+
+        try {
+            List<GroupMessageResponse> messages = studyGroupService.getMessages(studyGroupId, currentId, classId);
+            return ResponseEntity
+                    .ok()
+                    .body(APIResponse.success("Messages fetched successfully", messages));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(APIResponse.error(400, e.getMessage(), null));
+        }
+    }
+}

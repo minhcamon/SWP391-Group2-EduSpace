@@ -22,6 +22,7 @@ import org.eduspace.backend.helper.ProgressHelper;
 import org.eduspace.backend.repository.AssignmentRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.ClassTimelineRepository;
+import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.LessonProgressRepository;
 import org.eduspace.backend.repository.LessonRepository;
 import org.eduspace.backend.repository.ModuleRepository;
@@ -44,6 +45,7 @@ public class ProgressService {
     private final ClassTimelineRepository classTimelineRepository;
     private final ProgressHelper progressHelper;
     private final GroupService groupService;
+    private final GroupMemberRepository groupMemberRepository;
 
     /**
      * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
@@ -207,6 +209,14 @@ public class ProgressService {
                 lessonResponses.forEach(l -> l.setLocked(true));
             }
 
+            Long studyGroupId = null;
+
+            if (!isLocked && partnerClassMember != null) {
+                studyGroupId = groupMemberRepository
+                        .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId())
+                        .orElse(null);
+            }
+
             List<LessonProgressResponse> finalLessonResponses = isLocked ? new ArrayList<>() : lessonResponses;
             PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
 
@@ -221,6 +231,7 @@ public class ProgressService {
                     .totalLessons((int) totalLessons)
                     .lessons(finalLessonResponses)
                     .partner(finalPartnerResponse)
+                    .studyGroupId(studyGroupId)
                     .build());
         }
 
@@ -269,6 +280,7 @@ public class ProgressService {
                 .focusModuleId(focusModuleId)
                 .focusLessonId(focusLessonId)
                 .modules(modulesProgress)
+                .classId(classId)
                 .build();
     }
 

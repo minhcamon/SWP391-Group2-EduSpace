@@ -15,4 +15,5 @@ public class CourseProgressDashboardResponse {
     private Long focusModuleId;
     private List<ModuleProgressResponse> modules;
     private Long focusLessonId;
+    private Long classId;
 }
