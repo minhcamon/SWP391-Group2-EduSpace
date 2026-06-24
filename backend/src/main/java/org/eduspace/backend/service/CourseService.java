@@ -16,14 +16,17 @@ import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.course.response.LessonResponse;
 import org.eduspace.backend.dto.course.response.ModuleResponse;
 import org.eduspace.backend.entity.Assignment;
+import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.CourseModule;
 import org.eduspace.backend.entity.CourseRequest;
 import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.CourseStatus;
+import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.repository.AssignmentRepository;
+import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.CourseRequestRepository;
 import org.eduspace.backend.repository.LessonRepository;
@@ -35,6 +38,7 @@ import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +51,7 @@ public class CourseService {
   private final LessonRepository lessonRepository;
   private final UserRepository userRepository;
   private final CourseRequestRepository courseRequestRepository;
+  private final ClassMemberRepository classMemberRepository;
 
   public List<CourseResponse> getCoursesByCreatorId(Long creatorId) {
     List<Course> courses = courseRepository.getCoursesByCreatorId(creatorId);
@@ -295,7 +300,7 @@ public class CourseService {
         .build();
   }
 
-  public CourseResponse getCourseById(Long courseId) {
+  public CourseResponse getCourseById(Long courseId, Long userId) {
     Course course = courseRepository.findById(courseId)
         .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
 
@@ -348,6 +353,18 @@ public class CourseService {
         })
         .toList();
 
+    String enrollmentStatus = null;
+    Long targetClassId = null;
+
+    if (userId != null) {
+      Optional<ClassMember> activeMember = classMemberRepository.findActiveEnrollment(userId, courseId,
+          LearnerStatus.ACTIVE);
+
+      if (activeMember.isPresent()) {
+        enrollmentStatus = "ENROLLED";
+        targetClassId = activeMember.get().getCourseClass().getId();
+      }
+    }
     return CourseResponse.builder()
         .id(course.getId())
         .title(course.getTitle())
@@ -358,6 +375,8 @@ public class CourseService {
         .creatorAvatarUrl(course.getCreator().getAvatarUrl())
         .creatorEmail(course.getCreator().getEmail())
         .modules(moduleResponses)
+        .enrollmentStatus(enrollmentStatus)
+        .targetClassId(targetClassId)
         .build();
   }
 

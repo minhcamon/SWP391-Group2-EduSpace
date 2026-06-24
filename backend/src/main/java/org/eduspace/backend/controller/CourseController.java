@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Course", description = "Quản lý khóa học")
 public class CourseController {
-
         private final CourseService courseService;
         private final ProgressService progressService;
 
@@ -178,7 +177,8 @@ public class CourseController {
         @GetMapping("/{id}")
         public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
                         @PathVariable Long id) {
-                CourseResponse course = courseService.getCourseById(id);
+                Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
+                CourseResponse course = courseService.getCourseById(id, currentUserId);
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
         }
@@ -240,4 +240,5 @@ public class CourseController {
                 return ResponseEntity.ok(
                                 APIResponse.success("Get progress dashboard successfully", response));
         }
+
 }

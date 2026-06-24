@@ -51,18 +51,16 @@ function App() {
           ></Route>
 
           {/* Authenticated user routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/profile" element={<Profile />}></Route>
-            <Route
-              path="/courses/:courseId/learn"
-              element={<LearningArea />}
-            ></Route>
-            <Route
-              path="/courses/:courseId/dashboard"
-              element={<ProgressDashboard />}
-            ></Route>
-            <Route path="/my-learning" element={<MyLearning />}></Route>
-          </Route>
+          <Route path="/profile" element={<Profile />}></Route>
+          <Route
+            path="/courses/:courseId/learn"
+            element={<LearningArea />}
+          ></Route>
+          <Route
+            path="/courses/:courseId/dashboard"
+            element={<ProgressDashboard />}
+          ></Route>
+          <Route path="/my-learning" element={<MyLearning />}></Route>
           {/* Authenticated user routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<Profile />}></Route>
