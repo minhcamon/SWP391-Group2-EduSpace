@@ -1,3 +1,7 @@
+---
+name: frontend-expert
+description: This skill is used to guide AI agents in developing the frontend of the EduSpace project. It provides information about the technology stack, project structure, coding rules, and best practices.
+---
 # EduSpace - Hướng Dẫn Dành Cho AI Agent (Agent Rules & Guidelines)
 
 Dự án **SWP391-Group2-EduSpace** là một hệ thống quản lý học tập trực tuyến (LMS) được xây dựng trên mô hình Client-Server. Tài liệu này nhằm mục đích hướng dẫn các AI Agent (Cursor, Antigravity, Cline, Copilot) tuân thủ đúng kiến trúc, phong cách viết mã và các quy tắc đặc thù của dự án này.
