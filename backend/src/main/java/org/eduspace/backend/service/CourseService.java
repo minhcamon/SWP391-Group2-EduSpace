@@ -67,22 +67,39 @@ public class CourseService {
         .collect(Collectors.toList());
   }
 
-  public List<CourseResponse> getAllPublishedCourses() {
+  public List<CourseResponse> getAllPublishedCourses(Long userId) {
     List<Course> courses = courseRepository.findByIsDeletedFalse().stream()
         .filter(course -> course.getStatus() == CourseStatus.PUBLISHED)
         .toList();
 
     return courses.stream()
-        .map(course -> CourseResponse.builder()
-            .id(course.getId())
-            .title(course.getTitle())
-            .description(course.getDescription())
-            .status(course.getStatus().name())
-            .createdAt(course.getCreatedAt())
-            .creatorFullName(course.getCreator().getFullName())
-            .creatorAvatarUrl(course.getCreator().getAvatarUrl())
-            .creatorEmail(course.getCreator().getEmail())
-            .build())
+        .map(course -> {
+          String enrollmentStatus = null;
+          Long targetClassId = null;
+
+          if (userId != null) {
+            Optional<ClassMember> activeMember = classMemberRepository
+                .findActiveEnrollment(userId, course.getId(), LearnerStatus.ACTIVE);
+
+            if (activeMember.isPresent()) {
+              enrollmentStatus = "ENROLLED";
+              targetClassId = activeMember.get().getCourseClass().getId();
+            }
+          }
+
+          return CourseResponse.builder()
+              .id(course.getId())
+              .title(course.getTitle())
+              .description(course.getDescription())
+              .status(course.getStatus().name())
+              .createdAt(course.getCreatedAt())
+              .creatorFullName(course.getCreator().getFullName())
+              .creatorAvatarUrl(course.getCreator().getAvatarUrl())
+              .creatorEmail(course.getCreator().getEmail())
+              .enrollmentStatus(enrollmentStatus)
+              .targetClassId(targetClassId)
+              .build();
+        })
         .collect(Collectors.toList());
   }
 
@@ -300,7 +317,7 @@ public class CourseService {
         .build();
   }
 
-  public CourseResponse getCourseById(Long courseId, Long userId) {
+  public CourseResponse getCourseById(Long courseId) {
     Course course = courseRepository.findById(courseId)
         .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
 
@@ -353,18 +370,6 @@ public class CourseService {
         })
         .toList();
 
-    String enrollmentStatus = null;
-    Long targetClassId = null;
-
-    if (userId != null) {
-      Optional<ClassMember> activeMember = classMemberRepository.findActiveEnrollment(userId, courseId,
-          LearnerStatus.ACTIVE);
-
-      if (activeMember.isPresent()) {
-        enrollmentStatus = "ENROLLED";
-        targetClassId = activeMember.get().getCourseClass().getId();
-      }
-    }
     return CourseResponse.builder()
         .id(course.getId())
         .title(course.getTitle())
@@ -375,8 +380,6 @@ public class CourseService {
         .creatorAvatarUrl(course.getCreator().getAvatarUrl())
         .creatorEmail(course.getCreator().getEmail())
         .modules(moduleResponses)
-        .enrollmentStatus(enrollmentStatus)
-        .targetClassId(targetClassId)
         .build();
   }
 

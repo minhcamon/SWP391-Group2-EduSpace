@@ -164,7 +164,9 @@ public class CourseController {
         })
         @GetMapping("/all")
         public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
-                List<CourseResponse> courses = courseService.getAllPublishedCourses();
+                Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
+
+                List<CourseResponse> courses = courseService.getAllPublishedCourses(currentUserId);
                 return ResponseEntity.ok(
                                 APIResponse.success("Successfully fetched courses", courses));
         }
@@ -177,8 +179,7 @@ public class CourseController {
         @GetMapping("/{id}")
         public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
                         @PathVariable Long id) {
-                Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
-                CourseResponse course = courseService.getCourseById(id, currentUserId);
+                CourseResponse course = courseService.getCourseById(id);
                 return ResponseEntity.ok(
                                 APIResponse.success("Course retrieved successfully", course));
         }
