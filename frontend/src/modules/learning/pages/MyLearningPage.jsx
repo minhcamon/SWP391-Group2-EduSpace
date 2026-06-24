@@ -99,6 +99,60 @@ const MyLearningPage = () => {
       </section>
 
       {/* Courses / Cohorts Section */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl md:text-2xl font-bold text-neutral-dark">
+            Khóa học đang trong hàng chờ
+          </h3>
+        </div>
+
+        <div className="mt-5 px-2">
+          Hiện tại bạn có{" "}
+          <strong className="text-secondary">{myLearningCourses.length}</strong>{" "}
+          khóa học trong danh sách chờ
+        </div>
+
+        {/* Courses Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Active Enrolled Courses */}
+          {myLearningCourses.map((course) => (
+            <EnrolledCourseCard
+              key={course.courseId}
+              course={course}
+              onContinue={handleContinueLearning}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Courses / Cohorts Section */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl md:text-2xl font-bold text-neutral-dark">
+            Khóa học đã hoàn thành
+          </h3>
+        </div>
+
+        <div className="mt-5 px-2">
+          Hiện tại bạn đã hoàn thành{" "}
+          <strong className="text-secondary">{myLearningCourses.length}</strong>{" "}
+          khóa học
+        </div>
+
+        {/* Courses Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Active Enrolled Courses */}
+          {myLearningCourses.map((course) => (
+            <EnrolledCourseCard
+              key={course.courseId}
+              course={course}
+              onContinue={handleContinueLearning}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Courses / Cohorts Section */}
       {/* <section className="space-y-6"> */}
       {/* <div className="flex items-center justify-between px-2">
                     <h3 className="text-xl md:text-2xl font-bold text-neutral-dark">

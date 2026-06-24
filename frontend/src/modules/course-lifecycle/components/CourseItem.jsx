@@ -1,5 +1,4 @@
 import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
 import { Link } from "react-router";
 import {
   Card,
@@ -10,11 +9,18 @@ import {
 } from "@/components/ui/Card";
 
 const CourseItem = ({ course }) => {
+  const getDestinationUrl = () => {
+    if (course?.enrollmentStatus === "ENROLLED" && course?.targetClassId) {
+      return `/courses/${course.id}/dashboard`;
+    }
+    return `/courses/${course.id}`;
+  };
+
   return (
-    <div>
-      <Card className=" bg-white shadow-sm hover:shadow-md transform transition-all duration-300 hover:-translate-y-1.5">
+    <Link to={getDestinationUrl()} className="block h-full">
+      <Card className="bg-white shadow-sm hover:shadow-md transform transition-all duration-300 hover:-translate-y-1.5 cursor-pointer h-full">
         <CardHeader>
-          <CardTitle className="font-bold text-xl min-h-12">
+          <CardTitle className="font-bold text-xl min-h-12 text-neutral-dark">
             {course.title}
           </CardTitle>
           <CardDescription>{course.description}</CardDescription>
@@ -23,17 +29,9 @@ const CourseItem = ({ course }) => {
           <Badge variant="secondary" className="py-2.5">
             <span>Tác giả: {course.creatorFullName}</span>
           </Badge>
-          <div className="flex gap-4 mt-4 justify-end">
-            <Button asChild variant="outline" className="">
-              <Link to={`/courses/${course.id}`}>
-                Chi tiết
-              </Link>
-            </Button>
-            <Button>Đăng ký ngay</Button>
-          </div>
         </CardContent>
       </Card>
-    </div>
+    </Link>
   );
 };
 

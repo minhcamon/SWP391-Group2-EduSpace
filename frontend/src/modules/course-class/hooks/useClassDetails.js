@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router"; 
+import { useSearchParams, useNavigate } from "react-router";
 import { mockClasses } from "@/lib/mockData";
 import { toast } from "sonner";
 import waitlistService from "@/services/waitlistService";
@@ -15,13 +15,10 @@ export const useClassDetails = (classId) => {
     const fetchClassDetails = async () => {
       try {
         setIsLoading(true);
-        // Fetch mock class data
         const rawClass = mockClasses[classId] || mockClasses["1"];
         if (rawClass) {
-          // Allow URL override for testing: ?status=active or ?status=waiting
           const urlStatus = searchParams.get("status");
           const finalStatus = urlStatus ? urlStatus.toUpperCase() : rawClass.status;
-          
           const updatedClassData = {
             ...rawClass,
             status: finalStatus,

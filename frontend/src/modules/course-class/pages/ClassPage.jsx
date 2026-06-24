@@ -44,46 +44,14 @@ export const ClassPage = () => {
   const [announcementText, setAnnouncementText] = useState("");
 
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 1,
-      sender: "Minh Quân",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100",
-      content: "Mentor ơi, phần Reading Task 1 có cần ghi chú nguồn không ạ?",
-      time: "10:15",
-      isSystem: false,
-      isSelf: false,
-    },
-    {
-      id: 2,
-      isSystem: true,
-      content: "Mentor joined the chat",
-    },
-    {
-      id: 3,
-      sender: "Mentor",
-      content: "Chào Quân, em chỉ cần liệt kê tiêu đề bài đọc là được nhé!",
-      time: "10:17",
-      isSystem: false,
-      isSelf: true,
-    },
-    {
-      id: 4,
-      sender: "Thùy Chi",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100",
-      content: "Dạ cảm ơn Mentor! Team em sắp xong Milestone 2 rồi ạ.",
-      time: "10:18",
-      isSystem: false,
-      isSelf: false,
-    }
-  ]);
 
   useEffect(() => {
     if (!isLoading && classData) {
-      const isWaitlist = classData.status === "WAITING" && statusParam !== "active";
-      if (isWaitlist) {
-        navigate(`/courses/${classData.courseId}`);
-      }
+      console.log("classData: ", classData)
+      // const isWaitlist = classData.status === "WAITING" && statusParam !== "active";
+      // if (isWaitlist) {
+      //   navigate(`/courses/${classData.courseId}`);
+      // }
     }
   }, [isLoading, classData, statusParam, navigate]);
 
@@ -101,6 +69,8 @@ export const ClassPage = () => {
   }
 
   if (error || !classData) {
+    console.log("error: ", error)
+    console.log("classData: ", classData)
     return (
       <div className="grow flex items-center justify-center min-h-[500px] px-4">
         <div className="text-center p-8 bg-white rounded-2xl border border-border-light/40 shadow-sm max-w-md">

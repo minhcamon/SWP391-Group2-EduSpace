@@ -4,13 +4,10 @@ import { ChevronDown, CheckCircle2, PlayCircle, Lock } from "lucide-react";
 export const SyllabusAccordion = ({ syllabus = [] }) => {
   const [openSections, setOpenSections] = useState({});
 
-  // Automatically open the first section when the syllabus is loaded
   useEffect(() => {
     if (syllabus && syllabus.length > 0 && Object.keys(openSections).length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpenSections({ [syllabus[0].id]: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syllabus]);
 
   const toggleSection = (id) => {
@@ -34,7 +31,7 @@ export const SyllabusAccordion = ({ syllabus = [] }) => {
       <div className="flex flex-col gap-3">
         {syllabus.map((section) => {
           const isOpen = !!openSections[section.id];
-          
+
           // Lấy danh sách bài học và bài tập từ dữ liệu Backend
           const lessons = section.lessons || [];
           const assignment = section.assignment;
@@ -77,16 +74,14 @@ export const SyllabusAccordion = ({ syllabus = [] }) => {
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-neutral-medium transition-transform duration-200 ${
-                    isOpen ? "transform rotate-180" : ""
-                  }`}
+                  className={`w-5 h-5 text-neutral-medium transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`transition-all duration-300 ease-in-out ${
-                  isOpen ? "max-h-[500px] opacity-100 border-t border-border-light/20" : "max-h-0 opacity-0 overflow-hidden"
-                }`}
+                className={`transition-all duration-300 ease-in-out ${isOpen ? "max-h-[500px] opacity-100 border-t border-border-light/20" : "max-h-0 opacity-0 overflow-hidden"
+                  }`}
               >
                 {isOpen && (
                   <div className="px-6 py-4 bg-bg-base/30 flex flex-col gap-3">
@@ -102,11 +97,10 @@ export const SyllabusAccordion = ({ syllabus = [] }) => {
                       return (
                         <div
                           key={item.id}
-                          className={`flex items-center gap-3 p-2.5 rounded-lg transition-colors duration-150 ${
-                            status === "current"
+                          className={`flex items-center gap-3 p-2.5 rounded-lg transition-colors duration-150 ${status === "current"
                               ? "bg-primary/5 border border-primary/20 text-primary font-medium"
                               : "text-neutral-medium"
-                          }`}
+                            }`}
                         >
                           {status === "completed" && (
                             <CheckCircle2 className="w-5 h-5 text-primary" />

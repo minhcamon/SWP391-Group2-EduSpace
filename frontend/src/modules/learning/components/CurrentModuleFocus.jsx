@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Check,
   Lock,
@@ -12,7 +11,8 @@ import {
 
 // Helper function to map lesson state to UI config, avoiding nested ternaries in JSX
 const getLessonStateConfig = (lesson, isUnlocked) => {
-  if (lesson.isCompleted) {
+  const isLessonCompleted = lesson.isCompleted ?? lesson.completed;
+  if (isLessonCompleted) {
     return {
       containerClass: "bg-tertiary/10 border-tertiary/10 hover:bg-tertiary/20",
       icon: (
@@ -84,11 +84,9 @@ const CurrentModuleFocus = ({
     );
   }
 
-  const totalLessons = currentModule.lessons?.length || 0;
-  const completedLessons =
-    currentModule.lessons?.filter((l) => l.isCompleted).length || 0;
-  const currentModulePercent =
-    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const totalLessons = currentModule.totalLessons ?? currentModule.lessons?.length ?? 0;
+  const completedLessons = currentModule.completedLessons ?? currentModule.lessons?.filter((l) => l.isCompleted ?? l.completed).length ?? 0;
+  const currentModulePercent = currentModule.progress ?? (totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0);
 
   // Sort lessons by sortOrder field
   const sortedLessons = [...(currentModule.lessons || [])].sort(
@@ -147,10 +145,10 @@ const CurrentModuleFocus = ({
 
         <div className="space-y-3">
           {sortedLessons.map((lesson, index, arr) => {
-            // Lesson is unlocked if it is the first lesson OR all previous lessons are completed
-            const isUnlocked =
-              index === 0 || arr.slice(0, index).every((l) => l.isCompleted);
+            // Lesson is unlocked if it is not locked by backend and all previous lessons are completed
+            const isUnlocked = !(lesson.isLocked ?? lesson.locked ?? false) && (index === 0 || arr.slice(0, index).every((l) => l.isCompleted ?? l.completed));
             const config = getLessonStateConfig(lesson, isUnlocked);
+            const isPartnerCurrent = lesson.partnerCurrent ?? lesson.isPartnerCurrent;
 
             return (
               <div
@@ -181,12 +179,12 @@ const CurrentModuleFocus = ({
 
                 <div className="flex items-center gap-3">
                   {/* Partner Status representation */}
-                  {lesson.isPartnerCurrent && partner && (
+                  {isPartnerCurrent && partner && (
                     <div className="flex items-center gap-1.5 bg-sky-50 border border-sky-100 px-2 py-1 rounded-full text-[10px] font-bold text-primary animate-pulse">
                       <div className="relative w-5 h-5 rounded-full overflow-hidden border border-primary">
                         <img
                           alt="Partner current learning"
-                          src={partner.avatar}
+                          src={partner.avatarUrl || partner.avatar}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -197,13 +195,13 @@ const CurrentModuleFocus = ({
                   )}
 
                   {lesson.completedByPartner &&
-                    !lesson.isPartnerCurrent &&
+                    !isPartnerCurrent &&
                     partner && (
                       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full text-[10px] font-semibold text-neutral-medium">
                         <div className="w-4 h-4 rounded-full overflow-hidden grayscale opacity-70">
                           <img
                             alt="Partner completed"
-                            src={partner.avatar}
+                            src={partner.avatarUrl || partner.avatar}
                             className="w-full h-full object-cover"
                           />
                         </div>

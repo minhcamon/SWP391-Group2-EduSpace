@@ -1,4 +1,3 @@
-import React from "react";
 import {
   ArrowLeft,
   Menu,
@@ -47,6 +46,7 @@ const LearningAreaPage = () => {
     studyGroup,
     lesson,
     sidebarSections,
+    handleSelectLesson,
   } = useLearningArea();
 
   if (isLoading) {
@@ -133,6 +133,7 @@ const LearningAreaPage = () => {
           onCloseSidebar={() => setIsSidebarOpen(false)}
           isCompleted={isCompleted}
           sidebarSections={sidebarSections}
+          onSelectLesson={handleSelectLesson}
         />
 
         {/* Main Content Area (Video & Tabs) */}

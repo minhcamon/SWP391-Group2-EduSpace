@@ -1,64 +1,57 @@
 import api from "@/lib/axios";
-import {
-  initialMessages,
-  initialNotes,
-  materialsList,
-  partnerData,
-  courseProgress,
-  roadmapNodes,
-  courseTitle,
-  studyGroup,
-  lessonDetails,
-  sidebarSections,
-  modulesData,
-  myLearningActiveCourses,
-  myLearningAvailableCourses,
-} from "@/modules/learning/utils/mockData";
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const learnService = {
-  getLearningAreaDetails: async (courseId) => {
+  getProgressDashboard: async (classId) => {
     try {
-      // Simulate network delay
-      await delay(200);
-      // In the future, this will be swapped with:
-      // const response = await api.get(`/courses/${courseId}/learn`);
-      // return response.data.data;
-      return {
-        courseTitle,
-        studyGroup,
-        lesson: lessonDetails,
-        sidebarSections,
-        messages: initialMessages,
-        notes: initialNotes,
-        materials: materialsList,
-      };
-    } catch (error) {
-      console.error("Lỗi lấy thông tin Learning Area tại learnService:", error);
-      throw new Error(
-        error.response?.data?.message || "Không thể tải thông tin bài học",
-      );
-    }
-  },
-
-  getProgressDashboard: async (courseId) => {
-    try {
-      // Simulate network delay
-      await delay(200);
-      // In the future, this will be swapped with:
-      // const response = await api.get(`/courses/${courseId}/dashboard`);
-      // return response.data.data;
-      return {
-        partner: partnerData,
-        progress: courseProgress,
-        roadmap: roadmapNodes,
-        modules: modulesData,
-      };
+      const response = await api.get(`/course/enroll/${classId}/dashboard`);
+      return response.data.data;
     } catch (error) {
       console.error("Lỗi lấy thông tin Dashboard tại learnService:", error);
       throw new Error(
         error.response?.data?.message || "Không thể tải thông tin bảng tiến độ",
+        { cause: error }
+      );
+    }
+  },
+
+  getProgressSidebarLearningSpace: async (classId, moduleId) => {
+    try {
+      const response = await api.get(`/course/enroll/${classId}/learning/${moduleId}`);
+      return response.data.data;
+    } catch (error) {
+      console.error("Lỗi lấy thông tin học tập module tại learnService:", error);
+      throw new Error(
+        error.response?.data?.message || "Không thể tải tiến trình học tập của module này",
+        { cause: error }
+      );
+    }
+  },
+
+  getGroupMessages: async (studyGroupId, classId) => {
+    try {
+      const response = await api.get(`/group/messages/${studyGroupId}/${classId}`);
+      return response.data.data;
+    } catch (error) {
+      console.error("Lỗi lấy tin nhắn nhóm tại learnService:", error);
+      throw new Error(
+        error.response?.data?.message || "Không thể tải tin nhắn thảo luận nhóm",
+        { cause: error }
+      );
+    }
+  },
+
+  sendGroupMessage: async (studyGroupId, classId, content, messageType = "TEXT") => {
+    try {
+      const response = await api.post(`/group/send-message/${studyGroupId}/${classId}`, {
+        content,
+        messageType,
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error("Lỗi gửi tin nhắn nhóm tại learnService:", error);
+      throw new Error(
+        error.response?.data?.message || "Không thể gửi tin nhắn thảo luận nhóm",
+        { cause: error }
       );
     }
   },
@@ -72,6 +65,7 @@ const learnService = {
       throw new Error(
         error.response?.data?.message ||
           "Đã xảy ra lỗi khi lấy các khóa học đang học!",
+        { cause: error }
       );
     }
   },

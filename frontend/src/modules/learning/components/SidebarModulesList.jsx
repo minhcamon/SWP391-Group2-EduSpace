@@ -1,4 +1,3 @@
-import React from "react";
 import { BookOpen, Check, Lock } from "lucide-react";
 
 // Helper function to get styles and labels based on module status to avoid nested ternaries
@@ -55,9 +54,9 @@ const SidebarModulesList = ({ modules }) => {
           </div>
         ) : (
           sortedModules.map((item) => {
-            const mTotal = item.lessons?.length || 0;
-            const mCompleted = item.lessons?.filter(l => l.isCompleted).length || 0;
-            const mPercent = mTotal > 0 ? Math.round((mCompleted / mTotal) * 100) : 0;
+            const mTotal = item.totalLessons ?? item.lessons?.length ?? 0;
+            const mCompleted = item.completedLessons ?? item.lessons?.filter(l => l.isCompleted ?? l.completed).length ?? 0;
+            const mPercent = item.progress ?? (mTotal > 0 ? Math.round((mCompleted / mTotal) * 100) : 0);
 
             const config = getModuleConfig(item.status);
 

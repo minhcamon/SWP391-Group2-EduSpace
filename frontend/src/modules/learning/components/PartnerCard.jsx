@@ -1,4 +1,3 @@
-import React from "react";
 import { Target, Hand } from "lucide-react";
 
 const PartnerCard = ({ partner, handleSayHi }) => {
@@ -14,7 +13,7 @@ const PartnerCard = ({ partner, handleSayHi }) => {
                 <img
                     alt="Partner avatar"
                     className="w-full h-full object-cover"
-                    src={partner.avatar}
+                    src={partner.avatarUrl || partner.avatar || "/images/default-avatar.png"}
                 />
                 <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>
             </div>
@@ -23,7 +22,7 @@ const PartnerCard = ({ partner, handleSayHi }) => {
                 <h3 className="text-lg font-bold text-neutral-dark">{partner.name}</h3>
                 <p className="text-xs text-neutral-medium flex items-center justify-center gap-1 mt-1">
                     <Target size={14} className="text-primary" />
-                    Mục tiêu: {partner.goal}
+                    Mục tiêu: {partner.description || partner.goal || "Chưa đặt mục tiêu"}
                 </p>
             </div>
 

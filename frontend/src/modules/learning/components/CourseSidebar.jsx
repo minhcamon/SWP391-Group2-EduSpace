@@ -1,7 +1,6 @@
-import React from "react";
-import { X, CheckCircle, PlayCircle, Lock, RefreshCw, HelpCircle } from "lucide-react";
+import { X, CheckCircle, PlayCircle, Lock, RefreshCw } from "lucide-react";
 
-const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections }) => {
+const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections, onSelectLesson }) => {
     return (
         <aside
             className={`absolute md:relative top-0 left-0 h-full w-[300px] sm:w-[380px] bg-bg-sidebar border-r border-border-light flex flex-col z-40 transition-transform duration-300 ${
@@ -92,7 +91,7 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
 
                                         // Apply minification based on module state
                                         let paddingClass = "p-3.5 pl-6 pr-3.5";
-                                        let textClass = "text-sm font-semibold transition-colors";
+                                        let textClass;
                                         let infoClass = "text-[11px] text-neutral-light flex items-center gap-1 mt-1 font-medium";
                                         let iconSize = 15;
                                         let itemOpacity = "opacity-100";
@@ -123,9 +122,14 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                         return (
                                             <div
                                                 key={item.id}
+                                                onClick={() => {
+                                                    if (!isModuleNotStarted && !item.isLocked && onSelectLesson) {
+                                                        onSelectLesson(item.id, section.id);
+                                                    }
+                                                }}
                                                 className={`flex items-start justify-between transition-all group ${paddingClass} ${itemOpacity} ${
                                                     item.isActive && isModuleInProgress ? "bg-sky-50/40" : ""
-                                                } ${!isModuleNotStarted ? "cursor-pointer hover:bg-white/60" : ""}`}
+                                                } ${!isModuleNotStarted && !item.isLocked ? "cursor-pointer hover:bg-white/60" : ""}`}
                                             >
                                                 <div className="flex items-start gap-3 min-w-0">
                                                     <div className="shrink-0 mt-0.5">
