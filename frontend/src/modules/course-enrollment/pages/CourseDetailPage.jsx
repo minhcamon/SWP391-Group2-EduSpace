@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, Link } from "react-router";
 import { useCourseEnrollment } from "../hooks/useCourseEnrollment";
 import SyllabusAccordion from "../components/SyllabusAccordion";
@@ -8,11 +7,11 @@ import Breadcrumbs from "@/components/common/Breadcrumbs";
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
-  const { course, isLoading, error, isEnrolled, joinCourse, waitlistMembers } = useCourseEnrollment(id);
+  const { course, isLoading, error, isEnrolled, joinCourse, leaveCourse, waitlistMembers } = useCourseEnrollment(id);
 
   if (isLoading) {
     return (
-      <div className="flex-grow flex items-center justify-center min-h-[500px]">
+      <div className="grow flex items-center justify-center min-h-[500px]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <span className="text-sm font-semibold text-neutral-medium">Đang tải thông tin khóa học...</span>
@@ -23,7 +22,7 @@ export const CourseDetailPage = () => {
 
   if (error || !course) {
     return (
-      <div className="flex-grow flex items-center justify-center min-h-[500px] px-4">
+      <div className="grow flex items-center justify-center min-h-[500px] px-4">
         <div className="text-center p-8 bg-white rounded-2xl border border-border-light/40 shadow-sm max-w-md">
           <h2 className="text-xl font-bold text-danger mb-2">Đã xảy ra lỗi</h2>
           <p className="text-sm text-neutral-medium mb-6">
@@ -41,7 +40,7 @@ export const CourseDetailPage = () => {
   }
 
   return (
-    <main className="flex-grow max-w-[1280px] mx-auto w-full px-4 md:px-8 py-8">
+    <main className="grow max-w-[1280px] mx-auto w-full px-4 md:px-8 py-8">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -88,7 +87,7 @@ export const CourseDetailPage = () => {
               className="w-full h-full object-cover"
               src={course.image || "https://images.unsplash.com/photo-1555066931-4365d14bab8c"}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
           </div>
 
           {/* Syllabus Section */}
@@ -103,6 +102,7 @@ export const CourseDetailPage = () => {
             waitlistMembers={waitlistMembers}
             maxStudents={course.maxStudents || 10}
             onEnroll={joinCourse}
+            onLeave={leaveCourse}
             isEnrolled={isEnrolled}
           />
         </div>

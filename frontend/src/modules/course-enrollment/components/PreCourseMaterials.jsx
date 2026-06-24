@@ -1,11 +1,9 @@
-import React from "react";
 import { BookOpen, FileText, Download, Eye } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
     Card,
     CardDescription,
     CardHeader,
-    CardTitle,
 } from "@/components/ui/Card";
 
 export const PreCourseMaterials = ({ materials = [] }) => {

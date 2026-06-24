@@ -1,5 +1,4 @@
-import React from "react";
-import { Users, Handshake, ShieldAlert, Sparkles } from "lucide-react";
+import { Users, Handshake, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export const ClassPersonnel = ({ pairs = [], onFindBuddy }) => {

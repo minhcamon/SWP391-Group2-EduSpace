@@ -1,5 +1,4 @@
-import React from "react";
-import { Users, ArrowRight, Info, Plus } from "lucide-react";
+import { ArrowRight, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Link } from "react-router";
 
@@ -66,17 +65,38 @@ export const EnrollmentSidebar = ({
       <div className="flex flex-col gap-4">
         {isEnrolled ? (
           <div className="flex flex-col gap-2.5">
-            <div className="w-full py-3 px-4 font-semibold rounded-xl flex items-center justify-center gap-2 text-emerald-600 border border-emerald-100 bg-emerald-50 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-              <span>Đã đăng ký tham gia hàng chờ</span>
-            </div>
-            <Link
-              to="/classes/1"
-              className="w-full py-4 font-semibold flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/95 rounded-xl shadow-sm transition-all text-sm text-center"
-            >
-              <span>Đến lớp học</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {(currentStudents >= maxStudents || new URLSearchParams(window.location.search).get("status") === "active") ? (
+              <>
+                <div className="w-full py-3 px-4 font-semibold rounded-xl flex items-center justify-center gap-2 text-emerald-600 border border-emerald-100 bg-emerald-50 text-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                  <span>Lớp học đã bắt đầu!</span>
+                </div>
+                <Link
+                  to="/classes/1?status=active"
+                  className="w-full py-4 font-semibold flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/95 rounded-xl shadow-sm transition-all text-sm text-center animate-bounce"
+                >
+                  <span>Đến lớp học</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="w-full py-3 px-4 font-semibold rounded-xl flex items-center justify-center gap-2 text-primary border border-primary/20 bg-primary/10 text-xs">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></span>
+                  <span>Đang trong hàng chờ ghép cặp</span>
+                </div>
+                <Button
+                  onClick={onLeave}
+                  variant="outline"
+                  className="w-full py-4 font-semibold flex items-center justify-center gap-2 text-neutral-medium border-border-light hover:bg-bg-card hover:text-neutral-dark rounded-xl shadow-sm transition-all text-sm"
+                >
+                  <span>Hủy tham gia hàng chờ</span>
+                </Button>
+                <div className="p-3 bg-primary/5 border border-primary/10 rounded-xl text-xs text-primary leading-relaxed">
+                  Lớp học đang được thiết lập (Hiện tại: {currentStudents}/{maxStudents} bạn). Hệ thống sẽ tự động ghép cặp ngay khi đủ người. Bạn không cần đợi ở đây, chúng tôi sẽ gửi một Email thông báo kèm link trực tiếp ngay khi lớp học sẵn sàng!
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <Button

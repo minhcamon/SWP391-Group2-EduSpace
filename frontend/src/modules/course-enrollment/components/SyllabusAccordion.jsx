@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, CheckCircle2, PlayCircle, Lock } from "lucide-react";
 
 export const SyllabusAccordion = ({ syllabus = [] }) => {
@@ -7,8 +7,10 @@ export const SyllabusAccordion = ({ syllabus = [] }) => {
   // Automatically open the first section when the syllabus is loaded
   useEffect(() => {
     if (syllabus && syllabus.length > 0 && Object.keys(openSections).length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpenSections({ [syllabus[0].id]: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syllabus]);
 
   const toggleSection = (id) => {

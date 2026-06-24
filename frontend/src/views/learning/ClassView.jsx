@@ -1,7 +1,6 @@
-import React from "react";
 import Header from "@/components/layouts/Header";
 import Footer from "@/components/layouts/Footer";
-import ClassPage from "@/modules/course-enrollment/pages/ClassPage";
+import { ClassPage } from "@/modules/course-class";
 
 const ClassView = () => {
   return (

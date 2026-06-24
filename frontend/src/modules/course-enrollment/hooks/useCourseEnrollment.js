@@ -32,11 +32,11 @@ export const useCourseEnrollment = (courseId) => {
           const membersList = members || [];
           setWaitlistMembers(membersList);
           
-          if (user && membersList.length > 0 && user.id) {
+          if (user && user.id) {
             const enrolled = membersList.some(m => m.id.toString() === user.id.toString());
             setIsEnrolled(enrolled);
           } else {
-            setIsEnrolled(true); // Nếu API trả về thành công nghĩa là user hiện tại đã có trong waitlist
+            setIsEnrolled(false);
           }
         } catch (waitlistErr) {
           console.warn("Failed to fetch waitlist members:", waitlistErr);

@@ -1,4 +1,3 @@
-import React from "react";
 import { Megaphone, Award, BookOpen, Clock, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 
@@ -52,7 +51,7 @@ export const ClassFeed = ({ feed = [], onReactionClick }) => {
           >
             <div className="flex items-start gap-4">
               {getIcon(post.type)}
-              <div className="flex-grow">
+              <div className="grow">
                 <div className="flex flex-wrap justify-between items-start mb-1 gap-2">
                   <h3 className="text-base font-bold text-neutral-dark">
                     {post.title}

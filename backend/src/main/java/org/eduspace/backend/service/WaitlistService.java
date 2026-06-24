@@ -49,6 +49,26 @@ public class WaitlistService {
                                 .toList();
         }
 
+        public List<UserResponse> getMembersInWaitlist(Long courseId) {
+                Waitlist activeWaitlist = waitlistRepository
+                                .findByCourseIdAndStatus(courseId, WaitlistStatus.OPENING)
+                                .orElse(null);
+
+                if (activeWaitlist == null) {
+                        return List.of();
+                }
+
+                List<User> members = waitlistRepository.findUsersByWaitListId(activeWaitlist.getId());
+
+                return members.stream()
+                                .map(member -> UserResponse.builder()
+                                                .id(member.getId())
+                                                .fullName(member.getFullName())
+                                                .avatarUrl(member.getAvatarUrl())
+                                                .build())
+                                .toList();
+        }
+
         @Transactional
         public boolean enrollToWaitlist(Long courseId, Long userId) {
                 Course course = courseRepository.findByIdForUpdate(courseId)
