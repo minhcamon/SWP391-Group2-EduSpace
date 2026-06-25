@@ -9,6 +9,7 @@ import org.eduspace.backend.dto.user.PartnerLocationDTO;
 import org.eduspace.backend.dto.user.response.PartnerResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Lesson;
+import org.eduspace.backend.entity.LessonProgress;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.repository.LessonProgressRepository;
 import org.springframework.stereotype.Component;
@@ -19,107 +20,119 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProgressHelper {
 
-    private final LessonProgressRepository lessonProgressRepository;
+  private final LessonProgressRepository lessonProgressRepository;
 
-    /**
-     * Tính toán chuỗi trạng thái hiển thị (Status) của Module dựa trên tiến độ thực
-     * tế
-     */
-    public String determineModuleStatus(boolean isCompletedLessons) {
-        if (isCompletedLessons) {
-            return "COMPLETED";
-        } else {
-            return "IN_PROGRESS";
+  /**
+   * Tính toán chuỗi trạng thái hiển thị (Status) của Module dựa trên tiến độ thực
+   * tế
+   */
+  public String determineModuleStatus(boolean isCompletedLessons) {
+    if (isCompletedLessons) {
+      return "COMPLETED";
+    } else {
+      return "IN_PROGRESS";
+    }
+  }
+
+  /**
+   * Xử lý và map danh sách bài học (Lessons) sang DTO kèm theo trạng thái khóa/mở
+   * và vị trí của Partner
+   */
+  public List<LessonProgressResponse> buildLessonProgressResponses(
+      List<Lesson> lessons,
+      Set<Long> completedSet,
+      Set<Long> partnerCompletedSet,
+      Long partnerCurrentLessonId) {
+
+    return lessons.stream().map(lesson -> {
+      int currentIndex = lessons.indexOf(lesson);
+      boolean isCompleted = completedSet.contains(lesson.getId());
+
+      // Logic khóa bài học tuần tự: bài học hiện tại bị khóa nếu có bất kỳ bài phía
+      // trước chưa hoàn thành
+      boolean isLessonLocked = false;
+      for (int k = 0; k < currentIndex; k++) {
+        if (!completedSet.contains(lessons.get(k).getId())) {
+          isLessonLocked = true;
+          break;
         }
+      }
+
+      boolean isPartnerCurrent = partnerCurrentLessonId != null
+          && partnerCurrentLessonId.equals(lesson.getId());
+      boolean completedByPartner = partnerCompletedSet.contains(lesson.getId());
+
+      return LessonProgressResponse.builder()
+          .id(lesson.getId())
+          .title(lesson.getTitle())
+          .isCompleted(isCompleted)
+          .isLocked(isLessonLocked)
+          .completedByPartner(completedByPartner)
+          .isPartnerCurrent(isPartnerCurrent)
+          .sortOrder(lesson.getSortOrder())
+          .build();
+    }).toList();
+  }
+
+  /**
+   * Build PartnerResponse từ partner ClassMember, tính vị trí hiện tại của
+   * partner
+   * trong module
+   */
+  public PartnerResponse buildPartnerResponse(
+      ClassMember partnerClassMember,
+      List<Lesson> lessons,
+      Long moduleId) {
+
+    if (partnerClassMember == null) {
+      return null;
     }
 
-    /**
-     * Xử lý và map danh sách bài học (Lessons) sang DTO kèm theo trạng thái khóa/mở
-     * và vị trí của Partner
-     */
-    public List<LessonProgressResponse> buildLessonProgressResponses(
-            List<Lesson> lessons,
-            Set<Long> completedSet,
-            Set<Long> partnerCompletedSet,
-            Long partnerCurrentLessonId) {
+    List<Long> partnerCompletedLessonIds = lessonProgressRepository
+        .findCompletedLessonIdsByClassMemberIdAndModuleId(partnerClassMember.getId(), moduleId);
+    Set<Long> partnerCompletedSet = new HashSet<>(partnerCompletedLessonIds);
 
-        return lessons.stream().map(lesson -> {
-            int currentIndex = lessons.indexOf(lesson);
-            boolean isCompleted = completedSet.contains(lesson.getId());
-
-            // Logic khóa bài học tuần tự: bài học hiện tại bị khóa nếu có bất kỳ bài phía
-            // trước chưa hoàn thành
-            boolean isLessonLocked = false;
-            for (int k = 0; k < currentIndex; k++) {
-                if (!completedSet.contains(lessons.get(k).getId())) {
-                    isLessonLocked = true;
-                    break;
-                }
-            }
-
-            boolean isPartnerCurrent = partnerCurrentLessonId != null
-                    && partnerCurrentLessonId.equals(lesson.getId());
-            boolean completedByPartner = partnerCompletedSet.contains(lesson.getId());
-
-            return LessonProgressResponse.builder()
-                    .id(lesson.getId())
-                    .title(lesson.getTitle())
-                    .isCompleted(isCompleted)
-                    .isLocked(isLessonLocked)
-                    .completedByPartner(completedByPartner)
-                    .isPartnerCurrent(isPartnerCurrent)
-                    .sortOrder(lesson.getSortOrder())
-                    .build();
-        }).toList();
+    Long partnerCurrentLessonId = null;
+    for (Lesson lesson : lessons) {
+      if (!partnerCompletedSet.contains(lesson.getId())) {
+        partnerCurrentLessonId = lesson.getId();
+        break;
+      }
     }
 
-    /**
-     * Build PartnerResponse từ partner ClassMember, tính vị trí hiện tại của
-     * partner
-     * trong module
-     */
-    public PartnerResponse buildPartnerResponse(
-            ClassMember partnerClassMember,
-            List<Lesson> lessons,
-            Long moduleId) {
+    User partnerUser = partnerClassMember.getUser();
 
-        if (partnerClassMember == null) {
-            return null;
-        }
+    return PartnerResponse.builder()
+        .partnerId(partnerUser.getId())
+        .name(partnerUser.getFullName())
+        .avatarUrl(partnerUser.getAvatarUrl())
+        .description(partnerUser.getBio())
+        .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()
+            .moduleId(moduleId)
+            .lessonId(partnerCurrentLessonId)
+            .lessonName(findLessonTitle(lessons, partnerCurrentLessonId))
+            .build() : null)
+        .completedLessons(partnerCompletedLessonIds)
+        .build();
+  }
 
-        List<Long> partnerCompletedLessonIds = lessonProgressRepository
-                .findCompletedLessonIdsByClassMemberIdAndModuleId(partnerClassMember.getId(), moduleId);
-        Set<Long> partnerCompletedSet = new HashSet<>(partnerCompletedLessonIds);
+  private String findLessonTitle(List<Lesson> lessons, Long lessonId) {
+    return lessons.stream()
+        .filter(l -> l.getId().equals(lessonId))
+        .map(Lesson::getTitle)
+        .findFirst()
+        .orElse("");
+  }
 
-        Long partnerCurrentLessonId = null;
-        for (Lesson lesson : lessons) {
-            if (!partnerCompletedSet.contains(lesson.getId())) {
-                partnerCurrentLessonId = lesson.getId();
-                break;
-            }
-        }
-
-        User partnerUser = partnerClassMember.getUser();
-
-        return PartnerResponse.builder()
-                .partnerId(partnerUser.getId())
-                .name(partnerUser.getFullName())
-                .avatarUrl(partnerUser.getAvatarUrl())
-                .description(partnerUser.getBio())
-                .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()
-                        .moduleId(moduleId)
-                        .lessonId(partnerCurrentLessonId)
-                        .lessonName(findLessonTitle(lessons, partnerCurrentLessonId))
-                        .build() : null)
-                .completedLessons(partnerCompletedLessonIds)
-                .build();
+  public boolean markLessonAsCompleted(Lesson lesson, ClassMember classMember) {
+    if (lessonProgressRepository.save(
+        LessonProgress.builder()
+            .lesson(lesson)
+            .classMember(classMember)
+            .isCompleted(true)
+            .build()) == null) {
+      return false;
     }
-
-    private String findLessonTitle(List<Lesson> lessons, Long lessonId) {
-        return lessons.stream()
-                .filter(l -> l.getId().equals(lessonId))
-                .map(Lesson::getTitle)
-                .findFirst()
-                .orElse("");
-    }
+    return true;
+  }
 }

@@ -40,8 +40,8 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                     isModuleInProgress 
                                         ? "bg-white/50 border-primary" 
                                         : isModuleCompleted
-                                            ? "bg-slate-50/40 border-success opacity-85"
-                                            : "bg-slate-100/30 border-transparent opacity-60"
+                                            ? "bg-success/5 border-success/60 opacity-85"
+                                            : "bg-bg-sidebar/30 border-transparent opacity-60"
                                 }`}
                             >
                                 {/* Status Indicator */}
@@ -57,7 +57,7 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                         </div>
                                     )}
                                     {isModuleNotStarted && (
-                                        <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center">
+                                        <div className="w-5 h-5 rounded-full bg-hover-light text-neutral-light flex items-center justify-center">
                                             <Lock size={11} />
                                         </div>
                                     )}
@@ -128,7 +128,7 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                                     }
                                                 }}
                                                 className={`flex items-start justify-between transition-all group ${paddingClass} ${itemOpacity} ${
-                                                    item.isActive && isModuleInProgress ? "bg-sky-50/40" : ""
+                                                    item.isActive && isModuleInProgress ? "bg-primary/5" : ""
                                                 } ${!isModuleNotStarted && !item.isLocked ? "cursor-pointer hover:bg-white/60" : ""}`}
                                             >
                                                 <div className="flex items-start gap-3 min-w-0">
@@ -168,7 +168,7 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                                                     />
                                                                 ) : (
                                                                     <div
-                                                                        className={`w-5 h-5 rounded-full ${partner.bgColor || "bg-slate-100"} ${partner.textColor || "text-neutral-medium"} flex items-center justify-center border border-white text-[9px] font-bold shadow-sm hover:ring-2 hover:ring-primary hover:z-10 transition-all`}
+                                                                        className={`w-5 h-5 rounded-full ${partner.bgColor || "bg-bg-sidebar"} ${partner.textColor || "text-neutral-medium"} flex items-center justify-center border border-white text-[9px] font-bold shadow-sm hover:ring-2 hover:ring-primary hover:z-10 transition-all`}
                                                                         title={`${partner.name} đang ở bài học này`}
                                                                     >
                                                                         {partner.initials}

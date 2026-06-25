@@ -303,22 +303,88 @@ const useLearningArea = () => {
         }
     };
 
-    const handleMarkCompleted = () => {
-        if (activeLessonId) {
-            setCompletedLessonsLocal(prev => ({ ...prev, [activeLessonId]: true }));
+    const handleMarkCompleted = async () => {
+        if (!activeLessonId || !resolvedClassId) {
+            toast.error("Không tìm thấy thông tin bài học hoặc lớp học.");
+            return;
         }
-        toast.success("Đã hoàn thành bài học này! Tiếp tục sang bài kế tiếp.", {
-            description: "Tiến độ của nhóm đã được cập nhật.",
-            action: {
-                label: "Xem Dashboard",
-                onClick: () => navigate("../dashboard")
+
+        try {
+            await learnService.completeLesson(activeLessonId, resolvedClassId);
+            setCompletedLessonsLocal(prev => ({ ...prev, [activeLessonId]: true }));
+            
+            // Refresh progress dashboard data from backend
+            const updatedDashboard = await learnService.getProgressDashboard(resolvedClassId);
+            setProgressDashboard(updatedDashboard);
+
+            // Automatically switch to the next focus lesson if available
+            let nextLessonId = updatedDashboard.focusLessonId;
+            
+            // Fallback: If backend didn't return focusLessonId, find the next lesson in sequence manually
+            if (!nextLessonId) {
+                const allLessons = updatedDashboard.modules
+                    ? updatedDashboard.modules.reduce((acc, m) => {
+                        if (m.lessons) {
+                            m.lessons.forEach(l => {
+                                acc.push({ ...l, moduleId: m.id });
+                            });
+                        }
+                        return acc;
+                    }, [])
+                    : [];
+                const currentIndex = allLessons.findIndex(l => l.id.toString() === activeLessonId.toString());
+                if (currentIndex !== -1 && currentIndex + 1 < allLessons.length) {
+                    const nextLesson = allLessons[currentIndex + 1];
+                    if (!nextLesson.isLocked && !nextLesson.locked) {
+                        nextLessonId = nextLesson.id;
+                    }
+                }
             }
-        });
+
+            if (nextLessonId && nextLessonId.toString() !== activeLessonId.toString()) {
+                setActiveLessonId(nextLessonId);
+                
+                // Find and update active module if the next lesson belongs to a different module
+                const matchedMod = updatedDashboard.modules?.find(m => 
+                    m.lessons?.some(l => l.id.toString() === nextLessonId.toString())
+                );
+                if (matchedMod) {
+                    setActiveModuleId(matchedMod.id);
+                } else if (updatedDashboard.focusModuleId) {
+                    setActiveModuleId(updatedDashboard.focusModuleId);
+                }
+            }
+
+            toast.success("Đã hoàn thành bài học này! Tiếp tục sang bài kế tiếp.", {
+                description: "Tiến độ của nhóm đã được cập nhật.",
+                action: {
+                    label: "Xem Dashboard",
+                    onClick: () => navigate("../dashboard")
+                }
+            });
+        } catch (error) {
+            console.error("Đánh dấu hoàn thành bài học thất bại:", error);
+            toast.error(error.message || "Không thể hoàn thành bài học.");
+        }
     };
+
 
     const handleExit = () => {
         navigate(-1);
     };
+
+    // Calculate total progress
+    let totalLessonsCount = 0;
+    let completedLessonsCount = 0;
+    if (progressDashboard?.modules) {
+        progressDashboard.modules.forEach(mod => {
+            totalLessonsCount += mod.totalLessons || 0;
+            completedLessonsCount += mod.completedLessons || 0;
+        });
+    }
+    const progressPercent = totalLessonsCount > 0 
+        ? Math.round((completedLessonsCount / totalLessonsCount) * 100) 
+        : 0;
 
     return {
         isSidebarOpen,
@@ -350,7 +416,8 @@ const useLearningArea = () => {
         studyGroup,
         lesson,
         sidebarSections,
-        handleSelectLesson
+        handleSelectLesson,
+        progressPercent
     };
 };
 

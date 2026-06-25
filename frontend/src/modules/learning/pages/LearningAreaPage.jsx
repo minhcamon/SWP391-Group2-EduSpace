@@ -47,6 +47,7 @@ const LearningAreaPage = () => {
     lesson,
     sidebarSections,
     handleSelectLesson,
+    progressPercent,
   } = useLearningArea();
 
   if (isLoading) {
@@ -87,7 +88,7 @@ const LearningAreaPage = () => {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-xs font-bold cursor-pointer ${
               isChatSidebarOpen
                 ? "bg-primary text-white border-primary shadow-sm"
-                : "bg-slate-50 border-border-light text-neutral-medium hover:text-primary hover:border-primary"
+                : "bg-bg-card border-border-light/70 text-neutral-medium hover:text-primary hover:border-primary hover:bg-hover-light"
             }`}
           >
             <MessageSquare size={14} />
@@ -111,8 +112,8 @@ const LearningAreaPage = () => {
             <span className="text-xs font-semibold text-neutral-medium">
               Tiến độ
             </span>
-            <Badge variant={isCompleted ? "approved" : "secondary"}>
-              {isCompleted ? "100% Hoàn thành" : "60% Hoàn thành"}
+            <Badge variant={progressPercent === 100 ? "approved" : "secondary"}>
+              {progressPercent}% Hoàn thành
             </Badge>
           </div>
 
@@ -151,7 +152,7 @@ const LearningAreaPage = () => {
             {lesson && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <span className="bg-sky-50 text-primary border border-sky-100 px-2 py-0.5 rounded text-xs font-bold">
+                  <span className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-xs font-bold">
                     {lesson.module}
                   </span>
                   <span className="text-neutral-light text-xs font-semibold flex items-center gap-1">
@@ -190,7 +191,7 @@ const LearningAreaPage = () => {
                   disabled={isCompleted}
                   className={`w-full py-3.5 px-8 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
                     isCompleted
-                      ? "bg-slate-100 text-neutral-light cursor-not-allowed border border-slate-200"
+                      ? "bg-hover-light/60 text-neutral-light cursor-not-allowed border border-border-light/40"
                       : "bg-secondary text-white hover:shadow-md hover:bg-secondary/90 hover:scale-[1.01]"
                   }`}
                 >
@@ -206,7 +207,7 @@ const LearningAreaPage = () => {
 
         {/* Right Chat Sidebar */}
         <div
-          className={`shrink-0 h-full border-l border-border-light bg-slate-50 flex flex-col transition-all duration-300 z-30 ${
+          className={`shrink-0 h-full border-l border-border-light bg-bg-sidebar/90 backdrop-blur-md flex flex-col transition-all duration-300 z-30 ${
             isChatSidebarOpen
               ? "w-[300px] sm:w-[350px] translate-x-0"
               : "w-0 translate-x-full md:translate-x-0 overflow-hidden border-l-0"
@@ -255,14 +256,14 @@ const LearningAreaPage = () => {
                         alt={msg.sender}
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-100 text-neutral-medium flex items-center justify-center text-xs font-bold border border-border-light/20 shadow-sm">
+                      <div className="w-8 h-8 rounded-full bg-hover-light text-neutral-medium flex items-center justify-center text-xs font-bold border border-border-light/20 shadow-sm">
                         {msg.sender.substring(0, 2).toUpperCase()}
                       </div>
                     )}
                   </div>
                 )}
                 {msg.isMe && (
-                  <div className="w-8 h-8 rounded-full bg-sky-100 text-primary flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20 shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20 shadow-sm">
                     ME
                   </div>
                 )}
@@ -277,7 +278,7 @@ const LearningAreaPage = () => {
                     }`}
                   >
                     {msg.videoTime && (
-                      <span className="text-sky-500 font-bold hover:underline cursor-pointer mr-1.5">
+                      <span className="text-primary font-bold hover:underline cursor-pointer mr-1.5">
                         @{msg.videoTime}
                       </span>
                     )}
@@ -301,7 +302,7 @@ const LearningAreaPage = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Nhập tin nhắn..."
-              className="grow bg-slate-50 border border-border-light rounded-lg px-3 py-1.5 text-xs outline-none focus:border-primary focus:bg-white transition-all"
+              className="grow bg-bg-base border border-border-light rounded-lg px-3 py-1.5 text-xs outline-none focus:border-primary focus:bg-white transition-all"
             />
             <button
               type="submit"

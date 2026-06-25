@@ -41,7 +41,7 @@ const PairChat = ({
             </div>
 
             {/* Tab Content Panel */}
-            <div className="min-h-[250px] bg-slate-50/50 p-4 rounded-xl border border-border-light/40">
+            <div className="min-h-[250px] bg-bg-card/40 p-4 rounded-xl border border-border-light/40">
                 {activeTab === "notes" && (
                     <div className="flex flex-col gap-3 h-full">
                         <textarea
@@ -76,7 +76,7 @@ const PairChat = ({
                                     className="flex items-center justify-between p-3.5 bg-white rounded-xl border border-border-light/35 hover:border-primary transition-all shadow-sm"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-slate-100 rounded-lg text-neutral-medium">
+                                        <div className="p-2 bg-bg-sidebar rounded-lg text-neutral-medium">
                                             <FileText size={20} />
                                         </div>
                                         <div>

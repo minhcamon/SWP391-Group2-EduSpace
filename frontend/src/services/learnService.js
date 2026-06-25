@@ -69,6 +69,23 @@ const learnService = {
       );
     }
   },
+
+  completeLesson: async (lessonId, classId) => {
+    try {
+      const response = await api.post(`/course/lessons/${lessonId}/complete`, classId, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi hoàn thành bài học tại learnService:", error);
+      throw new Error(
+        error.response?.data?.message || "Không thể hoàn thành bài học này",
+        { cause: error }
+      );
+    }
+  },
 };
 
 export default learnService;
