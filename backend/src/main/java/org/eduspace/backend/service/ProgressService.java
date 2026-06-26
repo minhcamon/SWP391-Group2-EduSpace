@@ -44,7 +44,7 @@ public class ProgressService {
   private final SubmissionRepository submissionRepository;
   private final ClassTimelineRepository classTimelineRepository;
   private final ProgressHelper progressHelper;
-  private final GroupService groupService;
+  private final StudyGroupService groupService;
   private final GroupMemberRepository groupMemberRepository;
 
   /**

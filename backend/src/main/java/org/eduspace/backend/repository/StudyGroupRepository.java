@@ -50,4 +50,6 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
 
        // Tìm nhóm vừa tạo gần nhất (Phục vụ luồng chuyển module)
        Optional<StudyGroup> findTopByCourseClassIdAndModuleIdOrderByIdDesc(Long classId, Long moduleId);
+
+       List<StudyGroup> findByCourseClassId(Long classId);
 }

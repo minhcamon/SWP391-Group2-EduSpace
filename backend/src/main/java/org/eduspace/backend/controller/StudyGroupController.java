@@ -8,6 +8,7 @@ import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.StudyGroupService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ public class StudyGroupController {
     private final StudyGroupService studyGroupService;
 
     @PostMapping("/send-message/{studyGroupId}/{classId}")
+    @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<?>> sendMessage(
             @RequestBody SendMessageRequest request,
             @PathVariable Long studyGroupId,
@@ -45,6 +47,7 @@ public class StudyGroupController {
     }
 
     @GetMapping("/messages/{studyGroupId}/{classId}")
+    @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<?>> getMessages(
             @PathVariable Long studyGroupId,
             @PathVariable Long classId) {
