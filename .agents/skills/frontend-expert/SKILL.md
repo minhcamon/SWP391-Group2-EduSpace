@@ -350,6 +350,7 @@ Tránh hiện tượng tạo ra "God Component" bằng các quy tắc thiết k�
    - Vị trí: `src/modules/<feature>/components/` hoặc `src/components/ui/` hoặc `src/components/common/`.
    - Trách nhiệm: Nhận props, render UI và gửi sự kiện lên component cha qua callbacks. Không tự ý gọi Service hoặc xử lý logic nghiệp vụ toàn cục.
 3. **Giới hạn số dòng code**: Một file Component **không được vượt quá 300 dòng**. Nếu vượt quá, Agent bắt buộc phải phân rã component thành các sub-components nhỏ hơn.
+4. **Tách biệt Logic qua Custom Hook**: Đối với các component có logic tương tác hoặc tích hợp API phức tạp (như điều khiển player, bắt sự kiện thiết bị, websocket), bắt buộc phải tách toàn bộ phần logic này sang một Custom Hook riêng biệt đặt tại `src/modules/<feature>/hooks/`. Component trình diễn chỉ nên gọi hook này để nhận về các ref, state, và trigger event, giữ cho phần render UI sạch sẽ và dễ bảo trì.
 
 ---
 

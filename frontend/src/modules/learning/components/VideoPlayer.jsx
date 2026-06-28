@@ -1,10 +1,48 @@
 import React from "react";
 import { Play, Pause, Volume2, Settings, Maximize, RefreshCw } from "lucide-react";
+import useVideoPlayer from "@/modules/learning/hooks/useVideoPlayer";
 
 const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }) => {
-    return (
-        <div className="flex flex-col gap-6">
-            {/* Video Player Mock */}
+    const {
+        iframeRef,
+        videoRef,
+        youtubeId,
+        isDirectVideo,
+        handleHtml5Play,
+        handleHtml5Pause
+    } = useVideoPlayer({
+        videoUrl: lesson?.videoUrl,
+        isPlaying,
+        onTogglePlay
+    });
+
+    // Hàm render phần Player dựa trên URL video
+    const renderPlayerContent = () => {
+        if (youtubeId) {
+            return (
+                <div className="w-full h-full aspect-video bg-neutral-dark rounded-xl overflow-hidden shadow-md">
+                    <div ref={iframeRef} className="w-full h-full" />
+                </div>
+            );
+        }
+
+        if (isDirectVideo) {
+            return (
+                <div className="w-full h-full aspect-video bg-neutral-dark rounded-xl overflow-hidden shadow-md">
+                    <video
+                        ref={videoRef}
+                        src={lesson?.videoUrl}
+                        className="w-full h-full object-contain"
+                        controls
+                        onPlay={handleHtml5Play}
+                        onPause={handleHtml5Pause}
+                    />
+                </div>
+            );
+        }
+
+        // Fallback: Giao diện Mock Player nguyên bản
+        return (
             <div className="aspect-video bg-neutral-dark rounded-xl relative group overflow-hidden shadow-md">
                 <img
                     alt="Lesson Video Thumbnail"
@@ -52,6 +90,12 @@ const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }
                     </button>
                 </div>
             </div>
+        );
+    };
+
+    return (
+        <div className="flex flex-col gap-6">
+            {renderPlayerContent()}
 
             {/* Co-watching details */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-2 border-b border-border-light">
