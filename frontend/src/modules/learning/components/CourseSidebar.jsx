@@ -1,8 +1,34 @@
-import { X, CheckCircle, PlayCircle, Lock, RefreshCw } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, CheckCircle, PlayCircle, Lock, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import Avatar from "@/components/common/Avatar";
 
 
 const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections, onSelectLesson }) => {
+    const [expandedModules, setExpandedModules] = useState({});
+
+    useEffect(() => {
+        if (sidebarSections) {
+            const initial = { ...expandedModules };
+            let hasInProgress = false;
+            sidebarSections.forEach(section => {
+                if (section.status === "IN_PROGRESS" && initial[section.id] === undefined) {
+                    initial[section.id] = true;
+                    hasInProgress = true;
+                }
+            });
+            if (hasInProgress) {
+                setExpandedModules(initial);
+            }
+        }
+    }, [sidebarSections]);
+
+    const toggleModule = (id) => {
+        setExpandedModules(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
+
     return (
         <aside
             className={`absolute md:relative top-0 left-0 h-full w-[300px] sm:w-[380px] bg-bg-sidebar border-r border-border-light flex flex-col z-40 transition-transform duration-300 ${
@@ -26,6 +52,7 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                     const isModuleCompleted = section.status === "COMPLETED";
                     const isModuleInProgress = section.status === "IN_PROGRESS";
                     const isModuleNotStarted = section.status === "NOT_STARTED";
+                    const isExpanded = !!expandedModules[section.id];
 
                     // Custom padding and styles for module headers based on completion/progress state
                     const headerPadding = isModuleInProgress 
@@ -38,12 +65,20 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                         <div key={section.id} className="border-b border-border-light">
                             {/* Module Header Row */}
                             <div 
-                                className={`w-full flex items-center gap-3 text-left border-l-4 ${headerPadding} ${
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => toggleModule(section.id)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        toggleModule(section.id);
+                                    }
+                                }}
+                                className={`w-full flex items-center gap-3 text-left border-l-4 transition-all duration-200 cursor-pointer select-none ${headerPadding} ${
                                     isModuleInProgress 
-                                        ? "bg-white/50 border-primary" 
+                                        ? "bg-primary/5 hover:bg-primary/10 border-primary" 
                                         : isModuleCompleted
-                                            ? "bg-success/5 border-success/60 opacity-85"
-                                            : "bg-bg-sidebar/30 border-transparent opacity-60"
+                                            ? "bg-success/5 hover:bg-success/10 border-success/60 opacity-90"
+                                            : "bg-bg-sidebar/20 hover:bg-hover-light/40 border-transparent opacity-75"
                                 }`}
                             >
                                 {/* Status Indicator */}
@@ -81,10 +116,19 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                         {section.title}
                                     </h4>
                                 </div>
+
+                                {/* Chevron Collapse Icon */}
+                                <div className="shrink-0 text-neutral-medium/70 ml-auto mr-1 hover:text-primary transition-colors">
+                                    {isExpanded ? (
+                                        <ChevronUp size={16} />
+                                    ) : (
+                                        <ChevronDown size={16} />
+                                    )}
+                                </div>
                             </div>
 
                             {/* Lessons List (Rendered for all modules with styled minification) */}
-                            {section.lessons && (
+                            {section.lessons && isExpanded && (
                                 <div className={`bg-white/40 divide-y divide-border-light/25 ${
                                     isModuleNotStarted ? "pointer-events-none" : ""
                                 }`}>
