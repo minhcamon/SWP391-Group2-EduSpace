@@ -501,6 +501,14 @@ Khi sinh UI mới, Agent phải kiểm tra trước:
 
 Nếu có, bắt buộc tái sử dụng pattern hiện tại thay vì tạo một thiết kế mới hoàn toàn.
 
+---
+
+### Quy tắc Kiểm Tra & Quét Thành Phần UI (UI Component Scanning & Shadcn Rules)
+
+Khi cần tích hợp hoặc xây dựng một UI Component mới, AI Agent bắt buộc phải thực hiện các bước sau theo thứ tự:
+1. **Quét thư mục UI cục bộ**: Quét thư mục `frontend/src/components/ui/` và `frontend/src/components/common/` để kiểm tra xem component tương tự đã tồn tại hay chưa. Nếu đã có, bắt buộc phải tái sử dụng component cục bộ này.
+2. **Tìm kiếm & Tải Shadcn UI**: Nếu component chưa có cục bộ, Agent cần tìm kiếm thiết kế Shadcn UI tương ứng. Tìm mã nguồn component chính thức từ tài liệu Shadcn UI hoặc tìm component phù hợp trên internet để crawl/tải về dự án (ví dụ: dùng các công cụ tìm kiếm hoặc Stitch MCP).
+3. **Tạo mới thủ công**: Chỉ tiến hành thiết kế và lập trình mới component từ đầu nếu component đó không có sẵn trong Shadcn UI và không có giải pháp tương tự trong thư mục cục bộ của dự án.
 
 ---
 
