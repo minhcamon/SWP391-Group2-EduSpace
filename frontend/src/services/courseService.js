@@ -1,6 +1,21 @@
 import api from '@/lib/axios';
 
 const courseService = {
+  uploadMedia: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.post('/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data.data; // secure_url
+    } catch (error) {
+      console.error('Upload media error at CourseService:', error);
+      const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi tải file lên!';
+      throw new Error(errorMsg);
+    }
+  },
+
   createCourse: async (courseData) => {
     try {
       const response = await api.post('/course/create-course', courseData);
