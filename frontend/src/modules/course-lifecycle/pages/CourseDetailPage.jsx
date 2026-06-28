@@ -4,6 +4,7 @@ import {
   LuUsers, LuClock, LuLaptop,
   LuStar, LuCircleDot, LuUserCheck
 } from 'react-icons/lu';
+import Avatar from "@/components/common/Avatar";
 import CreatorFooter from '@/components/layouts/CreatorFooter';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -160,10 +161,10 @@ export default function CourseDetail() {
               {queueStudents.map((std, idx) => (
                 <div key={idx} className="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <img src={std.avatar} alt={std.name} className="w-8 h-8 rounded-full object-cover border border-slate-100" />
+                    <Avatar src={std.avatar} alt={std.name} className="w-8 h-8 border border-slate-100" />
                     <div>
                       <span className="text-xs font-bold text-neutral-dark block">{std.name}</span>
-                      <span className="text-[9px] text-gray-400 font-semibold block flex items-center gap-0.5">
+                      <span className="text-[9px] text-gray-400 font-semibold flex items-center gap-0.5">
                         <LuClock className="text-[10px]" /> Đã đợi: {std.joinedAt}
                       </span>
                     </div>
@@ -264,7 +265,7 @@ export default function CourseDetail() {
             {mentors.map((men, idx) => (
               <div key={idx} className="p-4 bg-slate-50 border border-slate-100/50 rounded-2xl flex flex-col justify-between items-center text-center space-y-4 hover:-translate-y-1 transition-all duration-300">
                 <div className="relative">
-                  <img src={men.avatar} alt={men.name} className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xs" />
+                  <Avatar src={men.avatar} alt={men.name} className="w-16 h-16 border-2 border-white shadow-xs" />
                   <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full ${men.status === 'ONLINE' ? 'bg-emerald-500' :
                     men.status === 'BUSY' ? 'bg-red-500' : 'bg-gray-400'
                     }`} />

@@ -1,4 +1,6 @@
 import { X, CheckCircle, PlayCircle, Lock, RefreshCw } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
+
 
 const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections, onSelectLesson }) => {
     return (
@@ -159,21 +161,12 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                                     <div className="flex -space-x-1.5 mt-0.5 shrink-0 pl-2">
                                                         {item.currentPartners.map((partner, idx) => (
                                                             <div key={idx} className="relative group/partner-tag">
-                                                                {partner.avatar ? (
-                                                                    <img
-                                                                        className="w-5 h-5 rounded-full border border-white object-cover shadow-sm hover:ring-2 hover:ring-primary hover:z-10 transition-all"
-                                                                        src={partner.avatar}
-                                                                        alt={partner.name}
-                                                                        title={`${partner.name} đang ở bài học này`}
-                                                                    />
-                                                                ) : (
-                                                                    <div
-                                                                        className={`w-5 h-5 rounded-full ${partner.bgColor || "bg-bg-sidebar"} ${partner.textColor || "text-neutral-medium"} flex items-center justify-center border border-white text-[9px] font-bold shadow-sm hover:ring-2 hover:ring-primary hover:z-10 transition-all`}
-                                                                        title={`${partner.name} đang ở bài học này`}
-                                                                    >
-                                                                        {partner.initials}
-                                                                    </div>
-                                                                )}
+                                                                <Avatar
+                                                                    src={partner.avatar}
+                                                                    alt={partner.name}
+                                                                    title={`${partner.name} đang ở bài học này`}
+                                                                    className="w-5 h-5 border border-white shadow-sm hover:ring-2 hover:ring-primary hover:z-10 transition-all"
+                                                                />
                                                             </div>
                                                         ))}
                                                     </div>

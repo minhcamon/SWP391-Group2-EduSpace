@@ -8,6 +8,7 @@ import {
   PlayCircle,
   ChevronRight,
 } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
 
 // Helper function to map lesson state to UI config, avoiding nested ternaries in JSX
 const getLessonStateConfig = (lesson, isUnlocked) => {
@@ -181,13 +182,11 @@ const CurrentModuleFocus = ({
                   {/* Partner Status representation */}
                   {isPartnerCurrent && partner && (
                     <div className="flex items-center gap-1.5 bg-sky-50 border border-sky-100 px-2 py-1 rounded-full text-[10px] font-bold text-primary animate-pulse">
-                      <div className="relative w-5 h-5 rounded-full overflow-hidden border border-primary">
-                        <img
-                          alt="Partner current learning"
-                          src={partner.avatarUrl || partner.avatar}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <Avatar
+                        src={partner.avatarUrl || partner.avatar}
+                        alt="Partner current learning"
+                        className="w-5 h-5 border border-primary"
+                      />
                       <span className="hidden sm:inline">
                         Đối tác đang ở đây
                       </span>
@@ -198,13 +197,11 @@ const CurrentModuleFocus = ({
                     !isPartnerCurrent &&
                     partner && (
                       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full text-[10px] font-semibold text-neutral-medium">
-                        <div className="w-4 h-4 rounded-full overflow-hidden grayscale opacity-70">
-                          <img
-                            alt="Partner completed"
-                            src={partner.avatarUrl || partner.avatar}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <Avatar
+                          src={partner.avatarUrl || partner.avatar}
+                          alt="Partner completed"
+                          className="w-4 h-4 grayscale opacity-70"
+                        />
                         <span className="hidden sm:inline text-[9px]">
                           Đối tác xong
                         </span>

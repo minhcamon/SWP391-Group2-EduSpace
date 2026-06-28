@@ -36,6 +36,9 @@ export const ClassPage = () => {
   const statusParam = searchParams.get("status");
 
   const isCreator = user?.role === "CREATOR";
+  const isInStudyGroup = classData?.activePersonnel?.some((group) =>
+    group.members?.some((member) => member.id?.toString() === user?.id?.toString())
+  );
   const [learnerTab, setLearnerTab] = useState("feed");
   const [creatorTab, setCreatorTab] = useState("pairs");
 
@@ -48,10 +51,6 @@ export const ClassPage = () => {
   useEffect(() => {
     if (!isLoading && classData) {
       console.log("classData: ", classData)
-      // const isWaitlist = classData.status === "WAITING" && statusParam !== "active";
-      // if (isWaitlist) {
-      //   navigate(`/courses/${classData.courseId}`);
-      // }
     }
   }, [isLoading, classData, statusParam, navigate]);
 
@@ -186,6 +185,15 @@ export const ClassPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {!isCreator && isInStudyGroup && (
+              <button
+                onClick={() => navigate(`/courses/${classData.courseId}/dashboard`)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white hover:bg-primary/95 text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all active:scale-[0.98]"
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                Xem tiến trình học tập
+              </button>
+            )}
             <Badge variant="roletag" className="py-1.5 px-4 rounded-full text-xs font-bold">
               Lớp hoạt động
             </Badge>

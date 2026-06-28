@@ -14,6 +14,8 @@ import CourseSidebar from "../components/CourseSidebar";
 import StudyGroup from "../components/StudyGroup";
 import useLearningArea from "../hooks/useLearningArea";
 import Badge from "@/components/ui/Badge";
+import Avatar from "@/components/common/Avatar";
+
 
 const LearningAreaPage = () => {
   const {
@@ -249,17 +251,11 @@ const LearningAreaPage = () => {
                     className="cursor-pointer hover:scale-105 transition-transform shrink-0"
                     title={`Xem hồ sơ của ${msg.sender}`}
                   >
-                    {msg.avatar ? (
-                      <img
-                        className="w-8 h-8 rounded-full object-cover border border-border-light/20 shadow-sm"
-                        src={msg.avatar}
-                        alt={msg.sender}
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-hover-light text-neutral-medium flex items-center justify-center text-xs font-bold border border-border-light/20 shadow-sm">
-                        {msg.sender.substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
+                    <Avatar
+                      src={msg.avatar}
+                      alt={msg.sender}
+                      className="w-8 h-8 border border-border-light/20 shadow-sm"
+                    />
                   </div>
                 )}
                 {msg.isMe && (

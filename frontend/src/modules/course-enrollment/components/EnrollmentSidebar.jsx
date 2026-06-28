@@ -1,5 +1,6 @@
 import { ArrowRight, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Avatar from "@/components/common/Avatar";
 import { Link } from "react-router";
 
 export const EnrollmentSidebar = ({
@@ -38,14 +39,13 @@ export const EnrollmentSidebar = ({
         {/* Avatars & Slots */}
         <div className="flex flex-wrap gap-2 mb-2">
           {waitlistMembers.map((member, i) => {
-            const avatarSrc = member.avatarUrl || '/images/default-avatar.png';
             return (
-              <img
+              <Avatar
                 key={member.id || i}
+                src={member.avatarUrl}
                 title={member.fullName || "Học viên"}
                 alt={member.fullName || "Student Avatar"}
-                className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
-                src={avatarSrc}
+                className="w-10 h-10 border-2 border-white shadow-sm"
               />
             );
           })}

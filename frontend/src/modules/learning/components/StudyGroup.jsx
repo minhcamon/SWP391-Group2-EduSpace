@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Target, Mail, User, Clock, X } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
+import Avatar from "@/components/common/Avatar";
 
 const StudyGroup = ({
   studyGroup,
@@ -39,17 +40,11 @@ const StudyGroup = ({
               key={member.id}
               className="relative shrink-0"
             >
-              {member.avatar ? (
-                <img
-                  alt={member.name}
-                  className="w-7 h-7 rounded-full ring-2 ring-white object-cover shadow-sm group-hover:ring-primary/20 transition-all"
-                  src={member.avatar}
-                />
-              ) : (
-                <div className={`w-7 h-7 rounded-full ${member.bgColor || "bg-bg-sidebar"} ${member.textColor || "text-neutral-medium"} flex items-center justify-center ring-2 ring-white text-[10px] font-bold shadow-sm group-hover:ring-primary/20 transition-all`}>
-                  {member.initials}
-                </div>
-              )}
+              <Avatar
+                src={member.avatar}
+                alt={member.name}
+                className="w-7 h-7 ring-2 ring-white shadow-sm group-hover:ring-primary/20 transition-all"
+              />
               <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${member.status === "online"
                   ? "bg-success"
                   : member.status === "idle"
@@ -86,17 +81,11 @@ const StudyGroup = ({
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative shrink-0">
-                    {member.avatar ? (
-                      <img
-                        alt={member.name}
-                        className="w-9 h-9 rounded-full object-cover border border-white shadow-sm"
-                        src={member.avatar}
-                      />
-                    ) : (
-                      <div className={`w-9 h-9 rounded-full ${member.bgColor || "bg-bg-sidebar"} ${member.textColor || "text-neutral-medium"} flex items-center justify-center text-xs font-bold border border-white shadow-sm`}>
-                        {member.initials}
-                      </div>
-                    )}
+                    <Avatar
+                      src={member.avatar}
+                      alt={member.name}
+                      className="w-9 h-9 border border-white shadow-sm"
+                    />
                     <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${member.status === "online"
                         ? "bg-success"
                         : member.status === "idle"
@@ -137,17 +126,11 @@ const StudyGroup = ({
           <div className="px-6 pb-6 relative">
             {/* Floating Avatar */}
             <div className="absolute -top-12 left-6">
-              {selectedPartner?.avatar ? (
-                <img
-                  alt={selectedPartner.name}
-                  className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-md"
-                  src={selectedPartner.avatar}
-                />
-              ) : (
-                <div className={`w-24 h-24 rounded-full ${selectedPartner?.bgColor || "bg-bg-sidebar"} ${selectedPartner?.textColor || "text-neutral-medium"} flex items-center justify-center border-4 border-white text-2xl font-bold shadow-md`}>
-                  {selectedPartner?.initials}
-                </div>
-              )}
+              <Avatar
+                src={selectedPartner?.avatar}
+                alt={selectedPartner?.name}
+                className="w-24 h-24 border-4 border-white shadow-md"
+              />
             </div>
 
             {/* Name and Basic Goals */}

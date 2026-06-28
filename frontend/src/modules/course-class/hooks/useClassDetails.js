@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router";
+import { useSearchParams } from "react-router";
 import { mockClasses } from "@/lib/mockData";
-import { toast } from "sonner";
-import waitlistService from "@/services/waitlistService";
+import classService from "@/services/classService";
 
 export const useClassDetails = (classId) => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [classData, setClassData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,16 +22,28 @@ export const useClassDetails = (classId) => {
             status: finalStatus,
           };
 
-          if (finalStatus === "WAITING") {
-            try {
-              const members = await waitlistService.getMembersInWaitlist(rawClass.courseId);
-              if (members) {
-                updatedClassData.currentStudents = members.length;
-                updatedClassData.membersWaiting = members;
-              }
-            } catch (waitlistErr) {
-              console.warn("Failed to fetch waitlist members for class details:", waitlistErr);
+          try {
+            const communityResponse = await classService.getCommunity(classId);
+            const communityData = communityResponse?.data;
+            if (communityData) {
+              const mappedPersonnel = communityData.map((group, idx) => {
+                const members = (group.members || []).map(member => ({
+                  id: member.userId,
+                  name: member.fullName || member.username || "Học viên",
+                  avatar: member.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100"
+                }));
+
+                return {
+                  id: group.studyGroupId || idx,
+                  pairName: `Nhóm ${String(idx + 1).padStart(2, '0')}`,
+                  status: group.status === "ACTIVE" || group.status === "OPENING" ? "ACTIVE" : "IN BREAK",
+                  members
+                };
+              });
+              updatedClassData.activePersonnel = mappedPersonnel;
             }
+          } catch (communityErr) {
+            console.warn("Failed to fetch community groups for class details:", communityErr);
           }
 
           setClassData(updatedClassData);
@@ -73,32 +83,11 @@ export const useClassDetails = (classId) => {
     });
   };
 
-  const cancelSearch = async () => {
-    try {
-      if (!classData || !classData.courseId) {
-        toast.error("Không tìm thấy thông tin khóa học để hủy hàng chờ.");
-        return;
-      }
-      await waitlistService.leaveWaitlist(classData.courseId);
-      toast.success("Hủy tìm kiếm và rời hàng chờ thành công!");
-      navigate(`/courses/${classData.courseId}`);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Hủy hàng chờ thất bại. Vui lòng thử lại!");
-    }
-  };
-
-  const findStudyBuddy = () => {
-    toast.success("Hệ thống đang chạy thuật toán ghép cặp ngẫu nhiên...");
-  };
-
   return {
     classData,
     isLoading,
     error,
     addReaction,
-    cancelSearch,
-    findStudyBuddy,
   };
 };
 

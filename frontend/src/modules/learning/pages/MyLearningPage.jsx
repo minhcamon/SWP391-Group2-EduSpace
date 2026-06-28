@@ -2,50 +2,12 @@ import { useEffect } from "react";
 import useMyLearning from "../hooks/useMyLearning";
 import MyLearningHero from "../components/MyLearningHero";
 import EnrolledCourseCard from "../components/EnrolledCourseCard";
-// import AvailableCourseCard from "../components/AvailableCourseCard";
-// import { toast } from "sonner";
-
-const myLearningCourses = [
-  {
-    courseId: 0,
-    courseName: "string",
-    courseDescription: "string",
-    progressPercentage: 0.1,
-    classId: 0,
-    currentLessonId: 0,
-    currentLessonTitle: "string",
-    currentModuleTitle: "string",
-  },
-  {
-    courseId: 1,
-    courseName: "string",
-    courseDescription: "string",
-    progressPercentage: 0.1,
-    classId: 0,
-    currentLessonId: 0,
-    currentLessonTitle: "string",
-    currentModuleTitle: "string",
-  },
-  {
-    courseId: 2,
-    courseName: "string",
-    courseDescription: "string",
-    progressPercentage: 0.1,
-    classId: 0,
-    currentLessonId: 0,
-    currentLessonTitle: "string",
-    currentModuleTitle: "string",
-  },
-];
 
 const MyLearningPage = () => {
   const {
     isLoading,
-    // activeCourses,
-    // availableCourses,
-    // myLearningCourses,
+    myLearningCourses = [],
     handleContinueLearning,
-    // handleJoinCohort,
     fetchMyLearningCourses,
   } = useMyLearning("My Learning Page");
 
@@ -66,6 +28,10 @@ const MyLearningPage = () => {
     );
   }
 
+  const activeCourses = myLearningCourses.filter((c) => c.progressPercentage > 0 && c.progressPercentage < 100);
+  const waitingCourses = myLearningCourses.filter((c) => c.progressPercentage === 0);
+  const completedCourses = myLearningCourses.filter((c) => c.progressPercentage === 100);
+
   return (
     <main className="flex-1 p-6 md:p-10 mx-auto w-full space-y-10">
       {/* Hero Section */}
@@ -80,22 +46,27 @@ const MyLearningPage = () => {
         </div>
 
         <div className="mt-5 px-2">
-          Hiện tại bạn đang có{" "}
-          <strong className="text-secondary">{myLearningCourses.length}</strong>{" "}
+          Hiện tại bạn đang học{" "}
+          <strong className="text-secondary">{activeCourses.length}</strong>{" "}
           khóa học
         </div>
 
         {/* Courses Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Active Enrolled Courses */}
-          {myLearningCourses.map((course) => (
-            <EnrolledCourseCard
-              key={course.courseId}
-              course={course}
-              onContinue={handleContinueLearning}
-            />
-          ))}
-        </div>
+        {activeCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {activeCourses.map((course) => (
+              <EnrolledCourseCard
+                key={course.courseId}
+                course={course}
+                onContinue={handleContinueLearning}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 py-6 text-sm text-neutral-light bg-bg-card border border-border-light/20 rounded-xl">
+            Bạn chưa bắt đầu học khóa học nào.
+          </div>
+        )}
       </section>
 
       {/* Courses / Cohorts Section */}
@@ -108,21 +79,26 @@ const MyLearningPage = () => {
 
         <div className="mt-5 px-2">
           Hiện tại bạn có{" "}
-          <strong className="text-secondary">{myLearningCourses.length}</strong>{" "}
+          <strong className="text-secondary">{waitingCourses.length}</strong>{" "}
           khóa học trong danh sách chờ
         </div>
 
         {/* Courses Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Active Enrolled Courses */}
-          {myLearningCourses.map((course) => (
-            <EnrolledCourseCard
-              key={course.courseId}
-              course={course}
-              onContinue={handleContinueLearning}
-            />
-          ))}
-        </div>
+        {waitingCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {waitingCourses.map((course) => (
+              <EnrolledCourseCard
+                key={course.courseId}
+                course={course}
+                onContinue={handleContinueLearning}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 py-6 text-sm text-neutral-light bg-bg-card border border-border-light/20 rounded-xl">
+            Không có khóa học nào trong danh sách chờ.
+          </div>
+        )}
       </section>
 
       {/* Courses / Cohorts Section */}
@@ -135,41 +111,27 @@ const MyLearningPage = () => {
 
         <div className="mt-5 px-2">
           Hiện tại bạn đã hoàn thành{" "}
-          <strong className="text-secondary">{myLearningCourses.length}</strong>{" "}
+          <strong className="text-secondary">{completedCourses.length}</strong>{" "}
           khóa học
         </div>
 
         {/* Courses Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Active Enrolled Courses */}
-          {myLearningCourses.map((course) => (
-            <EnrolledCourseCard
-              key={course.courseId}
-              course={course}
-              onContinue={handleContinueLearning}
-            />
-          ))}
-        </div>
+        {completedCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {completedCourses.map((course) => (
+              <EnrolledCourseCard
+                key={course.courseId}
+                course={course}
+                onContinue={handleContinueLearning}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 py-6 text-sm text-neutral-light bg-bg-card border border-border-light/20 rounded-xl">
+            Bạn chưa hoàn thành khóa học nào.
+          </div>
+        )}
       </section>
-
-      {/* Courses / Cohorts Section */}
-      {/* <section className="space-y-6"> */}
-      {/* <div className="flex items-center justify-between px-2">
-                    <h3 className="text-xl md:text-2xl font-bold text-neutral-dark">
-                        Khóa học mới
-                    </h3>
-                </div> */}
-      {/* Available/Recommended Courses */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {availableCourses.map((course) => (
-                        <AvailableCourseCard
-                            key={course.id}
-                            course={course}
-                            onJoin={handleJoinCohort}
-                        />
-                    ))}
-                </div> */}
-      {/* </section> */}
     </main>
   );
 };

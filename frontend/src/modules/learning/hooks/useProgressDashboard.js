@@ -11,6 +11,7 @@ const useProgressDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [modules, setModules] = useState([]);
     const [focusModuleId, setFocusModuleId] = useState(null);
+    const [classId, setClassId] = useState(null);
 
     // Fetch Details on Mount
     useEffect(() => {
@@ -27,10 +28,11 @@ const useProgressDashboard = () => {
                         throw new Error("Bạn chưa tham gia lớp học nào cho khóa học này.");
                     }
                     
-                    const classId = currentCourse.classId;
+                    const classIdVal = currentCourse.classId;
+                    setClassId(classIdVal);
 
                     // 2. Fetch the real dashboard data using classId
-                    const data = await learnService.getProgressDashboard(classId);
+                    const data = await learnService.getProgressDashboard(classIdVal);
                     setModules(data.modules || []);
                     setFocusModuleId(data.focusModuleId);
                 } catch (error) {
@@ -62,7 +64,8 @@ const useProgressDashboard = () => {
         modules,
         currentModule,
         handleSayHi,
-        courseId
+        courseId,
+        classId
     };
 };
 

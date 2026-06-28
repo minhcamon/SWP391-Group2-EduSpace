@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
+import Avatar from "@/components/common/Avatar";
 
 export const MentorPairsMonitor = ({ pairs = [] }) => {
   return (
@@ -11,15 +12,15 @@ export const MentorPairsMonitor = ({ pairs = [] }) => {
         >
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3.5">
-              <img
-                alt="Student 1"
-                className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
+              <Avatar
                 src={p.avatar1}
+                alt="Student 1"
+                className="w-10 h-10 border-2 border-white shadow-sm"
               />
-              <img
-                alt="Student 2"
-                className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
+              <Avatar
                 src={p.avatar2}
+                alt="Student 2"
+                className="w-10 h-10 border-2 border-white shadow-sm"
               />
             </div>
             <div>

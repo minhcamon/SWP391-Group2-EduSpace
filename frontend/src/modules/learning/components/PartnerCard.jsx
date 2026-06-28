@@ -1,4 +1,5 @@
 import { Target, Hand } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
 
 const PartnerCard = ({ partner, handleSayHi }) => {
     if (!partner) return null;
@@ -9,11 +10,11 @@ const PartnerCard = ({ partner, handleSayHi }) => {
                 Bạn đồng hành của bạn
             </h2>
             
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm shrink-0">
-                <img
+            <div className="relative w-24 h-24 shrink-0">
+                <Avatar
+                    src={partner.avatarUrl || partner.avatar}
                     alt="Partner avatar"
-                    className="w-full h-full object-cover"
-                    src={partner.avatarUrl || partner.avatar || "/images/default-avatar.png"}
+                    className="w-full h-full border-4 border-slate-100 shadow-sm"
                 />
                 <span className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>
             </div>

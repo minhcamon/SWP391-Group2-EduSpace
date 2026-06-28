@@ -1,4 +1,5 @@
 import { Users, Plus } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
 
 export const ClassStatusSidebar = ({
   currentStudents = 8,
@@ -23,37 +24,16 @@ export const ClassStatusSidebar = ({
       {/* Avatar Grid */}
       <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-6">
         {members.map((member, i) => {
-          if (member.avatarUrl) {
-            return (
-              <img
-                key={member.id || i}
-                title={member.fullName || member.name || "Học viên"}
-                alt={member.fullName || member.name || "Student Avatar"}
-                className="w-10 h-10 rounded-full border border-border-light/20 object-cover shadow-sm"
-                src={member.avatarUrl}
-              />
-            );
-          } else if (member.initials) {
-            return (
-              <div
-                key={member.id || i}
-                title={member.name}
-                className={`w-10 h-10 rounded-full border border-border-light/20 flex items-center justify-center overflow-hidden shadow-sm font-bold text-xs uppercase ${member.color}`}
-              >
-                {member.initials}
-              </div>
-            );
-          } else {
-            return (
-              <img
-                key={member.id || i}
-                title={member.fullName || member.name || "Học viên"}
-                alt={member.fullName || member.name || "Student Avatar"}
-                className="w-10 h-10 rounded-full border border-border-light/20 object-cover shadow-sm"
-                src="/images/default-avatar.png"
-              />
-            );
-          }
+          const name = member.fullName || member.name || "Học viên";
+          return (
+            <Avatar
+              key={member.id || i}
+              title={name}
+              alt={`${name} Avatar`}
+              className="w-10 h-10 border border-border-light/20 shadow-sm"
+              src={member.avatarUrl}
+            />
+          );
         })}
         {Array.from({ length: emptySlots }).map((_, i) => (
           <div

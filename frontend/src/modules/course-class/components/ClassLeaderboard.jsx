@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import Avatar from "@/components/common/Avatar";
 
 export const ClassLeaderboard = ({
   leaderboardMode = "individual",
@@ -75,17 +76,11 @@ export const ClassLeaderboard = ({
                 </div>
 
                 <div className="col-span-5 flex items-center gap-3">
-                  {item.avatar ? (
-                    <img
-                      alt={item.name}
-                      className="w-10 h-10 rounded-full object-cover border border-border-light/25"
-                      src={item.avatar}
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs">
-                      {item.initials}
-                    </div>
-                  )}
+                  <Avatar
+                    src={item.avatar}
+                    alt={item.name}
+                    className="w-10 h-10 border border-border-light/25"
+                  />
                   <div>
                     <p
                       className={`text-sm ${
@@ -147,15 +142,15 @@ export const ClassLeaderboard = ({
 
                 <div className="col-span-5 flex items-center gap-3">
                   <div className="flex -space-x-3">
-                    <img
-                      alt="Student 1"
-                      className="w-9 h-9 rounded-full object-cover border-2 border-white"
+                    <Avatar
                       src={item.avatars[0]}
+                      alt="Student 1"
+                      className="w-9 h-9 border-2 border-white"
                     />
-                    <img
-                      alt="Student 2"
-                      className="w-9 h-9 rounded-full object-cover border-2 border-white"
+                    <Avatar
                       src={item.avatars[1]}
+                      alt="Student 2"
+                      className="w-9 h-9 border-2 border-white"
                     />
                   </div>
                   <div>

@@ -1,10 +1,11 @@
 import { TrendingUp, Database } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
 
 export const ClassLeaderboardSidebar = ({
   points = "2,150 pts",
   progress = "Top 20% Lớp",
   partnerName = "Thúy Hạnh",
-  partnerAvatar = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100",
+  partnerAvatar,
 }) => {
   return (
     <div className="space-y-6">
@@ -45,10 +46,10 @@ export const ClassLeaderboardSidebar = ({
         </div>
 
         <div className="relative">
-          <img
-            alt={partnerName}
-            className="w-11 h-11 rounded-full object-cover border border-border-light/25 shadow-sm"
+          <Avatar
             src={partnerAvatar}
+            alt={partnerName}
+            className="w-11 h-11 border border-border-light/25 shadow-sm"
           />
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-xs"></span>
         </div>

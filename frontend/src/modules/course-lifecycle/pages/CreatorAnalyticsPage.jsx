@@ -3,6 +3,7 @@ import {
   LuUsers, LuGraduationCap, LuInfo, LuTrendingUp,
   LuSearch, LuFilter, LuBookOpen, LuChevronDown, LuActivity
 } from 'react-icons/lu';
+import Avatar from "@/components/common/Avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import {
   Table,
@@ -359,10 +360,10 @@ export default function CreatorAnalytics() {
                           .map((std) => (
                             <TableRow key={std.id} className="hover:bg-slate-50/50 transition-colors">
                               <TableCell className="py-3 pl-2 flex items-center gap-3">
-                                <img
+                                <Avatar
                                   src={std.avatar}
                                   alt={std.name}
-                                  className="w-8 h-8 rounded-full object-cover border border-slate-100 shrink-0"
+                                  className="w-8 h-8 border border-slate-100 shrink-0"
                                 />
                                 <span className="font-bold text-neutral-dark">{std.name}</span>
                               </TableCell>

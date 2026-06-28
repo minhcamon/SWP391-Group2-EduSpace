@@ -1,4 +1,5 @@
 import { Send } from "lucide-react";
+import Avatar from "@/components/common/Avatar";
 
 export const MentorClassChat = ({
   chatMessages = [],
@@ -37,10 +38,10 @@ export const MentorClassChat = ({
               className={`flex gap-2 ${msg.isSelf ? "flex-row-reverse" : "items-start"}`}
             >
               {!msg.isSelf && (
-                <img
+                <Avatar
+                  src={msg.avatar}
                   alt={msg.sender}
-                  className="w-7 h-7 rounded-full object-cover border border-border-light/20 shadow-sm"
-                  src={msg.avatar || "/images/default-avatar.png"}
+                  className="w-7 h-7 border border-border-light/20 shadow-sm"
                 />
               )}
               <div className={`max-w-[75%] ${msg.isSelf ? "text-right" : ""}`}>

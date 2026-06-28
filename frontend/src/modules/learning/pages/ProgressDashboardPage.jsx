@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import useProgressDashboard from "../hooks/useProgressDashboard";
 import PartnerCard from "../components/PartnerCard";
 import SidebarModulesList from "../components/SidebarModulesList";
@@ -7,7 +8,7 @@ import CurrentModuleFocus from "../components/CurrentModuleFocus";
 
 const ProgressDashboardPage = () => {
   const navigate = useNavigate();
-  const { isLoading, partner, modules, currentModule, handleSayHi, courseId } =
+  const { isLoading, partner, modules, currentModule, handleSayHi, courseId, classId } =
     useProgressDashboard();
 
   const handleContinueLearning = () => {
@@ -29,6 +30,25 @@ const ProgressDashboardPage = () => {
 
   return (
     <div className="min-h-screen max-w-350 mx-auto bg-bg-base text-neutral-dark py-8 px-4 sm:px-6 md:px-10 transition-colors duration-300">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-border-light/25">
+        <div>
+          <h1 className="text-2xl font-extrabold text-neutral-dark">Tiến trình học tập</h1>
+          <p className="text-xs text-neutral-medium mt-1">
+            Theo dõi lộ trình bài học và hoạt động học tập nhóm
+          </p>
+        </div>
+        {classId && (
+          <button
+            onClick={() => navigate(`/classes/${classId}`)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/15 text-primary text-xs font-bold rounded-xl border border-primary/20 cursor-pointer shadow-xs transition-all active:scale-[0.98]"
+          >
+            <ArrowLeft size={14} />
+            Quay về lớp học hiện tại
+          </button>
+        )}
+      </div>
+
       <div className="">
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
           {/* Left Sidebar */}

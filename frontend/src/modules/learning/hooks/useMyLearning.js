@@ -14,20 +14,17 @@ const useMyLearning = (usingPage) => {
   const [myLearningCourses, setMyLearningCourses] = useState([]);
 
   const fetchMyLearningCourses = useCallback(async () => {
-    try {
-      const data = await learnService.getMyLearningCourses();
-      setMyLearningCourses(data);
-    } catch (error) {
-      toast.error(
-        error.message || `Không thể lấy thông tin khóa học tại ${usingPage}.`,
-      );
-    }
+    await runWithLoading(setIsLoading, async () => {
+      try {
+        const data = await learnService.getMyLearningCourses();
+        setMyLearningCourses(data);
+      } catch (error) {
+        toast.error(
+          error.message || `Không thể lấy thông tin khóa học tại ${usingPage}.`,
+        );
+      }
+    });
   }, [usingPage]);
-
-  // Fetch learning data on mount
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
 
   // Action handlers
   const handleContinueLearning = (courseId) => {

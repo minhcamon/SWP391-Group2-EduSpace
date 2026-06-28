@@ -60,7 +60,7 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
 
           {/* Action Button */}
           <Button
-            onClick={() => onContinue(course.id)}
+            onClick={() => onContinue(course.courseId)}
             variant="outline"
             className="w-full border-primary text-primary hover:bg-primary hover:text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
           >
