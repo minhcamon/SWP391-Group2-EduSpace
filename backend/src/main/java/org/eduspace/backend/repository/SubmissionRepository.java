@@ -1,5 +1,7 @@
 package org.eduspace.backend.repository;
 
+import java.util.List;
+
 import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.enums.SubmissionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +19,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     long countCompletedAssignments(@Param("classMemberId") Long classMemberId,
             @Param("courseId") Long courseId,
             @Param("status") SubmissionStatus status);
+
+            
+    @Query("SELECT s FROM Submission s WHERE s.member.id = :learnerId AND s.assignment.module.id = :moduleId")
+    List<Submission> findByLearnerIdAndModuleId(@Param("learnerId") Long learnerId, @Param("moduleId") Long moduleId);
 }
