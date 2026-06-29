@@ -28,4 +28,15 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
             @Param("userId") Long userId,
             @Param("courseId") Long courseId,
             @Param("status") LearnerStatus status);
+
+    @Query("""
+                SELECT COUNT(cm) > 0 FROM ClassMember cm
+                WHERE cm.user.id = :userId
+                  AND cm.courseClass.course.id = :courseId
+                  AND cm.learnerStatus IN :statuses
+            """)
+    boolean existsEnrollment(
+            @Param("userId") Long userId,
+            @Param("courseId") Long courseId,
+            @Param("statuses") List<LearnerStatus> statuses);
 }

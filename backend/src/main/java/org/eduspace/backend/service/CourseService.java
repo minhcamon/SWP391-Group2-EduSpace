@@ -383,6 +383,29 @@ public class CourseService {
         .build();
   }
 
+  public LessonResponse getLessonById(Long lessonId, Long userId) {
+    Lesson lesson = lessonRepository.findById(lessonId)
+        .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + lessonId));
+
+    Long courseId = lesson.getModule().getCourse().getId();
+
+    boolean isEnrolled = classMemberRepository.existsEnrollment(
+        userId, courseId,
+        List.of(LearnerStatus.ACTIVE, LearnerStatus.NEED_REVIEW));
+
+    if (!isEnrolled) {
+      throw new RuntimeException("You are not enrolled in this course");
+    }
+
+    return LessonResponse.builder()
+        .id(lesson.getId())
+        .title(lesson.getTitle())
+        .contentType(lesson.getContentType().name())
+        .contentUrl(lesson.getContentUrl())
+        .sortOrder(lesson.getSortOrder())
+        .build();
+  }
+
   public void deleteCourse(Long courseId) {
     Course course = courseRepository.findById(courseId)
         .orElseThrow(() -> new RuntimeException("Course not found"));

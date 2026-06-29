@@ -14,6 +14,7 @@ import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
+import org.eduspace.backend.dto.course.response.LessonResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
@@ -182,6 +183,21 @@ public class CourseController {
     CourseResponse course = courseService.getCourseById(id);
     return ResponseEntity.ok(
         APIResponse.success("Course retrieved successfully", course));
+  }
+
+  @Operation(summary = "Lấy chi tiết một bài học theo ID", description = "Lấy thông tin chi tiết của một bài học. Chỉ học viên đã tham gia khóa học (đang học) mới xem được.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Lấy bài học thành công"),
+      @ApiResponse(responseCode = "400", description = "ID bài học không hợp lệ, bài học không tồn tại hoặc chưa tham gia khóa học"),
+      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ")
+  })
+  @GetMapping("/lessons/{lessonId}")
+  public ResponseEntity<APIResponse<LessonResponse>> getLessonById(
+      @PathVariable Long lessonId) {
+    Long userId = SecurityUtil.getCurrentUserId();
+    LessonResponse lesson = courseService.getLessonById(lessonId, userId);
+    return ResponseEntity.ok(
+        APIResponse.success("Lesson retrieved successfully", lesson));
   }
 
   // ---------------LEARNER-----------------
