@@ -5,6 +5,7 @@ import java.util.List;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.progress.response.ModuleStatusResponse;
 import org.eduspace.backend.dto.study_group.request.SendMessageRequest;
+import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.enums.LearnerModuleStatus;
 import org.eduspace.backend.security.SecurityUtil;
@@ -93,5 +94,12 @@ public class StudyGroupController {
             return ResponseEntity.badRequest()
                     .body(APIResponse.error(400, e.getMessage(), null));
         }
+    }
+
+    // API lấy danh sách thành viên trong nhóm
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<GroupMemberDTO>> getGroupMembers(@PathVariable Long groupId) {
+        List<GroupMemberDTO> members = studyGroupService.getMembersInGroup(groupId);
+        return ResponseEntity.ok(members);
     }
 }

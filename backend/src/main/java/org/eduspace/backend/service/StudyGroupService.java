@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eduspace.backend.dto.study_group.request.SendMessageRequest;
+import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMemberInfo;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
@@ -127,5 +128,8 @@ public class StudyGroupService {
         }
 
         return groups;
+    }
+     public List<GroupMemberDTO> getMembersInGroup(Long studyGroupId) {
+        return groupMemberRepository.findMembersByStudyGroupId(studyGroupId);
     }
 }

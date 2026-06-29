@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.eduspace.backend.entity.GroupMember;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.entity.ClassMember;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -54,4 +55,13 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
         Optional<Long> findStudyGroupIdByMemberAndModule(
                         @Param("classMemberId") Long classMemberId,
                         @Param("moduleId") Long moduleId);
+
+        // Sử dụng Constructor Expression (đường dẫn package đầy đủ) để JPA tự động map dữ liệu thô từ Database thành Object DTO ngay trong câu lệnh truy vấn
+        @Query("SELECT new org.eduspace.backend.dto.group.GroupMemberDTO(u.id, u.fullName, u.email, u.username, u.avatarUrl, u.totalExp) "
+                        +
+                        "FROM GroupMember gm " +
+                        "JOIN gm.member cm " +
+                        "JOIN cm.user u " +
+                        "WHERE gm.group.id = :studyGroupId")
+        List<GroupMemberDTO> findMembersByStudyGroupId(@Param("studyGroupId") Long studyGroupId);
 }

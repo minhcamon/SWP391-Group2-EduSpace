@@ -17,7 +17,7 @@ public class Module {
     private Long id;
 
     @Column(name = "course_id", nullable = false)
-    private Long courseId; // Hoặc @ManyToOne trỏ tới Course entity nếu có
+    private Long courseId;
 
     @Column(nullable = false)
     private String title;
@@ -33,7 +33,6 @@ public class Module {
     @Column(name = "sort_order")
     private Integer sortOrder;
 
-    // Một Module có nhiều Assignments (Bài tập)
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL)
     private List<Assignment> assignments;
 }
