@@ -1,6 +1,7 @@
 package org.eduspace.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.enums.SubmissionStatus;
@@ -22,4 +23,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     @Query("SELECT s FROM Submission s WHERE s.learnerId = :learnerId AND s.assignment.module.id = :moduleId")
     List<Submission> findByLearnerIdAndModuleId(@Param("learnerId") Long learnerId, @Param("moduleId") Long moduleId);
+
+    Optional<Submission> findByMemberIdAndAssignmentId(Long memberId, Long assignmentId);
 }
