@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupMemberDTO {
-    private Long user_id;          // user_id
+    private Long id;          // user_id
     private String fullName;
     private String email;
     private String username;

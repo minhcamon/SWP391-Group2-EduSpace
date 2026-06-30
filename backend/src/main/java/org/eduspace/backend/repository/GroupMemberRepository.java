@@ -56,12 +56,12 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
                         @Param("classMemberId") Long classMemberId,
                         @Param("moduleId") Long moduleId);
 
-        // Sử dụng Constructor Expression (đường dẫn package đầy đủ) để JPA tự động map dữ liệu thô từ Database thành Object DTO ngay trong câu lệnh truy vấn
-        @Query("SELECT new org.eduspace.backend.dto.group.GroupMemberDTO(u.id, u.fullName, u.email, u.username, u.avatarUrl, u.totalExp) "
-                        +
+        
+        @Query("SELECT u.id as id, u.fullName as fullName, u.email as email, " +
+                        "u.username as username, u.avatarUrl as avatarUrl, u.totalExp as totalExp " +
                         "FROM GroupMember gm " +
-                        "JOIN gm.member cm " +
+                        "JOIN gm.classMember cm " +
                         "JOIN cm.user u " +
-                        "WHERE gm.group.id = :studyGroupId")
+                        "WHERE gm.studyGroup.id = :studyGroupId")
         List<GroupMemberDTO> findMembersByStudyGroupId(@Param("studyGroupId") Long studyGroupId);
 }
