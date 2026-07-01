@@ -1,3 +1,6 @@
 .idea/
 .vscode/
 package.json
+backend/Dockerfile
+frontend/Dockerfile
+docker-compose.yaml
