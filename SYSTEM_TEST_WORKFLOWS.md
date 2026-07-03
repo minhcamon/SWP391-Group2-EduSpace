@@ -32,6 +32,9 @@ From the project root:
 docker compose up -d --build
 cd backend
 .\mvnw.cmd "-Dtest=*SystemTest" "-Dsystem.test.base-url=http://localhost" test
+.\mvnw.cmd "-Dtest=*AuthenticationSystemTest" "-Dsystem.test.base-url=http://localhost" test
+
+.\mvnw.cmd "-Dtest=AuthenticationSystemTest" "-Dsystem.test.base-url=http://localhost" "-Dheadless=true" test
 ```
 
 Default system-test endpoints are backend `http://localhost:8080/api` and MySQL `localhost:3306/swp`. They can be overridden with `SYSTEM_TEST_API_URL`, `SYSTEM_TEST_DB_URL`, `SYSTEM_TEST_DB_USERNAME`, and `SYSTEM_TEST_DB_PASSWORD`.

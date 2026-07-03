@@ -40,9 +40,10 @@ abstract class SystemTestSupport {
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1000");
-        if (Boolean.getBoolean("headless")) {
-            options.addArguments("--headless=new");
-        }
+        options.addArguments("--headless=new");
+        // if (Boolean.getBoolean("headless")) {
+        //     options.addArguments("--headless=new");
+        // }
         
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
