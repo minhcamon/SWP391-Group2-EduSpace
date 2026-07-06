@@ -40,4 +40,7 @@ public class Submission {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private SubmissionStatus status = SubmissionStatus.SUBMITTED;
+
+    @OneToOne(mappedBy = "submission", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private PeerReview peerReview;
 }

@@ -8,10 +8,13 @@ import java.time.LocalDateTime;
 
 import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
 import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
+import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.ClassMember;
+import org.eduspace.backend.entity.PeerReview;
 import org.eduspace.backend.repository.AssignmentRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
+import org.eduspace.backend.repository.PeerReviewRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
     private final ClassMemberRepository classMemberRepository;
+    private final PeerReviewRepository peerReviewRepository;
 
     @Transactional
     public SubmissionResponseDTO submitAssignment(Long learnerId, SubmitAssignmentRequest request) {
@@ -33,24 +37,41 @@ public class SubmissionService {
                 .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
 
         Submission submission = Submission.builder()
-                        .assignment(assignment)
-                        .member(member)
-                        .submissionContent(request.getSubmissionContent())
-                        .submittedAt(LocalDateTime.now())
-                        .status(SubmissionStatus.SUBMITTED)
-                        .build();
+                .assignment(assignment)
+                .member(member)
+                .submissionContent(request.getSubmissionContent())
+                .submittedAt(LocalDateTime.now())
+                .status(SubmissionStatus.SUBMITTED)
+                .build();
 
         Submission savedSubmission = submissionRepository.save(submission);
 
         return SubmissionResponseDTO.builder()
-            .id(savedSubmission.getId())
-            .assignmentId(assignment.getId())
-            .assignmentTitle(assignment.getTitle())
-            .memberId(member.getId())
-            .learnerName(member.getUser().getFullName())
-            .submissionContent(savedSubmission.getSubmissionContent())
-            .submittedAt(savedSubmission.getSubmittedAt())
-            .status(savedSubmission.getStatus().name())
-            .build();
+                .id(savedSubmission.getId())
+                .assignmentId(assignment.getId())
+                .assignmentTitle(assignment.getTitle())
+                .memberId(member.getId())
+                .learnerName(member.getUser().getFullName())
+                .submittedAt(savedSubmission.getSubmittedAt())
+                .status(savedSubmission.getStatus().name())
+                .build();
+    }
+
+    public SubmissionReviewResponse getSubmissionReview(Long classId, Long userId, Long assignmentId) {
+        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+
+        Submission submission = submissionRepository.findByMemberIdAndAssignmentId(classMember.getId(), assignmentId)
+                .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
+
+        PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
+                .orElseThrow(() -> new RuntimeException("Peer Review không tồn tại!"));
+
+        return SubmissionReviewResponse.builder()
+                .reviewId(peerReview.getId())
+                .submissionId(submission.getId())
+                .rubricCriterias(peerReview.getCriteriaScores())
+                .comments(peerReview.getComments())
+                .build();
     }
 }

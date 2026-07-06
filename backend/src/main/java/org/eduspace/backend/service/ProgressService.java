@@ -16,6 +16,9 @@ import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.CourseClass;
 import org.eduspace.backend.entity.CourseModule;
 import org.eduspace.backend.entity.Lesson;
+import org.eduspace.backend.entity.Assignment;
+import org.eduspace.backend.entity.Submission;
+import org.eduspace.backend.dto.progress.response.AssignmentProgressResponse;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
 import org.eduspace.backend.helper.ProgressHelper;
@@ -220,6 +223,26 @@ public class ProgressService {
       List<LessonProgressResponse> finalLessonResponses = isLocked ? new ArrayList<>() : lessonResponses;
       PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
 
+      List<Assignment> assignments = assignmentRepository.findAllByModuleId(module.getId());
+      List<AssignmentProgressResponse> assignmentResponses = new ArrayList<>();
+      if (!isLocked) {
+          for (Assignment assignment : assignments) {
+              Submission submission = submissionRepository.findByMemberIdAndAssignmentId(classMember.getId(), assignment.getId()).orElse(null);
+              String assignStatus = "NOT_STARTED";
+              boolean assignCompleted = false;
+              if (submission != null) {
+                  assignStatus = submission.getStatus().name();
+                  assignCompleted = submission.getStatus() == SubmissionStatus.GRADED;
+              }
+              assignmentResponses.add(AssignmentProgressResponse.builder()
+                  .id(assignment.getId())
+                  .title(assignment.getTitle())
+                  .status(assignStatus)
+                  .isCompleted(assignCompleted)
+                  .build());
+          }
+      }
+
       modulesProgress.add(ModuleProgressResponse.builder()
           .id(module.getId())
           .title(module.getTitle())
@@ -230,6 +253,7 @@ public class ProgressService {
           .completedLessons((int) completedLessons)
           .totalLessons((int) totalLessons)
           .lessons(finalLessonResponses)
+          .assignments(assignmentResponses)
           .partner(finalPartnerResponse)
           .studyGroupId(studyGroupId)
           .build());

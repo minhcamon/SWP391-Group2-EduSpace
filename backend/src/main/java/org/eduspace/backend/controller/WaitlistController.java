@@ -9,14 +9,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/waitlist")
 @RequiredArgsConstructor
+@Tag(name = "Waitlist", description = "Các API liên quan đến danh sách chờ (Waitlist) của khóa học")
 public class WaitlistController {
     private final WaitlistService waitlistService;
 
+    @Operation(summary = "Lấy danh sách học viên trong Waitlist", description = "Xem danh sách những người đang ở trong hàng chờ của khóa học.")
     @GetMapping("/members/{courseId}")
     @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<List<UserResponse>>> getMembersInWaitlist(@PathVariable Long courseId) {
@@ -24,6 +29,7 @@ public class WaitlistController {
         return ResponseEntity.ok(APIResponse.success("Retrieve all members in waitlist successfully!", members));
     }
 
+    @Operation(summary = "Rời khỏi Waitlist", description = "Học viên chủ động rời khỏi hàng chờ.")
     @DeleteMapping("/leave/{courseId}")
     @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<Object>> leaveWaitlist(@PathVariable Long courseId) {
@@ -32,6 +38,7 @@ public class WaitlistController {
         return ResponseEntity.ok(APIResponse.success("Leave waitlist successfully!", null));
     }
 
+    @Operation(summary = "Đăng ký vào Waitlist", description = "Học viên đăng ký tham gia khóa học và đưa vào danh sách chờ.")
     @PostMapping("/enroll/{courseId}")
     @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<APIResponse<Object>> enrollWaitlist(@PathVariable Long courseId) {

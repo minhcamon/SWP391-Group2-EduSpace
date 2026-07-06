@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
-import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
-import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
@@ -21,271 +19,256 @@ import org.eduspace.backend.dto.progress.response.CourseProgressDashboardRespons
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.eduspace.backend.service.ProgressService;
-import org.eduspace.backend.service.SubmissionService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/course")
 @RequiredArgsConstructor
 @Tag(name = "Course", description = "Quản lý khóa học")
 public class CourseController {
-  private final CourseService courseService;
-  private final ProgressService progressService;
-  private final SubmissionService submissionService;
+    private final CourseService courseService;
+    private final ProgressService progressService;
 
-  // ADMIN
-  @Operation(summary = "Lấy danh sách khóa học đang chờ duyệt (ADMIN)", description = "Trả về danh sách tất cả các khóa học có trạng thái PENDING để Admin phê duyệt.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
-  })
-  @GetMapping("/pending")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<APIResponse<List<CourseResponse>>> getPendingCourses() {
+    // ADMIN
+    @Operation(summary = "Lấy danh sách khóa học đang chờ duyệt (ADMIN)", description = "Trả về danh sách tất cả các khóa học có trạng thái PENDING để Admin phê duyệt.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
+    })
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<APIResponse<List<CourseResponse>>> getPendingCourses() {
 
-    return ResponseEntity.ok(
-        APIResponse.success(
-            "Get pending courses successfully",
-            courseService.getPendingCourses()));
-  }
-
-  @Operation(summary = "Phê duyệt khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang APPROVED.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Phê duyệt khóa học thành công"),
-      @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không ở trạng thái PENDING"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
-  })
-  @PutMapping("/{id}/approve")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<APIResponse<CourseResponse>> approveCourse(
-      @PathVariable Long id) {
-
-    Long adminId = SecurityUtil.getCurrentUserId();
-
-    CourseResponse response = courseService.approveCourse(id, adminId);
-
-    return ResponseEntity.ok(APIResponse.success("Approve course successfully", response));
-  }
-
-  @Operation(summary = "Từ chối khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang REJECTED.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Từ chối khóa học thành công"),
-      @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không ở trạng thái PENDING"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
-  })
-  @PutMapping("/{id}/reject")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<APIResponse<CourseResponse>> rejectCourse(
-      @PathVariable Long id,
-      @RequestBody AdminRejectCourseRequest request) {
-
-    Long adminId = SecurityUtil.getCurrentUserId();
-
-    CourseResponse response = courseService.rejectCourse(id, adminId, request);
-    return ResponseEntity.ok(APIResponse.success("Reject course successfully", response));
-  }
-
-  // ---------------CREATOR-----------------
-  @Operation(summary = "Lấy danh sách khóa học của tôi (CREATOR)", description = "Lấy danh sách toàn bộ các khóa học do Creator hiện tại tạo và quản lý.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role CREATOR)")
-  })
-  @GetMapping("/my-courses")
-  @PreAuthorize("hasRole('CREATOR')")
-  public ResponseEntity<APIResponse<List<CourseResponse>>> getMyCourses() {
-    Long currentCreatorId = SecurityUtil.getCurrentUserId();
-
-    List<CourseResponse> courses = courseService.getCoursesByCreatorId(currentCreatorId);
-
-    return ResponseEntity.ok(APIResponse.success("Successfull retrieved my courses", courses));
-  }
-
-  @Operation(summary = "Tạo khóa học (CREATOR)", description = "Tạo một khóa học mới do Creator hiện tại tạo.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Tạo khóa học thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role CREATOR)")
-  })
-  @PostMapping("/create-course")
-  @PreAuthorize("hasRole('CREATOR')")
-  public ResponseEntity<APIResponse<Long>> createCourse(
-      @RequestBody CreateCourseRequest request) {
-    Long creatorId = SecurityUtil.getCurrentUserId();
-    Long courseId = courseService.createCourse(request, creatorId);
-
-    return ResponseEntity.ok(
-        APIResponse.success("Course created successfully", courseId));
-  }
-
-  @Operation(summary = "Cập nhật khóa học (CREATOR)", description = "Cập nhật tiêu đề hoặc mô tả khóa học. Chỉ có thể cập nhật khóa học ở trạng thái DRAFT hoặc REJECTED.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Cập nhật khóa học thành công"),
-      @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
-      @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR")
-  })
-  @PutMapping("/{id}/update")
-  @PreAuthorize("hasRole('CREATOR')")
-  public ResponseEntity<APIResponse<CourseResponse>> updateCourse(
-      @PathVariable Long id,
-      @RequestBody UpdateCourseRequest request) {
-    Long creatorId = SecurityUtil.getCurrentUserId();
-    boolean isUpdated = courseService.updateCourse(id, request, creatorId);
-
-    if (!isUpdated) {
-      return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(
+                APIResponse.success(
+                        "Get pending courses successfully",
+                        courseService.getPendingCourses()));
     }
 
-    return ResponseEntity.ok(
-        APIResponse.success("Course updated successfully", null));
-  }
+    @Operation(summary = "Phê duyệt khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang APPROVED.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Phê duyệt khóa học thành công"),
+            @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không ở trạng thái PENDING"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
+    })
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<APIResponse<CourseResponse>> approveCourse(
+            @PathVariable Long id) {
 
-  // ADMIN + CREATOR
-  @Operation(summary = "Xóa khóa học (CREATOR, ADMIN)")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Xóa thành công"),
-      @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
-      @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR hoặc ADMIN")
-  })
-  @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-  @DeleteMapping("/{id}/delete")
-  public ResponseEntity<APIResponse<Object>> deleteCourse(@PathVariable("id") Long courseId) {
-    courseService.deleteCourse(courseId);
-    return ResponseEntity.ok(APIResponse.success("Deleted successfully", null));
-  }
+        Long adminId = SecurityUtil.getCurrentUserId();
 
-  // Public
-  @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
-  })
-  @GetMapping("/all")
-  public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
-    Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
+        CourseResponse response = courseService.approveCourse(id, adminId);
 
-    List<CourseResponse> courses = courseService.getAllPublishedCourses(currentUserId);
-    return ResponseEntity.ok(
-        APIResponse.success("Successfully fetched courses", courses));
-  }
+        return ResponseEntity.ok(APIResponse.success("Approve course successfully", response));
+    }
 
-  @Operation(summary = "Lấy chi tiết khóa học theo ID", description = "Lấy thông tin chi tiết khóa học bao gồm modules, lessons và assignments.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy khóa học thành công"),
-      @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không tồn tại"),
-  })
-  @GetMapping("/{id}")
-  public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
-      @PathVariable Long id) {
-    CourseResponse course = courseService.getCourseById(id);
-    return ResponseEntity.ok(
-        APIResponse.success("Course retrieved successfully", course));
-  }
+    @Operation(summary = "Từ chối khóa học (ADMIN)", description = "Chuyển trạng thái của khóa học từ PENDING sang REJECTED.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Từ chối khóa học thành công"),
+            @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không ở trạng thái PENDING"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền Admin")
+    })
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<APIResponse<CourseResponse>> rejectCourse(
+            @PathVariable Long id,
+            @RequestBody AdminRejectCourseRequest request) {
 
-  @Operation(summary = "Lấy chi tiết một bài học theo ID", description = "Lấy thông tin chi tiết của một bài học. Chỉ học viên đã tham gia khóa học (đang học) mới xem được.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy bài học thành công"),
-      @ApiResponse(responseCode = "400", description = "ID bài học không hợp lệ, bài học không tồn tại hoặc chưa tham gia khóa học"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ")
-  })
-  @GetMapping("/lessons/{lessonId}")
-  public ResponseEntity<APIResponse<LessonResponse>> getLessonById(
-      @PathVariable Long lessonId) {
-    Long userId = SecurityUtil.getCurrentUserId();
-    LessonResponse lesson = courseService.getLessonById(lessonId, userId);
-    return ResponseEntity.ok(
-        APIResponse.success("Lesson retrieved successfully", lesson));
-  }
+        Long adminId = SecurityUtil.getCurrentUserId();
 
-  // ---------------LEARNER-----------------
-  @Operation(summary = "Lấy danh sách khóa học đang học (LEARNER)", description = "Trả về danh sách các khóa học mà Learner hiện tại đang tham gia kèm phần trăm tiến trình hoàn thành, dùng cho trang 'Khóa học của tôi'.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học đang học thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
-  })
-  @GetMapping("/my-learning/in-progress")
-  @PreAuthorize("hasRole('LEARNER')")
-  public ResponseEntity<APIResponse<List<CourseProgressResponse>>> getMyLearningCourses() {
+        CourseResponse response = courseService.rejectCourse(id, adminId, request);
+        return ResponseEntity.ok(APIResponse.success("Reject course successfully", response));
+    }
 
-    Long userId = SecurityUtil.getCurrentUserId();
+    // ---------------CREATOR-----------------
+    @Operation(summary = "Lấy danh sách khóa học của tôi (CREATOR)", description = "Lấy danh sách toàn bộ các khóa học do Creator hiện tại tạo và quản lý.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role CREATOR)")
+    })
+    @GetMapping("/my-courses")
+    @PreAuthorize("hasRole('CREATOR')")
+    public ResponseEntity<APIResponse<List<CourseResponse>>> getMyCourses() {
+        Long currentCreatorId = SecurityUtil.getCurrentUserId();
 
-    List<CourseProgressResponse> response = progressService.getInProgressCourses(userId);
+        List<CourseResponse> courses = courseService.getCoursesByCreatorId(currentCreatorId);
 
-    return ResponseEntity.ok(
-        APIResponse.success("Get in-progress courses successfully", response));
-  }
+        return ResponseEntity.ok(APIResponse.success("Successfull retrieved my courses", courses));
+    }
 
-  @Operation(summary = "Dashboard tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
-  })
-  @GetMapping("/enroll/{classId}/dashboard")
-  @PreAuthorize("hasRole('LEARNER')")
-  public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressDashboard(
-      @PathVariable Long classId) {
+    @Operation(summary = "Tạo khóa học (CREATOR)", description = "Tạo một khóa học mới do Creator hiện tại tạo.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tạo khóa học thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role CREATOR)")
+    })
+    @PostMapping("/create-course")
+    @PreAuthorize("hasRole('CREATOR')")
+    public ResponseEntity<APIResponse<Long>> createCourse(
+            @RequestBody CreateCourseRequest request) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        Long courseId = courseService.createCourse(request, creatorId);
 
-    Long userId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity.ok(
+                APIResponse.success("Course created successfully", courseId));
+    }
 
-    CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId, null);
+    @Operation(summary = "Cập nhật khóa học (CREATOR)", description = "Cập nhật tiêu đề hoặc mô tả khóa học. Chỉ có thể cập nhật khóa học ở trạng thái DRAFT hoặc REJECTED.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật khóa học thành công"),
+            @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR")
+    })
+    @PutMapping("/{id}/update")
+    @PreAuthorize("hasRole('CREATOR')")
+    public ResponseEntity<APIResponse<CourseResponse>> updateCourse(
+            @PathVariable Long id,
+            @RequestBody UpdateCourseRequest request) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        boolean isUpdated = courseService.updateCourse(id, request, creatorId);
 
-    return ResponseEntity.ok(
-        APIResponse.success("Get progress dashboard successfully", response));
-  }
+        if (!isUpdated) {
+            return ResponseEntity.badRequest().build();
+        }
 
-  @Operation(summary = "Sidebar tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
-  })
-  @GetMapping("/enroll/{classId}/learning/{moduleId}")
-  @PreAuthorize("hasRole('LEARNER')")
-  public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressSidebarLearningSpace(
-      @PathVariable Long classId, @PathVariable Long moduleId) {
+        return ResponseEntity.ok(
+                APIResponse.success("Course updated successfully", null));
+    }
 
-    Long userId = SecurityUtil.getCurrentUserId();
+    // ADMIN + CREATOR
+    @Operation(summary = "Xóa khóa học (CREATOR, ADMIN)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Xóa thành công"),
+            @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc không có quyền"),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền CREATOR hoặc ADMIN")
+    })
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<APIResponse<Object>> deleteCourse(@PathVariable("id") Long courseId) {
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.ok(APIResponse.success("Deleted successfully", null));
+    }
 
-    CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId,
-        moduleId);
+    // Public
+    @Operation(summary = "Lấy danh sách khóa học", description = "Lấy tất cả khóa học có status = PUBLISHED và chưa bị xóa.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
+    })
+    @GetMapping("/all")
+    public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
+        Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
 
-    return ResponseEntity.ok(
-        APIResponse.success("Get progress dashboard successfully", response));
-  }
+        List<CourseResponse> courses = courseService.getAllPublishedCourses(currentUserId);
+        return ResponseEntity.ok(
+                APIResponse.success("Successfully fetched courses", courses));
+    }
 
-  @Operation(summary = "Hoàn thành bài học (LEARNER)", description = "Đánh dấu một bài học là đã hoàn thành cho người dùng.")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Hoàn thành bài học thành công"),
-      @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
-      @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
-  })
-  @PostMapping("/lessons/{lessonId}/complete")  
-  @PreAuthorize("hasRole('LEARNER')")
-  public ResponseEntity<APIResponse<?>> completeLesson(@PathVariable Long lessonId, @RequestBody Long classId) {
-    Long userId = SecurityUtil.getCurrentUserId();
-    progressService.completeLesson(lessonId, userId, classId);
-    return ResponseEntity.ok(APIResponse.success("Lesson completed successfully", null));
-  }
+    @Operation(summary = "Lấy chi tiết khóa học theo ID", description = "Lấy thông tin chi tiết khóa học bao gồm modules, lessons và assignments.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy khóa học thành công"),
+            @ApiResponse(responseCode = "400", description = "ID khóa học không hợp lệ hoặc khóa học không tồn tại"),
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
+            @PathVariable Long id) {
+        CourseResponse course = courseService.getCourseById(id);
+        return ResponseEntity.ok(
+                APIResponse.success("Course retrieved successfully", course));
+    }
 
-    @PostMapping("/assignment/submit/{learnerId}")
+    @Operation(summary = "Lấy chi tiết một bài học theo ID", description = "Lấy thông tin chi tiết của một bài học. Chỉ học viên đã tham gia khóa học (đang học) mới xem được.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy bài học thành công"),
+            @ApiResponse(responseCode = "400", description = "ID bài học không hợp lệ, bài học không tồn tại hoặc chưa tham gia khóa học"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ")
+    })
+    @GetMapping("/lessons/{lessonId}")
+    public ResponseEntity<APIResponse<LessonResponse>> getLessonById(
+            @PathVariable Long lessonId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        LessonResponse lesson = courseService.getLessonById(lessonId, userId);
+        return ResponseEntity.ok(
+                APIResponse.success("Lesson retrieved successfully", lesson));
+    }
+
+    // ---------------LEARNER-----------------
+    @Operation(summary = "Lấy danh sách khóa học đang học (LEARNER)", description = "Trả về danh sách các khóa học mà Learner hiện tại đang tham gia kèm phần trăm tiến trình hoàn thành, dùng cho trang 'Khóa học của tôi'.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học đang học thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
+    })
+    @GetMapping("/my-learning/in-progress")
     @PreAuthorize("hasRole('LEARNER')")
-    public ResponseEntity<SubmissionResponseDTO> submitAssignment(
-            @PathVariable Long learnerId,
-            @Valid @RequestBody SubmitAssignmentRequest request) {
+    public ResponseEntity<APIResponse<List<CourseProgressResponse>>> getMyLearningCourses() {
 
-        SubmissionResponseDTO response = submissionService.submitAssignment(learnerId, request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        List<CourseProgressResponse> response = progressService.getInProgressCourses(userId);
+
+        return ResponseEntity.ok(
+                APIResponse.success("Get in-progress courses successfully", response));
+    }
+
+    @Operation(summary = "Dashboard tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+    })
+    @GetMapping("/enroll/{classId}/dashboard")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressDashboard(
+            @PathVariable Long classId) {
+
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId, null);
+
+        return ResponseEntity.ok(
+                APIResponse.success("Get progress dashboard successfully", response));
+    }
+
+    @Operation(summary = "Sidebar tiến trình học tập của Learner (LEARNER)", description = "Trả về tiến trình các module, bài học và thông tin bạn đồng hành cho module tiêu điểm hiện tại.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy tiến trình thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+    })
+    @GetMapping("/enroll/{classId}/learning/{moduleId}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressSidebarLearningSpace(
+            @PathVariable Long classId, @PathVariable Long moduleId) {
+
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        CourseProgressDashboardResponse response = progressService.getProgressDashboard(classId, userId,
+                moduleId);
+
+        return ResponseEntity.ok(
+                APIResponse.success("Get progress dashboard successfully", response));
+    }
+
+    @Operation(summary = "Hoàn thành bài học (LEARNER)", description = "Đánh dấu một bài học là đã hoàn thành cho người dùng.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hoàn thành bài học thành công"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
+    })
+    @PostMapping("/lessons/{lessonId}/complete")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<APIResponse<?>> completeLesson(@PathVariable Long lessonId, @RequestBody Long classId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        progressService.completeLesson(lessonId, userId, classId);
+        return ResponseEntity.ok(APIResponse.success("Lesson completed successfully", null));
     }
 }

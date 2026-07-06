@@ -7,9 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/system")
 @RequiredArgsConstructor
+@Tag(name = "System", description = "Các API nội bộ hệ thống dùng để chạy trigger, test thuật toán")
 public class SystemController {
 
     private final SystemService systemService;
@@ -20,6 +24,7 @@ public class SystemController {
      * hoạt.
      * * URL: POST http://localhost:8080/api/system/create-class?waitlistId=1
      */
+    @Operation(summary = "Kích hoạt thuật toán đóng lớp", description = "Tạo lớp học mới từ danh sách chờ, lọc EXP và chia nhóm.")
     @PostMapping("/create-class")
     @PreAuthorize("hasRole('ADMIN')") // Phân quyền Admin được phép trigger test bằng tay
     public ResponseEntity<APIResponse<Long>> triggerCreateClassFromWaitlist(@RequestParam Long waitlistId) {
@@ -33,6 +38,7 @@ public class SystemController {
         }
     }
 
+    @Operation(summary = "Kích hoạt ghép cặp nhóm học", description = "Ghép cặp Đầu-Cuối cho các thành viên trong lớp ở module tương ứng.")
     @PostMapping("/match-groups")
     public ResponseEntity<APIResponse<String>> triggerMatchGroupsOnly(@RequestParam Long classId,
             @RequestParam Long moduleId) {
@@ -46,6 +52,7 @@ public class SystemController {
     }
 
     // Endpoint test luồng xử lý dồn dịch người lẻ khi có học viên bị Drop giữa chừng
+    @Operation(summary = "Ghép nhóm lại sau khi có người bỏ học", description = "Xử lý dồn dịch nhóm khi có học viên out giữa chừng.")
     @PostMapping("/rematch-after-drop/{classId}")
     public ResponseEntity<String> rematchAfterDrop(@PathVariable Long classId, @RequestParam Long moduleId) {
         systemService.reMatchGroupsAfterDrop(classId, moduleId);

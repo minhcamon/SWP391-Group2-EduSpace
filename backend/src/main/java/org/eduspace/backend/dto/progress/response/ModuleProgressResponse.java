@@ -22,6 +22,7 @@ public class ModuleProgressResponse {
     private int completedLessons;
     private int totalLessons;
     private List<LessonProgressResponse> lessons;
+    private List<AssignmentProgressResponse> assignments;
     private PartnerResponse partner;
     private Long studyGroupId;
 }
