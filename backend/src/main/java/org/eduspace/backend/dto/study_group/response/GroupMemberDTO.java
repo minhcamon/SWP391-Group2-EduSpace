@@ -15,5 +15,5 @@ public class GroupMemberDTO {
     private String email;
     private String username;
     private String avatarUrl;
-    private Long totalExp;
+    private Integer totalExp;
 }

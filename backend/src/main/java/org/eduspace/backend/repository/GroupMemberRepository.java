@@ -57,8 +57,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
                         @Param("moduleId") Long moduleId);
 
         
-        @Query("SELECT u.id as id, u.fullName as fullName, u.email as email, " +
-                        "u.username as username, u.avatarUrl as avatarUrl, u.totalExp as totalExp " +
+        @Query("SELECT new org.eduspace.backend.dto.study_group.response.GroupMemberDTO(" +
+                        "u.id, u.fullName, u.email, u.username, u.avatarUrl, u.totalExp) " +
                         "FROM GroupMember gm " +
                         "JOIN gm.classMember cm " +
                         "JOIN cm.user u " +

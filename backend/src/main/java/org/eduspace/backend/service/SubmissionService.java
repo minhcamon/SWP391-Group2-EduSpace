@@ -48,6 +48,7 @@ public class SubmissionService {
             .assignmentTitle(assignment.getTitle())
             .memberId(member.getId())
             .learnerName(member.getUser().getFullName())
+            .submissionContent(savedSubmission.getSubmissionContent())
             .submittedAt(savedSubmission.getSubmittedAt())
             .status(savedSubmission.getStatus().name())
             .build();

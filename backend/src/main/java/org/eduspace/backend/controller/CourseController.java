@@ -27,6 +27,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/course")
 @RequiredArgsConstructor
@@ -281,7 +283,7 @@ public class CourseController {
     @PreAuthorize("hasRole('LEARNER')")
     public ResponseEntity<SubmissionResponseDTO> submitAssignment(
             @PathVariable Long learnerId,
-            @RequestBody SubmitAssignmentRequest request) {
+            @Valid @RequestBody SubmitAssignmentRequest request) {
 
         SubmissionResponseDTO response = submissionService.submitAssignment(learnerId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);

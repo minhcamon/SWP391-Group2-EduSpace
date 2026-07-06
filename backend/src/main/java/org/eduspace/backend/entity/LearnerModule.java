@@ -21,7 +21,7 @@ public class LearnerModule {
 
     @ManyToOne
     @JoinColumn(name = "module_id", nullable = false)
-    private Module module;
+    private CourseModule module;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
