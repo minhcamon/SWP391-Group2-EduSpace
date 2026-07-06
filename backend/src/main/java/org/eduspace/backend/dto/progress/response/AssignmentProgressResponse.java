@@ -14,4 +14,5 @@ public class AssignmentProgressResponse {
     private String title;
     private String status;
     private boolean isCompleted;
+    private boolean isLocked;
 }

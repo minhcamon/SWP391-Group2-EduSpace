@@ -39,4 +39,7 @@ public class CourseModule {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @OneToOne(mappedBy = "module", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Assignment assignment;
 }

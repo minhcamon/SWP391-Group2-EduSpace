@@ -162,27 +162,60 @@ public class ProgressService {
       long completedLessons = lessonProgressRepository
           .countCompletedLessonsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
 
-      double progressPercent = totalLessons > 0 ? ((double) completedLessons / totalLessons) * 100 : 0.0;
+      Assignment assignment = assignmentRepository.findByModuleId(module.getId()).orElse(null);
+      long totalAssignments = assignment != null ? 1 : 0;
+      long completedAssignments = 0;
+      
+      AssignmentProgressResponse assignmentResponse = null;
+      
+      if (assignment != null) {
+        Submission submission = submissionRepository
+            .findByMemberIdAndAssignmentId(classMember.getId(), assignment.getId()).orElse(null);
+        String assignStatus = "NOT_STARTED";
+        boolean assignCompleted = false;
+        if (submission != null) {
+          assignStatus = submission.getStatus().name();
+          if (submission.getStatus() == SubmissionStatus.GRADED) {
+            assignCompleted = true;
+            completedAssignments = 1;
+          }
+        }
+        assignmentResponse = AssignmentProgressResponse.builder()
+            .id(assignment.getId())
+            .title(assignment.getTitle())
+            .status(assignStatus)
+            .isCompleted(assignCompleted)
+            .build();
+      }
+
+      long totalUnits = totalLessons + totalAssignments;
+      long completedUnits = completedLessons + completedAssignments;
+
+      double progressPercent = totalUnits > 0 ? ((double) completedUnits / totalUnits) * 100 : 0.0;
       progressPercent = Math.round(progressPercent * 10) / 10.0;
 
       String status = "NOT_STARTED";
       boolean isLocked = true;
       boolean isOverdue = timeline != null && now.isAfter(timeline);
-      boolean isCompletedLessons = (totalLessons > 0 && completedLessons == totalLessons);
+      boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
 
       if (previousModuleAllowsNext) {
         isLocked = false;
+        status = progressHelper.determineModuleStatus(isCompletedModule);
 
-        status = progressHelper.determineModuleStatus(isCompletedLessons);
-
-        if (!isCompletedLessons && firstUncompletedIndex == -1) {
+        if (!isCompletedModule && firstUncompletedIndex == -1) {
           firstUncompletedIndex = i;
         }
       } else {
         status = "NOT_STARTED";
         isLocked = true;
       }
-      previousModuleAllowsNext = isCompletedLessons || isOverdue;
+      previousModuleAllowsNext = isCompletedModule || isOverdue;
+
+      boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
+      if (assignmentResponse != null) {
+          assignmentResponse.setLocked(isAssignmentLocked);
+      }
 
       // Load list of lessons and completed status
       List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
@@ -220,28 +253,8 @@ public class ProgressService {
             .orElse(null);
       }
 
-      List<LessonProgressResponse> finalLessonResponses = isLocked ? new ArrayList<>() : lessonResponses;
+      List<LessonProgressResponse> finalLessonResponses = lessonResponses;
       PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
-
-      List<Assignment> assignments = assignmentRepository.findAllByModuleId(module.getId());
-      List<AssignmentProgressResponse> assignmentResponses = new ArrayList<>();
-      if (!isLocked) {
-          for (Assignment assignment : assignments) {
-              Submission submission = submissionRepository.findByMemberIdAndAssignmentId(classMember.getId(), assignment.getId()).orElse(null);
-              String assignStatus = "NOT_STARTED";
-              boolean assignCompleted = false;
-              if (submission != null) {
-                  assignStatus = submission.getStatus().name();
-                  assignCompleted = submission.getStatus() == SubmissionStatus.GRADED;
-              }
-              assignmentResponses.add(AssignmentProgressResponse.builder()
-                  .id(assignment.getId())
-                  .title(assignment.getTitle())
-                  .status(assignStatus)
-                  .isCompleted(assignCompleted)
-                  .build());
-          }
-      }
 
       modulesProgress.add(ModuleProgressResponse.builder()
           .id(module.getId())
@@ -253,7 +266,7 @@ public class ProgressService {
           .completedLessons((int) completedLessons)
           .totalLessons((int) totalLessons)
           .lessons(finalLessonResponses)
-          .assignments(assignmentResponses)
+          .assignment(assignmentResponse)
           .partner(finalPartnerResponse)
           .studyGroupId(studyGroupId)
           .build());
