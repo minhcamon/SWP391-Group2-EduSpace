@@ -129,7 +129,8 @@ public class StudyGroupService {
 
         return groups;
     }
-     public List<GroupMemberDTO> getMembersInGroup(Long studyGroupId) {
+
+    public List<GroupMemberDTO> getMembersInGroup(Long studyGroupId) {
         return groupMemberRepository.findMembersByStudyGroupId(studyGroupId);
     }
 }

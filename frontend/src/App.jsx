@@ -25,6 +25,7 @@ import ProgressDashboard from "@/views/learning/ProgressDashboard";
 import MyLearning from "@/views/learning/MyLearning";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
+import Assignment from "@/views/learning/Assignment";
 
 function App() {
   return (
@@ -65,6 +66,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<Profile />}></Route>
             <Route path="/classes/:classId" element={<ClassView />}></Route>
+            <Route path="/classes/:classId/assignments/:assignmentId" element={<Assignment />}></Route>
           </Route>
 
           {/* admin route */}

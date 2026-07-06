@@ -1,8 +1,18 @@
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
+import { useNavigate, useParams } from "react-router";
 
 export const MentorEvaluation = () => {
+  const navigate = useNavigate();
+  const { classId } = useParams();
+  
+  const resolvedClassId = classId || "104";
+
+  const handleNavigateToAssignment = () => {
+    navigate(`/classes/${resolvedClassId}/assignments/writing-task-2`);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Grading Card 1 */}
@@ -22,7 +32,7 @@ export const MentorEvaluation = () => {
           
           <div className="flex items-center gap-1.5">
             <button 
-              onClick={() => toast.info("Xem chi tiết bài làm...")}
+              onClick={handleNavigateToAssignment}
               className="p-1.5 text-primary hover:bg-primary/5 rounded-full transition-colors cursor-pointer"
               title="Xem trước bài làm"
             >
@@ -65,7 +75,7 @@ export const MentorEvaluation = () => {
           Đợi duyệt: Writing Task 2 Prep - Cặp đôi Minh Quân &amp; Thùy Chi
         </p>
         <button 
-          onClick={() => toast.info("Xem chi tiết bài tập...")}
+          onClick={handleNavigateToAssignment}
           className="text-primary font-bold hover:underline cursor-pointer"
         >
           Xem chi tiết
