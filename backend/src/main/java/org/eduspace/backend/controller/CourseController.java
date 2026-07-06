@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
+import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
+import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
@@ -19,6 +21,8 @@ import org.eduspace.backend.dto.progress.response.CourseProgressDashboardRespons
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
 import org.eduspace.backend.service.ProgressService;
+import org.eduspace.backend.service.SubmissionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
   private final CourseService courseService;
   private final ProgressService progressService;
+  private final SubmissionService submissionService;
 
   // ADMIN
   @Operation(summary = "Lấy danh sách khóa học đang chờ duyệt (ADMIN)", description = "Trả về danh sách tất cả các khóa học có trạng thái PENDING để Admin phê duyệt.")
@@ -271,4 +276,14 @@ public class CourseController {
     progressService.completeLesson(lessonId, userId, classId);
     return ResponseEntity.ok(APIResponse.success("Lesson completed successfully", null));
   }
+
+    @PostMapping("/assignment/submit/{learnerId}")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<SubmissionResponseDTO> submitAssignment(
+            @PathVariable Long learnerId,
+            @RequestBody SubmitAssignmentRequest request) {
+
+        SubmissionResponseDTO response = submissionService.submitAssignment(learnerId, request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 }

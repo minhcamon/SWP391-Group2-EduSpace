@@ -16,7 +16,7 @@ public class SubmissionResponseDTO {
     private String assignmentTitle;
     private Long memberId;
     private String learnerName;
-    private String submissionUrl;
+    private String submissionContent;
     private LocalDateTime submittedAt;
     private String status;
 }

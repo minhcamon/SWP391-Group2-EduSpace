@@ -30,8 +30,8 @@ public class Submission {
     @JoinColumn(name = "learner_id")
     private ClassMember member;
 
-    @Column(name = "submission_url", nullable = false)
-    private String submissionUrl;
+    @Column(name = "submission_content", nullable = false, columnDefinition = "LONGTEXT")
+    private String submissionContent;
 
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
@@ -39,5 +39,5 @@ public class Submission {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private SubmissionStatus status = SubmissionStatus.PENDING;
+    private SubmissionStatus status = SubmissionStatus.SUBMITTED;
 }
