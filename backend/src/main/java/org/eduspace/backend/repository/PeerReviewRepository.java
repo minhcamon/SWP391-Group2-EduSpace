@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
     Optional<PeerReview> findBySubmission_Id(Long submissionId);
+    Optional<PeerReview> findByReviewer_ClassMember_IdAndSubmission_Assignment_Id(Long reviewerClassMemberId, Long assignmentId);
 }

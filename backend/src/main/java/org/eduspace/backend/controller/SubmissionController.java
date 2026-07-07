@@ -2,6 +2,7 @@ package org.eduspace.backend.controller;
 
 import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
 import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
+import org.eduspace.backend.dto.submission.response.PeerReviewAssignmentResponse;
 import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.SubmissionService;
@@ -60,6 +61,24 @@ public class SubmissionController {
 
         Long userId = SecurityUtil.getCurrentUserId();
         SubmissionReviewResponse response = submissionService.getSubmissionReview(classId, userId, assignmentId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Lấy bài chấm chéo được giao (LEARNER)", description = "Trả về submission mà học viên hiện tại cần chấm theo peer review.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy bài chấm chéo thành công"),
+            @ApiResponse(responseCode = "400", description = "Không tìm thấy bài chấm chéo hoặc dữ liệu không hợp lệ"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
+            @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
+    })
+    @GetMapping("/{classId}/assignment/{assignmentId}/peer-review-assignment")
+    @PreAuthorize("hasRole('LEARNER')")
+    public ResponseEntity<PeerReviewAssignmentResponse> getPeerReviewAssignment(
+            @PathVariable Long classId,
+            @PathVariable Long assignmentId) {
+
+        Long userId = SecurityUtil.getCurrentUserId();
+        PeerReviewAssignmentResponse response = submissionService.getAssignedPeerReview(classId, userId, assignmentId);
         return ResponseEntity.ok(response);
     }
 }
