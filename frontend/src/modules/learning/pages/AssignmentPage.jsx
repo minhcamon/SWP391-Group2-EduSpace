@@ -1,5 +1,5 @@
 import React from "react";
-import { Clock } from "lucide-react";
+import { Clock, Lock } from "lucide-react";
 import useAssignment from "../hooks/useAssignment";
 import Badge from "@/components/ui/Badge";
 import Breadcrumbs from "@/components/common/Breadcrumbs";
@@ -95,13 +95,18 @@ export const AssignmentPage = () => {
           1. Bài tập luận
         </button>
         <button
-          onClick={() => setActiveTab("review")}
-          className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all cursor-pointer ${
-            activeTab === "review"
-              ? "border-primary text-primary font-bold"
-              : "border-transparent text-neutral-medium hover:text-primary"
+          disabled={!isSubmitted}
+          onClick={() => isSubmitted && setActiveTab("review")}
+          title={!isSubmitted ? "Vui lòng nộp bài viết trước để mở khóa đánh giá chéo" : ""}
+          className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all flex items-center gap-1.5 ${
+            !isSubmitted
+              ? "border-transparent text-neutral-medium/50 cursor-not-allowed"
+              : activeTab === "review"
+              ? "border-primary text-primary font-bold cursor-pointer"
+              : "border-transparent text-neutral-medium hover:text-primary cursor-pointer"
           }`}
         >
+          {!isSubmitted && <Lock className="w-3.5 h-3.5 text-neutral-medium/40" />}
           2. Đối chiếu & Đánh giá chéo
         </button>
       </div>

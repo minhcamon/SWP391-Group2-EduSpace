@@ -189,3 +189,13 @@ body {
         @apply font-sans;
     }
 }
+
+html, body {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+body {
+  overflow-y: scroll; 
+}
