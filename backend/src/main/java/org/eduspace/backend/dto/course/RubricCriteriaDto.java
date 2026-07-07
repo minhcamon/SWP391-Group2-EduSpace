@@ -10,4 +10,5 @@ public class RubricCriteriaDto {
     private String criterionName;
     private String description;
     private Integer maxPoint;
+    private Integer score;  
 }

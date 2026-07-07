@@ -9,10 +9,12 @@ import java.time.LocalDateTime;
 
 import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
 import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
+import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.submission.response.PeerReviewAssignmentResponse;
 import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.ClassMember;
+import org.eduspace.backend.dto.course.RubricCriteriaDto;
 import org.eduspace.backend.entity.PeerReview;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.repository.AssignmentRepository;
@@ -23,6 +25,7 @@ import org.eduspace.backend.repository.SubmissionRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,6 +109,45 @@ public class SubmissionService {
                 .submitterId(submitter.getId())
                 .submitterName(submitter.getUser().getFullName())
                 .rubricCriterias(assignment.getRubricCriteria())
+                .build();
+    }
+
+    @Transactional
+    public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId, PeerReviewGradeRequest request) {
+        ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+
+        PeerReview peerReview = peerReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Peer Review không tồn tại!"));
+
+        if (peerReview.getReviewer() == null
+                || peerReview.getReviewer().getClassMember() == null
+                || !peerReview.getReviewer().getClassMember().getId().equals(reviewerMember.getId())) {
+            throw new RuntimeException("Bạn không có quyền chấm bài này!");
+        }
+
+        List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
+        int totalScore = 0;
+        if (criteriaScores != null) {
+            totalScore = criteriaScores.stream()
+                    .filter(Objects::nonNull)
+                    .mapToInt(score -> Objects.requireNonNullElse(score.getScore(), 0))
+                    .sum();
+        }
+
+        peerReview.setCriteriaScores(criteriaScores);
+        peerReview.setFinalScore(totalScore);
+        peerReview.setComments(request.getComments());
+        peerReview.setReviewAt(LocalDateTime.now());
+        peerReview.setOverridden(false);
+
+        PeerReview savedReview = peerReviewRepository.save(peerReview);
+
+        return SubmissionReviewResponse.builder()
+                .reviewId(savedReview.getId())
+                .submissionId(savedReview.getSubmission().getId())
+                .rubricCriterias(savedReview.getCriteriaScores())
+                .comments(savedReview.getComments())
                 .build();
     }
 
