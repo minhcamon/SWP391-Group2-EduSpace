@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,9 @@ public class SubmissionService {
         private final ClassMemberRepository classMemberRepository;
         private final PeerReviewRepository peerReviewRepository;
         private final GroupMemberRepository groupMemberRepository;
+
+    @Value("${app.peer-review.pass-ratio:0.8}")
+    private double peerReviewPassRatio;
 
     @Transactional
     public SubmissionResponseDTO submitAssignment(Long learnerId, SubmitAssignmentRequest request) {
@@ -117,6 +121,10 @@ public class SubmissionService {
         ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
 
+        if(reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
+            throw new RuntimeException("Học viên không hợp lệ!");
+        }
+
         PeerReview peerReview = peerReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Peer Review không tồn tại!"));
 
@@ -128,12 +136,23 @@ public class SubmissionService {
 
         List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
         int totalScore = 0;
+        int maxPossibleScore = 0;
         if (criteriaScores != null) {
             totalScore = criteriaScores.stream()
                     .filter(Objects::nonNull)
                     .mapToInt(score -> Objects.requireNonNullElse(score.getScore(), 0))
                     .sum();
+
+            maxPossibleScore = criteriaScores.stream()
+                    .filter(Objects::nonNull)
+                    .mapToInt(score -> Objects.requireNonNullElse(score.getMaxPoint(), 0))
+                    .sum();
         }
+
+        double passThreshold = maxPossibleScore > 0 ? maxPossibleScore : 0.0;
+        double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
+        Submission submission = peerReview.getSubmission();
+        submission.setStatus(passRatio >= peerReviewPassRatio ? SubmissionStatus.GRADED : SubmissionStatus.FAILED);
 
         peerReview.setCriteriaScores(criteriaScores);
         peerReview.setFinalScore(totalScore);
@@ -142,6 +161,7 @@ public class SubmissionService {
         peerReview.setOverridden(false);
 
         PeerReview savedReview = peerReviewRepository.save(peerReview);
+        submissionRepository.save(submission);
 
         return SubmissionReviewResponse.builder()
                 .reviewId(savedReview.getId())
