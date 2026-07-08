@@ -1,128 +1,198 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router";
-import { toast } from "sonner";
-import learnService from "@/services/learnService";
-import { assignmentMockData } from "../utils/assignmentMockData";
-import { runWithLoading } from "@/utils/utils";
+import { useState, useEffect, useCallback } from "react"
+import { useParams } from "react-router"
+import { toast } from "sonner"
+import learnService from "@/services/learnService"
+import { useAuth } from "@/contexts/AuthContext"
+import { runWithLoading } from "@/utils/utils"
 
 const useAssignment = () => {
-    const { classId, assignmentId } = useParams();
-    const [activeTab, setActiveTab] = useState("assignment");
-    const [isLoading, setIsLoading] = useState(true);
+  const { classId, assignmentId } = useParams()
+  const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState("assignment")
+  const [isLoading, setIsLoading] = useState(true)
 
-    const [assignmentDetails, setAssignmentDetails] = useState(null);
-    const [essay, setEssay] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSubmitted, setIsSubmitted] = useState(false);
+  const [assignmentDetails, setAssignmentDetails] = useState(null)
+  const [essay, setEssay] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isGraded, setIsGraded] = useState(false)
+  const [peerReviewPending, setPeerReviewPending] = useState(false)
 
-    const [partner, setPartner] = useState(assignmentMockData.partner);
-    const [comments, setComments] = useState(assignmentMockData.submission.comments);
-    const [newCommentText, setNewCommentText] = useState("");
-    const [newCommentCategory, setNewCommentCategory] = useState("Lexical Resource");
-    const [timeRemaining, setTimeRemaining] = useState(assignmentMockData.timeRemaining);
+  const [myReviewResult, setMyReviewResult] = useState(null)
 
-    useEffect(() => {
-        const fetchDetails = async () => {
-            await runWithLoading(setIsLoading, async () => {
-                try {
-                    const details = await learnService.getAssignmentDetails(assignmentId);
-                    setAssignmentDetails(details);
-                } catch (error) {
-                    console.error("Failed to fetch assignment details:", error);
-                    toast.error("Không thể tải thông tin bài tập.");
-                }
-            });
-        };
-        fetchDetails();
-    }, [assignmentId]);
+  const [peerReviewTask, setPeerReviewTask] = useState(null)
+  const [peerReviewGraded, setPeerReviewGraded] = useState(false)
+  const [partnerAvatar, setPartnerAvatar] = useState("")
 
-    // Simple countdown timer simulation
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeRemaining(prev => (prev > 1 ? prev - 1 : 45));
-        }, 60000); // decrement every minute
-        return () => clearInterval(timer);
-    }, []);
+  const learnerId = user ? user.id - 3 : null
 
-    const wordCount = essay.trim() === "" ? 0 : essay.trim().split(/\s+/).length;
+  const fetchAssignmentAndStatus = useCallback(async () => {
+    if (!user) return
+    try {
+      let details = null
 
-    const handleEssayChange = (e) => {
-        if (!isSubmitted) {
-            setEssay(e.target.value);
+      try {
+        const review = await learnService.getSubmissionReview(classId, assignmentId)
+        setIsSubmitted(true)
+
+        const hasBeenGraded =
+          review.rubricCriterias &&
+          review.rubricCriterias.length > 0 &&
+          review.rubricCriterias.every((c) => c.score !== null)
+
+        setIsGraded(hasBeenGraded)
+        setMyReviewResult(review)
+        setPeerReviewPending(!hasBeenGraded)
+
+        if (review.assignmentTitle) {
+          details = {
+            id: Number(assignmentId),
+            title: review.assignmentTitle,
+            description: review.assignmentDescription,
+          }
         }
-    };
-
-    const handleSubmitDraft = async () => {
-        if (wordCount < 5) {
-            toast.warning("Bài viết quá ngắn. Vui lòng viết thêm trước khi nộp!");
-            return;
+      } catch (err) {
+        const errMsg = err.message || ""
+        if (errMsg.includes("Peer Review không tồn tại")) {
+          setIsSubmitted(true)
+          setIsGraded(false)
+          setPeerReviewPending(true)
+        } else if (errMsg.includes("Submission không tồn tại")) {
+          setIsSubmitted(false)
+          setIsGraded(false)
+          setPeerReviewPending(false)
+        } else {
+          console.error("Lỗi getSubmissionReview:", err)
         }
-        await runWithLoading(setIsSubmitting, async () => {
-            try {
-                const response = await learnService.submitAssignmentDraft(assignmentId, essay);
-                setIsSubmitted(true);
-                toast.success(response.message || "Nộp bài nháp thành công!");
+      }
 
-                // Simulate partner completing their progress
-                setPartner(prev => ({
-                    ...prev,
-                    progress: 100,
-                    statusText: "Bạn học đã hoàn thành 100%",
-                    detail: "Nguyen Van A đã hoàn thành bài viết của mình và sẵn sàng đối chiếu."
-                }));
-            } catch (error) {
-                toast.error(error.message || "Có lỗi xảy ra khi nộp bài.");
-            }
-        });
-    };
+      try {
+        const peerTask = await learnService.getPeerReviewAssignment(classId, assignmentId)
+        setPeerReviewTask(peerTask)
 
-    const handleAddComment = async (e) => {
-        e.preventDefault();
-        if (!newCommentText.trim()) return;
-
-        const newCommentPayload = {
-            type: newCommentCategory,
-            text: newCommentText,
-            category: newCommentCategory.toLowerCase().includes("grammar") ? "grammar" : "lexical"
-        };
-
-        try {
-            const response = await learnService.addPeerFeedback(assignmentId, newCommentPayload);
-            if (response.isSuccess) {
-                setComments(prev => [...prev, response.data]);
-                setNewCommentText("");
-                toast.success("Đã thêm nhận xét góp ý!");
-            }
-        } catch (error) {
-            toast.error(error.message || "Không thể thêm nhận xét.");
+        if (peerTask.assignmentTitle && !details) {
+          details = {
+            id: Number(assignmentId),
+            title: peerTask.assignmentTitle,
+            description: peerTask.assignmentDescription,
+          }
         }
-    };
 
-    return {
+        const localGraded =
+          localStorage.getItem(`graded_${classId}_${peerTask.reviewId}`) === "true"
+        setPeerReviewGraded(localGraded)
+      } catch {
+        setPeerReviewTask(null)
+        setPeerReviewGraded(false)
+      }
+
+      if (!details) {
+        details = await learnService.getAssignmentDetails(classId, assignmentId)
+      }
+      setAssignmentDetails(details)
+
+      const savedEssay = localStorage.getItem(`essay_${user.id}_${assignmentId}`) || ""
+      if (savedEssay) {
+        setEssay(savedEssay)
+      }
+
+      try {
+        const dashboard = await learnService.getProgressDashboard(classId)
+        const firstModuleWithPartner = dashboard?.modules?.find((m) => m.partner)
+        if (firstModuleWithPartner?.partner?.avatarUrl) {
+          setPartnerAvatar(firstModuleWithPartner.partner.avatarUrl)
+        }
+      } catch {
+        // Ignore dashboard fetch issues
+      }
+    } catch (error) {
+      console.error("Lỗi fetchAssignmentAndStatus:", error)
+      toast.error("Không thể tải thông tin bài tập.")
+    }
+  }, [classId, assignmentId, user])
+
+  useEffect(() => {
+    runWithLoading(setIsLoading, fetchAssignmentAndStatus)
+  }, [fetchAssignmentAndStatus])
+
+  const wordCount = essay.trim() === "" ? 0 : essay.trim().split(/\s+/).length
+
+  const handleEssayChange = (e) => {
+    if (!isSubmitted) {
+      setEssay(e.target.value)
+    }
+  }
+
+  const handleSubmitDraft = async () => {
+    if (wordCount < 5) {
+      toast.warning("Bài viết quá ngắn. Vui lòng viết thêm trước khi nộp!")
+      return
+    }
+    if (!learnerId || learnerId <= 0) {
+      toast.error("Học viên không hợp lệ! Không thể xác định mã lớp học.")
+      return
+    }
+
+    await runWithLoading(setIsSubmitting, async () => {
+      try {
+        await learnService.submitAssignment(learnerId, assignmentId, essay)
+        setIsSubmitted(true)
+        setPeerReviewPending(true)
+        toast.success("Nộp bài viết thành công!")
+
+        localStorage.setItem(`essay_${user.id}_${assignmentId}`, essay)
+
+        await fetchAssignmentAndStatus()
+      } catch (error) {
+        toast.error(error.message || "Có lỗi xảy ra khi nộp bài.")
+      }
+    })
+  }
+
+  const submitPeerReview = async (criteriaScores, finalScore, comments) => {
+    if (!peerReviewTask?.reviewId) {
+      toast.error("Không tìm thấy mã số đánh giá chéo!")
+      return
+    }
+
+    try {
+      await learnService.gradePeerReview(
         classId,
-        assignmentId,
-        activeTab,
-        setActiveTab,
-        isLoading,
-        assignmentDetails,
-        essay,
-        wordCount,
-        isSubmitting,
-        isSubmitted,
-        partner,
+        peerReviewTask.reviewId,
+        criteriaScores,
+        finalScore,
         comments,
-        newCommentText,
-        setNewCommentText,
-        newCommentCategory,
-        setNewCommentCategory,
-        timeRemaining,
-        handleEssayChange,
-        handleSubmitDraft,
-        handleAddComment,
-        rubricCriteria: assignmentMockData.submission.rubricCriteria,
-        estimatedBand: assignmentMockData.submission.estimatedBand,
-        partnerSubmission: assignmentMockData.submission
-    };
-};
+      )
+      localStorage.setItem(`graded_${classId}_${peerReviewTask.reviewId}`, "true")
+      setPeerReviewGraded(true)
+      toast.success("Gửi điểm đánh giá chéo thành công!")
+      await fetchAssignmentAndStatus()
+    } catch (error) {
+      toast.error(error.message || "Không thể gửi đánh giá.")
+    }
+  }
 
-export default useAssignment;
+  return {
+    classId,
+    assignmentId,
+    activeTab,
+    setActiveTab,
+    isLoading,
+    assignmentDetails,
+    essay,
+    wordCount,
+    isSubmitting,
+    isSubmitted,
+    isGraded,
+    peerReviewPending,
+    myReviewResult,
+    peerReviewTask,
+    peerReviewGraded,
+    handleEssayChange,
+    handleSubmitDraft,
+    submitPeerReview,
+    partnerAvatar,
+  }
+}
+
+export default useAssignment
