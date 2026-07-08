@@ -165,9 +165,9 @@ public class ProgressService {
       Assignment assignment = assignmentRepository.findByModuleId(module.getId()).orElse(null);
       long totalAssignments = assignment != null ? 1 : 0;
       long completedAssignments = 0;
-      
+
       AssignmentProgressResponse assignmentResponse = null;
-      
+
       if (assignment != null) {
         Submission submission = submissionRepository
             .findByMemberIdAndAssignmentId(classMember.getId(), assignment.getId()).orElse(null);
@@ -210,11 +210,11 @@ public class ProgressService {
         status = "NOT_STARTED";
         isLocked = true;
       }
-      previousModuleAllowsNext = isCompletedModule || isOverdue;
+      previousModuleAllowsNext = isOverdue;
 
       boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
       if (assignmentResponse != null) {
-          assignmentResponse.setLocked(isAssignmentLocked);
+        assignmentResponse.setLocked(isAssignmentLocked);
       }
 
       // Load list of lessons and completed status

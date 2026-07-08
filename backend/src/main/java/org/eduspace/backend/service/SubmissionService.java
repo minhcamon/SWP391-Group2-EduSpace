@@ -35,9 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
-        private final ClassMemberRepository classMemberRepository;
-        private final PeerReviewRepository peerReviewRepository;
-        private final GroupMemberRepository groupMemberRepository;
+    private final ClassMemberRepository classMemberRepository;
+    private final PeerReviewRepository peerReviewRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Value("${app.peer-review.pass-ratio:0.8}")
     private double peerReviewPassRatio;
@@ -77,7 +77,8 @@ public class SubmissionService {
         ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
 
-        Submission submission = submissionRepository.findByMemberIdAndAssignmentId(classMember.getId(), assignmentId)
+        Submission submission = submissionRepository
+                .findByMemberIdAndAssignmentId(classMember.getId(), assignmentId)
                 .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
 
         PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
@@ -94,9 +95,21 @@ public class SubmissionService {
     public PeerReviewAssignmentResponse getAssignedPeerReview(Long classId, Long userId, Long assignmentId) {
         ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
-        if(reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
+        if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
             throw new RuntimeException("Học viên không hợp lệ!");
         }
+
+        boolean hasSubmitted = submissionRepository.findByMemberIdAndAssignmentId(
+                reviewerMember.getId(), assignmentId).isPresent();
+
+        System.out.print("\n===============Answer============\n");
+        System.out.print("hasSubmitted: " + hasSubmitted);
+        System.out.print("\n");
+        if (!hasSubmitted) {
+            throw new RuntimeException(
+                    "Bạn phải nộp bài của mình trước khi được xem và chấm bài của người khác!");
+        }
+
         PeerReview peerReview = peerReviewRepository.findByReviewer_ClassMember_IdAndSubmission_Assignment_Id(
                 reviewerMember.getId(), assignmentId)
                 .orElseThrow(() -> new RuntimeException("Peer Review assignment không tồn tại!"));
@@ -117,11 +130,12 @@ public class SubmissionService {
     }
 
     @Transactional
-    public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId, PeerReviewGradeRequest request) {
+    public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId,
+            PeerReviewGradeRequest request) {
         ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
 
-        if(reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
+        if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
             throw new RuntimeException("Học viên không hợp lệ!");
         }
 
@@ -132,6 +146,18 @@ public class SubmissionService {
                 || peerReview.getReviewer().getClassMember() == null
                 || !peerReview.getReviewer().getClassMember().getId().equals(reviewerMember.getId())) {
             throw new RuntimeException("Bạn không có quyền chấm bài này!");
+        }
+
+        Submission targetSubmission = peerReview.getSubmission();
+        if (targetSubmission == null || targetSubmission.getAssignment() == null) {
+            throw new RuntimeException("Dữ liệu bài nộp không hợp lệ!");
+        }
+
+        boolean hasSubmitted = submissionRepository.findByMemberIdAndAssignmentId(
+                reviewerMember.getId(), targetSubmission.getAssignment().getId()).isPresent();
+
+        if (!hasSubmitted) {
+            throw new RuntimeException("Bạn phải nộp bài của mình trước khi chấm bài cho người khác!");
         }
 
         List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
@@ -152,7 +178,8 @@ public class SubmissionService {
         double passThreshold = maxPossibleScore > 0 ? maxPossibleScore : 0.0;
         double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
         Submission submission = peerReview.getSubmission();
-        submission.setStatus(passRatio >= peerReviewPassRatio ? SubmissionStatus.GRADED : SubmissionStatus.FAILED);
+        submission.setStatus(
+                passRatio >= peerReviewPassRatio ? SubmissionStatus.GRADED : SubmissionStatus.FAILED);
 
         peerReview.setCriteriaScores(criteriaScores);
         peerReview.setFinalScore(totalScore);
@@ -171,67 +198,74 @@ public class SubmissionService {
                 .build();
     }
 
-        @Transactional
-        public void generatePeerReviewForSubmission(Long submissionId) {
-                Submission submission = submissionRepository.findById(submissionId)
-                                .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
+    @Transactional
+    public void generatePeerReviewForSubmission(Long submissionId) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
 
-                // already has peer review -> skip
-                Optional<PeerReview> existing = peerReviewRepository.findBySubmission_Id(submission.getId());
-                if (existing.isPresent()) return;
+        // already has peer review -> skip
+        Optional<PeerReview> existing = peerReviewRepository.findBySubmission_Id(submission.getId());
+        if (existing.isPresent())
+            return;
 
-                Assignment assignment = submission.getAssignment();
-                if (assignment == null || assignment.getModule() == null) return;
+        Assignment assignment = submission.getAssignment();
+        if (assignment == null || assignment.getModule() == null)
+            return;
 
-                Long moduleId = assignment.getModule().getId();
-                Long classMemberId = submission.getMember().getId();
+        Long moduleId = assignment.getModule().getId();
+        Long classMemberId = submission.getMember().getId();
 
-                Optional<Long> studyGroupIdOpt = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId, moduleId);
-                if (studyGroupIdOpt.isEmpty()) return; // no group -> nothing to assign
+        Optional<Long> studyGroupIdOpt = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
+                moduleId);
+        if (studyGroupIdOpt.isEmpty())
+            return; // no group -> nothing to assign
 
-                Long studyGroupId = studyGroupIdOpt.get();
-                List<GroupMember> members = groupMemberRepository.findByStudyGroupId(studyGroupId);
-                if (members == null || members.isEmpty()) return;
+        Long studyGroupId = studyGroupIdOpt.get();
+        List<GroupMember> members = groupMemberRepository.findByStudyGroupId(studyGroupId);
+        if (members == null || members.isEmpty())
+            return;
 
-                // stable order
-                members.sort(Comparator.comparing(GroupMember::getId));
+        // stable order
+        members.sort(Comparator.comparing(GroupMember::getId));
 
-                int ownerIndex = -1;
-                for (int i = 0; i < members.size(); i++) {
-                        if (members.get(i).getClassMember().getId().equals(classMemberId)) {
-                                ownerIndex = i;
-                                break;
-                        }
-                }
-                if (ownerIndex == -1) return;
-
-                GroupMember reviewer = null;
-                if (members.size() == 2) {
-                        reviewer = members.get(1 - ownerIndex);
-                } else if (members.size() == 3) {
-                        reviewer = members.get((ownerIndex + 1) % 3);
-                } else {
-                        // fallback: assign first other member
-                        for (GroupMember gm : members) {
-                                if (!gm.getClassMember().getId().equals(classMemberId)) {
-                                        reviewer = gm;
-                                        break;
-                                }
-                        }
-                }
-
-                if (reviewer == null) return;
-
-                PeerReview peerReview = PeerReview.builder()
-                                .submission(submission)
-                                .reviewer(reviewer)
-                                .criteriaScores(null)
-                                .finalScore(null)
-                                .comments(null)
-                                .isOverridden(false)
-                                .reviewAt(null)
-                                .build();
-
-                peerReviewRepository.save(peerReview);
+        int ownerIndex = -1;
+        for (int i = 0; i < members.size(); i++) {
+            if (members.get(i).getClassMember().getId().equals(classMemberId)) {
+                ownerIndex = i;
+                break;
+            }
         }
+        if (ownerIndex == -1)
+            return;
+
+        GroupMember reviewer = null;
+        if (members.size() == 2) {
+            reviewer = members.get(1 - ownerIndex);
+        } else if (members.size() == 3) {
+            reviewer = members.get((ownerIndex + 1) % 3);
+        } else {
+            // fallback: assign first other member
+            for (GroupMember gm : members) {
+                if (!gm.getClassMember().getId().equals(classMemberId)) {
+                    reviewer = gm;
+                    break;
+                }
+            }
+        }
+
+        if (reviewer == null)
+            return;
+
+        PeerReview peerReview = PeerReview.builder()
+                .submission(submission)
+                .reviewer(reviewer)
+                .criteriaScores(null)
+                .finalScore(null)
+                .comments(null)
+                .isOverridden(false)
+                .reviewAt(null)
+                .build();
+
+        peerReviewRepository.save(peerReview);
+    }
 }
