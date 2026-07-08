@@ -82,15 +82,18 @@ public class SubmissionService {
                 .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
 
         PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
-                .orElseThrow(() -> new RuntimeException("Peer Review không tồn tại!"));
+                .orElse(null);
 
         return SubmissionReviewResponse.builder()
-                .reviewId(peerReview.getId())
+                .reviewId(peerReview != null ? peerReview.getId() : null)
                 .submissionId(submission.getId())
                 .assignmentTitle(submission.getAssignment().getTitle())
                 .assignmentDescription(submission.getAssignment().getDescription())
-                .rubricCriterias(peerReview.getCriteriaScores())
-                .comments(peerReview.getComments())
+                .submissionContent(submission.getSubmissionContent())
+                .status(submission.getStatus().name())
+                .submittedAt(submission.getSubmittedAt())
+                .rubricCriterias(peerReview != null ? peerReview.getCriteriaScores() : null)
+                .comments(peerReview != null ? peerReview.getComments() : null)
                 .build();
     }
 
