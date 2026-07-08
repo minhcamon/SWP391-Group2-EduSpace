@@ -15,6 +15,7 @@ import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseProgressResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.course.response.LessonResponse;
+import org.eduspace.backend.dto.course.response.AssignmentResponse;
 import org.eduspace.backend.dto.progress.response.CourseProgressDashboardResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CourseService;
@@ -198,6 +199,21 @@ public class CourseController {
         LessonResponse lesson = courseService.getLessonById(lessonId, userId);
         return ResponseEntity.ok(
                 APIResponse.success("Lesson retrieved successfully", lesson));
+    }
+
+    @Operation(summary = "Lấy chi tiết một bài tập theo ID", description = "Lấy thông tin chi tiết của một bài tập. Chỉ học viên đã tham gia khóa học (đang học) mới xem được.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy bài tập thành công"),
+            @ApiResponse(responseCode = "400", description = "ID bài tập không hợp lệ, bài tập không tồn tại hoặc chưa tham gia khóa học"),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ")
+    })
+    @GetMapping("/assignment/{assignmentId}")
+    public ResponseEntity<APIResponse<AssignmentResponse>> getAssignmentById(
+            @PathVariable Long assignmentId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        AssignmentResponse assignment = courseService.getAssignmentById(assignmentId, userId);
+        return ResponseEntity.ok(
+                APIResponse.success("Assignment retrieved successfully", assignment));
     }
 
     // ---------------LEARNER-----------------

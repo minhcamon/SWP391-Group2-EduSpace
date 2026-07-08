@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 public class SubmissionReviewResponse {
     private Long reviewId;
     private Long submissionId;
+    private String assignmentTitle;
+    private String assignmentDescription;
     private List<RubricCriteriaDto> rubricCriterias;
     private String comments;
 }

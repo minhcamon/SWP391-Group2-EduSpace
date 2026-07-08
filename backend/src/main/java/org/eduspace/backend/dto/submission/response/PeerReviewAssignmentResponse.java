@@ -20,6 +20,8 @@ public class PeerReviewAssignmentResponse {
     private Long submitterId;
     private String submitterName;
     private String submissionContent;
+    private String assignmentTitle;
+    private String assignmentDescription;
     private LocalDateTime submittedAt;
     private List<RubricCriteriaDto> rubricCriterias;
 }

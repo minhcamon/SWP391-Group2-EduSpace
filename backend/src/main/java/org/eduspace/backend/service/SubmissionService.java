@@ -87,6 +87,8 @@ public class SubmissionService {
         return SubmissionReviewResponse.builder()
                 .reviewId(peerReview.getId())
                 .submissionId(submission.getId())
+                .assignmentTitle(submission.getAssignment().getTitle())
+                .assignmentDescription(submission.getAssignment().getDescription())
                 .rubricCriterias(peerReview.getCriteriaScores())
                 .comments(peerReview.getComments())
                 .build();
@@ -102,9 +104,6 @@ public class SubmissionService {
         boolean hasSubmitted = submissionRepository.findByMemberIdAndAssignmentId(
                 reviewerMember.getId(), assignmentId).isPresent();
 
-        System.out.print("\n===============Answer============\n");
-        System.out.print("hasSubmitted: " + hasSubmitted);
-        System.out.print("\n");
         if (!hasSubmitted) {
             throw new RuntimeException(
                     "Bạn phải nộp bài của mình trước khi được xem và chấm bài của người khác!");
@@ -121,6 +120,8 @@ public class SubmissionService {
         return PeerReviewAssignmentResponse.builder()
                 .reviewId(peerReview.getId())
                 .submissionId(submission.getId())
+                .assignmentTitle(assignment.getTitle())
+                .assignmentDescription(assignment.getDescription())
                 .submissionContent(submission.getSubmissionContent())
                 .submittedAt(submission.getSubmittedAt())
                 .submitterId(submitter.getId())
