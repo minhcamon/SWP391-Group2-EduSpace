@@ -50,6 +50,7 @@ const LearningAreaPage = () => {
     sidebarSections,
     handleSelectLesson,
     progressPercent,
+    resolvedClassId,
   } = useLearningArea();
 
   if (isLoading) {
@@ -137,6 +138,7 @@ const LearningAreaPage = () => {
           isCompleted={isCompleted}
           sidebarSections={sidebarSections}
           onSelectLesson={handleSelectLesson}
+          classId={resolvedClassId}
         />
 
         {/* Main Content Area (Video & Tabs) */}

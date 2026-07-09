@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, CheckCircle, PlayCircle, Lock, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { X, CheckCircle, PlayCircle, Lock, RefreshCw, ChevronDown, ChevronUp, Award } from "lucide-react";
+import { useNavigate } from "react-router";
 import Avatar from "@/components/common/Avatar";
 
 
-const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections, onSelectLesson }) => {
+const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSections, onSelectLesson, classId }) => {
+    const navigate = useNavigate();
     const [expandedModules, setExpandedModules] = useState({});
 
     useEffect(() => {
@@ -218,6 +220,46 @@ const CourseSidebar = ({ isSidebarOpen, onCloseSidebar, isCompleted, sidebarSect
                                             </div>
                                         );
                                     })}
+
+                                    {/* Module Assignment */}
+                                    {section.assignment && (
+                                        <div
+                                            onClick={() => {
+                                                if (!isModuleNotStarted && !section.assignment.isLocked) {
+                                                    navigate(`/classes/${classId}/assignments/${section.assignment.id}`);
+                                                }
+                                            }}
+                                            className={`flex items-start justify-between transition-all group p-3.5 pl-6 pr-3.5 border-t border-border-light/20 ${
+                                                section.assignment.isLocked ? "opacity-55 cursor-not-allowed select-none" : "cursor-pointer hover:bg-white/60"
+                                            }`}
+                                        >
+                                            <div className="flex items-start gap-3 min-w-0">
+                                                <div className="shrink-0 mt-0.5">
+                                                    {section.assignment.isCompleted ? (
+                                                        <CheckCircle size={14} className="text-success" />
+                                                    ) : section.assignment.isLocked ? (
+                                                        <Lock size={14} className="text-neutral-light" />
+                                                    ) : (
+                                                        <Award size={14} className="text-amber-500 group-hover:text-amber-600" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className={`text-xs truncate group-hover:text-primary ${
+                                                        section.assignment.isCompleted
+                                                            ? "font-semibold text-neutral-dark/75 line-through decoration-neutral-light/45"
+                                                            : section.assignment.isLocked
+                                                            ? "font-normal text-neutral-light/70"
+                                                            : "font-bold text-neutral-dark"
+                                                    }`}>
+                                                        [Bài tập] {section.assignment.title}
+                                                    </p>
+                                                    <span className="text-[10px] text-neutral-light/80 flex items-center gap-1 mt-0.5">
+                                                        Trạng thái: {section.assignment.isCompleted ? "Hoàn thành" : section.assignment.status === "NOT_STARTED" ? "Chưa làm" : "Chờ chấm"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
