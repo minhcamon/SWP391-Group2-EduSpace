@@ -63,12 +63,12 @@ const Header = () => {
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
             {/* Notification Bell (Only if Logged In) */}
-            {/* {user && (
-                            <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                                <Bell size={22} />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary rounded-full"></span>
-                            </button>
-                        )} */}
+            {user && (
+              <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
+                <Bell size={22} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary rounded-full"></span>
+              </button>
+            )}
 
             {/* User Profile Dropdown or Authentication Buttons */}
             {user ? (
