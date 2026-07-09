@@ -35,18 +35,25 @@ export const ClassPage = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const statusParam = searchParams.get("status");
 
-  const isCreator = user?.role === "CREATOR" || user?.role === "MENTOR";
+  const isMentorOfThisClass = 
+    ((classId === "L04" || classId === "1") && user?.username === "mentor1") ||
+    (classId === "L05" && user?.username === "mentor2");
+  const isActualCreator = user?.role === "CREATOR" || user?.role === "ADMIN";
+  const isCreator = isActualCreator || isMentorOfThisClass;
   const isInStudyGroup = classData?.activePersonnel?.some((group) =>
     group.members?.some((member) => member.id?.toString() === user?.id?.toString())
   );
-  const [learnerTab, setLearnerTab] = useState("feed");
-  const [creatorTab, setCreatorTab] = useState("pairs");
+  const [activeTab, setActiveTab] = useState("feed");
 
   const [leaderboardMode, setLeaderboardMode] = useState("individual");
 
   const [announcementText, setAnnouncementText] = useState("");
 
   const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState([
+    { id: 1, sender: "Minh Quân", content: "Chào thầy ạ, em có câu hỏi về Spring Security...", time: "09:30 AM", isSystem: false, isSelf: false },
+    { id: 2, sender: "Mentor", content: "Chào Quân, em cứ hỏi nhé, thầy sẽ hỗ trợ.", time: "09:32 AM", isSystem: false, isSelf: true }
+  ]);
 
   useEffect(() => {
     if (!isLoading && classData) {
@@ -175,7 +182,11 @@ export const ClassPage = () => {
             </div>
 
             <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
-              {isCreator ? "Bảng điều khiển Giảng viên" : "Bảng tin Lớp học"}
+              {isActualCreator
+                ? "Bảng điều khiển Giảng viên"
+                : isMentorOfThisClass
+                ? "Bảng điều khiển Mentor"
+                : "Bảng tin Lớp học"}
             </h1>
             <p className="text-sm text-neutral-medium mt-1">
               {isCreator
@@ -200,147 +211,139 @@ export const ClassPage = () => {
           </div>
         </div>
 
-        {/* MENTOR VIEW */}
-        {isCreator ? (
-          <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-            {/* Left Management Column (70%) */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Tabs Switcher */}
-              <div className="flex border-b border-border-light/30">
-                <button
-                  onClick={() => setCreatorTab("pairs")}
-                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${creatorTab === "pairs"
-                    ? "border-primary text-primary font-bold"
-                    : "border-transparent text-neutral-medium hover:text-primary"
-                    }`}
-                >
-                  Theo dõi Cặp đôi
-                </button>
-                <button
-                  onClick={() => setCreatorTab("evaluation")}
-                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all flex items-center gap-2 ${creatorTab === "evaluation"
-                    ? "border-primary text-primary font-bold"
-                    : "border-transparent text-neutral-medium hover:text-primary"
-                    }`}
-                >
-                  Duyệt bài tập
-                  <span className="px-1.5 py-0.5 bg-secondary text-white text-[10px] rounded-full font-bold">
-                    2
-                  </span>
-                </button>
-              </div>
+        {/* Unified Tabs Selector */}
+        <div className="flex border-b border-border-light/30 mb-6">
+          <button
+            onClick={() => setActiveTab("feed")}
+            className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${activeTab === "feed"
+              ? "border-primary text-primary font-bold"
+              : "border-transparent text-neutral-medium hover:text-primary"
+              }`}
+          >
+            Bảng tin
+          </button>
+          <button
+            onClick={() => setActiveTab("leaderboard")}
+            className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${activeTab === "leaderboard"
+              ? "border-primary text-primary font-bold"
+              : "border-transparent text-neutral-medium hover:text-primary"
+              }`}
+          >
+            Bảng xếp hạng
+          </button>
+          {isCreator && (
+            <>
+              <button
+                onClick={() => setActiveTab("pairs")}
+                className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${activeTab === "pairs"
+                  ? "border-primary text-primary font-bold"
+                  : "border-transparent text-neutral-medium hover:text-primary"
+                  }`}
+              >
+                Theo dõi Cặp đôi
+              </button>
+              <button
+                onClick={() => setActiveTab("evaluation")}
+                className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "evaluation"
+                  ? "border-primary text-primary font-bold"
+                  : "border-transparent text-neutral-medium hover:text-primary"
+                  }`}
+              >
+                Duyệt bài tập
+                <span className="px-1.5 py-0.5 bg-secondary text-white text-[10px] rounded-full font-bold">
+                  2
+                </span>
+              </button>
+            </>
+          )}
+        </div>
 
-              {/* Pairs Tab content */}
-              {creatorTab === "pairs" && (
-                <MentorPairsMonitor pairs={mockPairsMonitor} />
-              )}
-
-              {/* Evaluation Tab content */}
-              {creatorTab === "evaluation" && (
-                <MentorEvaluation />
-              )}
-            </div>
-
-            {/* Right Sidebar Widgets Column (30%) */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* Broadcast announcements */}
-              <MentorBroadcast
-                announcementText={announcementText}
-                setAnnouncementText={setAnnouncementText}
-                onBroadcast={handleSendAnnouncement}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+          {/* Left Column (70%) */}
+          <div className="lg:col-span-7 space-y-6">
+            {activeTab === "feed" && (
+              <ClassFeed
+                feed={classData.activeFeed}
+                onReactionClick={addReaction}
               />
+            )}
 
-              {/* Class Quick Chat Room */}
-              <MentorClassChat
-                chatMessages={chatMessages}
-                chatInput={chatInput}
-                setChatInput={setChatInput}
-                onSendMessage={handleSendChatMessage}
+            {activeTab === "leaderboard" && (
+              <ClassLeaderboard
+                leaderboardMode={leaderboardMode}
+                setLeaderboardMode={setLeaderboardMode}
+                individualLeaderboard={mockIndividualLeaderboard}
+                pairLeaderboard={mockPairLeaderboard}
               />
+            )}
 
-              {/* Class Performance Card */}
-              <div className="bg-bg-sidebar p-4 rounded-xl border border-border-light/35 flex items-center gap-4 shadow-xs">
-                <div className="bg-primary/10 p-3 rounded-lg text-primary">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-[10px] uppercase font-bold text-neutral-medium tracking-wider">
-                    Hiệu suất lớp
-                  </h4>
-                  <p className="text-lg font-extrabold text-primary">
-                    84% <span className="text-xs text-emerald-600 font-bold ml-1">+2.5%</span>
-                  </p>
-                </div>
-              </div>
-            </div>
+            {isCreator && activeTab === "pairs" && (
+              <MentorPairsMonitor pairs={mockPairsMonitor} />
+            )}
+
+            {isCreator && activeTab === "evaluation" && (
+              <MentorEvaluation />
+            )}
           </div>
-        ) : (
-          /* LEARNER VIEW */
-          <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-            {/* Left Content Column (70%) */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Tab Selector */}
-              <div className="flex border-b border-border-light/30">
-                <button
-                  onClick={() => setLearnerTab("feed")}
-                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${learnerTab === "feed"
-                    ? "border-primary text-primary font-bold"
-                    : "border-transparent text-neutral-medium hover:text-primary"
-                    }`}
-                >
-                  Bảng tin
-                </button>
-                <button
-                  onClick={() => setLearnerTab("leaderboard")}
-                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all ${learnerTab === "leaderboard"
-                    ? "border-primary text-primary font-bold"
-                    : "border-transparent text-neutral-medium hover:text-primary"
-                    }`}
-                >
-                  Bảng xếp hạng
-                </button>
-              </div>
 
-              {/* Bảng Tin content */}
-              {learnerTab === "feed" && (
-                <ClassFeed
-                  feed={classData.activeFeed}
-                  onReactionClick={addReaction}
-                />
-              )}
+          {/* Right Column (30%) */}
+          <div className="lg:col-span-3 space-y-6">
+            {isCreator ? (
+              <>
+                {/* Broadcast announcements - show only on Feed tab */}
+                {activeTab === "feed" && (
+                  <MentorBroadcast
+                    announcementText={announcementText}
+                    setAnnouncementText={setAnnouncementText}
+                    onBroadcast={handleSendAnnouncement}
+                  />
+                )}
 
-              {/* Bảng Xếp Hạng content */}
-              {learnerTab === "leaderboard" && (
-                <ClassLeaderboard
-                  leaderboardMode={leaderboardMode}
-                  setLeaderboardMode={setLeaderboardMode}
-                  individualLeaderboard={mockIndividualLeaderboard}
-                  pairLeaderboard={mockPairLeaderboard}
+                {/* Class Quick Chat Room */}
+                <MentorClassChat
+                  chatMessages={chatMessages}
+                  chatInput={chatInput}
+                  setChatInput={setChatInput}
+                  onSendMessage={handleSendChatMessage}
                 />
-              )}
-            </div>
 
-            {/* Right Sidebar Column (30%) */}
-            <div className="lg:col-span-3">
-              {learnerTab === "feed" ? (
-                <ClassPersonnel
-                  pairs={classData.activePersonnel}
-                  onFindBuddy={findStudyBuddy}
-                />
-              ) : (
-                <ClassLeaderboardSidebar
-                  progress="Top 20% Lớp"
-                  points="2,150 pts"
-                  partnerName="Thúy Hạnh"
-                />
-              )}
-            </div>
+                {/* Class Performance Card */}
+                <div className="bg-bg-sidebar p-4 rounded-xl border border-border-light/35 flex items-center gap-4 shadow-xs">
+                  <div className="bg-primary/10 p-3 rounded-lg text-primary">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] uppercase font-bold text-neutral-medium tracking-wider">
+                      Hiệu suất lớp
+                    </h4>
+                    <p className="text-lg font-extrabold text-primary">
+                      84% <span className="text-xs text-emerald-600 font-bold ml-1">+2.5%</span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {activeTab === "feed" ? (
+                  <ClassPersonnel
+                    pairs={classData.activePersonnel}
+                    onFindBuddy={findStudyBuddy}
+                  />
+                ) : (
+                  <ClassLeaderboardSidebar
+                    progress="Top 20% Lớp"
+                    points="2,150 pts"
+                    partnerName="Thúy Hạnh"
+                  />
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* FAB announcement post trigger (only visible to Creator role on active feed) */}
-      {isCreator && creatorTab === "pairs" && (
+      {isCreator && activeTab === "feed" && (
         <button
           onClick={() => {
             const announcementBox = document.querySelector("textarea");

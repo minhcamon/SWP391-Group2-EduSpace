@@ -86,6 +86,32 @@ public class DataInitializer implements CommandLineRunner {
         .build();
     userRepository.save(creator2);
 
+    User mentor1 = User.builder()
+        .fullName("Mentor Hoàng Văn C")
+        .username("mentor1")
+        .password(passwordEncoder.encode("password123"))
+        .email("mentor1@eduspace.org")
+        .role(Role.LEARNER)
+        .status(UserStatus.ACTIVE)
+        .authProvider(AuthProvider.LOCAL)
+        .createdAt(LocalDateTime.now())
+        .totalExp(150)
+        .build();
+    userRepository.save(mentor1);
+
+    User mentor2 = User.builder()
+        .fullName("Mentor Hoàng Thị D")
+        .username("mentor2")
+        .password(passwordEncoder.encode("password123"))
+        .email("mentor2@eduspace.org")
+        .role(Role.LEARNER)
+        .status(UserStatus.ACTIVE)
+        .authProvider(AuthProvider.LOCAL)
+        .createdAt(LocalDateTime.now())
+        .totalExp(120)
+        .build();
+    userRepository.save(mentor2);
+
     List<User> learners = new ArrayList<>();
     for (int i = 1; i <= 10; i++) {
       User learner = User.builder()
@@ -329,6 +355,15 @@ public class DataInitializer implements CommandLineRunner {
       javaClassMembers.add(classMemberRepository.save(member));
     }
 
+    ClassMember javaMentor = ClassMember.builder()
+        .courseClass(javaClass)
+        .user(mentor1)
+        .contextRole("MENTOR")
+        .learnerStatus(LearnerStatus.ACTIVE)
+        .joinedAt(LocalDateTime.now().minusDays(5))
+        .build();
+    classMemberRepository.save(javaMentor);
+
     CourseClass reactClass = CourseClass.builder()
         .name("Lớp React Web - K05")
         .activatedAt(LocalDateTime.now().minusDays(1))
@@ -347,6 +382,15 @@ public class DataInitializer implements CommandLineRunner {
           .build();
       classMemberRepository.save(member);
     }
+
+    ClassMember reactMentor = ClassMember.builder()
+        .courseClass(reactClass)
+        .user(mentor2)
+        .contextRole("MENTOR")
+        .learnerStatus(LearnerStatus.ACTIVE)
+        .joinedAt(LocalDateTime.now().minusDays(1))
+        .build();
+    classMemberRepository.save(reactMentor);
 
     // 8. Seed Study Groups & Group Members
     log.info("Seeding study groups and group members...");

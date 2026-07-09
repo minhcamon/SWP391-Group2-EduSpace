@@ -6,6 +6,9 @@ import MentorToolCard from "../components/MentorToolCard";
 import { mockMentorTools } from "../utils/mockData";
 import Button from "@/components/ui/Button";
 
+import EmptyState from "@/components/ui/EmptyState";
+import { GraduationCap } from "lucide-react";
+
 export const MentorDashboardPage = () => {
   const {
     classes,
@@ -41,12 +44,21 @@ export const MentorDashboardPage = () => {
         </div>
       </div>
 
-      {/* Course Cards Grid (2 classes) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {classes.map((classItem) => (
-          <MentorClassCard key={classItem.id} classItem={classItem} />
-        ))}
-      </div>
+      {/* Course Cards Grid */}
+      {classes.length === 0 ? (
+        <EmptyState
+          icon={GraduationCap}
+          title="Không tìm thấy lớp học"
+          description="Bạn hiện tại chưa được phân công làm Mentor cho bất kỳ lớp học nào."
+          className="my-8"
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {classes.map((classItem) => (
+            <MentorClassCard key={classItem.id} classItem={classItem} />
+          ))}
+        </div>
+      )}
 
       {/* Secondary Mentor Tools */}
       <section className="mt-10">

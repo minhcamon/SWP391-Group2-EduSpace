@@ -19,6 +19,8 @@ export const useClassDetails = (classId) => {
           const finalStatus = urlStatus ? urlStatus.toUpperCase() : rawClass.status;
           const updatedClassData = {
             ...rawClass,
+            classId: classId,
+            cohortName: classId === "L04" ? "Lớp L04" : classId === "L05" ? "Lớp L05" : rawClass.cohortName,
             status: finalStatus,
           };
 

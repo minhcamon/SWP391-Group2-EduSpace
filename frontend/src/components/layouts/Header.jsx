@@ -47,7 +47,7 @@ const Header = () => {
               Học tập của tôi
             </NavLink>
 
-            {(user?.role === "MENTOR" || user?.role === "CREATOR" || user?.role === "ADMIN") && (
+            {(user?.role === "CREATOR" || user?.role === "ADMIN" || user?.username?.startsWith("mentor")) && (
               <NavLink
                 to="/mentor"
                 className={({ isActive }) =>

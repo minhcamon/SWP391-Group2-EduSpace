@@ -110,7 +110,7 @@ function App() {
           </Route>
 
           {/* mentor route */}
-          <Route element={<ProtectedRoute allowedRoles={["MENTOR", "CREATOR", "ADMIN"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["LEARNER", "MENTOR", "CREATOR", "ADMIN"]} />}>
             <Route path="/mentor" element={<MentorDashboard />}></Route>
           </Route>
 

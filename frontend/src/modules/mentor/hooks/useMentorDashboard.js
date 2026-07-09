@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import mentorService from "@/services/mentorService";
 import { runWithLoading } from "@/utils/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export const useMentorDashboard = () => {
+  const { user } = useAuth();
   const [classes, setClasses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -12,12 +14,18 @@ export const useMentorDashboard = () => {
     try {
       await runWithLoading(setIsLoading, async () => {
         const data = await mentorService.getMentorClasses();
-        setClasses(data);
+        const filtered = data.filter((c) => 
+          user?.role === "CREATOR" || 
+          user?.role === "ADMIN" ||
+          (c.id === "L04" && user?.username === "mentor1") ||
+          (c.id === "L05" && user?.username === "mentor2")
+        );
+        setClasses(filtered);
       });
     } catch (error) {
       toast.error(error.message || "Không thể tải danh sách lớp học!");
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchClasses();
