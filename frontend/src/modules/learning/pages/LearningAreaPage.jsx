@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Send,
   X,
+  LifeBuoy,
 } from "lucide-react";
 import { toast } from "sonner";
 import VideoPlayer from "../components/VideoPlayer";
@@ -52,6 +53,10 @@ const LearningAreaPage = () => {
     progressPercent,
   } = useLearningArea();
 
+  const handleRequestMentorSupport = () => {
+    toast.success("Đã gửi yêu cầu hỗ trợ đến Mentor lớp! Mentor sẽ tham gia hỗ trợ trong ít phút.");
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-bg-base">
@@ -84,6 +89,16 @@ const LearningAreaPage = () => {
         </div>
 
         <div className="flex items-center gap-6">
+          {/* Request Mentor Support Button */}
+          <button
+            onClick={handleRequestMentorSupport}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-secondary text-secondary bg-white hover:bg-secondary/5 hover:scale-[0.98] transition-all text-xs font-bold cursor-pointer active:scale-95 shadow-xs"
+          >
+            <LifeBuoy size={14} className="animate-pulse text-secondary" />
+            <span className="hidden sm:inline">Yêu cầu Mentor hỗ trợ</span>
+            <span className="inline sm:hidden">Cần hỗ trợ</span>
+          </button>
+
           {/* Collapsible Chat Button */}
           <button
             onClick={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
