@@ -46,6 +46,20 @@ const Header = () => {
             >
               Học tập của tôi
             </NavLink>
+
+            {(user?.role === "MENTOR" || user?.role === "CREATOR" || user?.role === "ADMIN") && (
+              <NavLink
+                to="/mentor"
+                className={({ isActive }) =>
+                  `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-neutral-medium hover:text-primary"
+                  }`
+                }
+              >
+                Trang quản lý Mentor
+              </NavLink>
+            )}
           </nav>
 
           {/* Search Bar (Desktop) */}

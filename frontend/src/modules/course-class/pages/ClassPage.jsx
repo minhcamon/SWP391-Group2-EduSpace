@@ -35,7 +35,7 @@ export const ClassPage = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const statusParam = searchParams.get("status");
 
-  const isCreator = user?.role === "CREATOR";
+  const isCreator = user?.role === "CREATOR" || user?.role === "MENTOR";
   const isInStudyGroup = classData?.activePersonnel?.some((group) =>
     group.members?.some((member) => member.id?.toString() === user?.id?.toString())
   );

@@ -26,6 +26,7 @@ import MyLearning from "@/views/learning/MyLearning";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
 import Assignment from "@/views/learning/Assignment";
+import MentorDashboard from "@/views/mentor/Dashboard";
 
 function App() {
   return (
@@ -106,6 +107,11 @@ function App() {
               path="/creator/create-course"
               element={<CreatorCourseBuilder mode="CREATE" />}
             ></Route>
+          </Route>
+
+          {/* mentor route */}
+          <Route element={<ProtectedRoute allowedRoles={["MENTOR", "CREATOR", "ADMIN"]} />}>
+            <Route path="/mentor" element={<MentorDashboard />}></Route>
           </Route>
 
           <Route path="*" element={<Error />}></Route>
