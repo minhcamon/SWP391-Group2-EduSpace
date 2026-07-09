@@ -7,6 +7,7 @@ import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.WaitlistStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.eduspace.backend.enums.NotificationType;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,244 +17,250 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SystemService {
 
-        private final WaitlistRepository waitlistRepository;
-        private final WaitlistEntryRepository waitlistEntryRepository;
-        private final ClassRepository classRepository;
-        private final ClassMemberRepository classMemberRepository;
-        private final ModuleRepository moduleRepository;
-        private final ClassTimelineRepository classTimelineRepository;
-        private final StudyGroupRepository studyGroupRepository;
-        private final GroupMemberRepository groupMemberRepository;
+    private final WaitlistRepository waitlistRepository;
+    private final WaitlistEntryRepository waitlistEntryRepository;
+    private final ClassRepository classRepository;
+    private final ClassMemberRepository classMemberRepository;
+    private final ModuleRepository moduleRepository;
+    private final ClassTimelineRepository classTimelineRepository;
+    private final StudyGroupRepository studyGroupRepository;
+    private final GroupMemberRepository groupMemberRepository;
+    private final NotificationService notificationService;
 
-        @Transactional
-        public Long createClassFromWaitlist(Long waitlistId) {
+    @Transactional
+    public Long createClassFromWaitlist(Long waitlistId) {
 
-                Waitlist waitlist = waitlistRepository.findById(waitlistId)
-                                .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
+        Waitlist waitlist = waitlistRepository.findById(waitlistId)
+                .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
 
-                waitlist.setStatus(WaitlistStatus.FULLED);
-                waitlistRepository.save(waitlist);
+        waitlist.setStatus(WaitlistStatus.FULLED);
+        waitlistRepository.save(waitlist);
 
-                String generatedClassName = waitlist.getCourse().getTitle().replaceAll("\\s+", "_").toUpperCase()
-                                + "_B" + System.currentTimeMillis() % 1000;
+        String generatedClassName = waitlist.getCourse().getTitle().replaceAll("\\s+", "_").toUpperCase()
+                + "_B" + System.currentTimeMillis() % 1000;
 
-                CourseClass newClass = CourseClass.builder()
-                                .course(waitlist.getCourse())
-                                .name(generatedClassName)
-                                .activatedAt(LocalDateTime.now())
-                                .status(ClassStatus.RUNNING)
-                                .build();
-                CourseClass savedClass = classRepository.save(newClass);
+        CourseClass newClass = CourseClass.builder()
+                .course(waitlist.getCourse())
+                .name(generatedClassName)
+                .activatedAt(LocalDateTime.now())
+                .status(ClassStatus.RUNNING)
+                .build();
+        CourseClass savedClass = classRepository.save(newClass);
 
-                List<WaitlistEntry> allEntries = waitlistEntryRepository.findByWaitlistId(waitlistId);
+        List<WaitlistEntry> allEntries = waitlistEntryRepository.findByWaitlistId(waitlistId);
 
-                if (allEntries.size() < 10) {
-                        throw new RuntimeException("Error: Chưa đủ 10 người để đóng lớp.");
-                }
-                List<WaitlistEntry> entries = allEntries.subList(0, 10);
+        if (allEntries.size() < 10) {
+            throw new RuntimeException("Error: Not enough 10 members to start the class.");
+        }
+        List<WaitlistEntry> entries = allEntries.subList(0, 10);
 
-                entries.sort((a, b) -> {
-                        int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
-                        int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
-                        return Integer.compare(expB, expA);
-                });
+        entries.sort((a, b) -> {
+            int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
+            int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
+            return Integer.compare(expB, expA);
+        });
 
-                List<ClassMember> savedMembers = new ArrayList<>();
-                for (WaitlistEntry entry : entries) {
-                        ClassMember member = ClassMember.builder()
-                                        .courseClass(savedClass)
-                                        .user(entry.getUser())
-                                        .contextRole("LEARNER")
-                                        .learnerStatus(LearnerStatus.ACTIVE)
-                                        .rescueStartedAt(null)
-                                        .joinedAt(LocalDateTime.now())
-                                        .build();
-                        savedMembers.add(classMemberRepository.save(member));
+        List<ClassMember> savedMembers = new ArrayList<>();
+        for (WaitlistEntry entry : entries) {
+            ClassMember member = ClassMember.builder()
+                    .courseClass(savedClass)
+                    .user(entry.getUser())
+                    .contextRole("LEARNER")
+                    .learnerStatus(LearnerStatus.ACTIVE)
+                    .rescueStartedAt(null)
+                    .joinedAt(LocalDateTime.now())
+                    .build();
+            savedMembers.add(classMemberRepository.save(member));
 
-                        waitlistEntryRepository.delete(entry);
-                }
+            waitlistEntryRepository.delete(entry);
 
-                List<CourseModule> modules = moduleRepository
-                                .findByCourseIdOrderBySortOrder(savedClass.getCourse().getId());
-                CourseModule firstModule = modules.isEmpty() ? null : modules.get(0);
-
-                int left = 0;
-                int right = savedMembers.size() - 1;
-                int groupIndex = 1;
-
-                while (left < right) {
-                        ClassMember proStudent = savedMembers.get(left);
-                        ClassMember newbieStudent = savedMembers.get(right);
-
-                        StudyGroup studyGroup = StudyGroup.builder()
-                                        .courseClass(savedClass)
-                                        .module(firstModule)
-                                        .chatChannelId("chat_room_g" + groupIndex + "_" + savedClass.getId())
-                                        .chatStatus("ACTIVE")
-                                        .build();
-                        StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
-
-                        GroupMember memberLeft = GroupMember.builder()
-                                        .studyGroup(savedGroup)
-                                        .classMember(proStudent)
-                                        .build();
-                        groupMemberRepository.save(memberLeft);
-
-                        GroupMember memberRight = GroupMember.builder()
-                                        .studyGroup(savedGroup)
-                                        .classMember(newbieStudent)
-                                        .build();
-                        groupMemberRepository.save(memberRight);
-
-                        left++;
-                        right--;
-                        groupIndex++;
-                }
-
-                this.createTimelineForClass(savedClass.getId());
-
-                return savedClass.getId();
+            notificationService.sendToUser(entry.getUser(),
+                    "Your course " + waitlist.getCourse().getTitle() + " has started!",
+                    NotificationType.SYSTEM,
+                    savedClass.getId());
         }
 
-        @Transactional
-        public void createTimelineForClass(Long classId) {
-                if (!classTimelineRepository.findByCourseClassId(classId).isEmpty()) {
-                        return;
-                }
+        List<CourseModule> modules = moduleRepository
+                .findByCourseIdOrderBySortOrder(savedClass.getCourse().getId());
+        CourseModule firstModule = modules.isEmpty() ? null : modules.get(0);
 
-                CourseClass courseClass = classRepository.findById(classId)
-                                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+        int left = 0;
+        int right = savedMembers.size() - 1;
+        int groupIndex = 1;
 
-                LocalDateTime anchor = courseClass.getActivatedAt() != null
-                                ? courseClass.getActivatedAt()
-                                : LocalDateTime.now();
+        while (left < right) {
+            ClassMember proStudent = savedMembers.get(left);
+            ClassMember newbieStudent = savedMembers.get(right);
 
-                List<CourseModule> modules = moduleRepository
-                                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
+            StudyGroup studyGroup = StudyGroup.builder()
+                    .courseClass(savedClass)
+                    .module(firstModule)
+                    .chatChannelId("chat_room_g" + groupIndex + "_" + savedClass.getId())
+                    .chatStatus("ACTIVE")
+                    .build();
+            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
 
-                LocalDateTime cursor = anchor;
-                for (CourseModule module : modules) {
-                        cursor = cursor.plusDays(module.getDays());
+            GroupMember memberLeft = GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(proStudent)
+                    .build();
+            groupMemberRepository.save(memberLeft);
 
-                        ClassTimeline timeline = ClassTimeline.builder()
-                                        .courseClass(courseClass)
-                                        .module(module)
-                                        .dueDate(cursor)
-                                        .build();
-                        classTimelineRepository.save(timeline);
-                }
+            GroupMember memberRight = GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(newbieStudent)
+                    .build();
+            groupMemberRepository.save(memberRight);
+
+            left++;
+            right--;
+            groupIndex++;
         }
 
-        @Transactional
-        public void splitExistingClassIntoPairs(Long classId, Long moduleId) {
-                CourseClass courseClass = classRepository.findById(classId)
-                                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
-                CourseModule module = moduleRepository.findById(moduleId)
-                                .orElseThrow(() -> new RuntimeException("Error: Module not found."));
+        this.createTimelineForClass(savedClass.getId());
 
-                List<ClassMember> members = classMemberRepository.findByCourseClassId(classId);
+        return savedClass.getId();
+    }
 
-                members.sort((a, b) -> {
-                        int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
-                        int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
-                        return Integer.compare(expB, expA);
-                });
-
-                int left = 0;
-                int right = members.size() - 1;
-                int groupIndex = 1;
-
-                while (left < right) {
-                        StudyGroup studyGroup = StudyGroup.builder()
-                                        .courseClass(courseClass)
-                                        .module(module)
-                                        .chatChannelId("manual_chat_g" + groupIndex + "_" + classId)
-                                        .chatStatus("ACTIVE")
-                                        .build();
-                        StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
-
-                        groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
-                                        .classMember(members.get(left)).build());
-                        groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
-                                        .classMember(members.get(right)).build());
-
-                        left++;
-                        right--;
-                        groupIndex++;
-                }
+    @Transactional
+    public void createTimelineForClass(Long classId) {
+        if (!classTimelineRepository.findByCourseClassId(classId).isEmpty()) {
+            return;
         }
 
-        @Transactional
-        public void reMatchGroupsAfterDrop(Long classId, Long moduleId) {
-                groupMemberRepository.deleteByLearnerStatusNotActive(classId, moduleId);
+        CourseClass courseClass = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
 
-                studyGroupRepository.deleteEmptyGroups(classId, moduleId);
+        LocalDateTime anchor = courseClass.getActivatedAt() != null
+                ? courseClass.getActivatedAt()
+                : LocalDateTime.now();
 
-                List<ClassMember> orphanList = groupMemberRepository.findOrphansByClassId(classId, moduleId);
+        List<CourseModule> modules = moduleRepository
+                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
 
-                if (!orphanList.isEmpty()) {
-                        groupMemberRepository.deleteByLearnerStatusNotActive(classId, moduleId);
+        LocalDateTime cursor = anchor;
+        for (CourseModule module : modules) {
+            cursor = cursor.plusDays(module.getDays());
 
-                        groupMemberRepository.deleteAllByClassMemberInAndStudyGroupCourseClassIdAndStudyGroupModuleId(
-                                        orphanList, classId, moduleId);
+            ClassTimeline timeline = ClassTimeline.builder()
+                    .courseClass(courseClass)
+                    .module(module)
+                    .dueDate(cursor)
+                    .build();
+            classTimelineRepository.save(timeline);
+        }
+    }
 
-                        studyGroupRepository.deleteGroupsWithSingleMember(classId, moduleId);
-                }
+    @Transactional
+    public void splitExistingClassIntoPairs(Long classId, Long moduleId) {
+        CourseClass courseClass = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+        CourseModule module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new RuntimeException("Error: Module not found."));
 
-                orphanList.sort((a, b) -> {
-                        int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
-                        int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
-                        return Integer.compare(expB, expA);
-                });
+        List<ClassMember> members = classMemberRepository.findByCourseClassId(classId);
 
-                int n = orphanList.size();
+        members.sort((a, b) -> {
+            int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
+            int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
+            return Integer.compare(expB, expA);
+        });
 
-                if (n == 1) {
-                        StudyGroup lowestGroup = studyGroupRepository.findAvailableGroupWithLowestExp(classId, moduleId)
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "Error: Không tìm thấy nhóm phù hợp để ghép thêm."));
+        int left = 0;
+        int right = members.size() - 1;
+        int groupIndex = 1;
 
-                        GroupMember newMember = GroupMember.builder()
-                                        .studyGroup(lowestGroup)
-                                        .classMember(orphanList.get(0))
-                                        .build();
-                        groupMemberRepository.save(newMember);
-                } else if (n == 2) {
-                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1)));
-                } else if (n == 3) {
-                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1), orphanList.get(2)));
-                } else if (n == 4) {
-                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(3)));
-                        createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2)));
-                } else if (n == 5) {
-                        createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(4)));
-                        createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2), orphanList.get(3)));
-                }
+        while (left < right) {
+            StudyGroup studyGroup = StudyGroup.builder()
+                    .courseClass(courseClass)
+                    .module(module)
+                    .chatChannelId("manual_chat_g" + groupIndex + "_" + classId)
+                    .chatStatus("ACTIVE")
+                    .build();
+            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+
+            groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
+                    .classMember(members.get(left)).build());
+            groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
+                    .classMember(members.get(right)).build());
+
+            left++;
+            right--;
+            groupIndex++;
+        }
+    }
+
+    @Transactional
+    public void reMatchGroupsAfterDrop(Long classId, Long moduleId) {
+        groupMemberRepository.deleteByLearnerStatusNotActive(classId, moduleId);
+
+        studyGroupRepository.deleteEmptyGroups(classId, moduleId);
+
+        List<ClassMember> orphanList = groupMemberRepository.findOrphansByClassId(classId, moduleId);
+
+        if (!orphanList.isEmpty()) {
+            groupMemberRepository.deleteByLearnerStatusNotActive(classId, moduleId);
+
+            groupMemberRepository.deleteAllByClassMemberInAndStudyGroupCourseClassIdAndStudyGroupModuleId(
+                    orphanList, classId, moduleId);
+
+            studyGroupRepository.deleteGroupsWithSingleMember(classId, moduleId);
         }
 
-        private void createCustomGroup(Long classId, List<ClassMember> groupMembers) {
-                CourseClass courseClass = classRepository.findById(classId)
-                                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+        orphanList.sort((a, b) -> {
+            int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
+            int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
+            return Integer.compare(expB, expA);
+        });
 
-                List<CourseModule> modules = moduleRepository
-                                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
-                CourseModule currentModule = modules.isEmpty() ? null : modules.get(0);
+        int n = orphanList.size();
 
-                long timestamp = System.currentTimeMillis() % 1000;
-                StudyGroup studyGroup = StudyGroup.builder()
-                                .courseClass(courseClass)
-                                .module(currentModule)
-                                .chatChannelId("rematch_chat_g" + timestamp + "_" + classId)
-                                .chatStatus("ACTIVE")
-                                .build();
-                StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+        if (n == 1) {
+            StudyGroup lowestGroup = studyGroupRepository.findAvailableGroupWithLowestExp(classId, moduleId)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Error: Suitable group for matching not found."));
 
-                for (ClassMember cm : groupMembers) {
-                        GroupMember gm = GroupMember.builder()
-                                        .studyGroup(savedGroup)
-                                        .classMember(cm)
-                                        .build();
-                        groupMemberRepository.save(gm);
-                }
+            GroupMember newMember = GroupMember.builder()
+                    .studyGroup(lowestGroup)
+                    .classMember(orphanList.get(0))
+                    .build();
+            groupMemberRepository.save(newMember);
+        } else if (n == 2) {
+            createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1)));
+        } else if (n == 3) {
+            createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(1), orphanList.get(2)));
+        } else if (n == 4) {
+            createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(3)));
+            createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2)));
+        } else if (n == 5) {
+            createCustomGroup(classId, List.of(orphanList.get(0), orphanList.get(4)));
+            createCustomGroup(classId, List.of(orphanList.get(1), orphanList.get(2), orphanList.get(3)));
         }
+    }
+
+    private void createCustomGroup(Long classId, List<ClassMember> groupMembers) {
+        CourseClass courseClass = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Error: Class not found."));
+
+        List<CourseModule> modules = moduleRepository
+                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
+        CourseModule currentModule = modules.isEmpty() ? null : modules.get(0);
+
+        long timestamp = System.currentTimeMillis() % 1000;
+        StudyGroup studyGroup = StudyGroup.builder()
+                .courseClass(courseClass)
+                .module(currentModule)
+                .chatChannelId("rematch_chat_g" + timestamp + "_" + classId)
+                .chatStatus("ACTIVE")
+                .build();
+        StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+
+        for (ClassMember cm : groupMembers) {
+            GroupMember gm = GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(cm)
+                    .build();
+            groupMemberRepository.save(gm);
+        }
+    }
 }
