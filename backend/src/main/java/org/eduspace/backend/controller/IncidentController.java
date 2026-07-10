@@ -38,6 +38,15 @@ public class IncidentController {
         return ResponseEntity.ok(APIResponse.success("Get incidents successfully", response));
     }
 
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('LEARNER')")
+    @Operation(summary = "Get my incidents", description = "Lấy danh sách các yêu cầu đã gửi của learner")
+    public ResponseEntity<APIResponse<List<IncidentListResponse>>> getMyIncidents() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<IncidentListResponse> response = incidentService.getMyIncidents(userId);
+        return ResponseEntity.ok(APIResponse.success("Get my incidents successfully", response));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('MENTOR')")
     @Operation(summary = "Get incident details", description = "Lấy chi tiết một sự cố")
