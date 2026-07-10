@@ -1,8 +1,7 @@
 package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.eduspace.backend.dto.response.MentorDashboardResponse;
-
+import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.repository.ActiveMentorRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;

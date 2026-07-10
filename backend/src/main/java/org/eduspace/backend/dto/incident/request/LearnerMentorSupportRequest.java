@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.eduspace.backend.enums.IncidentType;
 
 @Getter
 @Setter
@@ -14,8 +15,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LearnerMentorSupportRequest {
 
-    @NotNull(message = "Course ID cannot be null")
+    @NotNull(message = "Request type cannot be null")
+    private IncidentType incidentType;
+
     private Long courseId;
+
+    private Long studyGroupId;
+
+    private Long reportedUserId;
 
     @NotBlank(message = "Reason cannot be blank")
     @Size(max = 2000, message = "Reason is too long")

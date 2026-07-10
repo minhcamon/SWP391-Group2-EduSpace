@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
-import org.eduspace.backend.dto.response.MentorDashboardResponse;
+import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.springframework.http.ResponseEntity;

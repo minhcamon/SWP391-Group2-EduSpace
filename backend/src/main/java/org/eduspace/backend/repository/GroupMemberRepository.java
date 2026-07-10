@@ -49,6 +49,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
         Optional<GroupMember> findByStudyGroupIdAndClassMemberId(Long studyGroupId, Long classMemberId);
 
+        Optional<GroupMember> findByStudyGroupIdAndClassMemberUserId(Long studyGroupId, Long userId);
+
         @Query("SELECT gm.studyGroup.id FROM GroupMember gm " +
                         "WHERE gm.classMember.id = :classMemberId " +
                         "AND gm.studyGroup.module.id = :moduleId")
