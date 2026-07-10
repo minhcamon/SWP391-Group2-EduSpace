@@ -49,6 +49,7 @@ const LearningAreaPage = () => {
     lesson,
     sidebarSections,
     handleSelectLesson,
+    handleSelectAssignment,
     progressPercent,
   } = useLearningArea();
 
@@ -137,6 +138,7 @@ const LearningAreaPage = () => {
           isCompleted={isCompleted}
           sidebarSections={sidebarSections}
           onSelectLesson={handleSelectLesson}
+          onSelectAssignment={handleSelectAssignment}
         />
 
         {/* Main Content Area (Video & Tabs) */}

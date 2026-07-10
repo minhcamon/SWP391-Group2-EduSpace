@@ -190,6 +190,7 @@ const useLearningArea = () => {
             title: modProgress.title,
             status: modProgress.status,
             statusText,
+            assignment: modProgress.assignment || null,
             lessons: (modProgress.lessons || []).map(lesProgress => {
                 const isThisLessonActive = activeLessonId && activeLessonId.toString() === lesProgress.id.toString();
                 const partner = modProgress.partner;
@@ -217,6 +218,12 @@ const useLearningArea = () => {
             })
         };
     }) || [];
+
+    // Navigate to assignment page
+    const handleSelectAssignment = (assignmentId) => {
+        if (!resolvedClassId || !assignmentId) return;
+        navigate(`/classes/${resolvedClassId}/assignments/${assignmentId}`);
+    };
 
     // Construct active lesson details
     const activeLessonProgress = activeModule?.lessons?.find(l => l.id.toString() === activeLessonId?.toString());
@@ -417,6 +424,7 @@ const useLearningArea = () => {
         lesson,
         sidebarSections,
         handleSelectLesson,
+        handleSelectAssignment,
         progressPercent
     };
 };
