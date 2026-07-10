@@ -39,4 +39,6 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
             @Param("userId") Long userId,
             @Param("courseId") Long courseId,
             @Param("statuses") List<LearnerStatus> statuses);
+
+    long countByUserIdAndContextRole(Long userId, String contextRole);
 }
