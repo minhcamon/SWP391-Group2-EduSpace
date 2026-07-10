@@ -26,8 +26,8 @@ const ClassManagementPage = () => {
   }, []);
 
   const filteredClasses = classes.filter((c) =>
-    c.cohortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.courseTitle.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.courseTitle ?? "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -65,7 +65,7 @@ const ClassManagementPage = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-neutral-dark">
-                {classes.reduce((acc, c) => acc + c.pairs.length * 2, 0)}
+                {classes.reduce((acc, c) => acc + (c.numberOfPairs ?? 0) * 2, 0)}
               </p>
               <p className="text-xs text-neutral-medium font-semibold">Học viên Đang Phục vụ</p>
             </div>
@@ -79,7 +79,7 @@ const ClassManagementPage = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-neutral-dark">
-                {classes.reduce((acc, c) => acc + c.pairs.filter(p => p.status === "SLOW").length, 0)}
+                {classes.reduce((acc, c) => acc + (c.slowPairs ?? 0), 0)}
               </p>
               <p className="text-xs text-neutral-medium font-semibold font-sans">Cặp đôi đang gặp khó khăn (Slow)</p>
             </div>
