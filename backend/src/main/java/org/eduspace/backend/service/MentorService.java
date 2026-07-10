@@ -2,6 +2,7 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
+
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.repository.ActiveMentorRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
@@ -59,7 +60,8 @@ public class MentorService {
 
         List<IncidentStatus> resolvedStatuses = Arrays.asList(IncidentStatus.RESOLVED, IncidentStatus.REJECTED,
                 IncidentStatus.CLOSED);
-        long resolvedIncidents = incidentRepository.countByResolvedByUserIdAndStatusIn(userId, resolvedStatuses);
+        long resolvedIncidents = incidentRepository.countByResolvedByUserIdAndStatusIn(userId,
+                resolvedStatuses);
 
         long assignedClasses = classMemberRepository.countByUserIdAndContextRole(userId, "MENTOR");
 
