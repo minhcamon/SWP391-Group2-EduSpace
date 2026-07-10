@@ -22,7 +22,8 @@ public class IncidentService {
     private final ClassMemberRepository classMemberRepository;
 
     public List<IncidentListResponse> getIncidents(Long userId) {
-        List<Incident> incidents = incidentRepository.findByResolvedByUserId(userId);
+        List<Incident> incidents = incidentRepository.findByResolvedByUserIdAndStatus(userId,
+                IncidentStatus.IN_PROGRESS);
         return incidents.stream().map(incident -> IncidentListResponse.builder()
                 .id(incident.getId())
                 .incidentType(incident.getIncidentType())
@@ -54,9 +55,10 @@ public class IncidentService {
                 .reason(incident.getReason())
                 .evidenceUrl(incident.getEvidenceUrl())
                 .status(incident.getStatus())
-                .resolvedByName(incident.getResolvedBy() != null && incident.getResolvedBy().getUser() != null
-                        ? incident.getResolvedBy().getUser().getFullName()
-                        : null)
+                .resolvedByName(incident.getResolvedBy() != null
+                        && incident.getResolvedBy().getUser() != null
+                                ? incident.getResolvedBy().getUser().getFullName()
+                                : null)
                 .resolutionNote(incident.getResolutionNote())
                 .createdAt(incident.getCreatedAt())
                 .solvedAt(incident.getSolvedAt())
@@ -100,5 +102,21 @@ public class IncidentService {
         incident.setResolutionNote(request.getResolutionNote());
         incident.setSolvedAt(LocalDateTime.now());
         incidentRepository.save(incident);
+    }
+
+    public List<IncidentListResponse> getIncidentHistory(Long userId) {
+        List<Incident> incidents = incidentRepository.findByResolvedByUserIdAndStatus(userId,
+                IncidentStatus.RESOLVED);
+        return incidents.stream().map(incident -> IncidentListResponse.builder()
+                .id(incident.getId())
+                .incidentType(incident.getIncidentType())
+                .reporterName(incident.getReporter() != null && incident.getReporter().getUser() != null
+                        ? incident.getReporter().getUser().getFullName()
+                        : null)
+                .reason(incident.getReason())
+                .status(incident.getStatus())
+                .createdAt(incident.getCreatedAt())
+                .solvedAt(incident.getSolvedAt())
+                .build()).toList();
     }
 }
