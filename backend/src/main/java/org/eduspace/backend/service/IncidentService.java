@@ -32,8 +32,15 @@ public class IncidentService {
     }
 
     public IncidentDetailResponse getIncidentDetail(Long incidentId, Long userId) {
-        Incident incident = incidentRepository.findByIdAndResolvedByUserId(incidentId, userId);
-        if (incident == null) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Incident not found"));
+
+        boolean isMentorAssigned = incident.getResolvedBy() != null && incident.getResolvedBy().getUser() != null
+                && incident.getResolvedBy().getUser().getId().equals(userId);
+        boolean isReporter = incident.getReporter() != null && incident.getReporter().getUser() != null
+                && incident.getReporter().getUser().getId().equals(userId);
+
+        if (!isMentorAssigned && !isReporter) {
             throw new RuntimeException("Incident not found or you don't have permission to access it");
         }
 

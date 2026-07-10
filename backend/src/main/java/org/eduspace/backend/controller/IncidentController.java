@@ -48,7 +48,7 @@ public class IncidentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasRole('MENTOR') or hasRole('LEARNER')")
     @Operation(summary = "Get incident details", description = "Lấy chi tiết một sự cố")
     public ResponseEntity<APIResponse<IncidentDetailResponse>> getIncidentDetail(@PathVariable("id") Long incidentId) {
         Long userId = SecurityUtil.getCurrentUserId();
