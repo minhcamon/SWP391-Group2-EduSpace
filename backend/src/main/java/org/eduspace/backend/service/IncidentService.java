@@ -24,17 +24,12 @@ public class IncidentService {
     public List<IncidentListResponse> getIncidents(Long userId) {
         List<Incident> incidents = incidentRepository.findByResolvedByUserIdAndStatus(userId,
                 IncidentStatus.IN_PROGRESS);
-        return incidents.stream().map(incident -> IncidentListResponse.builder()
-                .id(incident.getId())
-                .incidentType(incident.getIncidentType())
-                .reporterName(incident.getReporter() != null && incident.getReporter().getUser() != null
-                        ? incident.getReporter().getUser().getFullName()
-                        : null)
-                .reason(incident.getReason())
-                .status(incident.getStatus())
-                .createdAt(incident.getCreatedAt())
-                .solvedAt(incident.getSolvedAt())
-                .build()).toList();
+        return incidents.stream().map(this::toListResponse).toList();
+    }
+
+    public List<IncidentListResponse> getMyIncidents(Long userId) {
+        List<Incident> incidents = incidentRepository.findByReporterUserId(userId);
+        return incidents.stream().map(this::toListResponse).toList();
     }
 
     public IncidentDetailResponse getIncidentDetail(Long incidentId, Long userId) {

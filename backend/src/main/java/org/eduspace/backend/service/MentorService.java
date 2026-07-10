@@ -65,7 +65,8 @@ public class MentorService {
 
         List<IncidentStatus> resolvedStatuses = Arrays.asList(IncidentStatus.RESOLVED, IncidentStatus.REJECTED,
                 IncidentStatus.CLOSED);
-        long resolvedIncidents = incidentRepository.countByResolvedByUserIdAndStatusIn(userId, resolvedStatuses);
+        long resolvedIncidents = incidentRepository.countByResolvedByUserIdAndStatusIn(userId,
+                resolvedStatuses);
 
         long assignedClasses = classMemberRepository.countByUserIdAndContextRole(userId, "MENTOR");
 
