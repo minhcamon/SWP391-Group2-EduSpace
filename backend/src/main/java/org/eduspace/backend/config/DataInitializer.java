@@ -32,12 +32,29 @@ public class DataInitializer implements CommandLineRunner {
   private final StudyGroupRepository studyGroupRepository;
   private final GroupMemberRepository groupMemberRepository;
   private final PasswordEncoder passwordEncoder;
+  private final ActiveMentorRepository activeMentorRepository;
+  private final IncidentRepository incidentRepository;
+  private final RescueRequestRepository rescueRequestRepository;
 
   @Override
   @Transactional
   public void run(String... args) throws Exception {
     if (userRepository.count() > 0) {
-      log.info("Database already initialized. Skipping seeding.");
+      log.info("Database already initialized. Checking for missing active mentors...");
+      if (activeMentorRepository.count() == 0) {
+        log.info("Seeding active mentors for existing database...");
+        User m1 = userRepository.findByUsername("mentor1").orElse(null);
+        User m2 = userRepository.findByUsername("mentor2").orElse(null);
+        Course cJava = courseRepository.findAll().stream().filter(c -> c.getTitle().contains("Java")).findFirst().orElse(null);
+        Course cReact = courseRepository.findAll().stream().filter(c -> c.getTitle().contains("React")).findFirst().orElse(null);
+
+        if (m1 != null && cJava != null) {
+          activeMentorRepository.save(ActiveMentor.builder().user(m1).course(cJava).mentorStatus(MentorStatus.AVAILABLE).build());
+        }
+        if (m2 != null && cReact != null) {
+          activeMentorRepository.save(ActiveMentor.builder().user(m2).course(cReact).mentorStatus(MentorStatus.AVAILABLE).build());
+        }
+      }
       return;
     }
 
@@ -433,6 +450,55 @@ public class DataInitializer implements CommandLineRunner {
         .classMember(javaClassMembers.get(3))
         .build();
     groupMemberRepository.save(gm4);
+
+    // 9. Seed Active Mentors
+    log.info("Seeding active mentors...");
+    ActiveMentor am1 = ActiveMentor.builder()
+        .user(mentor1)
+        .course(courseJava)
+        .mentorStatus(MentorStatus.AVAILABLE)
+        .build();
+    activeMentorRepository.save(am1);
+
+    ActiveMentor am2 = ActiveMentor.builder()
+        .user(mentor2)
+        .course(courseReact)
+        .mentorStatus(MentorStatus.AVAILABLE)
+        .build();
+    activeMentorRepository.save(am2);
+
+    // 10. Seed Incidents
+    log.info("Seeding incidents...");
+    Incident inc1 = Incident.builder()
+        .incidentType(IncidentType.PEER_REVIEW_DISPUTE)
+        .reporter(javaClassMembers.get(0))
+        .reported(javaClassMembers.get(1))
+        .reason("Học viên chấm điểm chéo không khách quan, đánh giá sai lệch bài tập Java.")
+        .status(IncidentStatus.PENDING)
+        .createdAt(LocalDateTime.now())
+        .build();
+    incidentRepository.save(inc1);
+
+    Incident inc2 = Incident.builder()
+        .incidentType(IncidentType.INACTIVE_PARTNER)
+        .reporter(javaClassMembers.get(2))
+        .reported(javaClassMembers.get(3))
+        .reason("Bạn học cùng nhóm đã không online 5 ngày qua, không phản hồi tin nhắn làm bài tập nhóm.")
+        .status(IncidentStatus.IN_PROGRESS)
+        .createdAt(LocalDateTime.now().minusDays(1))
+        .build();
+    incidentRepository.save(inc2);
+
+    // 11. Seed Rescue Requests
+    log.info("Seeding rescue requests...");
+    RescueRequest rr1 = RescueRequest.builder()
+        .incident(inc1)
+        .learner(javaClassMembers.get(0))
+        .rescueStartedAt(LocalDateTime.now())
+        .rescueDeadline(LocalDateTime.now().plusHours(48))
+        .status(RescueStatus.ON_GOING)
+        .build();
+    rescueRequestRepository.save(rr1);
 
     log.info("Database initialization completed successfully.");
   }

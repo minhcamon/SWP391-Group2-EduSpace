@@ -18,4 +18,7 @@ public class UserResponse {
     private String avatarUrl;
     private String bio;
     private String role;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("isMentor")
+    private boolean isMentor;
 }
