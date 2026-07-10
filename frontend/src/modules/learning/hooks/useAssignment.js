@@ -24,7 +24,13 @@ const useAssignment = () => {
   const [peerReviewGraded, setPeerReviewGraded] = useState(false)
   const [partnerAvatar, setPartnerAvatar] = useState("")
 
-  const learnerId = user ? user.id - 3 : null
+  // Cache classMemberId in localStorage after first successful submit
+  const classMemberIdKey = classId ? `classMemberId_${classId}` : null
+  const getCachedClassMemberId = () => {
+    if (!classMemberIdKey) return null
+    const cached = localStorage.getItem(classMemberIdKey)
+    return cached ? Number(cached) : null
+  }
 
   const fetchAssignmentAndStatus = useCallback(async () => {
     if (!user) return
@@ -83,9 +89,13 @@ const useAssignment = () => {
           }
         }
 
-        const localGraded =
-          localStorage.getItem(`graded_${classId}_${peerTask.reviewId}`) === "true"
-        setPeerReviewGraded(localGraded)
+        const gradedFromData =
+          peerTask.rubricCriterias &&
+          peerTask.rubricCriterias.length > 0 &&
+          peerTask.rubricCriterias.some((c) => c.score !== null && c.score !== undefined)
+        const gradedFromCache =
+          localStorage.getItem(`peerGraded_${classId}_${peerTask.reviewId}`) === "true"
+        setPeerReviewGraded(gradedFromData || gradedFromCache)
       } catch {
         setPeerReviewTask(null)
         setPeerReviewGraded(false)
@@ -128,14 +138,21 @@ const useAssignment = () => {
       toast.warning("Bài viết quá ngắn. Vui lòng viết thêm trước khi nộp!")
       return
     }
+
+    // Prefer cached classMemberId; fall back to user.id-3 for test environments
+    const learnerId = getCachedClassMemberId() ?? (user ? user.id - 3 : null)
     if (!learnerId || learnerId <= 0) {
-      toast.error("Học viên không hợp lệ! Không thể xác định mã lớp học.")
+      toast.error("Không thể xác định mã học viên. Vui lòng thử lại sau!")
       return
     }
 
     await runWithLoading(setIsSubmitting, async () => {
       try {
-        await learnService.submitAssignment(learnerId, assignmentId, essay)
+        const result = await learnService.submitAssignment(learnerId, assignmentId, essay)
+        // Cache the actual classMemberId returned by backend for future use
+        if (result?.data?.memberId && classMemberIdKey) {
+          localStorage.setItem(classMemberIdKey, String(result.data.memberId))
+        }
         setIsSubmitted(true)
         setPeerReviewPending(true)
         toast.success("Nộp bài viết thành công!")
@@ -161,7 +178,7 @@ const useAssignment = () => {
         finalScore,
         comments,
       )
-      localStorage.setItem(`graded_${classId}_${peerReviewTask.reviewId}`, "true")
+      localStorage.setItem(`peerGraded_${classId}_${peerReviewTask.reviewId}`, "true")
       setPeerReviewGraded(true)
       toast.success("Gửi điểm đánh giá chéo thành công!")
       await fetchAssignmentAndStatus()
