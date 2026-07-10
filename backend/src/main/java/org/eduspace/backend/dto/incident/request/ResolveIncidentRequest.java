@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.request;
+package org.eduspace.backend.dto.incident.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

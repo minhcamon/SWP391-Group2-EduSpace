@@ -47,7 +47,7 @@ const ClassManagementPage = () => {
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-xl text-primary">
               <GraduationCap size={24} />
             </div>
@@ -59,7 +59,7 @@ const ClassManagementPage = () => {
         </Card>
 
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-emerald-100 rounded-xl text-emerald-600">
               <Users size={24} />
             </div>
@@ -73,7 +73,7 @@ const ClassManagementPage = () => {
         </Card>
 
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
               <AlertCircle size={24} />
             </div>

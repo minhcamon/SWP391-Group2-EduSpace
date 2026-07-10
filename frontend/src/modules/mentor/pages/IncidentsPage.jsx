@@ -95,7 +95,7 @@ const IncidentsPage = () => {
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
-            Trung tâm Sự cố (Incident Center)
+            Trung tâm Sự cố  -  Incident Center
           </h1>
           <p className="text-sm text-neutral-medium mt-1">
             Ghi nhận, phân công và xử lý các sự cố khẩn cấp từ các cặp đôi học tập.
@@ -106,7 +106,7 @@ const IncidentsPage = () => {
       {/* Stats row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-red-100 rounded-xl text-red-600">
               <ShieldAlert size={20} />
             </div>
@@ -120,7 +120,7 @@ const IncidentsPage = () => {
         </Card>
 
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
               <AlertTriangle size={20} />
             </div>
@@ -134,7 +134,7 @@ const IncidentsPage = () => {
         </Card>
 
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
               <Play size={20} />
             </div>
@@ -148,7 +148,7 @@ const IncidentsPage = () => {
         </Card>
 
         <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-6 flex items-center gap-4">
+          <CardContent className="pt-1 flex items-center gap-4">
             <div className="p-3 bg-emerald-100 rounded-xl text-emerald-600">
               <CheckCircle size={20} />
             </div>

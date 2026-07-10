@@ -35,6 +35,7 @@ public class DataInitializer implements CommandLineRunner {
   private final ActiveMentorRepository activeMentorRepository;
   private final IncidentRepository incidentRepository;
   private final RescueRequestRepository rescueRequestRepository;
+  private final CertificateRepository certificateRepository;
 
   @Override
   @Transactional
@@ -49,9 +50,15 @@ public class DataInitializer implements CommandLineRunner {
         Course cReact = courseRepository.findAll().stream().filter(c -> c.getTitle().contains("React")).findFirst().orElse(null);
 
         if (m1 != null && cJava != null) {
+          if (!certificateRepository.existsByUserIdAndCourseId(m1.getId(), cJava.getId())) {
+            certificateRepository.save(Certificate.builder().user(m1).course(cJava).issuedAt(LocalDateTime.now().minusDays(10)).build());
+          }
           activeMentorRepository.save(ActiveMentor.builder().user(m1).course(cJava).mentorStatus(MentorStatus.AVAILABLE).build());
         }
         if (m2 != null && cReact != null) {
+          if (!certificateRepository.existsByUserIdAndCourseId(m2.getId(), cReact.getId())) {
+            certificateRepository.save(Certificate.builder().user(m2).course(cReact).issuedAt(LocalDateTime.now().minusDays(10)).build());
+          }
           activeMentorRepository.save(ActiveMentor.builder().user(m2).course(cReact).mentorStatus(MentorStatus.AVAILABLE).build());
         }
       }
@@ -451,21 +458,41 @@ public class DataInitializer implements CommandLineRunner {
         .build();
     groupMemberRepository.save(gm4);
 
-    // 9. Seed Active Mentors
-    log.info("Seeding active mentors...");
-    ActiveMentor am1 = ActiveMentor.builder()
+    // 8.5 Seed Certificates for Mentors
+    log.info("Seeding certificates for mentors...");
+    Certificate cert1 = Certificate.builder()
         .user(mentor1)
         .course(courseJava)
-        .mentorStatus(MentorStatus.AVAILABLE)
+        .issuedAt(LocalDateTime.now().minusDays(10))
         .build();
-    activeMentorRepository.save(am1);
+    certificateRepository.save(cert1);
 
-    ActiveMentor am2 = ActiveMentor.builder()
+    Certificate cert2 = Certificate.builder()
         .user(mentor2)
         .course(courseReact)
-        .mentorStatus(MentorStatus.AVAILABLE)
+        .issuedAt(LocalDateTime.now().minusDays(10))
         .build();
-    activeMentorRepository.save(am2);
+    certificateRepository.save(cert2);
+
+    // 9. Seed Active Mentors (Verifying completion check)
+    log.info("Seeding active mentors...");
+    if (certificateRepository.existsByUserIdAndCourseId(mentor1.getId(), courseJava.getId())) {
+        ActiveMentor am1 = ActiveMentor.builder()
+            .user(mentor1)
+            .course(courseJava)
+            .mentorStatus(MentorStatus.AVAILABLE)
+            .build();
+        activeMentorRepository.save(am1);
+    }
+
+    if (certificateRepository.existsByUserIdAndCourseId(mentor2.getId(), courseReact.getId())) {
+        ActiveMentor am2 = ActiveMentor.builder()
+            .user(mentor2)
+            .course(courseReact)
+            .mentorStatus(MentorStatus.AVAILABLE)
+            .build();
+        activeMentorRepository.save(am2);
+    }
 
     // 10. Seed Incidents
     log.info("Seeding incidents...");

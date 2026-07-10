@@ -1,9 +1,9 @@
 package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.eduspace.backend.dto.request.ResolveIncidentRequest;
-import org.eduspace.backend.dto.response.IncidentDetailResponse;
-import org.eduspace.backend.dto.response.IncidentListResponse;
+import org.eduspace.backend.dto.incident.request.ResolveIncidentRequest;
+import org.eduspace.backend.dto.incident.response.IncidentDetailResponse;
+import org.eduspace.backend.dto.incident.response.IncidentListResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Incident;
 import org.eduspace.backend.enums.IncidentStatus;
