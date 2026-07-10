@@ -1,13 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Menu, X, Search } from "lucide-react";
+import { Bell, Menu, X, Search, ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import AvatarDropDown from "../common/AvatarDropDown";
 import Avatar from "../common/Avatar";
 import Logo from "../common/Logo";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, setMode } = useAuth();
+  const navigate = useNavigate();
   const [showDropDown, setShowDropDown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -47,19 +48,6 @@ const Header = () => {
               Học tập của tôi
             </NavLink>
 
-            {(user?.role === "CREATOR" || user?.role === "ADMIN" || user?.username?.startsWith("mentor")) && (
-              <NavLink
-                to="/mentor"
-                className={({ isActive }) =>
-                  `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-neutral-medium hover:text-primary"
-                  }`
-                }
-              >
-                Trang quản lý Mentor
-              </NavLink>
-            )}
           </nav>
 
           {/* Search Bar (Desktop) */}
@@ -76,6 +64,20 @@ const Header = () => {
 
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
+            {/* Switch to Mentor Mode Button (Desktop) */}
+            {user && (user.isMentor || user.role === "CREATOR" || user.role === "ADMIN") && (
+              <button
+                onClick={() => {
+                  setMode("MENTOR");
+                  navigate("/mentor");
+                }}
+                className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+              >
+                <ArrowLeftRight size={13} />
+                <span>Trang quản lý Mentor</span>
+              </button>
+            )}
+
             {/* Notification Bell (Only if Logged In) */}
             {/* {user && (
                             <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
@@ -183,6 +185,21 @@ const Header = () => {
             >
               Khóa học
             </NavLink>
+
+            {/* Switch to Mentor Mode Button (Mobile) */}
+            {user && (user.isMentor || user.role === "CREATOR" || user.role === "ADMIN" || user.username?.startsWith("mentor")) && (
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false);
+                  setMode("MENTOR");
+                  navigate("/mentor");
+                }}
+                className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+              >
+                <ArrowLeftRight size={14} />
+                <span>Trang quản lý Mentor</span>
+              </button>
+            )}
             {/* {user && (
                             <NavLink
                                 to="/my-learning"

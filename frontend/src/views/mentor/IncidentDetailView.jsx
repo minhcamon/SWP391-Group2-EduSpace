@@ -1,15 +1,15 @@
 import React from "react";
-import { MentorDashboardPage, MentorHeader } from "@/modules/mentor";
+import { IncidentDetailPage, MentorHeader } from "@/modules/mentor";
 
-const Dashboard = () => {
+const IncidentDetailView = () => {
   return (
     <div className="min-h-screen w-full bg-bg-base flex flex-col font-sans">
       <MentorHeader />
       <main className="grow flex flex-col">
-        <MentorDashboardPage />
+        <IncidentDetailPage />
       </main>
     </div>
   );
 };
 
-export default Dashboard;
+export default IncidentDetailView;

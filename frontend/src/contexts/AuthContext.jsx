@@ -42,6 +42,15 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const [currentMode, setCurrentMode] = useState(() => {
+        return localStorage.getItem("currentMode") || "LEARNER";
+    });
+
+    const setMode = (mode) => {
+        setCurrentMode(mode);
+        localStorage.setItem("currentMode", mode);
+    };
+
     useEffect(() => {
         checkAuth();
     }, []);
@@ -52,12 +61,16 @@ export const AuthProvider = ({ children }) => {
         setTokens(token);
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
+        // Reset to Learner mode upon new login
+        setMode("LEARNER");
     };
 
     const logout = () => {
         clearTokens();
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("currentMode");
+        setCurrentMode("LEARNER");
     };
 
 
@@ -67,6 +80,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         checkAuth,
+        currentMode,
+        setMode
     };
 
     return (

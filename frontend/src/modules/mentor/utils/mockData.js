@@ -118,3 +118,179 @@ export const mockMentorTools = [
     icon: "assignment_turned_in"
   }
 ];
+
+export const mockIncidents = [
+  {
+    id: "INC-1024",
+    type: "PEER_REVIEW_DISPUTE",
+    classId: "L04",
+    className: "Class L04 - IELTS Mastery",
+    pairId: 1,
+    pairName: "Minh & An",
+    createdTime: "10m ago",
+    createdAt: "2026-07-10T22:14:14Z",
+    priority: "HIGH",
+    status: "IN_PROGRESS",
+    assignedMentor: "Mentor Minh",
+    reporter: "An (Learner)",
+    reported: "Minh (Learner)",
+    reason: "Minh chấm Speaking Task 1 của em được 2/10 điểm vì lý do 'phát âm giọng địa phương khó nghe' dù em đã bám sát các tiêu chí phát âm của Rubric chấm điểm. Mong Mentor xem xét lại giúp em.",
+    evidenceUrl: "speaking_audio_v1.mp3",
+    evidenceFiles: ["speaking_audio_v1.mp3", "transcript.pdf"],
+    history: [
+      { id: 1, action: "Sự cố được báo cáo bởi An", time: "10 phút trước" },
+      { id: 2, action: "Mentor Minh tiếp nhận xử lý sự cố", time: "5 phút trước" }
+    ],
+    submissionTitle: "Speaking Task 1 - Introduction",
+    submissionContent: "I would like to describe my favorite book, which is...",
+    scoreGiven: "2/10"
+  },
+  {
+    id: "INC-1025",
+    type: "INACTIVE_PARTNER",
+    classId: "L04",
+    className: "Class L04 - IELTS Mastery",
+    pairId: 2,
+    pairName: "Bình & Chi",
+    createdTime: "3h ago",
+    createdAt: "2026-07-10T19:30:00Z",
+    priority: "CRITICAL",
+    status: "PENDING",
+    assignedMentor: null,
+    reporter: "Chi (Learner)",
+    reported: "Bình (Learner)",
+    reason: "Bình đã không tham gia học nhóm và không tương tác trả lời tin nhắn thảo luận làm bài tập trên hệ thống suốt 3 ngày nay.",
+    evidenceUrl: null,
+    evidenceFiles: [],
+    history: [
+      { id: 1, action: "Sự cố tự động ghi nhận bởi hệ thống do Bình vắng mặt 3 ngày", time: "3 giờ trước" }
+    ],
+    submissionTitle: "Group Work Milestone 2",
+    submissionContent: "Chưa có bài nộp",
+    scoreGiven: "N/A"
+  },
+  {
+    id: "INC-1026",
+    type: "MEMBER_CONFLICT",
+    classId: "L05",
+    className: "Class L05 - IELTS Elite",
+    pairId: 1,
+    pairName: "Lan & Mai",
+    createdTime: "2d ago",
+    createdAt: "2026-07-08T15:00:00Z",
+    priority: "MEDIUM",
+    status: "PENDING",
+    assignedMentor: null,
+    reporter: "Lan (Learner)",
+    reported: "Mai (Learner)",
+    reason: "Xung đột ý kiến nghiêm trọng trong quá trình thảo luận bài viết IELTS Writing Task 2. Bạn học dùng từ ngữ không phù hợp trong kênh chat nhóm.",
+    evidenceUrl: "screenshot_chat.png",
+    evidenceFiles: ["screenshot_chat.png"],
+    history: [
+      { id: 1, action: "Sự cố được báo cáo bởi Lan", time: "2 ngày trước" }
+    ],
+    submissionTitle: "Writing Task 2 Practice",
+    submissionContent: "Discuss both views and give your opinion...",
+    scoreGiven: "N/A"
+  },
+  {
+    id: "INC-1027",
+    type: "RESCUE_SUPPORT_REQUEST",
+    classId: "L05",
+    className: "Class L05 - IELTS Elite",
+    pairId: 2,
+    pairName: "Nam & Oanh",
+    createdTime: "3d ago",
+    createdAt: "2026-07-07T10:00:00Z",
+    priority: "HIGH",
+    status: "RESOLVED",
+    assignedMentor: "Mentor Hoa",
+    reporter: "Nam (Learner)",
+    reported: null,
+    reason: "Gặp sự cố hỏng máy tính cá nhân đột xuất và xin hỗ trợ cửa sổ cứu trợ nộp bù bài tập Speaking.",
+    evidenceUrl: "anh_may_hong.jpg",
+    evidenceFiles: ["anh_may_hong.jpg"],
+    history: [
+      { id: 1, action: "Sự cố được báo cáo bởi Nam", time: "3 ngày trước" },
+      { id: 2, action: "Mentor Hoa phê duyệt kích hoạt cửa sổ cứu trợ", time: "3 ngày trước" },
+      { id: 3, action: "Nam hoàn thành nộp bài cứu viện và được phục hồi", time: "1 ngày trước" },
+      { id: 4, action: "Đóng ca hỗ trợ thành công", time: "1 ngày trước" }
+    ],
+    submissionTitle: "Speaking Task 1 - Hometown",
+    submissionContent: "Speaking recording submitted successfully",
+    scoreGiven: "7.0/10"
+  }
+];
+
+export const mockArbitrations = [
+  {
+    id: "ARB-0091",
+    assignmentTitle: "Speaking Task 2: Describe a book",
+    classId: "L04",
+    className: "Class L04 - IELTS Mastery",
+    learnerId: 1,
+    learnerName: "Nguyễn Văn A",
+    reviewerAScore: 8.5,
+    reviewerAComment: "Excellent vocabulary and smooth flow. Very minor pronunciation errors.",
+    reviewerBScore: 5.0,
+    reviewerBComment: "Too many pronunciation mistakes due to accent. Hard to understand.",
+    difference: 3.5,
+    submissionDate: "Oct 12, 2026",
+    deadline: "Trong 12 giờ",
+    status: "PENDING",
+    submissionContent: "I would like to describe my favorite book, which is 'The Alchemist'. It is a story about a shepherd who travels in search of treasure...",
+    rubric: {
+      fluency: "Tiêu chí trôi chảy: Rất lưu loát, ngắt nghỉ đúng chỗ.",
+      vocabulary: "Tiêu chí từ vựng: Phong phú, sử dụng nhiều cấu trúc band cao.",
+      grammar: "Tiêu chí ngữ pháp: Chuẩn xác, không mắc lỗi hệ thống.",
+      pronunciation: "Tiêu chí phát âm: Phát âm ổn định, tuy nhiên âm điệu có chút ảnh hưởng bởi tiếng mẹ đẻ."
+    }
+  },
+  {
+    id: "ARB-0092",
+    assignmentTitle: "Writing Task 1: Bar Chart Analysis",
+    classId: "L04",
+    className: "Class L04 - IELTS Mastery",
+    learnerId: 2,
+    learnerName: "Trần Thị B",
+    reviewerAScore: 6.5,
+    reviewerAComment: "Accurate summary of trends, but missing some key data points in comparison.",
+    reviewerBScore: 5.0,
+    reviewerBComment: "Introduction paragraph is copied from prompt. Grammar mistakes in body.",
+    difference: 1.5,
+    submissionDate: "Oct 11, 2026",
+    deadline: "Trong 2 ngày",
+    status: "PENDING",
+    submissionContent: "The bar chart compares the percentage of household waste recycled in three cities between 2015 and 2025...",
+    rubric: {
+      taskAchievement: "Đáp ứng yêu cầu đề: Trình bày được xu hướng chính nhưng thiếu chi tiết.",
+      coherence: "Mạch lạc: Liên kết câu khá tốt.",
+      lexicalResource: "Từ vựng: Đủ dùng, chưa đột phá.",
+      grammaticalRange: "Ngữ pháp: Có lỗi viết câu phức."
+    }
+  },
+  {
+    id: "ARB-0093",
+    assignmentTitle: "Speaking Task 1: Hometown",
+    classId: "L05",
+    className: "Class L05 - IELTS Elite",
+    learnerId: 3,
+    learnerName: "Lê Minh",
+    reviewerAScore: 7.0,
+    reviewerAComment: "Natural responses and good speed. Good pronunciation of vowel sounds.",
+    reviewerBScore: 6.0,
+    reviewerBComment: "Short answers, lacks elongation of sentences. Grammar mistakes in tenses.",
+    difference: 1.0,
+    submissionDate: "Oct 10, 2026",
+    deadline: "Trong 3 ngày",
+    status: "PENDING",
+    submissionContent: "I live in Hanoi, which is the capital of Vietnam. It is a very busy city with a long history and delicious street foods...",
+    rubric: {
+      fluency: "Trôi chảy: Tốc độ nói tốt nhưng câu trả lời hơi ngắn.",
+      vocabulary: "Từ vựng: Sử dụng các cụm từ phổ thông phù hợp chủ đề.",
+      grammar: "Ngữ pháp: Mắc lỗi chia thì quá khứ.",
+      pronunciation: "Phát âm: Phát âm nguyên âm tốt, rõ ràng."
+    }
+  }
+];
+

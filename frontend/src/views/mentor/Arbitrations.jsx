@@ -1,15 +1,15 @@
 import React from "react";
-import { MentorDashboardPage, MentorHeader } from "@/modules/mentor";
+import { ArbitrationsPage, MentorHeader } from "@/modules/mentor";
 
-const Dashboard = () => {
+const Arbitrations = () => {
   return (
     <div className="min-h-screen w-full bg-bg-base flex flex-col font-sans">
       <MentorHeader />
       <main className="grow flex flex-col">
-        <MentorDashboardPage />
+        <ArbitrationsPage />
       </main>
     </div>
   );
 };
 
-export default Dashboard;
+export default Arbitrations;

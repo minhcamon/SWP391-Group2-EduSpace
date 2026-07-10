@@ -1,3 +1,14 @@
 export { default as MentorDashboardPage } from "./pages/MentorDashboardPage";
 export { default as MentorClassCard } from "./components/MentorClassCard";
 export { default as MentorToolCard } from "./components/MentorToolCard";
+export { default as MentorHeader } from "./components/MentorHeader";
+export { default as ClassManagementPage } from "./pages/ClassManagementPage";
+export { default as ClassDetailPage } from "./pages/ClassDetailPage";
+export { default as PairDetailPage } from "./pages/PairDetailPage";
+export { default as IncidentsPage } from "./pages/IncidentsPage";
+export { default as IncidentDetailPage } from "./pages/IncidentDetailPage";
+export { default as ArbitrationsPage } from "./pages/ArbitrationsPage";
+export { default as ArbitrationDetailPage } from "./pages/ArbitrationDetailPage";
+export { default as IncidentHistoryLog } from "./components/IncidentHistoryLog";
+export { default as IncidentReportCard } from "./components/IncidentReportCard";
+export { default as IncidentDisputeCard } from "./components/IncidentDisputeCard";

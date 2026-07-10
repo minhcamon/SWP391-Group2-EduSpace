@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 
-const ProtectedRoute = ({ allowedRoles }) => {
-    const { user, isLoading } = useAuth();
+const ProtectedRoute = ({ allowedRoles, requireMentorMode }) => {
+    const { user, isLoading, currentMode } = useAuth();
 
     if (isLoading) {
         return (
@@ -16,6 +16,16 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
     if (!user) {
         return <Navigate to="/" replace />;
+    }
+
+    // Check if mentor mode is required
+    if (requireMentorMode) {
+        const isMentorUser = user.isMentor || user.role === "CREATOR" || user.role === "ADMIN" || user.username?.startsWith("mentor");
+        if (!isMentorUser || currentMode !== "MENTOR") {
+            console.warn(`Truy cập bị từ chối: Yêu cầu tài khoản có quyền Mentor và phải chuyển sang chế độ Mentor.`);
+            return <Navigate to="/" replace />;
+        }
+        return <Outlet />;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {

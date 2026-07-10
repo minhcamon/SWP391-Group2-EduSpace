@@ -27,6 +27,13 @@ import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
 import Assignment from "@/views/learning/Assignment";
 import MentorDashboard from "@/views/mentor/Dashboard";
+import MentorIncidents from "@/views/mentor/Incidents";
+import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
+import MentorPairDetail from "@/views/mentor/PairDetailView";
+import MentorArbitrations from "@/views/mentor/Arbitrations";
+import MentorArbitrationDetail from "@/views/mentor/ArbitrationDetailView";
+import MentorClasses from "@/views/mentor/Classes";
+import MentorClassDetail from "@/views/mentor/ClassDetailView";
 
 function App() {
   return (
@@ -110,8 +117,15 @@ function App() {
           </Route>
 
           {/* mentor route */}
-          <Route element={<ProtectedRoute allowedRoles={["LEARNER", "MENTOR", "CREATOR", "ADMIN"]} />}>
+          <Route element={<ProtectedRoute requireMentorMode={true} />}>
             <Route path="/mentor" element={<MentorDashboard />}></Route>
+            <Route path="/mentor/incidents" element={<MentorIncidents />}></Route>
+            <Route path="/mentor/incidents/:id" element={<MentorIncidentDetail />}></Route>
+            <Route path="/mentor/pairs/:id" element={<MentorPairDetail />}></Route>
+            <Route path="/mentor/arbitrations" element={<MentorArbitrations />}></Route>
+            <Route path="/mentor/arbitrations/:id" element={<MentorArbitrationDetail />}></Route>
+            <Route path="/mentor/classes" element={<MentorClasses />}></Route>
+            <Route path="/mentor/classes/:classId" element={<MentorClassDetail />}></Route>
           </Route>
 
           <Route path="*" element={<Error />}></Route>

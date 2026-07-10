@@ -130,7 +130,7 @@ export const MentorClassCard = ({ classItem }) => {
 
       {/* Footer Action */}
       <div className="mt-6 pt-4 border-t border-border-light/25">
-        <Link to={`/classes/${id}`} className="block w-full">
+        <Link to={`/mentor/classes/${id}`} className="block w-full">
           <Button variant="secondary" className="w-full h-10 text-xs font-bold py-2 hover:scale-[0.98] transition-all">
             Vào quản lý lớp học
           </Button>

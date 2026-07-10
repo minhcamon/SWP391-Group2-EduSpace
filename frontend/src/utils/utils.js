@@ -28,6 +28,7 @@ export const decodeToken = (token) => {
             email: claims.email,
             avatarUrl: claims.avatar || null,
             role: claims.role,
+            isMentor: claims.isMentor || false,
         };
     } catch (error) {
         console.error("Failed to decode token:", error);
