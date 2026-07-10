@@ -18,8 +18,8 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     @Query("SELECT COUNT(i) FROM Incident i WHERE i.resolvedBy.user.id = :userId AND i.status IN :statuses")
     long countByResolvedByUserIdAndStatusIn(@Param("userId") Long userId, @Param("statuses") List<IncidentStatus> statuses);
 
-    @Query("SELECT i FROM Incident i WHERE i.resolvedBy.user.id = :userId")
-    List<Incident> findByResolvedByUserId(@Param("userId") Long userId);
+    @Query("SELECT i FROM Incident i WHERE i.resolvedBy.user.id = :userId AND i.status = :status")
+    List<Incident> findByResolvedByUserIdAndStatus(@Param("userId") Long userId, @Param("status") IncidentStatus status);
 
     @Query("SELECT i FROM Incident i WHERE i.id = :incidentId AND i.resolvedBy.user.id = :userId")
     Incident findByIdAndResolvedByUserId(@Param("incidentId") Long incidentId, @Param("userId") Long userId);

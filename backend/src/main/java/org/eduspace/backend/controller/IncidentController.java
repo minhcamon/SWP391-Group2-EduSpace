@@ -31,7 +31,7 @@ public class IncidentController {
 
     @GetMapping
     @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Get list of incidents", description = "Lấy danh sách các sự cố do mentor phụ trách")
+    @Operation(summary = "Get list of incidents", description = "Lấy danh sách các sự cố do mentor phụ trách (IN_PROGRESS)")
     public ResponseEntity<APIResponse<List<IncidentListResponse>>> getIncidents() {
         Long userId = SecurityUtil.getCurrentUserId();
         List<IncidentListResponse> response = incidentService.getIncidents(userId);
@@ -76,4 +76,14 @@ public class IncidentController {
         return ResponseEntity.ok(APIResponse.success("Resolved incident successfully", null));
 
     }
+
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get history of resolved incidents", description = "Lấy lịch sử các sự cố đã được mentor xử lý")
+    public ResponseEntity<APIResponse<List<IncidentListResponse>>> getIncidentHistory() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<IncidentListResponse> response = incidentService.getIncidentHistory(userId);
+        return ResponseEntity.ok(APIResponse.success("Get incident history successfully", response));
+    }
+
 }
