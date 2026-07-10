@@ -38,8 +38,15 @@ public class IncidentService {
     }
 
     public IncidentDetailResponse getIncidentDetail(Long incidentId, Long userId) {
-        Incident incident = incidentRepository.findByIdAndResolvedByUserId(incidentId, userId);
-        if (incident == null) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Incident not found"));
+
+        boolean isMentorAssigned = incident.getResolvedBy() != null && incident.getResolvedBy().getUser() != null
+                && incident.getResolvedBy().getUser().getId().equals(userId);
+        boolean isReporter = incident.getReporter() != null && incident.getReporter().getUser() != null
+                && incident.getReporter().getUser().getId().equals(userId);
+
+        if (!isMentorAssigned && !isReporter) {
             throw new RuntimeException("Incident not found or you don't have permission to access it");
         }
 
@@ -60,6 +67,20 @@ public class IncidentService {
                                 ? incident.getResolvedBy().getUser().getFullName()
                                 : null)
                 .resolutionNote(incident.getResolutionNote())
+                .createdAt(incident.getCreatedAt())
+                .solvedAt(incident.getSolvedAt())
+                .build();
+    }
+
+    private IncidentListResponse toListResponse(Incident incident) {
+        return IncidentListResponse.builder()
+                .id(incident.getId())
+                .incidentType(incident.getIncidentType())
+                .reporterName(incident.getReporter() != null && incident.getReporter().getUser() != null
+                        ? incident.getReporter().getUser().getFullName()
+                        : null)
+                .reason(incident.getReason())
+                .status(incident.getStatus())
                 .createdAt(incident.getCreatedAt())
                 .solvedAt(incident.getSolvedAt())
                 .build();
