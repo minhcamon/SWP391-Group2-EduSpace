@@ -6,6 +6,6 @@ public enum IncidentType {
     MEMBER_CONFLICT, // Xung đột trong quá trình học
     SYSTEM_ERROR, // Lỗi hệ thống
     INACTIVE_PARTNER, // Partner không hoạt động
-    RESCUE_SUPPORT_REQUEST, // Yêu cầu hỗ trợ khẩn cấp (ví dụ: bị hỏng máy, quên máy tính ở nhà,
+    RESCUE_SUPPORT_REQUEST, // Yêu cầu hỗ trợ khẩn cấp (ví dụ: bị hỏng máy, quên máy tính ở nhà,...)
     OTHER // Khác
 }

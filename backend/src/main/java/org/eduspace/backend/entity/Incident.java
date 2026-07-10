@@ -35,7 +35,7 @@ public class Incident {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "incident_type", nullable = false)
-    private IncidentType incedentType;
+    private IncidentType incidentType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "submission_id")
