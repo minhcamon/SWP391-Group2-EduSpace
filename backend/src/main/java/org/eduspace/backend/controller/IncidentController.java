@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.request.ResolveIncidentRequest;
 import org.eduspace.backend.dto.response.IncidentDetailResponse;
 import org.eduspace.backend.dto.response.IncidentListResponse;
 import org.eduspace.backend.security.SecurityUtil;
@@ -12,8 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -41,5 +45,26 @@ public class IncidentController {
         Long userId = SecurityUtil.getCurrentUserId();
         IncidentDetailResponse response = incidentService.getIncidentDetail(incidentId, userId);
         return ResponseEntity.ok(APIResponse.success("Get incident detail successfully", response));
+    }
+
+    @PutMapping("/{id}/accept")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Accept an incident", description = "Mentor tiếp nhận xử lý một sự cố")
+    public ResponseEntity<APIResponse<String>> acceptIncident(@PathVariable("id") Long incidentId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        incidentService.acceptIncident(incidentId, userId);
+        return ResponseEntity.ok(APIResponse.success("Accepted incident successfully", null));
+    }
+
+    @PutMapping("/{id}/resolve")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Resolve an incident", description = "Mentor hoàn tất xử lý sự cố (Đã giải quyết xong)")
+    public ResponseEntity<APIResponse<String>> resolveIncident(
+            @PathVariable("id") Long incidentId,
+            @Valid @RequestBody ResolveIncidentRequest request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        incidentService.resolveIncident(incidentId, userId, request);
+        return ResponseEntity.ok(APIResponse.success("Resolved incident successfully", null));
+
     }
 }
