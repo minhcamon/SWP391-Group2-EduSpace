@@ -103,6 +103,29 @@ public class IncidentService {
     }
 
     public void resolveIncident(Long incidentId, Long userId, ResolveIncidentRequest request) {
+        resolveIncidentInternal(incidentId, userId, request.getResolutionNote());
+    }
+
+    public void mediateIncident(Long incidentId, Long userId, ResolveIncidentRequest request) {
+        resolveIncidentInternal(incidentId, userId, "Hòa giải: " + request.getResolutionNote());
+    }
+
+    public void warnIncident(Long incidentId, Long userId, ResolveIncidentRequest request) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Incident not found"));
+
+        if (incident.getStatus() != IncidentStatus.IN_PROGRESS) {
+            throw new RuntimeException("Incident is not in IN_PROGRESS state");
+        }
+
+        String existingNote = incident.getResolutionNote() != null ? incident.getResolutionNote() : "";
+        String warningLog = "Đã cảnh báo: " + request.getResolutionNote();
+        incident.setResolutionNote(existingNote.isEmpty() ? warningLog : existingNote + " | " + warningLog);
+        
+        incidentRepository.save(incident);
+    }
+
+    private void resolveIncidentInternal(Long incidentId, Long userId, String resolutionNote) {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident not found"));
 
@@ -115,7 +138,7 @@ public class IncidentService {
         }
 
         incident.setStatus(IncidentStatus.RESOLVED);
-        incident.setResolutionNote(request.getResolutionNote());
+        incident.setResolutionNote(resolutionNote);
         incident.setSolvedAt(LocalDateTime.now());
         incidentRepository.save(incident);
     }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,6 +76,28 @@ public class IncidentController {
         incidentService.resolveIncident(incidentId, userId, request);
         return ResponseEntity.ok(APIResponse.success("Resolved incident successfully", null));
 
+    }
+
+    @PostMapping("/{id}/mediate")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Mediate a pair incident", description = "Mentor hòa giải hai bạn học viên và đóng sự cố")
+    public ResponseEntity<APIResponse<String>> mediateIncident(
+            @PathVariable("id") Long incidentId,
+            @Valid @RequestBody ResolveIncidentRequest request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        incidentService.mediateIncident(incidentId, userId, request);
+        return ResponseEntity.ok(APIResponse.success("Mediated incident successfully", null));
+    }
+
+    @PostMapping("/{id}/warn")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Warn learner in incident", description = "Mentor cảnh báo học viên và đóng sự cố")
+    public ResponseEntity<APIResponse<String>> warnIncident(
+            @PathVariable("id") Long incidentId,
+            @Valid @RequestBody ResolveIncidentRequest request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        incidentService.warnIncident(incidentId, userId, request);
+        return ResponseEntity.ok(APIResponse.success("Warned learner successfully", null));
     }
 
     @GetMapping("/history")
