@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.enums.ClassStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +22,5 @@ public class MentorClassResponse {
     private Long courseId;
     private String courseTitle;
     private long numberOfPairs;
+    private List<StudyGroupResponse> studyGroups;
 }

@@ -4,6 +4,7 @@ import { ArrowLeft, MessageSquare, ShieldAlert, Award, Calendar, ExternalLink } 
 import mentorService from "@/services/mentorService";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Avatar from "@/components/common/Avatar";
 import { runWithLoading } from "@/utils/utils";
 import { toast } from "sonner";
 
@@ -99,10 +100,10 @@ const PairDetailPage = () => {
             {/* Student 1 */}
             <Card className="border border-border-light/35 shadow-sm">
               <CardContent className="p-6 text-center">
-                <img
+                <Avatar
                   src={pairDetail.student1.avatar}
                   alt={pairDetail.student1.name}
-                  className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-primary/20 mb-4 bg-slate-100 shadow-sm"
+                  className="w-20 h-20 mx-auto border-2 border-primary/20 mb-4 bg-slate-100 shadow-sm"
                 />
                 <h3 className="font-bold text-neutral-dark text-lg">{pairDetail.student1.name}</h3>
                 <p className="text-xs text-neutral-light font-semibold mb-3">Học viên A</p>
@@ -122,10 +123,10 @@ const PairDetailPage = () => {
             {/* Student 2 */}
             <Card className="border border-border-light/35 shadow-sm">
               <CardContent className="p-6 text-center">
-                <img
+                <Avatar
                   src={pairDetail.student2.avatar}
                   alt={pairDetail.student2.name}
-                  className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-primary/20 mb-4 bg-slate-100 shadow-sm"
+                  className="w-20 h-20 mx-auto border-2 border-primary/20 mb-4 bg-slate-100 shadow-sm"
                 />
                 <h3 className="font-bold text-neutral-dark text-lg">{pairDetail.student2.name}</h3>
                 <p className="text-xs text-neutral-light font-semibold mb-3">Học viên B</p>

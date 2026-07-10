@@ -158,10 +158,5 @@ public class IncidentService {
                 .solvedAt(incident.getSolvedAt())
                 .build()).toList();
     }
-
-    public List<IncidentListResponse> getMyIncidents(Long userId) {
-        List<Incident> incidents = incidentRepository.findByReporterUserId(userId);
-        return incidents.stream().map(this::toListResponse).toList();
-    }
 }
 

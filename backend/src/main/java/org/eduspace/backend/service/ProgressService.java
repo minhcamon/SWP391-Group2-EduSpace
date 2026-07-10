@@ -18,6 +18,8 @@ import org.eduspace.backend.entity.CourseModule;
 import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.Submission;
+import org.eduspace.backend.entity.GroupMember;
+import org.eduspace.backend.entity.StudyGroup;
 import org.eduspace.backend.dto.progress.response.AssignmentProgressResponse;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
@@ -47,7 +49,6 @@ public class ProgressService {
   private final SubmissionRepository submissionRepository;
   private final ClassTimelineRepository classTimelineRepository;
   private final ProgressHelper progressHelper;
-  private final StudyGroupService groupService;
   private final GroupMemberRepository groupMemberRepository;
 
   /**
@@ -139,6 +140,39 @@ public class ProgressService {
     return result;
   }
 
+  public double getLearnerProgressPercentage(Long classMemberId, Long courseId) {
+    List<CourseModule> modules = moduleRepository.findByCourseIdOrderBySortOrder(courseId);
+
+    long totalLessons = 0;
+    long completedLessons = 0;
+
+    for (CourseModule module : modules) {
+      List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
+      Set<Long> completedSet = new HashSet<>(lessonProgressRepository
+          .findCompletedLessonIdsByClassMemberIdAndModuleId(classMemberId, module.getId()));
+
+      totalLessons += lessons.size();
+
+      for (Lesson lesson : lessons) {
+        if (completedSet.contains(lesson.getId())) {
+          completedLessons++;
+        }
+      }
+    }
+
+    long totalAssignments = assignmentRepository.countByCourseId(courseId);
+    long completedAssignments = submissionRepository.countCompletedAssignments(
+        classMemberId, courseId, SubmissionStatus.GRADED);
+
+    long totalUnits = totalLessons + totalAssignments;
+    long completedUnits = completedLessons + completedAssignments;
+
+    double progressPercentage = totalUnits > 0
+        ? ((double) completedUnits / totalUnits) * 100
+        : 0.0;
+    return Math.round(progressPercentage * 10) / 10.0;
+  }
+
   public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId, Long moduleId) {
     ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
         .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
@@ -223,7 +257,22 @@ public class ProgressService {
           .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
       Set<Long> completedSet = new HashSet<>(completedLessonIds);
       // Find partner and build partner response
-      ClassMember partnerClassMember = groupService.findPartnerForModule(classMember, module.getId());
+      List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(classMember.getId());
+      StudyGroup studyGroup = userGroupMembers.stream()
+          .map(GroupMember::getStudyGroup)
+          .filter(g -> g.getModule() != null && g.getModule().getId().equals(module.getId()))
+          .findFirst()
+          .orElse(null);
+
+      ClassMember partnerClassMember = null;
+      if (studyGroup != null) {
+          List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
+          partnerClassMember = groupMembers.stream()
+              .map(GroupMember::getClassMember)
+              .filter(m -> !m.getId().equals(classMember.getId()))
+              .findFirst()
+              .orElse(null);
+      }
       PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
           module.getId());
 

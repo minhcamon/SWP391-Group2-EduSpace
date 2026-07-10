@@ -14,13 +14,7 @@ export const useMentorDashboard = () => {
     try {
       await runWithLoading(setIsLoading, async () => {
         const data = await mentorService.getMentorClasses();
-        const filtered = data.filter((c) => 
-          user?.role === "CREATOR" || 
-          user?.role === "ADMIN" ||
-          (c.id === "L04" && user?.username === "mentor1") ||
-          (c.id === "L05" && user?.username === "mentor2")
-        );
-        setClasses(filtered);
+        setClasses(data);
       });
     } catch (error) {
       toast.error(error.message || "Không thể tải danh sách lớp học!");
@@ -31,24 +25,10 @@ export const useMentorDashboard = () => {
     fetchClasses();
   }, [fetchClasses]);
 
-  const handleStartClass = async () => {
-    try {
-      await runWithLoading(setIsSubmitting, async () => {
-        const response = await mentorService.startNewClass();
-        toast.success(response.message || "Bắt đầu lớp học mới thành công!");
-        // Refresh list
-        await fetchClasses();
-      });
-    } catch (error) {
-      toast.error(error.message || "Lỗi khi bắt đầu lớp học mới!");
-    }
-  };
-
   return {
     classes,
     isLoading,
     isSubmitting,
-    handleStartClass,
     refreshClasses: fetchClasses
   };
 };

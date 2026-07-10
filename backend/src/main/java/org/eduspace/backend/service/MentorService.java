@@ -85,7 +85,8 @@ public class MentorService {
         return classMembers.stream()
                 .map(cm -> {
                     CourseClass cc = cm.getCourseClass();
-                    long numberOfPairs = studyGroupRepository.findByCourseClassId(cc.getId()).size();
+                    List<StudyGroup> groups = studyGroupRepository.findByCourseClassId(cc.getId());
+                    long numberOfPairs = groups.size();
                     return MentorClassResponse.builder()
                             .id(cc.getId())
                             .name(cc.getName())
@@ -94,6 +95,13 @@ public class MentorService {
                             .courseId(cc.getCourse().getId())
                             .courseTitle(cc.getCourse().getTitle())
                             .numberOfPairs(numberOfPairs)
+                            .studyGroups(
+                                groups.stream()
+                                    .map(group -> StudyGroupResponse.builder()
+                                        .studyGroupId(group.getId())
+                                        .status(group.getChatStatus())
+                                        .build())
+                                    .collect(Collectors.toList()))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -133,7 +141,6 @@ public class MentorService {
     }
 
     public List<StudyGroupResponse> getMentorClassPairs(Long classId, Long userId) {
-        // Check if user is mentor in this class
         classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
                 .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
 

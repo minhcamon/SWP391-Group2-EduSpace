@@ -35,6 +35,7 @@ public class StudyGroupService {
     private final ClassMemberRepository classMemberRepository;
     private final StudyGroupRepository studyGroupRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ProgressService progressService;
 
     public ClassMember findPartnerForModule(ClassMember learner, Long moduleId) {
         List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(learner.getId());
@@ -136,10 +137,21 @@ public class StudyGroupService {
                     })
                     .toList();
 
+            double sumProgress = 0.0;
+            int averageProgress = 0;
+            if (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null) {
+                Long courseId = studyGroup.getCourseClass().getCourse().getId();
+                for (GroupMember gm : groupMembers) {
+                    sumProgress += progressService.getLearnerProgressPercentage(gm.getClassMember().getId(), courseId);
+                }
+                averageProgress = groupMembers.isEmpty() ? 0 : (int) Math.round(sumProgress / groupMembers.size());
+            }
+
             groups.add(StudyGroupResponse.builder()
                     .studyGroupId(studyGroup.getId())
                     .members(members)
                     .status(studyGroup.getChatStatus())
+                    .progress(averageProgress)
                     .build());
         }
 
@@ -176,7 +188,15 @@ public class StudyGroupService {
 
         MentorPairDetailResponse.PairMemberResponse student1 = memberResponses.size() > 0 ? memberResponses.get(0) : null;
         MentorPairDetailResponse.PairMemberResponse student2 = memberResponses.size() > 1 ? memberResponses.get(1) : null;
-        int progress = memberResponses.size() >= 2 ? 72 : 0;
+        double sumProgress = 0.0;
+        int progress = 0;
+        if (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null) {
+            Long courseId = studyGroup.getCourseClass().getCourse().getId();
+            for (GroupMember gm : groupMembers) {
+                sumProgress += progressService.getLearnerProgressPercentage(gm.getClassMember().getId(), courseId);
+            }
+            progress = groupMembers.isEmpty() ? 0 : (int) Math.round(sumProgress / groupMembers.size());
+        }
         String status = progress < 50 ? "SLOW" : "ACTIVE";
 
         return MentorPairDetailResponse.builder()
