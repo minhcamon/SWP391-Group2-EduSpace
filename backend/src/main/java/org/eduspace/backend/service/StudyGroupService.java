@@ -11,6 +11,7 @@ import org.eduspace.backend.dto.study_group.request.SendMessageRequest;
 import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMemberInfo;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.GroupMember;
@@ -147,5 +148,46 @@ public class StudyGroupService {
 
     public List<GroupMemberDTO> getMembersInGroup(Long studyGroupId) {
         return groupMemberRepository.findMembersByStudyGroupId(studyGroupId);
+    }
+
+    public MentorPairDetailResponse getPairDetailForMentor(Long pairId, Long mentorUserId) {
+        StudyGroup studyGroup = studyGroupRepository.findById(pairId)
+                .orElseThrow(() -> new RuntimeException("Pair not found"));
+
+        ClassMember mentorMembership = classMemberRepository.findByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
+                .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
+
+        if (!"MENTOR".equals(mentorMembership.getContextRole())) {
+            throw new RuntimeException("You are not a mentor in this class");
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
+        List<MentorPairDetailResponse.PairMemberResponse> memberResponses = groupMembers.stream()
+                .map(gm -> {
+                    ClassMember cm = gm.getClassMember();
+                    return MentorPairDetailResponse.PairMemberResponse.builder()
+                            .userId(cm.getUser() != null ? cm.getUser().getId() : null)
+                            .name(cm.getUser() != null ? cm.getUser().getFullName() : null)
+                            .avatarUrl(cm.getUser() != null ? cm.getUser().getAvatarUrl() : null)
+                            .email(cm.getUser() != null ? cm.getUser().getEmail() : null)
+                            .build();
+                })
+                .toList();
+
+        MentorPairDetailResponse.PairMemberResponse student1 = memberResponses.size() > 0 ? memberResponses.get(0) : null;
+        MentorPairDetailResponse.PairMemberResponse student2 = memberResponses.size() > 1 ? memberResponses.get(1) : null;
+        int progress = memberResponses.size() >= 2 ? 72 : 0;
+        String status = progress < 50 ? "SLOW" : "ACTIVE";
+
+        return MentorPairDetailResponse.builder()
+                .id(studyGroup.getId())
+                .pairName("Pair " + studyGroup.getId())
+                .className(studyGroup.getCourseClass() != null ? studyGroup.getCourseClass().getName() : null)
+                .status(status)
+                .progress(progress)
+                .student1(student1)
+                .student2(student2)
+                .members(memberResponses)
+                .build();
     }
 }
