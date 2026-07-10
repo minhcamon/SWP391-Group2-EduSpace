@@ -35,6 +35,10 @@ const useAssignment = () => {
         const review = await learnService.getSubmissionReview(classId, assignmentId)
         setIsSubmitted(true)
 
+        if (review.submissionContent) {
+          setEssay(review.submissionContent)
+        }
+
         const hasBeenGraded =
           review.rubricCriterias &&
           review.rubricCriterias.length > 0 &&
@@ -61,6 +65,7 @@ const useAssignment = () => {
           setIsSubmitted(false)
           setIsGraded(false)
           setPeerReviewPending(false)
+          setEssay("")
         } else {
           console.error("Lỗi getSubmissionReview:", err)
         }
@@ -90,11 +95,6 @@ const useAssignment = () => {
         details = await learnService.getAssignmentDetails(classId, assignmentId)
       }
       setAssignmentDetails(details)
-
-      const savedEssay = localStorage.getItem(`essay_${user.id}_${assignmentId}`) || ""
-      if (savedEssay) {
-        setEssay(savedEssay)
-      }
 
       try {
         const dashboard = await learnService.getProgressDashboard(classId)
@@ -139,8 +139,6 @@ const useAssignment = () => {
         setIsSubmitted(true)
         setPeerReviewPending(true)
         toast.success("Nộp bài viết thành công!")
-
-        localStorage.setItem(`essay_${user.id}_${assignmentId}`, essay)
 
         await fetchAssignmentAndStatus()
       } catch (error) {
