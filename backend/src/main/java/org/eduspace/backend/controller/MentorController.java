@@ -6,6 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
+import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
+import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
+import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
+import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
+import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.eduspace.backend.service.StudyGroupService;
@@ -15,11 +20,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/mentor")
 @RequiredArgsConstructor
-@Tag(name = "Mentor Controller", description = "Lấy Dashboard cho mentor")
+@Tag(name = "Mentor Controller", description = "Các API dành cho Mentor")
 public class MentorController {
 
     private final MentorService mentorService;
@@ -41,5 +50,50 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorPairDetailResponse response = studyGroupService.getPairDetailForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair detail successfully", response));
+    }
+
+    @GetMapping("/classes")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get Mentor Classes", description = "Lấy danh sách các lớp học do mentor hiện tại phụ trách")
+    public ResponseEntity<APIResponse<List<MentorClassResponse>>> getMentorClasses() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<MentorClassResponse> response = mentorService.getMentorClasses(userId);
+        return ResponseEntity.ok(APIResponse.success("Get classes successfully", response));
+    }
+
+    @GetMapping("/classes/{classId}")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get Mentor Class Detail", description = "Lấy chi tiết lớp học do mentor phụ trách")
+    public ResponseEntity<APIResponse<MentorClassDetailResponse>> getMentorClassDetail(@PathVariable Long classId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        MentorClassDetailResponse response = mentorService.getMentorClassDetail(classId, userId);
+        return ResponseEntity.ok(APIResponse.success("Get class detail successfully", response));
+    }
+
+    @GetMapping("/classes/{classId}/pairs")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get Mentor Class Pairs", description = "Lấy danh sách các cặp/nhóm học tập trong lớp")
+    public ResponseEntity<APIResponse<List<StudyGroupResponse>>> getMentorClassPairs(@PathVariable Long classId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<StudyGroupResponse> response = mentorService.getMentorClassPairs(classId, userId);
+        return ResponseEntity.ok(APIResponse.success("Get class pairs successfully", response));
+    }
+
+    @PostMapping("/withdraw-request")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Request Withdrawal", description = "Gửi yêu cầu xin rút lui khỏi lớp học")
+    public ResponseEntity<APIResponse<String>> createWithdrawRequest(@Valid @RequestBody WithdrawRequestDto dto) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        mentorService.createWithdrawRequest(userId, dto);
+        return ResponseEntity.ok(APIResponse.success("Gửi yêu cầu rút lui thành công!", null));
+    }
+
+    @GetMapping("/withdraw-request/{id}")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Get Withdraw Request Detail", description = "Xem chi tiết yêu cầu rút lui của mentor")
+    public ResponseEntity<APIResponse<WithdrawDetailResponse>> getWithdrawRequest(@PathVariable Long id) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        WithdrawDetailResponse response = mentorService.getWithdrawRequest(id, userId);
+        return ResponseEntity.ok(APIResponse.success("Get withdraw request detail successfully", response));
     }
 }

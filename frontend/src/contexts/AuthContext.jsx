@@ -30,8 +30,9 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const userData = await authService.getUserProfile();
-            setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
+            const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+            setUser(enriched);
+            localStorage.setItem("user", JSON.stringify(enriched));
         } catch (error) {
             console.error("Auto login failed:", error);
             clearTokens();
@@ -59,8 +60,9 @@ export const AuthProvider = ({ children }) => {
         const { token, user: userData } = await authService.login(username, password);
         console.log(token, userData);
         setTokens(token);
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+        const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+        setUser(enriched);
+        localStorage.setItem("user", JSON.stringify(enriched));
         // Reset to Learner mode upon new login
         setMode("LEARNER");
     };

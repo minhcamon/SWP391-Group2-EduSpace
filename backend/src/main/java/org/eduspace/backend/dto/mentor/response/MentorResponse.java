@@ -1,4 +1,4 @@
-package org.eduspace.backend.dto.user.response;
+package org.eduspace.backend.dto.mentor.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,16 +7,11 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+@AllArgsConstructor
+public class MentorResponse {
     private Long id;
-    private String username;
     private String fullName;
     private String email;
-    private String phone;
     private String avatarUrl;
-    private String bio;
-    private String role;
 }
-

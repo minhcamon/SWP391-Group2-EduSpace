@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface ActiveMentorRepository extends JpaRepository<ActiveMentor, Long> {
     boolean existsByUserId(Long userId);
     long countByUserId(Long userId);
+    boolean existsByUserIdAndCourseId(Long userId, Long courseId);
 }
+

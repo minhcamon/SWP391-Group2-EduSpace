@@ -42,6 +42,21 @@ public class DataInitializer implements CommandLineRunner {
   public void run(String... args) throws Exception {
     if (userRepository.count() > 0) {
       log.info("Database already initialized. Checking for missing active mentors...");
+      userRepository.findByUsername("mentor1").ifPresent(user -> {
+        if (user.getRole() != Role.MENTOR) {
+          user.setRole(Role.MENTOR);
+          userRepository.save(user);
+          log.info("Updated role of mentor1 to MENTOR");
+        }
+      });
+      userRepository.findByUsername("mentor2").ifPresent(user -> {
+        if (user.getRole() != Role.MENTOR) {
+          user.setRole(Role.MENTOR);
+          userRepository.save(user);
+          log.info("Updated role of mentor2 to MENTOR");
+        }
+      });
+
       if (activeMentorRepository.count() == 0) {
         log.info("Seeding active mentors for existing database...");
         User m1 = userRepository.findByUsername("mentor1").orElse(null);
@@ -115,7 +130,7 @@ public class DataInitializer implements CommandLineRunner {
         .username("mentor1")
         .password(passwordEncoder.encode("password123"))
         .email("mentor1@eduspace.org")
-        .role(Role.LEARNER)
+        .role(Role.MENTOR)
         .status(UserStatus.ACTIVE)
         .authProvider(AuthProvider.LOCAL)
         .createdAt(LocalDateTime.now())
@@ -128,7 +143,7 @@ public class DataInitializer implements CommandLineRunner {
         .username("mentor2")
         .password(passwordEncoder.encode("password123"))
         .email("mentor2@eduspace.org")
-        .role(Role.LEARNER)
+        .role(Role.MENTOR)
         .status(UserStatus.ACTIVE)
         .authProvider(AuthProvider.LOCAL)
         .createdAt(LocalDateTime.now())

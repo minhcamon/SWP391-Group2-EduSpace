@@ -41,4 +41,10 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
             @Param("statuses") List<LearnerStatus> statuses);
 
     long countByUserIdAndContextRole(Long userId, String contextRole);
-}
+
+    List<ClassMember> findByUserIdAndContextRole(Long userId, String contextRole);
+
+    Optional<ClassMember> findByUserIdAndCourseClassIdAndContextRole(Long userId, Long classId, String contextRole);
+
+    List<ClassMember> findByCourseClassIdAndContextRole(Long classId, String contextRole);
+}

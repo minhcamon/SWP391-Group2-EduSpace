@@ -17,15 +17,12 @@ import org.eduspace.backend.security.SecurityUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.eduspace.backend.repository.ActiveMentorRepository;  
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final ActiveMentorRepository activeMentorRepository;
 
     public AuthResponse register(RegisterRequest request) {
         if (request.getUsername() != null && userRepository.existsByUsername(request.getUsername())) {
@@ -81,7 +78,6 @@ public class AuthService {
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole().name())
-                .isMentor(activeMentorRepository.existsByUserId(user.getId()))
                 .build();
 
         return AuthResponse.builder()
@@ -104,7 +100,6 @@ public class AuthService {
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole().name())
-                .isMentor(activeMentorRepository.existsByUserId(user.getId()))
                 .build();
 
         return userResponse;

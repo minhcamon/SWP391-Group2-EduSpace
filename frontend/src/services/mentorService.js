@@ -6,27 +6,70 @@ export const mentorService = {
    * Fetches the classes mentored by the current mentor.
    */
   getMentorClasses: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(mockMentorClasses);
-      }, 200);
-    });
+    try {
+      const response = await api.get('/mentor/classes');
+      return response.data.data;
+    } catch (error) {
+      console.error('getMentorClasses error at mentorService:', error);
+      const errorMsg = error.response?.data?.message || 'Không thể tải danh sách lớp học!';
+      throw new Error(errorMsg);
+    }
   },
 
   /**
    * Fetches class detail by ID.
    */
   getClassById: async (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const foundClass = mockMentorClasses.find((c) => c.id === id);
-        if (foundClass) {
-          resolve(foundClass);
-        } else {
-          reject(new Error("Không tìm thấy lớp học!"));
-        }
-      }, 200);
-    });
+    try {
+      const response = await api.get(`/mentor/classes/${id}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('getClassById error at mentorService:', error);
+      const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết lớp học!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  /**
+   * Fetches class pairs/groups by class ID.
+   */
+  getClassPairs: async (classId) => {
+    try {
+      const response = await api.get(`/mentor/classes/${classId}/pairs`);
+      return response.data.data;
+    } catch (error) {
+      console.error('getClassPairs error at mentorService:', error);
+      const errorMsg = error.response?.data?.message || 'Không thể tải danh sách nhóm học tập!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  /**
+   * Submits a withdraw request.
+   */
+  submitWithdrawRequest: async (data) => {
+    try {
+      const response = await api.post('/mentor/withdraw-request', data);
+      return response.data.message || 'Gửi yêu cầu rút lui thành công!';
+    } catch (error) {
+      console.error('submitWithdrawRequest error at mentorService:', error);
+      const errorMsg = error.response?.data?.message || 'Không thể gửi yêu cầu rút lui!';
+      throw new Error(errorMsg);
+    }
+  },
+
+  /**
+   * Fetches details of a withdraw request.
+   */
+  getWithdrawRequest: async (id) => {
+    try {
+      const response = await api.get(`/mentor/withdraw-request/${id}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('getWithdrawRequest error at mentorService:', error);
+      const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết yêu cầu rút lui!';
+      throw new Error(errorMsg);
+    }
   },
 
   /**

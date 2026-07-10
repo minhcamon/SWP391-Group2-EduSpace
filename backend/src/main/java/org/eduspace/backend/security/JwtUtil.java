@@ -3,7 +3,7 @@ package org.eduspace.backend.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.eduspace.backend.entity.User;
-import org.eduspace.backend.repository.ActiveMentorRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +17,10 @@ import java.util.Map;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-    private final ActiveMentorRepository activeMentorRepository;
-
     private final long EXPIRATION_TIME = 3600000;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret, ActiveMentorRepository activeMentorRepository) {
+    public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        this.activeMentorRepository = activeMentorRepository;
     }
 
     public String generateToken(User user) {
@@ -32,7 +29,6 @@ public class JwtUtil {
         extraClaims.put("name", user.getFullName());
         extraClaims.put("email", user.getEmail());
         extraClaims.put("role", user.getRole().name());
-        extraClaims.put("isMentor", activeMentorRepository.existsByUserId(user.getId()));
         if (user.getAvatarUrl() != null) {
             extraClaims.put("avatar", user.getAvatarUrl());
         }
