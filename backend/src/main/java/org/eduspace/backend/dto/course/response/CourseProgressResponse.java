@@ -18,4 +18,5 @@ public class CourseProgressResponse {
     private Long currentLessonId;
     private String currentLessonTitle;
     private String currentModuleTitle;
+    private Boolean isCompleted;
 }

@@ -1,26 +1,15 @@
 import Button from "@/components/ui/Button";
-
+import { useNavigate } from "react-router";
 
 const EnrolledCourseCard = ({ course, onContinue }) => {
-  //   const IconComponent = iconMap[course.icon] || BookOpen;
+  const navigate = useNavigate();
+
+  const isCompleted = course.isCompleted === true || course.completed === true || course.progressPercentage >= 100;
 
   return (
     <div className="bg-white dark:bg-card rounded-2xl shadow-sm hover:shadow-md border border-border-light/40 overflow-hidden flex flex-col h-full group transition-all duration-300">
       <div className="p-6 grow flex flex-col justify-between">
         <div>
-          {/* Header: Category & Icon */}
-          {/* <div className="flex justify-between items-start mb-4">
-                        <Badge
-                            variant="outline"
-                            className="bg-slate-50 dark:bg-muted/30 border-border-light/35 font-semibold"
-                        >
-                            {course.category}
-                        </Badge>
-                        <div className="text-neutral-light group-hover:text-primary transition-colors duration-200">
-                            <IconComponent size={20} />
-                        </div>
-                    </div> */}
-
           {/* Title & Description */}
           <h4 className="text-lg font-bold text-neutral-dark mb-1 group-hover:text-primary transition-colors duration-200">
             {course.courseName}
@@ -35,15 +24,16 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
           <div>
             <div className="flex justify-between items-center text-xs font-semibold mb-1.5 text-neutral-medium">
               <span>Tiến độ</span>
-              <span className="font-bold text-primary">
+              <span className={isCompleted ? "font-bold text-green-600" : "font-bold text-primary"}>
                 {course.progressPercentage}%
               </span>
             </div>
             {/* Progress Bar Track */}
             <div className="w-full h-2 bg-slate-100 dark:bg-muted/55 rounded-full overflow-hidden">
-              {/* Progress Fill (Uses secondary accent color F28020) */}
+              {/* Progress Fill */}
               <div
-                className="h-full bg-secondary rounded-full transition-all duration-500 ease-out"
+                className={`h-full rounded-full transition-all duration-500 ease-out ${isCompleted ? "bg-green-500" : "bg-secondary"
+                  }`}
                 style={{
                   width: `${course.progressPercentage}%`,
                 }}
@@ -52,13 +42,29 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
           </div>
 
           {/* Action Button */}
-          <Button
-            onClick={() => onContinue(course.courseId)}
-            variant="outline"
-            className="w-full border-primary text-primary hover:bg-primary hover:text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
-          >
-            Tiếp tục học
-          </Button>
+          {isCompleted ? (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/classes/${course.classId}/certificate`);
+              }}
+              variant="default"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
+            >
+              🏆 Xem chứng chỉ
+            </Button>
+          ) : (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onContinue(course.courseId);
+              }}
+              variant="outline"
+              className="w-full border-primary text-primary hover:bg-primary hover:text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
+            >
+              Tiếp tục học
+            </Button>
+          )}
         </div>
       </div>
     </div>

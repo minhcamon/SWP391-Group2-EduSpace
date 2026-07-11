@@ -13,6 +13,6 @@ public class AssignmentProgressResponse {
     private Long id;
     private String title;
     private String status;
-    private boolean isCompleted;
-    private boolean isLocked;
+    private Boolean isCompleted;
+    private Boolean isLocked;
 }

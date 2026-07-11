@@ -17,7 +17,7 @@ public class ModuleProgressResponse {
     private String title;
     private double progress;
     private String status;
-    private boolean isLocked;
+    private Boolean isLocked;
     private int sortOrder;
     private int completedLessons;
     private int totalLessons;

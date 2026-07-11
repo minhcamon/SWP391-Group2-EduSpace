@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 public class LessonProgressResponse {
     private Long id;
     private String title;
-    private boolean isCompleted;
-    private boolean isLocked;
-    private boolean completedByPartner;
-    private boolean isPartnerCurrent;
+    private Boolean isCompleted;
+    private Boolean isLocked;
+    private Boolean completedByPartner;
+    private Boolean isPartnerCurrent;
     private Integer sortOrder;
 }

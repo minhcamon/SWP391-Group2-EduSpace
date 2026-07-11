@@ -54,9 +54,8 @@ public class ProgressService {
    * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
    * tiến trình hoàn thành trên toàn bộ khóa học. Tiến trình tính trên cả lesson
    * và
-   * assignment (assignment coi là hoàn thành khi có submission GRADED). Các khóa
-   * đã
-   * hoàn thành 100% được loại ra (sẽ hiển thị ở trang "đã hoàn thành" riêng).
+   * assignment (assignment coi là hoàn thành khi có submission GRADED).
+   * Lấy toàn bộ các khóa học (cả đang chờ, đang học và đã hoàn thành).
    */
   public List<CourseProgressResponse> getInProgressCourses(Long userId) {
     List<ClassMember> memberships = classMemberRepository.findByUserId(userId);
@@ -114,10 +113,7 @@ public class ProgressService {
       long totalUnits = totalLessons + totalAssignments;
       long completedUnits = completedLessons + completedAssignments;
 
-      // Đã hoàn thành toàn bộ khóa học -> không thuộc danh sách "đang học"
-      if (totalUnits > 0 && completedUnits >= totalUnits) {
-        continue;
-      }
+      Boolean isCompleted = (totalUnits > 0 && completedUnits >= totalUnits);
 
       double progressPercentage = totalUnits > 0
           ? ((double) completedUnits / totalUnits) * 100
@@ -133,6 +129,7 @@ public class ProgressService {
           .currentLessonId(currentLesson != null ? currentLesson.getId() : null)
           .currentLessonTitle(currentLesson != null ? currentLesson.getTitle() : null)
           .currentModuleTitle(currentModule != null ? currentModule.getTitle() : null)
+          .isCompleted(isCompleted)
           .build());
     }
 
@@ -214,7 +211,7 @@ public class ProgressService {
 
       boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
       if (assignmentResponse != null) {
-        assignmentResponse.setLocked(isAssignmentLocked);
+        assignmentResponse.setIsLocked(isAssignmentLocked);
       }
 
       // Load list of lessons and completed status
@@ -242,7 +239,7 @@ public class ProgressService {
           lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
 
       if (isLocked) {
-        lessonResponses.forEach(l -> l.setLocked(true));
+        lessonResponses.forEach(l -> l.setIsLocked(true));
       }
 
       Long studyGroupId = null;
@@ -288,7 +285,7 @@ public class ProgressService {
         focusModuleId = targetModule.getId();
         if (!targetModule.getLessons().isEmpty()) {
           focusLessonId = targetModule.getLessons().stream()
-              .filter(l -> !l.isCompleted())
+              .filter(l -> !l.getIsCompleted())
               .map(LessonProgressResponse::getId)
               .findFirst()
               .orElse(targetModule.getLessons().get(0).getId());
@@ -298,7 +295,7 @@ public class ProgressService {
       }
     } else {
       ModuleProgressResponse targetModule = modulesProgress.stream()
-          .filter(m -> m.getId().equals(moduleId) && !m.isLocked())
+          .filter(m -> m.getId().equals(moduleId) && !m.getIsLocked())
           .findFirst()
           .orElse(null);
 
@@ -306,7 +303,7 @@ public class ProgressService {
         focusModuleId = targetModule.getId();
         if (!targetModule.getLessons().isEmpty()) {
           focusLessonId = targetModule.getLessons().stream()
-              .filter(l -> !l.isCompleted())
+              .filter(l -> !l.getIsCompleted())
               .map(LessonProgressResponse::getId)
               .findFirst()
               .orElse(targetModule.getLessons().get(0).getId());
