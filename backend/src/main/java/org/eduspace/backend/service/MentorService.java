@@ -3,6 +3,7 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
+import org.eduspace.backend.dto.mentor.request.RejectArbitrationRequest;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
@@ -379,6 +380,30 @@ public class MentorService {
         incident.setResolvedBy(mentorMember);
         incident.setSolvedAt(LocalDateTime.now());
         incident.setResolutionNote("Mentor chấm lại bài: " + request.getComments());
+        incidentRepository.save(incident);
+
+        return toArbitrationResponse(incident);
+    }
+
+    @Transactional
+    public MentorArbitrationResponse rejectArbitrationRequest(Long incidentId, Long mentorUserId, RejectArbitrationRequest request) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
+
+        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
+                ? incident.getReporter().getCourseClass().getId() : null;
+
+        if (classId == null) {
+            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu thông tin lớp học)");
+        }
+
+        ClassMember mentorMember = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(mentorUserId, classId, "MENTOR")
+                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
+
+        incident.setStatus(IncidentStatus.REJECTED);
+        incident.setResolvedBy(mentorMember);
+        incident.setSolvedAt(LocalDateTime.now());
+        incident.setResolutionNote("Từ chối phân xử: " + request.getReason());
         incidentRepository.save(incident);
 
         return toArbitrationResponse(incident);

@@ -8,6 +8,7 @@ import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
+import org.eduspace.backend.dto.mentor.request.RejectArbitrationRequest;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
@@ -123,6 +124,17 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorArbitrationResponse response = mentorService.gradeArbitrationSubmission(incidentId, mentorUserId, request);
         return ResponseEntity.ok(APIResponse.success("Regraded and resolved arbitration request successfully", response));
+    }
+
+    @PostMapping("/arbitrations/{id}/reject")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Reject arbitration request", description = "Từ chối phân xử cho yêu cầu phân xử trong lớp mentor quản lý")
+    public ResponseEntity<APIResponse<MentorArbitrationResponse>> rejectArbitration(
+            @PathVariable("id") Long incidentId,
+            @Valid @RequestBody RejectArbitrationRequest request) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorArbitrationResponse response = mentorService.rejectArbitrationRequest(incidentId, mentorUserId, request);
+        return ResponseEntity.ok(APIResponse.success("Rejected arbitration request successfully", response));
     }
 
     @GetMapping("/classes")
