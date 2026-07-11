@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Menu, X, Search } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
 import AvatarDropDown from "../common/AvatarDropDown";
 import Avatar from "../common/Avatar";
 import Logo from "../common/Logo";
+import NotificationDropdown from "../common/NotificationDropdown";
 
 const Header = () => {
   const { user } = useAuth();
@@ -62,13 +63,8 @@ const Header = () => {
 
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
-            {/* Notification Bell (Only if Logged In) */}
-            {user && (
-              <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                <Bell size={22} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary rounded-full"></span>
-              </button>
-            )}
+            {/* Notification Bell */}
+            <NotificationDropdown />
 
             {/* User Profile Dropdown or Authentication Buttons */}
             {user ? (
