@@ -75,7 +75,7 @@ public class SystemService {
             waitlistEntryRepository.delete(entry);
 
             notificationService.sendToUser(entry.getUser(),
-                    "Your course " + waitlist.getCourse().getTitle() + " has started!",
+                    "Khóa học " + waitlist.getCourse().getTitle() + " của bạn đã bắt đầu!",
                     NotificationType.SYSTEM,
                     savedClass.getId());
         }

@@ -207,7 +207,7 @@ public class SubmissionService {
 
 
         notificationService.sendToUser(submission.getMember().getUser(),
-                "Your assignment has been graded by your partner!",
+                "Bài tập của bạn đã được chấm điểm bởi thành viên cùng nhóm!",
                 NotificationType.PEER_REVIEW,
                 savedReview.getId());
 
