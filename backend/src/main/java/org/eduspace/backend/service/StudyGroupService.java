@@ -210,4 +210,29 @@ public class StudyGroupService {
                 .members(memberResponses)
                 .build();
     }
+
+    public List<GroupMessageResponse> getPairChatForMentor(Long pairId, Long mentorUserId) {
+        StudyGroup studyGroup = studyGroupRepository.findById(pairId)
+                .orElseThrow(() -> new RuntimeException("Pair not found"));
+
+        ClassMember mentorMembership = classMemberRepository.findByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
+                .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
+
+        if (!"MENTOR".equals(mentorMembership.getContextRole())) {
+            throw new RuntimeException("You are not a mentor in this class");
+        }
+
+        List<GroupMessage> messages = groupMessageRepository.findByStudyGroupIdOrderBySendAtAsc(pairId);
+
+        return messages.stream().map(msg -> GroupMessageResponse.builder()
+                .id(msg.getId())
+                .content(msg.getContent())
+                .messageType(msg.getMessageType())
+                .sendAt(msg.getSendAt())
+                .senderGroupMemberId(msg.getSender().getId())
+                .senderUserId(msg.getSender().getClassMember().getUser().getId())
+                .senderName(msg.getSender().getClassMember().getUser().getFullName())
+                .senderAvatar(msg.getSender().getClassMember().getUser().getAvatarUrl())
+                .build()).collect(Collectors.toList());
+    }
 }

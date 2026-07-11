@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
+import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
@@ -50,6 +51,15 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorPairDetailResponse response = studyGroupService.getPairDetailForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair detail successfully", response));
+    }
+
+    @GetMapping("/pairs/{pairId}/chat")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get pair chat history", description = "Mentor xem lịch sử trò chuyện của một cặp học viên trong lớp")
+    public ResponseEntity<APIResponse<List<GroupMessageResponse>>> getPairChat(@PathVariable Long pairId) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        List<GroupMessageResponse> response = studyGroupService.getPairChatForMentor(pairId, mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get pair chat history successfully", response));
     }
 
     @GetMapping("/classes")
