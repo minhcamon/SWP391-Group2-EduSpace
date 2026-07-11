@@ -131,7 +131,9 @@ public class SubmissionService {
                 .submittedAt(submission.getSubmittedAt())
                 .submitterId(submitter.getId())
                 .submitterName(submitter.getUser().getFullName())
-                .rubricCriterias(assignment.getRubricCriteria())
+                .rubricCriterias(peerReview.getCriteriaScores() != null && !peerReview.getCriteriaScores().isEmpty()
+                        ? peerReview.getCriteriaScores()
+                        : assignment.getRubricCriteria())
                 .build();
     }
 

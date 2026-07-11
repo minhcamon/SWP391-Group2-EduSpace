@@ -63,11 +63,11 @@ const useAssignment = () => {
         }
       } catch (err) {
         const errMsg = err.message || ""
-        if (errMsg.includes("Peer Review không tồn tại")) {
+        if (errMsg.includes("Peer Review không tồn tại") || errMsg.toLowerCase().includes("peer review not found")) {
           setIsSubmitted(true)
           setIsGraded(false)
           setPeerReviewPending(true)
-        } else if (errMsg.includes("Submission không tồn tại")) {
+        } else if (errMsg.includes("Submission không tồn tại") || errMsg.toLowerCase().includes("submission not found")) {
           setIsSubmitted(false)
           setIsGraded(false)
           setPeerReviewPending(false)
@@ -93,9 +93,7 @@ const useAssignment = () => {
           peerTask.rubricCriterias &&
           peerTask.rubricCriterias.length > 0 &&
           peerTask.rubricCriterias.some((c) => c.score !== null && c.score !== undefined)
-        const gradedFromCache =
-          localStorage.getItem(`peerGraded_${classId}_${peerTask.reviewId}`) === "true"
-        setPeerReviewGraded(gradedFromData || gradedFromCache)
+        setPeerReviewGraded(gradedFromData)
       } catch {
         setPeerReviewTask(null)
         setPeerReviewGraded(false)
@@ -178,7 +176,6 @@ const useAssignment = () => {
         finalScore,
         comments,
       )
-      localStorage.setItem(`peerGraded_${classId}_${peerReviewTask.reviewId}`, "true")
       setPeerReviewGraded(true)
       toast.success("Gửi điểm đánh giá chéo thành công!")
       await fetchAssignmentAndStatus()
