@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import org.eduspace.backend.dto.study_group.request.SendMessageRequest;
 import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMemberInfo;
@@ -31,6 +33,7 @@ public class StudyGroupService {
     private final GroupMessageRepository groupMessageRepository;
     private final ClassMemberRepository classMemberRepository;
     private final StudyGroupRepository studyGroupRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ClassMember findPartnerForModule(ClassMember learner, Long moduleId) {
         List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(learner.getId());
@@ -72,11 +75,23 @@ public class StudyGroupService {
                 .sendAt(LocalDateTime.now())
                 .build();
 
-        groupMessageRepository.save(groupMessage);
+        groupMessage = groupMessageRepository.save(groupMessage);
+
+        GroupMessageResponse response = GroupMessageResponse.builder()
+                .id(groupMessage.getId())
+                .content(groupMessage.getContent())
+                .messageType(groupMessage.getMessageType())
+                .sendAt(groupMessage.getSendAt())
+                .senderGroupMemberId(groupMember.getId())
+                .senderUserId(classMember.getUser().getId())
+                .senderName(classMember.getUser().getFullName())
+                .senderAvatar(classMember.getUser().getAvatarUrl())
+                .build();
+
+        messagingTemplate.convertAndSend("/topic/group/" + studyGroupId, response);
     }
 
     public List<GroupMessageResponse> getMessages(Long studyGroupId, Long currentUserId, Long classId) {
-        // Kiểm tra user có phải là thành viên của class và nhóm học không
         ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(currentUserId, classId)
                 .orElseThrow(() -> new RuntimeException("You are not a member of this class"));
         groupMemberRepository

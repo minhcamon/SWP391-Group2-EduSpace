@@ -29,6 +29,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.eduspace.backend.enums.NotificationType;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class SubmissionService {
     private final ClassMemberRepository classMemberRepository;
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final NotificationService notificationService;
 
     @Value("${app.peer-review.pass-ratio:0.8}")
     private double peerReviewPassRatio;
@@ -46,10 +48,10 @@ public class SubmissionService {
     public SubmissionResponseDTO submitAssignment(Long learnerId, SubmitAssignmentRequest request) {
 
         Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
-                .orElseThrow(() -> new RuntimeException("Assignment không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Assignment not found!"));
 
         ClassMember member = classMemberRepository.findById(learnerId)
-                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = Submission.builder()
                 .assignment(assignment)
@@ -75,11 +77,11 @@ public class SubmissionService {
 
     public SubmissionReviewResponse getSubmissionReview(Long classId, Long userId, Long assignmentId) {
         ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = submissionRepository
                 .findByMemberIdAndAssignmentId(classMember.getId(), assignmentId)
-                .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Submission not found!"));
 
         PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
                 .orElse(null);
@@ -99,9 +101,9 @@ public class SubmissionService {
 
     public PeerReviewAssignmentResponse getAssignedPeerReview(Long classId, Long userId, Long assignmentId) {
         ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
-            throw new RuntimeException("Học viên không hợp lệ!");
+            throw new RuntimeException("Invalid learner!");
         }
 
         boolean hasSubmitted = submissionRepository.findByMemberIdAndAssignmentId(
@@ -109,12 +111,12 @@ public class SubmissionService {
 
         if (!hasSubmitted) {
             throw new RuntimeException(
-                    "Bạn phải nộp bài của mình trước khi được xem và chấm bài của người khác!");
+                    "You must submit your assignment before viewing and grading others' assignments!");
         }
 
         PeerReview peerReview = peerReviewRepository.findByReviewer_ClassMember_IdAndSubmission_Assignment_Id(
                 reviewerMember.getId(), assignmentId)
-                .orElseThrow(() -> new RuntimeException("Peer Review assignment không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Peer review assignment not found!"));
 
         Submission submission = peerReview.getSubmission();
         ClassMember submitter = submission.getMember();
@@ -137,31 +139,31 @@ public class SubmissionService {
     public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId,
             PeerReviewGradeRequest request) {
         ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .orElseThrow(() -> new RuntimeException("Học viên không hợp lệ!"));
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
-            throw new RuntimeException("Học viên không hợp lệ!");
+            throw new RuntimeException("Invalid learner!");
         }
 
         PeerReview peerReview = peerReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Peer Review không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Peer review not found!"));
 
         if (peerReview.getReviewer() == null
                 || peerReview.getReviewer().getClassMember() == null
                 || !peerReview.getReviewer().getClassMember().getId().equals(reviewerMember.getId())) {
-            throw new RuntimeException("Bạn không có quyền chấm bài này!");
+            throw new RuntimeException("You do not have permission to grade this assignment!");
         }
 
         Submission targetSubmission = peerReview.getSubmission();
         if (targetSubmission == null || targetSubmission.getAssignment() == null) {
-            throw new RuntimeException("Dữ liệu bài nộp không hợp lệ!");
+            throw new RuntimeException("Invalid submission data!");
         }
 
         boolean hasSubmitted = submissionRepository.findByMemberIdAndAssignmentId(
                 reviewerMember.getId(), targetSubmission.getAssignment().getId()).isPresent();
 
         if (!hasSubmitted) {
-            throw new RuntimeException("Bạn phải nộp bài của mình trước khi chấm bài cho người khác!");
+            throw new RuntimeException("You must submit your assignment before grading others' assignments!");
         }
 
         List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
@@ -194,20 +196,27 @@ public class SubmissionService {
         PeerReview savedReview = peerReviewRepository.save(peerReview);
         submissionRepository.save(submission);
 
-        return SubmissionReviewResponse.builder()
+        SubmissionReviewResponse response = SubmissionReviewResponse.builder()
                 .reviewId(savedReview.getId())
                 .submissionId(savedReview.getSubmission().getId())
                 .rubricCriterias(savedReview.getCriteriaScores())
                 .comments(savedReview.getComments())
                 .build();
+
+
+        notificationService.sendToUser(submission.getMember().getUser(),
+                "Your assignment has been graded by your partner!",
+                NotificationType.PEER_REVIEW,
+                savedReview.getId());
+
+        return response;
     }
 
     @Transactional
     public void generatePeerReviewForSubmission(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new RuntimeException("Submission không tồn tại!"));
+                .orElseThrow(() -> new RuntimeException("Submission not found!"));
 
-        // already has peer review -> skip
         Optional<PeerReview> existing = peerReviewRepository.findBySubmission_Id(submission.getId());
         if (existing.isPresent())
             return;
@@ -222,7 +231,7 @@ public class SubmissionService {
         Optional<Long> studyGroupIdOpt = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
                 moduleId);
         if (studyGroupIdOpt.isEmpty())
-            return; // no group -> nothing to assign
+            return;
 
         Long studyGroupId = studyGroupIdOpt.get();
         List<GroupMember> members = groupMemberRepository.findByStudyGroupId(studyGroupId);

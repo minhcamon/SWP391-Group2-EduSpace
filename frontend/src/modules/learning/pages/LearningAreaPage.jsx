@@ -51,6 +51,7 @@ const LearningAreaPage = () => {
     handleSelectLesson,
     handleSelectAssignment,
     progressPercent,
+    resolvedClassId,
   } = useLearningArea();
 
   if (isLoading) {

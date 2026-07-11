@@ -215,7 +215,14 @@ const useLearningArea = () => {
                     isActive: isThisLessonActive,
                     currentPartners
                 };
-            })
+            }),
+            assignment: modProgress.assignment ? {
+                id: modProgress.assignment.id,
+                title: modProgress.assignment.title,
+                isCompleted: modProgress.assignment.isCompleted,
+                isLocked: modProgress.assignment.isLocked,
+                status: modProgress.assignment.status,
+            } : null
         };
     }) || [];
 
@@ -303,7 +310,6 @@ const useLearningArea = () => {
                 isMe: msg.senderUserId?.toString() === user?.id?.toString()
             }));
             setMessages(formatted);
-            toast.success("Tin nhắn đã gửi!");
         } catch (error) {
             console.error("Gửi tin nhắn thất bại:", error);
             toast.error(error.message || "Không thể gửi tin nhắn.");

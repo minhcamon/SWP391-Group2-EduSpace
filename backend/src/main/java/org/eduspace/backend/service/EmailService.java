@@ -13,9 +13,9 @@ public class EmailService {
     public void sendOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("Mã xác thực OTP của bạn - EduSpace");
-        message.setText("Mã xác thực OTP của bạn là: " + otp
-                + "\n\nMã này sẽ hết hạn sau 5 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.");
+        message.setSubject("Your OTP verification code - EduSpace");
+        message.setText("Your OTP verification code is: " + otp
+                + "\n\nThis code will expire in 5 minutes. Please do not share this code with anyone.");
 
         mailSender.send(message);
     }
