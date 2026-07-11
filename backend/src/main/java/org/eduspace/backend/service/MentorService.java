@@ -9,7 +9,10 @@ import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
+import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
+import org.eduspace.backend.dto.course.RubricCriteriaDto;
 import org.eduspace.backend.enums.IncidentStatus;
+import org.eduspace.backend.enums.SubmissionStatus;
 import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.Role;
 import org.eduspace.backend.repository.*;
@@ -19,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +40,8 @@ public class MentorService {
     private final WithdrawRequestRepository withdrawRequestRepository;
     private final StudyGroupRepository studyGroupRepository;
     private final StudyGroupService studyGroupService;
+    private final SubmissionRepository submissionRepository;
+    private final PeerReviewRepository peerReviewRepository;
 
     @Transactional
     public void assignMentorToCourse(Long userId, Long courseId) {
@@ -309,5 +316,71 @@ public class MentorService {
                 .createdAt(i.getCreatedAt())
                 .solvedAt(i.getSolvedAt())
                 .build();
+    }
+
+    @Transactional
+    public MentorArbitrationResponse gradeArbitrationSubmission(Long incidentId, Long mentorUserId, PeerReviewGradeRequest request) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
+
+        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
+                ? incident.getReporter().getCourseClass().getId() : null;
+
+        if (classId == null) {
+            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu thông tin lớp học)");
+        }
+
+        ClassMember mentorMember = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(mentorUserId, classId, "MENTOR")
+                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
+
+        Submission submission = incident.getSubmission();
+        if (submission == null) {
+            throw new RuntimeException("Yêu cầu phân xử không đi kèm bài nộp nào để chấm điểm");
+        }
+
+        PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
+                .orElse(null);
+
+        if (peerReview == null) {
+            peerReview = PeerReview.builder()
+                    .submission(submission)
+                    .build();
+        }
+
+        List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
+        int totalScore = 0;
+        int maxPossibleScore = 0;
+        if (criteriaScores != null) {
+            totalScore = criteriaScores.stream()
+                    .filter(Objects::nonNull)
+                    .mapToInt(score -> Objects.requireNonNullElse(score.getScore(), 0))
+                    .sum();
+
+            maxPossibleScore = criteriaScores.stream()
+                    .filter(Objects::nonNull)
+                    .mapToInt(score -> Objects.requireNonNullElse(score.getMaxPoint(), 0))
+                    .sum();
+        }
+
+        double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
+        double passThreshold = 0.8;
+        submission.setStatus(passRatio >= passThreshold ? SubmissionStatus.GRADED : SubmissionStatus.FAILED);
+
+        peerReview.setCriteriaScores(criteriaScores);
+        peerReview.setFinalScore(totalScore);
+        peerReview.setComments(request.getComments());
+        peerReview.setReviewAt(LocalDateTime.now());
+        peerReview.setOverridden(true);
+
+        peerReviewRepository.save(peerReview);
+        submissionRepository.save(submission);
+
+        incident.setStatus(IncidentStatus.RESOLVED);
+        incident.setResolvedBy(mentorMember);
+        incident.setSolvedAt(LocalDateTime.now());
+        incident.setResolutionNote("Mentor chấm lại bài: " + request.getComments());
+        incidentRepository.save(incident);
+
+        return toArbitrationResponse(incident);
     }
 }

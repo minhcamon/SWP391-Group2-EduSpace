@@ -16,6 +16,7 @@ import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsRespon
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
+import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.eduspace.backend.service.ProgressService;
@@ -111,6 +112,17 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorArbitrationResponse response = mentorService.getArbitrationDetailForMentor(incidentId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get arbitration request detail successfully", response));
+    }
+
+    @PostMapping("/arbitrations/{id}/grade")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Regrade peer review in arbitration", description = "Mentor chấm điểm lại cho bài nộp trong yêu cầu phân xử")
+    public ResponseEntity<APIResponse<MentorArbitrationResponse>> gradeArbitration(
+            @PathVariable("id") Long incidentId,
+            @Valid @RequestBody PeerReviewGradeRequest request) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorArbitrationResponse response = mentorService.gradeArbitrationSubmission(incidentId, mentorUserId, request);
+        return ResponseEntity.ok(APIResponse.success("Regraded and resolved arbitration request successfully", response));
     }
 
     @GetMapping("/classes")
