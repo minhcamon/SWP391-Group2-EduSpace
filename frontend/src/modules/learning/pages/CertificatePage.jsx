@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react"
-import { Award, Users, Heart, Send, Download, Share2 } from "lucide-react"
+import { Award, Users, Heart, Send, Download, Share2, Lock, ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
-import { useAuth } from "@/contexts/AuthContext"
+import useCertificate from "../hooks/useCertificate"
 import MentorInvitation from "../components/MentorInvitation"
 
 export const CertificatePage = () => {
-  const { user } = useAuth()
+  const { isLoading, certificateData, navigate, classId } = useCertificate()
   const [showMentorModal, setShowMentorModal] = useState(false)
-
-  const userName = user?.fullName || "Lê Hoàng Nam"
-  const partnerName = "Nguyễn Văn A"
-  const courseTitle = "Mastering Java Spring Boot Framework"
-  const certificateId = "EDU-JSB-2023-9942"
-  const completionDate = "24 tháng 10, 2023"
 
   // Confetti Particle Effect in React
   useEffect(() => {
+    // Only run confetti if the course is actually completed
+    if (isLoading || !certificateData?.isCompleted) return
+
     const container = document.getElementById("confetti-container")
     if (!container) return
 
@@ -65,7 +62,75 @@ export const CertificatePage = () => {
     const interval = setInterval(createConfetti, 4000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [isLoading, certificateData])
+
+  if (isLoading) {
+    return (
+      <div className='min-h-[60vh] w-full flex items-center justify-center bg-bg-base'>
+        <div className='flex flex-col items-center gap-3'>
+          <div className='w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin'></div>
+          <p className='text-sm font-semibold text-neutral-medium'>
+            Đang xác thực thông tin hoàn thành khóa học...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Handle case where course is not completed yet
+  if (!certificateData || !certificateData.isCompleted) {
+    return (
+      <div className='min-h-screen bg-bg-base flex flex-col items-center justify-center py-12 px-4 text-center'>
+        <div className='max-w-md w-full bg-white dark:bg-card p-8 rounded-2xl border border-border-light/45 shadow-lg flex flex-col items-center gap-6'>
+          <div className='w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-neutral-light border border-slate-200/50 shadow-xs'>
+            <Lock className='w-8 h-8' />
+          </div>
+
+          <div className='space-y-2'>
+            <h1 className='text-xl font-bold text-neutral-dark'>Chứng chỉ đang bị khóa</h1>
+            <p className='text-xs text-neutral-medium leading-relaxed font-semibold'>
+              Chào <strong className='text-primary'>{certificateData?.userName || "bạn"}</strong>,
+              bạn chưa hoàn thành 100% tất cả các bài học và bài tập của khóa học này để mở khóa
+              chứng chỉ.
+            </p>
+          </div>
+
+          <div className='w-full bg-slate-50 p-4 rounded-xl text-left border border-slate-100 text-xs text-neutral-medium space-y-1 font-semibold'>
+            <p>
+              Khóa học:{" "}
+              <span className='text-neutral-dark font-bold'>
+                {certificateData?.courseTitle || "Java Spring Boot"}
+              </span>
+            </p>
+            <p>
+              Bạn đồng hành:{" "}
+              <span className='text-neutral-dark font-bold'>
+                {certificateData?.partnerName || "Chưa ghép cặp"}
+              </span>
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate(`/classes/${classId}`)}
+            className='w-full py-3 bg-primary hover:bg-primary/95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs'
+          >
+            <ChevronLeft className='w-4 h-4' />
+            Quay lại lớp học để tiếp tục
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Formatting date for certificate display
+  const formatCompletionDate = (dateStr) => {
+    if (!dateStr) return "N/A"
+    const date = new Date(dateStr)
+    return `${date.getDate()} tháng ${date.getMonth() + 1}, ${date.getFullYear()}`
+  }
+
+  const { userName, partnerName, courseTitle, certificateId, issuedAt } = certificateData
+  const completionDate = formatCompletionDate(issuedAt)
 
   const handleSendGratitude = () => {
     toast.success(`Đã gửi lời cảm ơn chân thành đến ${partnerName}!`)
@@ -81,9 +146,11 @@ export const CertificatePage = () => {
 
   return (
     <>
-      <div className={`relative w-full overflow-hidden bg-bg-base py-12 px-4 md:px-8 flex flex-col items-center justify-center min-h-screen text-neutral-dark transition-all duration-300 ${
-        showMentorModal ? "filter blur-[5px] pointer-events-none select-none" : ""
-      }`}>
+      <div
+        className={`relative w-full overflow-hidden bg-bg-base py-12 px-4 md:px-8 flex flex-col items-center justify-center min-h-screen text-neutral-dark transition-all duration-300 ${
+          showMentorModal ? "filter blur-[5px] pointer-events-none select-none" : ""
+        }`}
+      >
         {/* Background Confetti Container */}
         <div
           id='confetti-container'
@@ -94,10 +161,11 @@ export const CertificatePage = () => {
           {/* Hero Heading */}
           <div className='flex flex-col gap-2'>
             <h1 className='text-3xl md:text-5xl font-extrabold text-primary leading-tight max-w-3xl'>
-              Chúc mừng bạn đã chinh phục thành công <span className='text-secondary'>Java Spring Boot!</span>
+              Chúc mừng bạn đã chinh phục thành công{" "}
+              <span className='text-secondary'>{courseTitle}!</span>
             </h1>
             <p className='text-sm md:text-base text-neutral-medium max-w-2xl mx-auto'>
-              Chúng tôi tự hào về nỗ lực không ngừng nghỉ của bạn trong suốt 6 tuần qua.
+              Chúng tôi tự hào về nỗ lực không ngừng nghỉ của bạn trong suốt khóa học.
             </p>
           </div>
 
@@ -118,7 +186,9 @@ export const CertificatePage = () => {
               <h2 className='text-2xl md:text-4xl font-extrabold text-neutral-dark border-b-2 border-primary/20 px-8 pb-2'>
                 {userName}
               </h2>
-              <p className='text-sm text-neutral-medium'>has successfully completed the intensive course</p>
+              <p className='text-sm text-neutral-medium'>
+                has successfully completed the intensive course
+              </p>
               <h3 className='text-xl md:text-2xl font-bold text-primary'>{courseTitle}</h3>
 
               <div className='flex flex-col md:flex-row justify-between w-full mt-10 items-center md:items-end gap-6 md:gap-0'>
@@ -174,7 +244,8 @@ export const CertificatePage = () => {
 
             <div className='grow text-center md:text-left space-y-1'>
               <p className='text-sm text-neutral-dark leading-relaxed font-medium'>
-                <span className='font-bold text-primary'>{partnerName}</span> đã cùng bạn vượt qua mọi thử thách.
+                <span className='font-bold text-primary'>{partnerName}</span> đã cùng bạn vượt qua
+                mọi thử thách.
               </p>
               <p className='text-xs text-neutral-medium leading-relaxed font-semibold'>
                 Thành công này có một phần đóng góp lớn từ người bạn đồng hành của bạn.
@@ -211,10 +282,10 @@ export const CertificatePage = () => {
       </div>
 
       {/* Mentor Invitation Component */}
-      <MentorInvitation 
-        isOpen={showMentorModal} 
-        onOpen={() => setShowMentorModal(true)} 
-        onClose={() => setShowMentorModal(false)} 
+      <MentorInvitation
+        isOpen={showMentorModal}
+        onOpen={() => setShowMentorModal(true)}
+        onClose={() => setShowMentorModal(false)}
       />
     </>
   )

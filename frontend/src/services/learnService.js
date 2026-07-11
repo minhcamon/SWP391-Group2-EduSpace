@@ -150,6 +150,18 @@ const learnService = {
       })
     }
   },
+
+  getCertificateDetails: async (classId) => {
+    try {
+      const response = await api.get(`/classes/${classId}/certificate`)
+      return response.data
+    } catch (error) {
+      console.error("Lỗi lấy thông tin chứng chỉ tại learnService:", error)
+      throw new Error(error.response?.data?.message || "Không thể tải thông tin chứng chỉ", {
+        cause: error,
+      })
+    }
+  },
 }
 
 export default learnService
