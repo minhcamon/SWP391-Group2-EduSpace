@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  XCircle,
 } from "lucide-react"
 import Avatar from "@/components/common/Avatar"
 
@@ -310,7 +311,12 @@ const CourseSidebar = ({
                           >
                             <div className='flex items-start gap-3 min-w-0'>
                               <div className='shrink-0 mt-0.5'>
-                                {isThisCompleted ? (
+                                {asgn.status === "FAILED" ? (
+                                  <XCircle
+                                    size={iconSize}
+                                    className='text-destructive'
+                                  />
+                                ) : isThisCompleted ? (
                                   <CheckCircle
                                     size={iconSize}
                                     className='text-success'
