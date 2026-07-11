@@ -16,14 +16,14 @@ const IncidentReportCard = ({ incident }) => {
             <p className="text-xs text-neutral-medium font-semibold">Người gửi báo cáo</p>
             <p className="font-bold text-neutral-dark flex items-center gap-1">
               <User size={14} className="text-slate-400" />
-              {incident.reporter}
+              {incident.reporterName}
             </p>
           </div>
           <div className="space-y-1.5">
             <p className="text-xs text-neutral-medium font-semibold">Đối tượng bị báo cáo</p>
             <p className="font-bold text-neutral-dark flex items-center gap-1">
               <User size={14} className="text-slate-400" />
-              {incident.reported || "Hệ thống / Không có"}
+              {incident.reportedName || "Hệ thống / Không có"}
             </p>
           </div>
         </div>
@@ -37,19 +37,19 @@ const IncidentReportCard = ({ incident }) => {
         </div>
 
         {/* Evidence attachments */}
-        {incident.evidenceFiles && incident.evidenceFiles.length > 0 && (
+        {incident.evidenceUrl && (
           <div className="space-y-2 pt-2">
             <p className="text-xs text-neutral-medium font-bold uppercase tracking-wider">Tệp bằng chứng kèm theo</p>
             <div className="flex flex-wrap gap-3">
-              {incident.evidenceFiles.map((file, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-white border border-border-light/50 px-3.5 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-slate-50 cursor-pointer shadow-sm"
-                >
-                  <Paperclip size={13} />
-                  <span>{file}</span>
-                </div>
-              ))}
+              <a
+                href={incident.evidenceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white border border-border-light/50 px-3.5 py-2 rounded-xl text-xs font-semibold text-primary hover:bg-slate-50 cursor-pointer shadow-sm"
+              >
+                <Paperclip size={13} />
+                <span>Xem tệp bằng chứng</span>
+              </a>
             </div>
           </div>
         )}

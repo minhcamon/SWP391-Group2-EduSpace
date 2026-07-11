@@ -1,34 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { GraduationCap, Search, Users, AlertCircle, Plus } from "lucide-react";
-import mentorService from "@/services/mentorService";
-import MentorClassCard from "../components/MentorClassCard";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { runWithLoading } from "@/utils/utils";
-import { toast } from "sonner";
+import React from "react";
+import { GraduationCap, Search, Users, AlertCircle } from "lucide-react";
+import useClassManagement from "../hooks/useClassManagement";
+import MentorClassCard from "../components/mentor-class/MentorClassCard";
+import { Card, CardContent } from "@/components/ui/Card";
 
 const ClassManagementPage = () => {
-  const [classes, setClasses] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        await runWithLoading(setIsLoading, async () => {
-          const data = await mentorService.getMentorClasses();
-          setClasses(data);
-        });
-      } catch (err) {
-        toast.error("Không thể tải danh sách lớp học!");
-      }
-    };
-    fetchClasses();
-  }, []);
-
-  const filteredClasses = classes.filter((c) =>
-    (c.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (c.courseTitle ?? "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    classes,
+    searchQuery,
+    setSearchQuery,
+    isLoading,
+    filteredClasses
+  } = useClassManagement();
 
   return (
     <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">

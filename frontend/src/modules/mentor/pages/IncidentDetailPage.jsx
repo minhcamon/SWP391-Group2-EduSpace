@@ -1,65 +1,56 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, Link } from "react-router";
 import { ArrowLeft, ShieldAlert, Play, CheckCircle } from "lucide-react";
-import mentorService from "@/services/mentorService";
+import useIncidentDetail from "../hooks/useIncidentDetail";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import { runWithLoading } from "@/utils/utils";
-import { toast } from "sonner";
-import IncidentReportCard from "../components/IncidentReportCard";
-import IncidentDisputeCard from "../components/IncidentDisputeCard";
-import IncidentHistoryLog from "../components/IncidentHistoryLog";
+
+// Import relocated components
+import IncidentReportCard from "../components/mentor-incident/IncidentReportCard";
+import IncidentDisputeCard from "../components/mentor-incident/IncidentDisputeCard";
+import IncidentHistoryLog from "../components/mentor-incident/IncidentHistoryLog";
 
 const IncidentDetailPage = () => {
   const { id } = useParams();
-  const [incident, setIncident] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [resolutionText, setResolutionText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    incident,
+    isLoading,
+    resolutionText,
+    setResolutionText,
+    isSubmitting,
+    handleClaim,
+    handleResolve
+  } = useIncidentDetail(id);
 
-  const fetchIncidentDetail = async () => {
-    try {
-      await runWithLoading(setIsLoading, async () => {
-        const data = await mentorService.getIncidentById(id);
-        setIncident(data);
-      });
-    } catch (err) {
-      toast.error(err.message || "Không thể tải thông tin sự cố!");
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "PENDING":
+        return <Badge variant="pending" className="font-bold text-[10px] uppercase">Chờ xử lý</Badge>;
+      case "IN_PROGRESS":
+        return <Badge variant="roletag" className="bg-blue-50 text-blue-700 font-bold text-[10px] uppercase border border-blue-200">Đang xử lý</Badge>;
+      case "RESOLVED":
+        return <Badge variant="approved" className="font-bold text-[10px] uppercase">Đã giải quyết</Badge>;
+      case "REJECTED":
+        return <Badge variant="destructive" className="font-bold text-[10px] uppercase">Đã từ chối</Badge>;
+      case "CLOSED":
+        return <Badge variant="outline" className="font-bold text-[10px] uppercase bg-slate-100 text-neutral-medium">Đã đóng</Badge>;
+      default:
+        return <Badge variant="outline" className="font-bold text-[10px] uppercase">{status}</Badge>;
     }
   };
 
-  useEffect(() => {
-    fetchIncidentDetail();
-  }, [id]);
-
-  const handleClaim = async () => {
-    try {
-      await runWithLoading(setIsSubmitting, async () => {
-        await mentorService.claimIncident(id);
-        toast.success("Đã tiếp nhận xử lý sự cố!");
-        fetchIncidentDetail();
-      });
-    } catch (err) {
-      toast.error(err.message || "Lỗi tiếp nhận!");
-    }
-  };
-
-  const handleResolve = async (e) => {
-    e.preventDefault();
-    if (!resolutionText.trim()) {
-      toast.error("Vui lòng nhập phương án giải quyết!");
-      return;
-    }
-
-    try {
-      await runWithLoading(setIsSubmitting, async () => {
-        await mentorService.resolveIncident(id, resolutionText);
-        toast.success("Đã đóng sự cố thành công!");
-        setResolutionText("");
-        fetchIncidentDetail();
-      });
-    } catch (err) {
-      toast.error(err.message || "Lỗi đóng sự cố!");
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case "PEER_REVIEW_DISPUTE":
+        return "Tranh chấp chấm chéo";
+      case "INACTIVE_PARTNER":
+        return "Bạn học không hoạt động";
+      case "MEMBER_CONFLICT":
+        return "Xung đột thành viên";
+      case "RESCUE_SUPPORT_REQUEST":
+        return "Yêu cầu cứu trợ";
+      default:
+        return type;
     }
   };
 
@@ -82,44 +73,27 @@ const IncidentDetailPage = () => {
     );
   }
 
-  const getPriorityBadge = (priority) => {
-    switch (priority) {
-      case "CRITICAL":
-        return <Badge variant="destructive" className="bg-red-600 text-white font-bold uppercase tracking-wider text-[10px]">Critical</Badge>;
-      case "HIGH":
-        return <Badge variant="secondary" className="bg-amber-500 text-white font-bold uppercase tracking-wider text-[10px]">High</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-neutral-medium border-slate-200 font-bold uppercase tracking-wider text-[10px]">Medium</Badge>;
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "PENDING":
-        return <Badge variant="pending" className="font-bold text-[10px] uppercase">Chờ xử lý</Badge>;
-      case "IN_PROGRESS":
-        return <Badge variant="roletag" className="bg-blue-50 text-blue-700 font-bold text-[10px] uppercase border border-blue-200">Đang xử lý</Badge>;
-      case "RESOLVED":
-        return <Badge variant="approved" className="font-bold text-[10px] uppercase">Đã giải quyết</Badge>;
-      default:
-        return null;
-    }
-  };
-
-  const getTypeLabel = (type) => {
-    switch (type) {
-      case "PEER_REVIEW_DISPUTE":
-        return "Tranh chấp chấm chéo";
-      case "INACTIVE_PARTNER":
-        return "Bạn học không hoạt động";
-      case "MEMBER_CONFLICT":
-        return "Xung đột thành viên";
-      case "RESCUE_SUPPORT_REQUEST":
-        return "Yêu cầu cứu trợ";
-      default:
-        return type;
-    }
-  };
+  const historyData = [];
+  if (incident.createdAt) {
+    historyData.push({
+      id: 1,
+      time: new Date(incident.createdAt).toLocaleString("vi-VN"),
+      action: `Học viên ${incident.reporterName || ""} gửi báo cáo sự cố`
+    });
+  }
+  if (incident.solvedAt) {
+    historyData.push({
+      id: 2,
+      time: new Date(incident.solvedAt).toLocaleString("vi-VN"),
+      action: `Mentor ${incident.resolvedByName || ""} giải quyết sự cố: ${incident.resolutionNote || ""}`
+    });
+  } else if (incident.status === "IN_PROGRESS") {
+    historyData.push({
+      id: 2,
+      time: "",
+      action: `Mentor đang tiếp nhận xử lý sự cố`
+    });
+  }
 
   return (
     <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -139,14 +113,17 @@ const IncidentDetailPage = () => {
                 Mã sự cố: {incident.id}
               </span>
               <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
-                {getTypeLabel(incident.type)}
+                {getTypeLabel(incident.incidentType)}
               </h1>
               {getStatusBadge(incident.status)}
-              {getPriorityBadge(incident.priority)}
             </div>
             <p className="text-sm text-neutral-medium mt-1">
-              Phân nhóm lớp: <span className="font-bold text-neutral-dark">{incident.className}</span> | Cặp đôi:{" "}
-              <span className="font-bold text-neutral-dark">{incident.pairName}</span>
+              Người báo cáo: <span className="font-bold text-neutral-dark">{incident.reporterName}</span>
+              {incident.reportedName && (
+                <>
+                  {" "}| Đối tượng bị báo cáo: <span className="font-bold text-neutral-dark">{incident.reportedName}</span>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -158,7 +135,7 @@ const IncidentDetailPage = () => {
         <div className="lg:col-span-7 flex flex-col gap-6">
           <IncidentReportCard incident={incident} />
           <IncidentDisputeCard incident={incident} />
-          <IncidentHistoryLog history={incident.history} />
+          <IncidentHistoryLog history={historyData} />
         </div>
 
         {/* Right Column (3): Resolve / Claim Actions */}
@@ -222,6 +199,11 @@ const IncidentDetailPage = () => {
                   {incident.resolutionNote && (
                     <div className="text-xs text-emerald-700 mt-2 italic font-semibold">
                       " {incident.resolutionNote} "
+                    </div>
+                  )}
+                  {incident.resolvedByName && (
+                    <div className="text-[10px] text-neutral-medium mt-1 font-bold">
+                      Bởi: {incident.resolvedByName}
                     </div>
                   )}
                 </div>

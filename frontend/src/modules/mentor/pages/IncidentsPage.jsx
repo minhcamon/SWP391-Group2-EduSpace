@@ -1,65 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router";
-import { AlertTriangle, Search, CheckCircle, ShieldAlert, Play, Eye } from "lucide-react";
-import mentorService from "@/services/mentorService";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { AlertTriangle, Search, CheckCircle, Play, Eye, Users } from "lucide-react";
+import useIncidents from "../hooks/useIncidents";
+import { Card, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/Table";
-import { runWithLoading } from "@/utils/utils";
-import { toast } from "sonner";
 
 const IncidentsPage = () => {
-  const [incidents, setIncidents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const fetchIncidents = async () => {
-    try {
-      await runWithLoading(setIsLoading, async () => {
-        const data = await mentorService.getIncidents();
-        setIncidents(data);
-      });
-    } catch (err) {
-      toast.error("Không thể tải danh sách sự cố!");
-    }
-  };
-
-  useEffect(() => {
-    fetchIncidents();
-  }, []);
-
-  const handleClaim = async (id, e) => {
-    e.preventDefault();
-    try {
-      const res = await mentorService.claimIncident(id);
-      toast.success(res.message || "Nhận xử lý sự cố thành công!");
-      fetchIncidents();
-    } catch (err) {
-      toast.error(err.message || "Lỗi khi nhận xử lý sự cố!");
-    }
-  };
-
-  const filtered = incidents
-    .filter((inc) => activeTab === "ALL" || inc.status === activeTab)
-    .filter(
-      (inc) =>
-        inc.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inc.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inc.className.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inc.pairName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-  const getPriorityBadge = (priority) => {
-    switch (priority) {
-      case "CRITICAL":
-        return <Badge variant="destructive" className="bg-red-600 text-white font-bold uppercase tracking-wider text-[10px]">Critical</Badge>;
-      case "HIGH":
-        return <Badge variant="secondary" className="bg-amber-500 text-white font-bold uppercase tracking-wider text-[10px]">High</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-slate-100 text-neutral-medium border-slate-200 font-bold uppercase tracking-wider text-[10px]">Medium</Badge>;
-    }
-  };
+  const {
+    incidents,
+    isLoading,
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    filtered,
+    handleClaim
+  } = useIncidents();
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -69,8 +26,12 @@ const IncidentsPage = () => {
         return <Badge variant="roletag" className="bg-blue-50 text-blue-700 font-bold text-[10px] uppercase border border-blue-200">Đang xử lý</Badge>;
       case "RESOLVED":
         return <Badge variant="approved" className="font-bold text-[10px] uppercase">Đã giải quyết</Badge>;
+      case "REJECTED":
+        return <Badge variant="destructive" className="font-bold text-[10px] uppercase">Đã từ chối</Badge>;
+      case "CLOSED":
+        return <Badge variant="outline" className="font-bold text-[10px] uppercase bg-slate-100 text-neutral-medium">Đã đóng</Badge>;
       default:
-        return null;
+        return <Badge variant="outline" className="font-bold text-[10px] uppercase">{status}</Badge>;
     }
   };
 
@@ -107,14 +68,14 @@ const IncidentsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="border border-border-light/40 shadow-sm">
           <CardContent className="pt-1 flex items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-xl text-red-600">
-              <ShieldAlert size={20} />
+            <div className="p-3 bg-neutral-100 rounded-xl text-neutral-600">
+              <Users size={20} />
             </div>
             <div>
               <p className="text-xl font-bold text-neutral-dark">
-                {incidents.filter(i => i.status === "PENDING" && i.priority === "CRITICAL").length}
+                {incidents.length}
               </p>
-              <p className="text-xs text-neutral-medium font-semibold">Sự cố Nguy cấp Chờ xử lý</p>
+              <p className="text-xs text-neutral-medium font-semibold">Tổng sự cố ghi nhận</p>
             </div>
           </CardContent>
         </Card>
@@ -190,7 +151,7 @@ const IncidentsPage = () => {
           <Search className="absolute left-3 top-2.5 text-neutral-light w-4 h-4" />
           <input
             type="text"
-            placeholder="Tìm theo ID, loại sự cố, lớp, học viên..."
+            placeholder="Tìm theo ID, loại sự cố, người báo cáo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 border border-border-light/65 rounded-xl text-sm focus:outline-none focus:border-primary transition-all duration-200"
@@ -216,9 +177,8 @@ const IncidentsPage = () => {
               <TableRow>
                 <TableHead>Mã sự cố</TableHead>
                 <TableHead>Loại sự cố</TableHead>
-                <TableHead>Lớp học</TableHead>
-                <TableHead>Cặp học viên</TableHead>
-                <TableHead>Độ khẩn</TableHead>
+                <TableHead>Người báo cáo</TableHead>
+                <TableHead>Lý do</TableHead>
                 <TableHead>Thời gian</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
@@ -229,12 +189,13 @@ const IncidentsPage = () => {
                 <TableRow key={inc.id}>
                   <TableCell className="font-bold text-primary">{inc.id}</TableCell>
                   <TableCell className="font-semibold text-neutral-dark">
-                    {getTypeLabel(inc.type)}
+                    {getTypeLabel(inc.incidentType)}
                   </TableCell>
-                  <TableCell>{inc.className}</TableCell>
-                  <TableCell className="font-semibold">{inc.pairName}</TableCell>
-                  <TableCell>{getPriorityBadge(inc.priority)}</TableCell>
-                  <TableCell className="text-neutral-medium text-xs font-semibold">{inc.createdTime}</TableCell>
+                  <TableCell className="font-semibold">{inc.reporterName}</TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={inc.reason}>{inc.reason}</TableCell>
+                  <TableCell className="text-neutral-medium text-xs font-semibold">
+                    {inc.createdAt ? new Date(inc.createdAt).toLocaleString("vi-VN") : "N/A"}
+                  </TableCell>
                   <TableCell>{getStatusBadge(inc.status)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

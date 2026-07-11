@@ -1,33 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router";
 import { ArrowLeft, ShieldAlert, Play, MessageSquare } from "lucide-react";
-import mentorService from "@/services/mentorService";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { runWithLoading } from "@/utils/utils";
-import { toast } from "sonner";
+import useClassDetail from "../hooks/useClassDetail";
 
-// Import extracted presenter components
-import ClassDetailHero from "@/modules/mentor/components/ClassDetailHero";
-import StudyGroupsList from "@/modules/mentor/components/StudyGroupsList";
-import SidebarModuleTimeline from "@/modules/mentor/components/SidebarModuleTimeline";
+// Import extracted presenter components from subdirectories
+import ClassDetailHero from "../components/mentor-class/ClassDetailHero";
+import StudyGroupsList from "../components/mentor-class/StudyGroupsList";
+import SidebarModuleTimeline from "../components/mentor-class/SidebarModuleTimeline";
 
 const ClassDetailPage = () => {
     const { classId } = useParams();
-    const [classDetail, setClassDetail] = useState(null);
-    const [pairs, setPairs] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isStartingModule, setIsStartingModule] = useState(false);
+    const {
+        classDetail,
+        pairs,
+        modules,
+        isLoading,
+        selectedModuleId,
+        setSelectedModuleId,
+        isStartingModule,
+        handleReminderClick,
+        handleStartNextModule
+    } = useClassDetail(classId);
+
     const selectedModuleRef = React.useRef(null);
-
-    // Local state for course modules to handle interactive progression
-    const [modules, setModules] = useState([
-        { id: 1, title: "Module 1: Spring Boot Core & REST API Basics", status: "COMPLETED", completionRate: 100 },
-        { id: 2, title: "Module 2: Spring Data JPA & Relationship Mapping", status: "ACTIVE", completionRate: 85 },
-        { id: 3, title: "Module 3: Spring Security, JWT & OAuth2 Security", status: "LOCKED", completionRate: 0 },
-        { id: 4, title: "Module 4: Spring Boot Testing, Docker & Deployment", status: "LOCKED", completionRate: 0 },
-    ]);
-
-    const [selectedModuleId, setSelectedModuleId] = useState(2);
 
     useEffect(() => {
         if (selectedModuleRef.current) {
@@ -39,59 +35,25 @@ const ClassDetailPage = () => {
         }
     }, [selectedModuleId]);
 
-    useEffect(() => {
-        const fetchClassDetail = async () => {
-            try {
-                await runWithLoading(setIsLoading, async () => {
-                    const detailData = await mentorService.getClassById(classId);
-                    setClassDetail(detailData);
-
-                    try {
-                        const pairsData = await mentorService.getClassPairs(classId);
-                        setPairs(pairsData || []);
-                    } catch (pairErr) {
-                        console.error("Failed to load pairs:", pairErr);
-                        setPairs([]);
-                    }
-                });
-            } catch (err) {
-                toast.error(err.message || "Không thể tải thông tin chi tiết lớp học!");
-            }
-        };
-        fetchClassDetail();
-    }, [classId]);
-
-    const handleStartNextModule = async (nextModuleId) => {
-        setIsStartingModule(true);
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        setModules((prev) =>
-            prev.map((m) => {
-                if (m.status === "ACTIVE") return { ...m, status: "COMPLETED", completionRate: 100 };
-                if (m.id === nextModuleId) return { ...m, status: "ACTIVE", completionRate: 5 };
-                return m;
-            })
-        );
-        setIsStartingModule(false);
-        toast.success("Đã khởi chạy học phần tiếp theo thành công!");
-    };
-
-    const handleSendReminder = (studyGroupId) => {
-        toast.success(`Đã gửi thông báo nhắc nhở học tập tới Nhóm #PAIR-0${studyGroupId}!`);
-    };
-
     const handlePrevModule = () => {
-        setSelectedModuleId((prev) => Math.max(1, prev - 1));
+        const idx = modules.findIndex((m) => m.id === selectedModuleId);
+        if (idx > 0) {
+            setSelectedModuleId(modules[idx - 1].id);
+        }
     };
 
     const handleNextModule = () => {
-        setSelectedModuleId((prev) => Math.min(modules.length, prev + 1));
+        const idx = modules.findIndex((m) => m.id === selectedModuleId);
+        if (idx !== -1 && idx < modules.length - 1) {
+            setSelectedModuleId(modules[idx + 1].id);
+        }
     };
 
     const getSelectedModuleDetails = () => {
         const m = modules.find((mod) => mod.id === selectedModuleId);
         if (!m) return null;
 
+        // Custom contents mapping for rendering module lessons/assignments
         const contents = {
             1: [
                 { type: "Bài học", name: "Giới thiệu Spring Boot Ecosystem & Maven" },
@@ -181,7 +143,7 @@ const ClassDetailPage = () => {
                                 </p>
                                 {nextModule && (
                                     <button
-                                        onClick={() => handleStartNextModule(nextModule.id)}
+                                        onClick={() => handleStartNextModule(nextModule.id, nextModule.title)}
                                         disabled={isStartingModule}
                                         className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                                     >
@@ -196,7 +158,7 @@ const ClassDetailPage = () => {
                     {/* Study Groups List */}
                     <StudyGroupsList
                         pairs={pairs}
-                        handleSendReminder={handleSendReminder}
+                        handleSendReminder={handleReminderClick}
                     />
                 </div>
 

@@ -1,37 +1,27 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { Link } from "react-router";
-import { Bell, ShieldAlert, AlertTriangle, Play, HelpCircle, GraduationCap, Scale, ChevronRight } from "lucide-react";
+import { Users, AlertTriangle, Play, ChevronRight } from "lucide-react";
 import useMentorDashboard from "../hooks/useMentorDashboard";
-import MentorClassCard from "../components/MentorClassCard";
-import MentorToolCard from "../components/MentorToolCard";
-import { mockMentorTools, mockIncidents, mockArbitrations } from "../utils/mockData";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import MentorClassCard from "../components/mentor-class/MentorClassCard";
+import MentorToolCard from "../components/mentor-dashboard/MentorToolCard";
+import { mockMentorTools } from "../utils/mockData";
+import { Card, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import mentorService from "@/services/mentorService";
 
 export const MentorDashboardPage = () => {
-    const { classes, isLoading } = useMentorDashboard();
-    const [incidents, setIncidents] = useState([]);
-    const [arbitrations, setArbitrations] = useState([]);
-    const [loadingExtras, setLoadingExtras] = useState(true);
+    const {
+        classes,
+        isLoading,
+        assignedClassesCount,
+        healthyPairs,
+        slowPairs,
+        brokenPairs,
+        pendingIncidentsCount,
+        pendingArbitrationsCount,
+        rescueQueue
+    } = useMentorDashboard();
 
-    useEffect(() => {
-        const fetchExtras = async () => {
-            try {
-                const incData = await mentorService.getIncidents();
-                const arbData = await mentorService.getArbitrations();
-                setIncidents(incData);
-                setArbitrations(arbData);
-            } catch (err) {
-                console.error("Lỗi khi tải phụ trợ dashboard", err);
-            } finally {
-                setLoadingExtras(false);
-            }
-        };
-        fetchExtras();
-    }, []);
-
-    if (isLoading || loadingExtras) {
+    if (isLoading) {
         return (
             <div className="grow flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-3">
@@ -43,39 +33,6 @@ export const MentorDashboardPage = () => {
             </div>
         );
     }
-
-    // Calculate statistics
-    const assignedClassesCount = classes.length;
-
-    let healthyPairs = 0;
-    let slowPairs = 0;
-    let brokenPairs = 0;
-    classes.forEach(c => {
-        c.studyGroups.forEach(sg => {
-            if (sg.status === "SLOW") slowPairs++;
-            else if (sg.status === "BROKEN") brokenPairs++;
-            else healthyPairs++;
-        });
-    });
-
-    const pendingIncidentsCount = incidents.filter(i => i.status === "PENDING").length;
-    const pendingArbitrationsCount = arbitrations.filter(a => a.status === "PENDING").length;
-
-    // Urgent incidents for Rescue Queue
-    const rescueQueue = incidents
-        .filter(i => i.status !== "RESOLVED")
-        .slice(0, 3);
-
-    const getPriorityBadge = (priority) => {
-        switch (priority) {
-            case "CRITICAL":
-                return <Badge variant="destructive" className="bg-red-600 text-white font-bold uppercase tracking-wider text-[9px] px-2">Critical</Badge>;
-            case "HIGH":
-                return <Badge variant="secondary" className="bg-amber-500 text-white font-bold uppercase tracking-wider text-[9px] px-2">High</Badge>;
-            default:
-                return <Badge variant="outline" className="bg-slate-100 text-neutral-medium border-slate-200 font-bold uppercase tracking-wider text-[9px] px-2">Medium</Badge>;
-        }
-    };
 
     const getIncidentTypeLabel = (type) => {
         switch (type) {
@@ -165,11 +122,12 @@ export const MentorDashboardPage = () => {
                                 <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                            {getPriorityBadge(inc.priority)}
-                                            <span className="text-xs font-semibold text-neutral-medium">• {inc.createdTime}</span>
+                                            <span className="text-xs font-semibold text-neutral-medium">
+                                                {inc.createdAt ? new Date(inc.createdAt).toLocaleString("vi-VN") : "N/A"}
+                                            </span>
                                         </div>
                                         <h4 className="font-bold text-neutral-dark text-sm leading-snug">
-                                            {getIncidentTypeLabel(inc.type)} - Lớp {inc.classId}
+                                            {getIncidentTypeLabel(inc.incidentType)}
                                         </h4>
                                         <p className="text-xs text-neutral-medium mt-1 line-clamp-1">{inc.reason}</p>
                                     </div>
@@ -191,52 +149,9 @@ export const MentorDashboardPage = () => {
                 {/* Right Column (3): Recent Alerts & Resources */}
                 <div className="lg:col-span-3 flex flex-col gap-4">
                     <h3 className="text-lg font-bold text-neutral-dark">Cảnh báo gần đây</h3>
-                    <div className="bg-white rounded-2xl border border-border-light/30 shadow-sm overflow-hidden flex flex-col">
-                        {/* {/* Alert 1 */}
-                        {/* <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors flex gap-3">
-              <ShieldAlert className="text-red-500 shrink-0 mt-0.5" size={16} />
-              <div>
-                <h5 className="text-xs font-bold text-neutral-dark">Rạn nứt cặp đôi!</h5>
-                <p className="text-[11px] text-neutral-medium mt-0.5">Phát hiện Bình & Chi (L04) không liên lạc 3 ngày.</p>
-                <span className="text-[10px] text-neutral-light font-semibold block mt-1">Vừa xong</span>
-              </div>
-            </div> */}
-
-                        {/* Alert 2 */}
-                        {/* <div className="p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors flex gap-3">
-              <Scale className="text-amber-500 shrink-0 mt-0.5" size={16} />
-              <div>
-                <h5 className="text-xs font-bold text-neutral-dark">Yêu cầu chấm phân định</h5>
-                <p className="text-[11px] text-neutral-medium mt-0.5">Nguyễn Văn A gửi đơn khiếu nại chấm chéo.</p>
-                <span className="text-[10px] text-neutral-light font-semibold block mt-1">45 phút trước</span>
-              </div>
-            </div> */}
-
-                        {/* Alert 3 */}
-                        {/* <div className="p-4 hover:bg-slate-50 transition-colors flex gap-3">
-              <GraduationCap className="text-primary shrink-0 mt-0.5" size={16} />
-              <div>
-                <h5 className="text-xs font-bold text-neutral-dark">Báo cáo lớp L05</h5>
-                <p className="text-[11px] text-neutral-medium mt-0.5">Tiến độ trung bình lớp học giảm 2% tuần này.</p>
-                <span className="text-[10px] text-neutral-light font-semibold block mt-1">2 giờ trước</span>
-              </div>
-            </div> */}
+                    <div className="bg-white rounded-2xl border border-border-light/30 shadow-sm overflow-hidden flex flex-col p-4 text-center">
+                        <span className="text-xs text-neutral-medium font-semibold">Không có cảnh báo mới.</span>
                     </div>
-
-                    {/* Quick Help Guide Card */}
-                    {/* <div className="bg-primary text-white rounded-2xl p-5 shadow-md relative overflow-hidden">
-                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-white/10 rounded-full blur-lg"></div>
-                        <h4 className="font-bold text-sm flex items-center gap-1">
-                            <HelpCircle size={16} />
-                            Cần trợ giúp?
-                        </h4>
-                        <p className="text-[11px] text-white/80 mt-1.5 leading-relaxed">
-                            Truy cập Sổ tay Hướng dẫn Mentor hoặc liên hệ quản trị viên học thuật khi gặp khó khăn.
-                        </p>
-                        <button className="w-full mt-3 py-2 bg-white text-primary text-xs font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm">
-                            Sổ tay Mentor
-                        </button>
-                    </div> */}
                 </div>
             </div>
 

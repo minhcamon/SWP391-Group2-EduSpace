@@ -129,7 +129,7 @@ export const mentorService = {
      */
     resolveIncident: async (id, resolutionNote) => {
         try {
-            const response = await api.put(`/incidents/${id}/resolve`, resolutionNote);
+            const response = await api.put(`/incidents/${id}/resolve`, { resolutionNote });
             return response.data.message;
         } catch (error) {
             console.error('resolveIncident error at mentorService:', error);

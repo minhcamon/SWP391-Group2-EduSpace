@@ -1,60 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, Link } from "react-router";
 import { ArrowLeft, Scale, CheckCircle, Calendar, User, FileText } from "lucide-react";
-import mentorService from "@/services/mentorService";
+import useArbitrationDetail from "../hooks/useArbitrationDetail";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import { runWithLoading } from "@/utils/utils";
-import { toast } from "sonner";
 
 const ArbitrationDetailPage = () => {
     const { id } = useParams();
-    const [arbitration, setArbitration] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [finalScore, setFinalScore] = useState("");
-    const [mentorComment, setMentorComment] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const fetchArbitrationDetail = async () => {
-        try {
-            await runWithLoading(setIsLoading, async () => {
-                const data = await mentorService.getArbitrationById(id);
-                setArbitration(data);
-                if (data.status === "RESOLVED") {
-                    setMentorComment(data.resolutionNote || "");
-                }
-            });
-        } catch (err) {
-            toast.error(err.message || "Không thể tải thông tin khiếu nại chấm điểm!");
-        }
-    };
-
-    useEffect(() => {
-        fetchArbitrationDetail();
-    }, [id]);
-
-    const handleSubmitGrade = async (e) => {
-        e.preventDefault();
-        const scoreVal = parseFloat(finalScore);
-        if (isNaN(scoreVal) || scoreVal < 0 || scoreVal > 10) {
-            toast.error("Vui lòng nhập điểm số hợp lệ từ 0 đến 10!");
-            return;
-        }
-        if (!mentorComment.trim()) {
-            toast.error("Vui lòng nhập nhận xét/đánh giá chi tiết của Mentor!");
-            return;
-        }
-
-        try {
-            await runWithLoading(setIsSubmitting, async () => {
-                await mentorService.submitArbitrationGrade(id, scoreVal, mentorComment);
-                toast.success("Đã hoàn tất phân xử điểm thành công!");
-                fetchArbitrationDetail();
-            });
-        } catch (err) {
-            toast.error(err.message || "Lỗi khi nộp kết quả phân xử!");
-        }
-    };
+    const {
+        arbitration,
+        isLoading,
+        finalScore,
+        setFinalScore,
+        mentorComment,
+        setMentorComment,
+        isSubmitting,
+        handleSubmitGrade
+    } = useArbitrationDetail(id);
 
     if (isLoading) {
         return (
@@ -82,7 +44,7 @@ const ArbitrationDetailPage = () => {
             case "RESOLVED":
                 return <Badge variant="approved" className="font-bold text-[10px] uppercase">Đã giải quyết</Badge>;
             default:
-                return null;
+                return <Badge variant="outline" className="font-bold text-[10px] uppercase">{status}</Badge>;
         }
     };
 

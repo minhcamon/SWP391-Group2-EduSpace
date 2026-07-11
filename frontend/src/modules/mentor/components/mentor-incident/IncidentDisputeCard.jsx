@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 const IncidentDisputeCard = ({ incident }) => {
-  if (!incident || incident.type !== "PEER_REVIEW_DISPUTE") return null;
+  if (!incident || incident.incidentType !== "PEER_REVIEW_DISPUTE" || !incident.submissionTitle) return null;
 
   return (
     <Card className="border border-border-light/35 shadow-sm">
