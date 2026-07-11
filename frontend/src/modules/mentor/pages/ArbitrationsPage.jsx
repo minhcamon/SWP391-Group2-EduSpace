@@ -33,9 +33,9 @@ const ArbitrationsPage = () => {
     .filter((a) => activeTab === "ALL" || a.status === activeTab)
     .filter(
       (a) =>
-        a.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.assignmentTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.learnerName.toLowerCase().includes(searchQuery.toLowerCase())
+        a?.id?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a?.submissionTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a?.reporterName?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   const getStatusBadge = (status) => {
@@ -86,9 +86,9 @@ const ArbitrationsPage = () => {
             </div>
             <div>
               <p className="text-xl font-bold text-neutral-dark">
-                {arbitrations.filter((a) => a.status === "PENDING" && a.difference >= 2.0).length}
+                {arbitrations.length}
               </p>
-              <p className="text-xs text-neutral-medium font-semibold">Chênh lệch cao (Diff &gt;= 2.0)</p>
+              <p className="text-xs text-neutral-medium font-semibold">Tổng số ca khiếu nại</p>
             </div>
           </CardContent>
         </Card>
@@ -159,12 +159,12 @@ const ArbitrationsPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Mã đơn</TableHead>
-                <TableHead>Bài tập yêu cầu</TableHead>
-                <TableHead>Học viên nộp</TableHead>
-                <TableHead className="text-center">Điểm học viên A</TableHead>
-                <TableHead className="text-center">Điểm học viên B</TableHead>
-                <TableHead className="text-center">Độ chênh lệch</TableHead>
-                <TableHead>Hạn xử lý</TableHead>
+                <TableHead>Lớp học</TableHead>
+                <TableHead>Bài tập</TableHead>
+                <TableHead>Học viên khiếu nại</TableHead>
+                <TableHead>Người chấm chéo</TableHead>
+                <TableHead>Lý do khiếu nại</TableHead>
+                <TableHead>Ngày gửi</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
@@ -172,23 +172,17 @@ const ArbitrationsPage = () => {
             <TableBody>
               {filtered.map((arb) => (
                 <TableRow key={arb.id}>
-                  <TableCell className="font-bold text-primary">{arb.id}</TableCell>
-                  <TableCell className="font-semibold text-neutral-dark">{arb.assignmentTitle}</TableCell>
-                  <TableCell className="font-semibold">{arb.learnerName}</TableCell>
-                  <TableCell className="text-center font-bold text-slate-600">{arb.reviewerAScore}</TableCell>
-                  <TableCell className="text-center font-bold text-slate-600">{arb.reviewerBScore}</TableCell>
-                  <TableCell className="text-center">
-                    <span
-                      className={`font-extrabold px-2 py-0.5 rounded-lg text-xs ${
-                        arb.difference >= 2.0
-                          ? "bg-red-50 text-red-600"
-                          : "bg-amber-50 text-amber-600"
-                      }`}
-                    >
-                      {arb.difference}
-                    </span>
+                  <TableCell className="font-bold text-primary">#{arb.id}</TableCell>
+                  <TableCell className="font-semibold text-neutral-dark">{arb.className}</TableCell>
+                  <TableCell className="font-semibold text-neutral-dark">{arb.submissionTitle}</TableCell>
+                  <TableCell className="font-semibold">{arb.reporterName}</TableCell>
+                  <TableCell className="font-semibold">{arb.reportedName || "Hệ thống"}</TableCell>
+                  <TableCell className="max-w-[200px] truncate text-xs text-neutral-medium font-semibold" title={arb.reason}>
+                    {arb.reason}
                   </TableCell>
-                  <TableCell className="text-xs font-semibold text-neutral-medium">{arb.deadline}</TableCell>
+                  <TableCell className="text-xs font-semibold text-neutral-medium">
+                    {arb.createdAt ? new Date(arb.createdAt).toLocaleDateString("vi-VN") : "N/A"}
+                  </TableCell>
                   <TableCell>{getStatusBadge(arb.status)}</TableCell>
                   <TableCell className="text-right">
                     <Link

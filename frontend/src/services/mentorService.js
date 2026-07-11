@@ -142,44 +142,42 @@ export const mentorService = {
      * Fetches all arbitrations.
      */
     getArbitrations: async () => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(mockArbitrations);
-            }, 200);
-        });
+        try {
+            const response = await api.get(`/mentor/arbitrations`);
+            return response.data.data;
+        } catch (error) {
+            console.error('getArbitrations error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách đơn phân xử!';
+            throw new Error(errorMsg);
+        }
     },
 
     /**
      * Fetches arbitration by ID.
      */
     getArbitrationById: async (id) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const found = mockArbitrations.find((a) => a.id === id);
-                if (found) {
-                    resolve(found);
-                } else {
-                    reject(new Error("Không tìm thấy đơn phân xử!"));
-                }
-            }, 200);
-        });
+        try {
+            const response = await api.get(`/mentor/arbitrations/${id}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('getArbitrationById error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết đơn phân xử!';
+            throw new Error(errorMsg);
+        }
     },
 
     /**
      * Submits final score for arbitration.
      */
     submitArbitrationGrade: async (id, finalScore, comment) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const found = mockArbitrations.find((a) => a.id === id);
-                if (found) {
-                    found.status = "RESOLVED";
-                    found.finalScore = finalScore;
-                    found.comment = comment;
-                }
-                resolve({ isSuccess: true, message: "Đã chấm điểm phân xử thành công!" });
-            }, 200);
-        });
+        try {
+            const response = await api.put(`/mentor/arbitrations/${id}/grade`, { finalScore, comment });
+            return response.data.message;
+        } catch (error) {
+            console.error('submitArbitrationGrade error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể chấm điểm phân xử!';
+            throw new Error(errorMsg);
+        }
     },
 
     /**

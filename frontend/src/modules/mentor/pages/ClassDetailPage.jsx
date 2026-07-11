@@ -1,216 +1,242 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { ArrowLeft, BookOpen, Users, Award, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Play, MessageSquare } from "lucide-react";
 import mentorService from "@/services/mentorService";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-import Avatar from "@/components/common/Avatar";
 import { runWithLoading } from "@/utils/utils";
 import { toast } from "sonner";
 
+// Import extracted presenter components
+import ClassDetailHero from "@/modules/mentor/components/ClassDetailHero";
+import StudyGroupsList from "@/modules/mentor/components/StudyGroupsList";
+import SidebarModuleTimeline from "@/modules/mentor/components/SidebarModuleTimeline";
+
 const ClassDetailPage = () => {
-  const { classId } = useParams();
-  const [classDetail, setClassDetail] = useState(null);
-  const [pairs, setPairs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+    const { classId } = useParams();
+    const [classDetail, setClassDetail] = useState(null);
+    const [pairs, setPairs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isStartingModule, setIsStartingModule] = useState(false);
+    const selectedModuleRef = React.useRef(null);
 
-  useEffect(() => {
-    const fetchClassDetail = async () => {
-      try {
-        await runWithLoading(setIsLoading, async () => {
-          const detailData = await mentorService.getClassById(classId);
-          setClassDetail(detailData);
-          
-          try {
-            const pairsData = await mentorService.getClassPairs(classId);
-            setPairs(pairsData || []);
-          } catch (pairErr) {
-            console.error("Failed to load pairs:", pairErr);
-            setPairs([]);
-          }
-        });
-      } catch (err) {
-        toast.error(err.message || "Không thể tải thông tin chi tiết lớp học!");
-      }
+    // Local state for course modules to handle interactive progression
+    const [modules, setModules] = useState([
+        { id: 1, title: "Module 1: Spring Boot Core & REST API Basics", status: "COMPLETED", completionRate: 100 },
+        { id: 2, title: "Module 2: Spring Data JPA & Relationship Mapping", status: "ACTIVE", completionRate: 85 },
+        { id: 3, title: "Module 3: Spring Security, JWT & OAuth2 Security", status: "LOCKED", completionRate: 0 },
+        { id: 4, title: "Module 4: Spring Boot Testing, Docker & Deployment", status: "LOCKED", completionRate: 0 },
+    ]);
+
+    const [selectedModuleId, setSelectedModuleId] = useState(2);
+
+    useEffect(() => {
+        if (selectedModuleRef.current) {
+            selectedModuleRef.current.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest"
+            });
+        }
+    }, [selectedModuleId]);
+
+    useEffect(() => {
+        const fetchClassDetail = async () => {
+            try {
+                await runWithLoading(setIsLoading, async () => {
+                    const detailData = await mentorService.getClassById(classId);
+                    setClassDetail(detailData);
+
+                    try {
+                        const pairsData = await mentorService.getClassPairs(classId);
+                        setPairs(pairsData || []);
+                    } catch (pairErr) {
+                        console.error("Failed to load pairs:", pairErr);
+                        setPairs([]);
+                    }
+                });
+            } catch (err) {
+                toast.error(err.message || "Không thể tải thông tin chi tiết lớp học!");
+            }
+        };
+        fetchClassDetail();
+    }, [classId]);
+
+    const handleStartNextModule = async (nextModuleId) => {
+        setIsStartingModule(true);
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setModules((prev) =>
+            prev.map((m) => {
+                if (m.status === "ACTIVE") return { ...m, status: "COMPLETED", completionRate: 100 };
+                if (m.id === nextModuleId) return { ...m, status: "ACTIVE", completionRate: 5 };
+                return m;
+            })
+        );
+        setIsStartingModule(false);
+        toast.success("Đã khởi chạy học phần tiếp theo thành công!");
     };
-    fetchClassDetail();
-  }, [classId]);
 
-  if (isLoading) {
-    return (
-      <div className="grow flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+    const handleSendReminder = (studyGroupId) => {
+        toast.success(`Đã gửi thông báo nhắc nhở học tập tới Nhóm #PAIR-0${studyGroupId}!`);
+    };
 
-  if (!classDetail) {
-    return (
-      <div className="grow max-w-7xl mx-auto px-4 py-8 text-center">
-        <h2 className="text-xl font-bold text-neutral-dark mb-2">Không tìm thấy lớp học</h2>
-        <Link to="/mentor/classes" className="text-primary hover:underline text-sm font-semibold">
-          Quay lại danh sách lớp học
-        </Link>
-      </div>
-    );
-  }
+    const handlePrevModule = () => {
+        setSelectedModuleId((prev) => Math.max(1, prev - 1));
+    };
 
-  const slowPairsCount = pairs.filter((p) => p.status === "SLOW").length;
+    const handleNextModule = () => {
+        setSelectedModuleId((prev) => Math.min(modules.length, prev + 1));
+    };
 
-  return (
-    <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-      {/* Back button & Header */}
-      <div className="mb-6">
-        <Link
-          to="/mentor/classes"
-          className="inline-flex items-center gap-1.5 text-neutral-medium hover:text-primary text-sm font-semibold mb-4 transition-colors duration-200"
-        >
-          <ArrowLeft size={16} />
-          <span>Quay lại Quản lý Lớp học</span>
-        </Link>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
-                {classDetail.name}
-              </h1>
-              <Badge variant="roletag" className="text-[11px] font-bold">
-                {classDetail.status}
-              </Badge>
+    const getSelectedModuleDetails = () => {
+        const m = modules.find((mod) => mod.id === selectedModuleId);
+        if (!m) return null;
+
+        const contents = {
+            1: [
+                { type: "Bài học", name: "Giới thiệu Spring Boot Ecosystem & Maven" },
+                { type: "Thực hành", name: "Thiết lập môi trường & Tạo Hello Controller" },
+                { type: "Bài tập", name: "Viết REST API đầu tiên trả về JSON" }
+            ],
+            2: [
+                { type: "Bài học", name: "Spring Data JPA & Entity Lifecycle" },
+                { type: "Thực hành", name: "Cấu hình Datasource & Viết JPA Repository" },
+                { type: "Bài tập", name: "Liên kết Quan hệ One-to-Many & Many-to-Many" }
+            ],
+            3: [
+                { type: "Bài học", name: "Spring Security Architecture & Filter Chain" },
+                { type: "Thực hành", name: "Tích hợp JWT & Phân quyền User" },
+                { type: "Bài tập", name: "Bảo mật các endpoint Spring REST API" }
+            ],
+            4: [
+                { type: "Bài học", name: "Kiểm thử Unit Test & Integration Test" },
+                { type: "Thực hành", name: "Dockerize Ứng dụng Spring Boot" },
+                { type: "Bài tập", name: "CI/CD Deployment lên Server" }
+            ]
+        };
+
+        return {
+            ...m,
+            contents: contents[m.id] || []
+        };
+    };
+
+    if (isLoading) {
+        return (
+            <div className="grow flex items-center justify-center min-h-[400px]">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
-            <p className="text-sm text-neutral-medium mt-1">
-              Khóa học: <span className="font-semibold text-neutral-dark">{classDetail.courseTitle}</span>
-            </p>
-          </div>
+        );
+    }
+
+    if (!classDetail) {
+        return (
+            <div className="grow max-w-7xl mx-auto px-4 py-8 text-center">
+                <h2 className="text-xl font-bold text-neutral-dark mb-2">Không tìm thấy lớp học</h2>
+                <Link to="/mentor/classes" className="text-primary hover:underline text-sm font-semibold">
+                    Quay lại danh sách lớp học
+                </Link>
+            </div>
+        );
+    }
+
+    const activeModule = modules.find((m) => m.status === "ACTIVE");
+    const nextModule = modules.find((m) => m.status === "LOCKED");
+    const showReminder = activeModule && activeModule.completionRate >= 80;
+
+    return (
+        <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            {/* Back button & Header */}
+            <div className="mb-6 flex items-center justify-between">
+                <Link
+                    to="/mentor/classes"
+                    className="inline-flex items-center gap-1.5 text-neutral-medium hover:text-primary text-sm font-semibold transition-colors duration-200"
+                >
+                    <ArrowLeft size={16} />
+                    <span>Quay lại Quản lý Lớp học</span>
+                </Link>
+            </div>
+
+            {/* Hero Class Banner */}
+            <ClassDetailHero
+                classDetail={classDetail}
+                activeModule={activeModule}
+                totalModules={modules.length}
+            />
+
+            {/* Main Grid: 7:3 */}
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+
+                {/* Left Column (7): Study Groups & System Alerts */}
+                <div className="lg:col-span-7 flex flex-col gap-6">
+
+                    {/* System Reminder alert */}
+                    {showReminder && (
+                        <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4.5 flex items-start gap-3.5 shadow-sm hover:shadow-md transition-all duration-300">
+                            <ShieldAlert className="text-amber-600 shrink-0 mt-0.5" size={20} />
+                            <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-sm text-amber-800">Cảnh báo hệ thống: Kích hoạt học phần mới</h4>
+                                <p className="text-xs text-amber-700 font-semibold mt-1 leading-relaxed">
+                                    Lớp học hiện tại đã hoàn thành khóa học phần <span className="font-bold text-amber-900">"{activeModule.title}"</span> đạt tỷ lệ <span className="font-bold text-amber-900">{activeModule.completionRate}%</span>. Bạn cần chuẩn bị kích hoạt học phần mới để tránh làm trễ tiến độ của lớp học.
+                                </p>
+                                {nextModule && (
+                                    <button
+                                        onClick={() => handleStartNextModule(nextModule.id)}
+                                        disabled={isStartingModule}
+                                        className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                                    >
+                                        <Play size={12} />
+                                        <span>{isStartingModule ? "Đang xử lý..." : `Bắt đầu ${nextModule.title.split(":")[0]}`}</span>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Study Groups List */}
+                    <StudyGroupsList
+                        pairs={pairs}
+                        handleSendReminder={handleSendReminder}
+                    />
+                </div>
+
+                {/* Right Column (3): Swipeable Modules & Quick Actions */}
+                <div className="lg:col-span-3 flex flex-col gap-6">
+
+                    {/* Interactive Modules Timeline Card */}
+                    <SidebarModuleTimeline
+                        modules={modules}
+                        selectedModuleId={selectedModuleId}
+                        setSelectedModuleId={setSelectedModuleId}
+                        selectedModuleRef={selectedModuleRef}
+                        nextModule={nextModule}
+                        isStartingModule={isStartingModule}
+                        handleStartNextModule={handleStartNextModule}
+                        getSelectedModuleDetails={getSelectedModuleDetails}
+                        handlePrevModule={handlePrevModule}
+                        handleNextModule={handleNextModule}
+                    />
+
+                    {/* Quick Actions Panel */}
+                    <Card className="border border-border-light/35 shadow-sm bg-slate-50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-bold text-neutral-dark uppercase tracking-wider">Hành động nhanh</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-5 space-y-3">
+                            <Link
+                                to={`/mentor/chat?classId=${classId}`}
+                                className="w-full py-2.5 bg-white border border-border-light hover:bg-slate-100 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-sm text-neutral-dark"
+                            >
+                                <MessageSquare size={14} />
+                                <span>Nhắn tin tập thể lớp</span>
+                            </Link>
+                        </CardContent>
+                    </Card>
+
+                </div>
+            </div>
         </div>
-      </div>
-
-      {/* Class Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-1 flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-xl text-primary">
-              <Users size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-neutral-dark">
-                {classDetail.numberOfPairs ? classDetail.numberOfPairs * 2 : 0}
-              </p>
-              <p className="text-xs text-neutral-medium font-semibold">Sĩ số lớp học</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-1 flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-xl text-purple-600">
-              <Award size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-neutral-dark">85%</p>
-              <p className="text-xs text-neutral-medium font-semibold">Tiến độ trung bình</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-1 flex items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-xl text-red-600">
-              <ShieldAlert size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-neutral-dark">{slowPairsCount}</p>
-              <p className="text-xs text-neutral-medium font-semibold">Cặp học chậm (Slow)</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border-light/40 shadow-sm">
-          <CardContent className="pt-1 flex items-center gap-4">
-            <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
-              <BookOpen size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-neutral-dark">0</p>
-              <p className="text-xs text-neutral-medium font-semibold">Câu hỏi chưa trả lời</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pairs List Section */}
-      <h3 className="text-lg font-bold text-neutral-dark mb-4">Danh sách các Cặp đôi học tập (Learning Pairs)</h3>
-      <div className="grid grid-cols-1 gap-4">
-        {pairs.map((pair) => {
-          const student1 = pair.members?.[0] || { fullName: "Chưa ghép cặp", avatarUrl: null };
-          const student2 = pair.members?.[1] || { fullName: "Chưa ghép cặp", avatarUrl: null };
-
-          return (
-            <Card key={pair.studyGroupId} className="border border-border-light/35 shadow-sm hover:shadow-md transition-all duration-200">
-              <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                {/* Partner Profiles */}
-                <div className="flex items-center gap-6 flex-1 min-w-0">
-                  <div className="flex -space-x-4 items-center shrink-0">
-                    <Avatar
-                      src={student1.avatarUrl}
-                      alt={student1.fullName}
-                      className="w-12 h-12 border-2 border-white shadow-sm bg-slate-100"
-                    />
-                    <Avatar
-                      src={student2.avatarUrl}
-                      alt={student2.fullName}
-                      className="w-12 h-12 border-2 border-white shadow-sm bg-slate-100"
-                    />
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="font-bold text-neutral-dark text-base truncate">
-                      {student1.fullName} & {student2.fullName}
-                    </p>
-                    <p className="text-xs text-neutral-medium font-semibold mt-0.5">
-                      Mã cặp đôi: <span className="font-bold text-primary">#PAIR-0{pair.studyGroupId}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="flex-1 min-w-[200px]">
-                  <div className="flex items-center justify-between text-xs font-semibold text-neutral-medium mb-1.5">
-                    <span>Tiến độ học tập</span>
-                    <span className="text-neutral-dark font-bold">{pair.progress ?? 0}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        pair.status === "SLOW" ? "bg-red-500" : "bg-primary"
-                      }`}
-                      style={{ width: `${pair.progress ?? 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Status Badge & Action */}
-                <div className="flex items-center gap-4 justify-between md:justify-end shrink-0">
-                  <Badge
-                    variant={pair.status === "SLOW" ? "destructive" : "approved"}
-                    className="font-bold uppercase tracking-wider text-[10px] px-2.5 py-0.5"
-                  >
-                    {pair.status === "SLOW" ? "Cảnh báo (Slow)" : "Hoạt động tốt"}
-                  </Badge>
-                  <Link
-                    to={`/mentor/pairs/${pair.studyGroupId}`}
-                    className="px-4 py-2 border border-primary hover:bg-primary/5 text-primary text-xs font-bold rounded-xl transition-all duration-150 active:scale-98"
-                  >
-                    Xem chi tiết
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ClassDetailPage;
-
