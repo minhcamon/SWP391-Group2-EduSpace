@@ -7,6 +7,7 @@ import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
+import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.WithdrawStatus;
@@ -225,5 +226,68 @@ public class MentorService {
                 .createdAt(request.getCreatedAt())
                 .updatedAt(request.getUpdatedAt())
                 .build();
+    }
+
+    public List<MentorArbitrationResponse> getArbitrationsForMentor(Long userId) {
+        List<ClassMember> managedClasses = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
+        if (managedClasses.isEmpty()) {
+            throw new RuntimeException("Bạn không quản lý lớp học nào");
+        }
+
+        List<Long> classIds = managedClasses.stream()
+                .map(cm -> cm.getCourseClass().getId())
+                .collect(Collectors.toList());
+
+        List<Incident> incidents = incidentRepository.findByReporterCourseClassIds(classIds);
+
+        return incidents.stream()
+                .map(i -> {
+                    String reporterName = i.getReporter() != null && i.getReporter().getUser() != null
+                            ? i.getReporter().getUser().getFullName() : null;
+                    Long reporterUserId = i.getReporter() != null && i.getReporter().getUser() != null
+                            ? i.getReporter().getUser().getId() : null;
+
+                    String reportedName = i.getReported() != null && i.getReported().getUser() != null
+                            ? i.getReported().getUser().getFullName() : null;
+                    Long reportedUserId = i.getReported() != null && i.getReported().getUser() != null
+                            ? i.getReported().getUser().getId() : null;
+
+                    Long classId = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                            ? i.getReporter().getCourseClass().getId() : null;
+                    String className = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                            ? i.getReporter().getCourseClass().getName() : null;
+                    String courseTitle = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                            && i.getReporter().getCourseClass().getCourse() != null
+                            ? i.getReporter().getCourseClass().getCourse().getTitle() : null;
+
+                    Long submissionId = i.getSubmission() != null ? i.getSubmission().getId() : null;
+                    String submissionTitle = i.getSubmission() != null && i.getSubmission().getAssignment() != null
+                            ? i.getSubmission().getAssignment().getTitle() : null;
+
+                    String resolvedByName = i.getResolvedBy() != null && i.getResolvedBy().getUser() != null
+                            ? i.getResolvedBy().getUser().getFullName() : null;
+
+                    return MentorArbitrationResponse.builder()
+                            .id(i.getId())
+                            .incidentType(i.getIncidentType())
+                            .reporterUserId(reporterUserId)
+                            .reporterName(reporterName)
+                            .reportedUserId(reportedUserId)
+                            .reportedName(reportedName)
+                            .reason(i.getReason())
+                            .evidenceUrl(i.getEvidenceUrl())
+                            .status(i.getStatus())
+                            .classId(classId)
+                            .className(className)
+                            .courseTitle(courseTitle)
+                            .submissionId(submissionId)
+                            .submissionTitle(submissionTitle)
+                            .resolvedByName(resolvedByName)
+                            .resolutionNote(i.getResolutionNote())
+                            .createdAt(i.getCreatedAt())
+                            .solvedAt(i.getSolvedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

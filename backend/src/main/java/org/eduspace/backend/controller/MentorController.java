@@ -11,6 +11,7 @@ import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
+import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
@@ -92,6 +93,15 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorPairPeerReviewsResponse response = studyGroupService.getPairPeerReviewsForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair peer reviews successfully", response));
+    }
+
+    @GetMapping("/arbitrations")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get list of arbitration requests", description = "Lấy danh sách các yêu cầu phân xử cho lớp mentor quản lý")
+    public ResponseEntity<APIResponse<List<MentorArbitrationResponse>>> getArbitrations() {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        List<MentorArbitrationResponse> response = mentorService.getArbitrationsForMentor(mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get arbitration requests successfully", response));
     }
 
     @GetMapping("/classes")
