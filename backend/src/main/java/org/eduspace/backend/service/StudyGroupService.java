@@ -12,15 +12,18 @@ import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMemberInfo;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.entity.GroupMessage;
 import org.eduspace.backend.entity.StudyGroup;
+import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.GroupMessageRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
+import org.eduspace.backend.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -36,6 +39,7 @@ public class StudyGroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ProgressService progressService;
+    private final SubmissionRepository submissionRepository;
 
     public ClassMember findPartnerForModule(ClassMember learner, Long moduleId) {
         List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(learner.getId());
@@ -234,5 +238,61 @@ public class StudyGroupService {
                 .senderName(msg.getSender().getClassMember().getUser().getFullName())
                 .senderAvatar(msg.getSender().getClassMember().getUser().getAvatarUrl())
                 .build()).collect(Collectors.toList());
+    }
+
+    public MentorPairSubmissionsResponse getPairSubmissionsForMentor(Long pairId, Long mentorUserId) {
+        StudyGroup studyGroup = studyGroupRepository.findById(pairId)
+                .orElseThrow(() -> new RuntimeException("Pair not found"));
+
+        ClassMember mentorMembership = classMemberRepository.findByUserIdAndCourseClassId(
+                mentorUserId, studyGroup.getCourseClass().getId())
+                .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
+
+        if (!"MENTOR".equals(mentorMembership.getContextRole())) {
+            throw new RuntimeException("You are not a mentor in this class");
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(pairId);
+
+        List<Long> memberIds = groupMembers.stream()
+                .map(gm -> gm.getClassMember().getId())
+                .collect(Collectors.toList());
+
+        List<Submission> submissions = memberIds.isEmpty()
+                ? List.of()
+                : submissionRepository.findByMemberIds(memberIds);
+
+        String courseName = studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null
+                ? studyGroup.getCourseClass().getCourse().getTitle() : null;
+        String className = studyGroup.getCourseClass() != null ? studyGroup.getCourseClass().getName() : null;
+
+        List<MentorPairSubmissionsResponse.SubmissionItem> items = submissions.stream()
+                .map(s -> MentorPairSubmissionsResponse.SubmissionItem.builder()
+                        .submissionId(s.getId())
+                        .submitterId(s.getMember() != null && s.getMember().getUser() != null
+                                ? s.getMember().getUser().getId() : null)
+                        .submitterName(s.getMember() != null && s.getMember().getUser() != null
+                                ? s.getMember().getUser().getFullName() : null)
+                        .submitterAvatarUrl(s.getMember() != null && s.getMember().getUser() != null
+                                ? s.getMember().getUser().getAvatarUrl() : null)
+                        .assignmentId(s.getAssignment() != null ? s.getAssignment().getId() : null)
+                        .assignmentTitle(s.getAssignment() != null ? s.getAssignment().getTitle() : null)
+                        .moduleId(s.getAssignment() != null && s.getAssignment().getModule() != null
+                                ? s.getAssignment().getModule().getId() : null)
+                        .moduleTitle(s.getAssignment() != null && s.getAssignment().getModule() != null
+                                ? s.getAssignment().getModule().getTitle() : null)
+                        .submissionContent(s.getSubmissionContent())
+                        .status(s.getStatus())
+                        .submittedAt(s.getSubmittedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return MentorPairSubmissionsResponse.builder()
+                .pairId(studyGroup.getId())
+                .pairName("Pair " + studyGroup.getId())
+                .courseName(courseName)
+                .className(className)
+                .submissions(items)
+                .build();
     }
 }

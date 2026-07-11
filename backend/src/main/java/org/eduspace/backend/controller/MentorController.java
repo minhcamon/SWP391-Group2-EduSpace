@@ -12,6 +12,7 @@ import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
@@ -72,6 +73,15 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorPairProgressResponse response = progressService.getPairProgressForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair progress successfully", response));
+    }
+
+    @GetMapping("/pairs/{pairId}/submissions")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get pair submissions", description = "Mentor xem tất cả bài nộp của các học viên trong một cặp")
+    public ResponseEntity<APIResponse<MentorPairSubmissionsResponse>> getPairSubmissions(@PathVariable Long pairId) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorPairSubmissionsResponse response = studyGroupService.getPairSubmissionsForMentor(pairId, mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get pair submissions successfully", response));
     }
 
     @GetMapping("/classes")
