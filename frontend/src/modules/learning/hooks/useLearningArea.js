@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import learnService from "@/services/learnService";
 import courseService from "@/services/courseService";
 import { useAuth } from "@/contexts/AuthContext";
 import { runWithLoading } from "@/utils/utils";
+import useStudyGroupWebSocket from "@/modules/learning/hooks/useStudyGroupWebSocket";
 
 const useLearningArea = () => {
     const navigate = useNavigate();
@@ -146,6 +147,25 @@ const useLearningArea = () => {
     // Computed properties
     const activeModule = progressDashboard?.modules?.find(m => m.id === activeModuleId);
     
+    // Callback to handle incoming WebSocket messages
+    const handleIncomingWebSocketMessage = useCallback((msg) => {
+        const formattedMsg = {
+            id: msg.id,
+            sender: msg.senderName,
+            avatar: msg.senderAvatar,
+            text: msg.content,
+            timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isMe: msg.senderUserId?.toString() === user?.id?.toString()
+        };
+        setMessages(prev => {
+            if (prev.some(m => m.id === formattedMsg.id)) return prev;
+            return [...prev, formattedMsg];
+        });
+    }, [user?.id]);
+
+    // Connect to WebSocket Study Group
+    useStudyGroupWebSocket(activeModule?.studyGroupId, handleIncomingWebSocketMessage);
+
     // Fetch Messages when active group or class changes
     useEffect(() => {
         const fetchMessages = async () => {
@@ -190,7 +210,6 @@ const useLearningArea = () => {
             title: modProgress.title,
             status: modProgress.status,
             statusText,
-            assignment: modProgress.assignment || null,
             lessons: (modProgress.lessons || []).map(lesProgress => {
                 const isThisLessonActive = activeLessonId && activeLessonId.toString() === lesProgress.id.toString();
                 const partner = modProgress.partner;
@@ -219,8 +238,10 @@ const useLearningArea = () => {
             assignment: modProgress.assignment ? {
                 id: modProgress.assignment.id,
                 title: modProgress.assignment.title,
-                isCompleted: modProgress.assignment.isCompleted,
-                isLocked: modProgress.assignment.isLocked,
+                completed: modProgress.assignment.completed || modProgress.assignment.isCompleted,
+                locked: modProgress.assignment.locked || modProgress.assignment.isLocked,
+                isCompleted: modProgress.assignment.completed || modProgress.assignment.isCompleted,
+                isLocked: modProgress.assignment.locked || modProgress.assignment.isLocked,
                 status: modProgress.assignment.status,
             } : null
         };
@@ -299,17 +320,6 @@ const useLearningArea = () => {
                 "TEXT"
             );
             setInputText("");
-            
-            const data = await learnService.getGroupMessages(activeModule.studyGroupId, resolvedClassId);
-            const formatted = (data || []).map(msg => ({
-                id: msg.id,
-                sender: msg.senderName,
-                avatar: msg.senderAvatar,
-                text: msg.content,
-                timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isMe: msg.senderUserId?.toString() === user?.id?.toString()
-            }));
-            setMessages(formatted);
         } catch (error) {
             console.error("Gửi tin nhắn thất bại:", error);
             toast.error(error.message || "Không thể gửi tin nhắn.");
