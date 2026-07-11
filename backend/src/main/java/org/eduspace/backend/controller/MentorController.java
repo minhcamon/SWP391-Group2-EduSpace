@@ -11,9 +11,11 @@ import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
+import org.eduspace.backend.service.ProgressService;
 import org.eduspace.backend.service.StudyGroupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +36,7 @@ public class MentorController {
 
     private final MentorService mentorService;
     private final StudyGroupService studyGroupService;
+    private final ProgressService progressService;
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('MENTOR')")
@@ -60,6 +63,15 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         List<GroupMessageResponse> response = studyGroupService.getPairChatForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair chat history successfully", response));
+    }
+
+    @GetMapping("/pairs/{pairId}/progress")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get pair progress detail", description = "Mentor xem chi tiết tiến độ học tập của một cặp học viên trong lớp")
+    public ResponseEntity<APIResponse<MentorPairProgressResponse>> getPairProgress(@PathVariable Long pairId) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorPairProgressResponse response = progressService.getPairProgressForMentor(pairId, mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get pair progress successfully", response));
     }
 
     @GetMapping("/classes")
