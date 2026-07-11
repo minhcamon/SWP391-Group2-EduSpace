@@ -241,53 +241,73 @@ public class MentorService {
         List<Incident> incidents = incidentRepository.findByReporterCourseClassIds(classIds);
 
         return incidents.stream()
-                .map(i -> {
-                    String reporterName = i.getReporter() != null && i.getReporter().getUser() != null
-                            ? i.getReporter().getUser().getFullName() : null;
-                    Long reporterUserId = i.getReporter() != null && i.getReporter().getUser() != null
-                            ? i.getReporter().getUser().getId() : null;
-
-                    String reportedName = i.getReported() != null && i.getReported().getUser() != null
-                            ? i.getReported().getUser().getFullName() : null;
-                    Long reportedUserId = i.getReported() != null && i.getReported().getUser() != null
-                            ? i.getReported().getUser().getId() : null;
-
-                    Long classId = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                            ? i.getReporter().getCourseClass().getId() : null;
-                    String className = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                            ? i.getReporter().getCourseClass().getName() : null;
-                    String courseTitle = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                            && i.getReporter().getCourseClass().getCourse() != null
-                            ? i.getReporter().getCourseClass().getCourse().getTitle() : null;
-
-                    Long submissionId = i.getSubmission() != null ? i.getSubmission().getId() : null;
-                    String submissionTitle = i.getSubmission() != null && i.getSubmission().getAssignment() != null
-                            ? i.getSubmission().getAssignment().getTitle() : null;
-
-                    String resolvedByName = i.getResolvedBy() != null && i.getResolvedBy().getUser() != null
-                            ? i.getResolvedBy().getUser().getFullName() : null;
-
-                    return MentorArbitrationResponse.builder()
-                            .id(i.getId())
-                            .incidentType(i.getIncidentType())
-                            .reporterUserId(reporterUserId)
-                            .reporterName(reporterName)
-                            .reportedUserId(reportedUserId)
-                            .reportedName(reportedName)
-                            .reason(i.getReason())
-                            .evidenceUrl(i.getEvidenceUrl())
-                            .status(i.getStatus())
-                            .classId(classId)
-                            .className(className)
-                            .courseTitle(courseTitle)
-                            .submissionId(submissionId)
-                            .submissionTitle(submissionTitle)
-                            .resolvedByName(resolvedByName)
-                            .resolutionNote(i.getResolutionNote())
-                            .createdAt(i.getCreatedAt())
-                            .solvedAt(i.getSolvedAt())
-                            .build();
-                })
+                .map(this::toArbitrationResponse)
                 .collect(Collectors.toList());
+    }
+
+    public MentorArbitrationResponse getArbitrationDetailForMentor(Long incidentId, Long userId) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
+
+        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
+                ? incident.getReporter().getCourseClass().getId() : null;
+
+        if (classId == null) {
+            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu lớp học)");
+        }
+
+        // Verify if user is mentor in this class
+        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
+                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
+
+        return toArbitrationResponse(incident);
+    }
+
+    private MentorArbitrationResponse toArbitrationResponse(Incident i) {
+        String reporterName = i.getReporter() != null && i.getReporter().getUser() != null
+                ? i.getReporter().getUser().getFullName() : null;
+        Long reporterUserId = i.getReporter() != null && i.getReporter().getUser() != null
+                ? i.getReporter().getUser().getId() : null;
+
+        String reportedName = i.getReported() != null && i.getReported().getUser() != null
+                ? i.getReported().getUser().getFullName() : null;
+        Long reportedUserId = i.getReported() != null && i.getReported().getUser() != null
+                ? i.getReported().getUser().getId() : null;
+
+        Long classId = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                ? i.getReporter().getCourseClass().getId() : null;
+        String className = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                ? i.getReporter().getCourseClass().getName() : null;
+        String courseTitle = i.getReporter() != null && i.getReporter().getCourseClass() != null
+                && i.getReporter().getCourseClass().getCourse() != null
+                ? i.getReporter().getCourseClass().getCourse().getTitle() : null;
+
+        Long submissionId = i.getSubmission() != null ? i.getSubmission().getId() : null;
+        String submissionTitle = i.getSubmission() != null && i.getSubmission().getAssignment() != null
+                ? i.getSubmission().getAssignment().getTitle() : null;
+
+        String resolvedByName = i.getResolvedBy() != null && i.getResolvedBy().getUser() != null
+                ? i.getResolvedBy().getUser().getFullName() : null;
+
+        return MentorArbitrationResponse.builder()
+                .id(i.getId())
+                .incidentType(i.getIncidentType())
+                .reporterUserId(reporterUserId)
+                .reporterName(reporterName)
+                .reportedUserId(reportedUserId)
+                .reportedName(reportedName)
+                .reason(i.getReason())
+                .evidenceUrl(i.getEvidenceUrl())
+                .status(i.getStatus())
+                .classId(classId)
+                .className(className)
+                .courseTitle(courseTitle)
+                .submissionId(submissionId)
+                .submissionTitle(submissionTitle)
+                .resolvedByName(resolvedByName)
+                .resolutionNote(i.getResolutionNote())
+                .createdAt(i.getCreatedAt())
+                .solvedAt(i.getSolvedAt())
+                .build();
     }
 }

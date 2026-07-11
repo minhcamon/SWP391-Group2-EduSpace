@@ -104,6 +104,15 @@ public class MentorController {
         return ResponseEntity.ok(APIResponse.success("Get arbitration requests successfully", response));
     }
 
+    @GetMapping("/arbitrations/{id}")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get arbitration request detail", description = "Xem chi tiết yêu cầu phân xử cho mentor trong lớp")
+    public ResponseEntity<APIResponse<MentorArbitrationResponse>> getArbitrationDetail(@PathVariable("id") Long incidentId) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorArbitrationResponse response = mentorService.getArbitrationDetailForMentor(incidentId, mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get arbitration request detail successfully", response));
+    }
+
     @GetMapping("/classes")
     @PreAuthorize("hasRole('MENTOR')")
     @Operation(summary = "Get Mentor Classes", description = "Lấy danh sách các lớp học do mentor hiện tại phụ trách")
