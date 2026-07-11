@@ -11,10 +11,12 @@ import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.IncidentType;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.RescueStatus;
+import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.IncidentRepository;
 import org.eduspace.backend.repository.RescueRequestRepository;
+import org.eduspace.backend.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ public class LearnerMentorSupportService {
     private final GroupMemberRepository groupMemberRepository;
     private final IncidentRepository incidentRepository;
     private final RescueRequestRepository rescueRequestRepository;
+    private final SubmissionRepository submissionRepository;
 
     @Transactional
     public LearnerMentorSupportResponse createMentorSupportRequest(Long learnerUserId,
@@ -40,7 +43,7 @@ public class LearnerMentorSupportService {
             return createReportPartnerRequest(learnerUserId, request);
         }
 
-        throw new RuntimeException("Unsupported request type");
+        return createGeneralIncidentRequest(learnerUserId, request);
     }
 
     private LearnerMentorSupportResponse createRescueSupportRequest(Long learnerUserId,
@@ -106,6 +109,51 @@ public class LearnerMentorSupportService {
                 .incidentType(IncidentType.INACTIVE_PARTNER)
                 .reporter(reporterGroupMember.getClassMember())
                 .reported(reportedGroupMember.getClassMember())
+                .reason(request.getReason())
+                .evidenceUrl(request.getEvidenceUrl())
+                .status(IncidentStatus.PENDING)
+                .build();
+
+        Incident savedIncident = incidentRepository.save(incident);
+
+        return LearnerMentorSupportResponse.builder()
+                .incidentId(savedIncident.getId())
+                .incidentType(savedIncident.getIncidentType())
+                .incidentStatus(savedIncident.getStatus())
+                .build();
+    }
+
+    private LearnerMentorSupportResponse createGeneralIncidentRequest(Long learnerUserId,
+                                                                     LearnerMentorSupportRequest request) {
+        if (request.getCourseId() == null) {
+            throw new RuntimeException("Course ID is required for this incident type");
+        }
+
+        ClassMember learnerMember = classMemberRepository.findActiveEnrollment(
+                learnerUserId,
+                request.getCourseId(),
+                LearnerStatus.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("You are not an active learner in this course"));
+
+        ClassMember reportedMember = null;
+        if (request.getReportedUserId() != null) {
+            reportedMember = classMemberRepository.findByUserIdAndCourseClassId(
+                    request.getReportedUserId(),
+                    learnerMember.getCourseClass().getId())
+                    .orElseThrow(() -> new RuntimeException("Reported user is not a member of this class"));
+        }
+
+        Submission submission = null;
+        if (request.getSubmissionId() != null) {
+            submission = submissionRepository.findById(request.getSubmissionId())
+                    .orElseThrow(() -> new RuntimeException("Submission not found"));
+        }
+
+        Incident incident = Incident.builder()
+                .incidentType(request.getIncidentType())
+                .reporter(learnerMember)
+                .reported(reportedMember)
+                .submission(submission)
                 .reason(request.getReason())
                 .evidenceUrl(request.getEvidenceUrl())
                 .status(IncidentStatus.PENDING)

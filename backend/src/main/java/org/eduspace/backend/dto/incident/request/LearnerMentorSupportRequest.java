@@ -24,6 +24,8 @@ public class LearnerMentorSupportRequest {
 
     private Long reportedUserId;
 
+    private Long submissionId;
+
     @NotBlank(message = "Reason cannot be blank")
     @Size(max = 2000, message = "Reason is too long")
     private String reason;
