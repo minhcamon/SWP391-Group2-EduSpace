@@ -26,6 +26,7 @@ import MyLearning from "@/views/learning/MyLearning";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
 import Assignment from "@/views/learning/Assignment";
+import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
             <Route path="/profile" element={<Profile />}></Route>
             <Route path="/classes/:classId" element={<ClassView />}></Route>
             <Route path="/classes/:classId/assignments/:assignmentId" element={<Assignment />}></Route>
+            <Route path="/classes/:classId/certificate" element={<CertificateView />}></Route>
           </Route>
 
           {/* admin route */}
