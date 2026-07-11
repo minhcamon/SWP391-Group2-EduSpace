@@ -72,11 +72,9 @@ const CourseSidebar = ({
             const isExpanded = !!expandedModules[section.id]
 
             // Custom padding and styles for module headers based on completion/progress state
-            const headerPadding = isModuleInProgress
+            const headerPadding = isModuleInProgress || isModuleCompleted
               ? "p-4"
-              : isModuleCompleted
-                ? "p-2.5 px-4"
-                : "p-2 px-4"
+              : "p-2 px-4"
 
             return (
               <div
@@ -97,7 +95,7 @@ const CourseSidebar = ({
                     isModuleInProgress
                       ? "bg-primary/5 hover:bg-primary/10 border-primary"
                       : isModuleCompleted
-                        ? "bg-success/5 hover:bg-success/10 border-success/60 opacity-90"
+                        ? "bg-success/5 hover:bg-success/10 border-success/60"
                         : "bg-bg-sidebar/20 hover:bg-hover-light/40 border-transparent opacity-75"
                   }`}
                 >
@@ -126,18 +124,16 @@ const CourseSidebar = ({
                   <div className='grow min-w-0'>
                     <span
                       className={`font-bold text-neutral-light block uppercase mb-0.5 ${
-                        isModuleInProgress ? "text-[10px]" : "text-[9px]"
+                        isModuleInProgress || isModuleCompleted ? "text-[10px]" : "text-[9px]"
                       }`}
                     >
                       {section.statusText}
                     </span>
                     <h4
                       className={`truncate font-bold ${
-                        isModuleInProgress
+                        isModuleInProgress || isModuleCompleted
                           ? "text-sm text-neutral-dark"
-                          : isModuleCompleted
-                            ? "text-xs text-neutral-dark/85"
-                            : "text-xs text-neutral-light"
+                          : "text-xs text-neutral-light"
                       }`}
                     >
                       {section.title}
@@ -171,15 +167,7 @@ const CourseSidebar = ({
                         let iconSize = 15
                         let itemOpacity = "opacity-100"
 
-                        if (isModuleCompleted) {
-                          paddingClass = "p-2 pl-5.5 pr-3 hover:bg-white/60"
-                          textClass =
-                            "text-xs font-medium text-neutral-dark/75 group-hover:text-primary transition-colors"
-                          infoClass =
-                            "text-[10px] text-neutral-light/80 flex items-center gap-1 mt-0.5"
-                          iconSize = 13
-                          itemOpacity = "opacity-80"
-                        } else if (isModuleNotStarted) {
+                        if (isModuleNotStarted) {
                           paddingClass = "p-1.5 pl-5.5 pr-3 select-none"
                           textClass = "text-xs font-normal text-neutral-light/70"
                           infoClass =
@@ -187,7 +175,7 @@ const CourseSidebar = ({
                           iconSize = 11
                           itemOpacity = "opacity-55"
                         } else {
-                          // IN_PROGRESS module styling
+                          // IN_PROGRESS or COMPLETED module styling
                           if (item.isActive) {
                             textClass = "text-sm font-bold text-primary transition-colors"
                           } else if (isThisCompleted) {
@@ -280,13 +268,7 @@ const CourseSidebar = ({
                         let iconSize = 15
                         let itemOpacity = "opacity-100"
 
-                        if (isModuleCompleted) {
-                          paddingClass = "p-2 pl-5.5 pr-3 hover:bg-white/60"
-                          textClass =
-                            "text-xs font-medium text-neutral-dark/75 group-hover:text-primary transition-colors"
-                          iconSize = 13
-                          itemOpacity = "opacity-80"
-                        } else if (isModuleNotStarted) {
+                        if (isModuleNotStarted) {
                           paddingClass = "p-1.5 pl-5.5 pr-3 select-none"
                           textClass = "text-xs font-normal text-neutral-light/70"
                           iconSize = 11
