@@ -11,6 +11,7 @@ import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
@@ -82,6 +83,15 @@ public class MentorController {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
         MentorPairSubmissionsResponse response = studyGroupService.getPairSubmissionsForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair submissions successfully", response));
+    }
+
+    @GetMapping("/pairs/{pairId}/peer-reviews")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Get pair peer reviews", description = "Mentor xem tất cả peer review liên quan đến các thành viên trong một cặp")
+    public ResponseEntity<APIResponse<MentorPairPeerReviewsResponse>> getPairPeerReviews(@PathVariable Long pairId) {
+        Long mentorUserId = SecurityUtil.getCurrentUserId();
+        MentorPairPeerReviewsResponse response = studyGroupService.getPairPeerReviewsForMentor(pairId, mentorUserId);
+        return ResponseEntity.ok(APIResponse.success("Get pair peer reviews successfully", response));
     }
 
     @GetMapping("/classes")

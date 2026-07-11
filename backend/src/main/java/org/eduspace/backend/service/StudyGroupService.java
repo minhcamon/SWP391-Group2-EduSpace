@@ -12,16 +12,19 @@ import org.eduspace.backend.dto.study_group.response.GroupMemberDTO;
 import org.eduspace.backend.dto.study_group.response.GroupMemberInfo;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
+import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.entity.GroupMessage;
+import org.eduspace.backend.entity.PeerReview;
 import org.eduspace.backend.entity.StudyGroup;
 import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.GroupMessageRepository;
+import org.eduspace.backend.repository.PeerReviewRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,7 @@ public class StudyGroupService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ProgressService progressService;
     private final SubmissionRepository submissionRepository;
+    private final PeerReviewRepository peerReviewRepository;
 
     public ClassMember findPartnerForModule(ClassMember learner, Long moduleId) {
         List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(learner.getId());
@@ -293,6 +297,80 @@ public class StudyGroupService {
                 .courseName(courseName)
                 .className(className)
                 .submissions(items)
+                .build();
+    }
+
+    public MentorPairPeerReviewsResponse getPairPeerReviewsForMentor(Long pairId, Long mentorUserId) {
+        StudyGroup studyGroup = studyGroupRepository.findById(pairId)
+                .orElseThrow(() -> new RuntimeException("Pair not found"));
+
+        ClassMember mentorMembership = classMemberRepository.findByUserIdAndCourseClassId(
+                mentorUserId, studyGroup.getCourseClass().getId())
+                .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
+
+        if (!"MENTOR".equals(mentorMembership.getContextRole())) {
+            throw new RuntimeException("You are not a mentor in this class");
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(pairId);
+
+        List<Long> memberIds = groupMembers.stream()
+                .map(gm -> gm.getClassMember().getId())
+                .collect(Collectors.toList());
+
+        List<PeerReview> peerReviews = memberIds.isEmpty()
+                ? List.of()
+                : peerReviewRepository.findByGroupMemberIds(memberIds);
+
+        String courseName = studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null
+                ? studyGroup.getCourseClass().getCourse().getTitle() : null;
+        String className = studyGroup.getCourseClass() != null ? studyGroup.getCourseClass().getName() : null;
+
+        List<MentorPairPeerReviewsResponse.PeerReviewItem> items = peerReviews.stream()
+                .map(pr -> {
+                    ClassMember submitterMember = pr.getSubmission() != null ? pr.getSubmission().getMember() : null;
+                    ClassMember reviewerMember = pr.getReviewer() != null ? pr.getReviewer().getClassMember() : null;
+
+                    return MentorPairPeerReviewsResponse.PeerReviewItem.builder()
+                            .peerReviewId(pr.getId())
+                            .submissionId(pr.getSubmission() != null ? pr.getSubmission().getId() : null)
+                            .submitterUserId(submitterMember != null && submitterMember.getUser() != null
+                                    ? submitterMember.getUser().getId() : null)
+                            .submitterName(submitterMember != null && submitterMember.getUser() != null
+                                    ? submitterMember.getUser().getFullName() : null)
+                            .submitterAvatarUrl(submitterMember != null && submitterMember.getUser() != null
+                                    ? submitterMember.getUser().getAvatarUrl() : null)
+                            .reviewerUserId(reviewerMember != null && reviewerMember.getUser() != null
+                                    ? reviewerMember.getUser().getId() : null)
+                            .reviewerName(reviewerMember != null && reviewerMember.getUser() != null
+                                    ? reviewerMember.getUser().getFullName() : null)
+                            .reviewerAvatarUrl(reviewerMember != null && reviewerMember.getUser() != null
+                                    ? reviewerMember.getUser().getAvatarUrl() : null)
+                            .assignmentId(pr.getSubmission() != null && pr.getSubmission().getAssignment() != null
+                                    ? pr.getSubmission().getAssignment().getId() : null)
+                            .assignmentTitle(pr.getSubmission() != null && pr.getSubmission().getAssignment() != null
+                                    ? pr.getSubmission().getAssignment().getTitle() : null)
+                            .moduleId(pr.getSubmission() != null && pr.getSubmission().getAssignment() != null
+                                    && pr.getSubmission().getAssignment().getModule() != null
+                                    ? pr.getSubmission().getAssignment().getModule().getId() : null)
+                            .moduleTitle(pr.getSubmission() != null && pr.getSubmission().getAssignment() != null
+                                    && pr.getSubmission().getAssignment().getModule() != null
+                                    ? pr.getSubmission().getAssignment().getModule().getTitle() : null)
+                            .criteriaScores(pr.getCriteriaScores())
+                            .finalScore(pr.getFinalScore())
+                            .comments(pr.getComments())
+                            .isOverridden(pr.isOverridden())
+                            .reviewAt(pr.getReviewAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return MentorPairPeerReviewsResponse.builder()
+                .pairId(studyGroup.getId())
+                .pairName("Pair " + studyGroup.getId())
+                .courseName(courseName)
+                .className(className)
+                .peerReviews(items)
                 .build();
     }
 }
