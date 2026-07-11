@@ -401,6 +401,7 @@ const useAssignment = () => {
     studyGroup,
     progressPercent,
     activeModule: activeMod,
+    handleReload: fetchAssignmentAndStatus,
   }
 }
 
