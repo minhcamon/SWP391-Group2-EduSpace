@@ -1,12 +1,5 @@
-import React from "react";
-import { Code, Settings, BookOpen } from "lucide-react";
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
-const iconMap = {
-  code: Code,
-  settings_input_component: Settings,
-};
 
 const EnrolledCourseCard = ({ course, onContinue }) => {
   //   const IconComponent = iconMap[course.icon] || BookOpen;

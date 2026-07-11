@@ -6,7 +6,7 @@ const CertificateView = () => {
   return (
     <div className='min-h-screen w-full bg-bg-base flex flex-col'>
       <Header />
-      <div>
+      <div className='grow'>
         <CertificatePage />
       </div>
       <Footer />
