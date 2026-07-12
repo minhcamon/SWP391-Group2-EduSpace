@@ -90,7 +90,7 @@ public class NotificationService {
         return NotificationResponse.builder()
                 .id(notification.getId())
                 .message(notification.getMessage())
-                .isRead(notification.isRead())
+                .read(notification.isRead())
                 .type(notification.getType().name())
                 .referenceId(notification.getReferenceId())
                 .createdAt(notification.getCreatedAt())

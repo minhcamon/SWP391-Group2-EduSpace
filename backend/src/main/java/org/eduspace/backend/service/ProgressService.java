@@ -49,6 +49,7 @@ public class ProgressService {
   private final ProgressHelper progressHelper;
   private final StudyGroupService groupService;
   private final GroupMemberRepository groupMemberRepository;
+  private final CertificateService certificateService;
 
   /**
    * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
@@ -340,6 +341,13 @@ public class ProgressService {
     }
 
     // Mark the lesson as completed for the user
-    return progressHelper.markLessonAsCompleted(lesson, classMember);
+    boolean result = progressHelper.markLessonAsCompleted(lesson, classMember);
+    
+    // Check if the whole course is completed and issue cert & notification
+    if (result) {
+        certificateService.checkAndIssueCertificate(classMember);
+    }
+    
+    return result;
   }
 }

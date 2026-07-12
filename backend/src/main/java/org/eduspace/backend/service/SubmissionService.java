@@ -40,6 +40,7 @@ public class SubmissionService {
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
+    private final CertificateService certificateService;
 
     @Value("${app.peer-review.pass-ratio:0.8}")
     private double peerReviewPassRatio;
@@ -204,6 +205,10 @@ public class SubmissionService {
                 .rubricCriterias(savedReview.getCriteriaScores())
                 .comments(savedReview.getComments())
                 .build();
+
+        if (submission.getStatus() == SubmissionStatus.GRADED) {
+            certificateService.checkAndIssueCertificate(submission.getMember());
+        }
 
 
         notificationService.sendToUser(submission.getMember().getUser(),
