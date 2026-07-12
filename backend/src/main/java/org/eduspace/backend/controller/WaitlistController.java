@@ -23,7 +23,7 @@ public class WaitlistController {
 
     @Operation(summary = "Lấy danh sách học viên trong Waitlist", description = "Xem danh sách những người đang ở trong hàng chờ của khóa học.")
     @GetMapping("/members/{courseId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<List<UserResponse>>> getMembersInWaitlist(@PathVariable Long courseId) {
         List<UserResponse> members = waitlistService.getMembersInWaitlist(courseId);
         return ResponseEntity.ok(APIResponse.success("Retrieve all members in waitlist successfully!", members));
@@ -31,7 +31,7 @@ public class WaitlistController {
 
     @Operation(summary = "Rời khỏi Waitlist", description = "Học viên chủ động rời khỏi hàng chờ.")
     @DeleteMapping("/leave/{courseId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<Object>> leaveWaitlist(@PathVariable Long courseId) {
         Long userId = SecurityUtil.getCurrentUserId();
         waitlistService.leaveWaitlist(userId, courseId);
@@ -40,7 +40,7 @@ public class WaitlistController {
 
     @Operation(summary = "Đăng ký vào Waitlist", description = "Học viên đăng ký tham gia khóa học và đưa vào danh sách chờ.")
     @PostMapping("/enroll/{courseId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<Object>> enrollWaitlist(@PathVariable Long courseId) {
         Long userId = SecurityUtil.getCurrentUserId();
         boolean check = waitlistService.enrollToWaitlist(courseId, userId);

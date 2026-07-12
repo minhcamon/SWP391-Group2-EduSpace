@@ -25,12 +25,13 @@ public class LearnerMentorSupportController {
     private final LearnerMentorSupportService learnerMentorSupportService;
 
     @PostMapping
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     @Operation(summary = "Create mentor rescue request", description = "Học viên gửi yêu cầu mentor hỗ trợ khẩn cấp cho một khóa học")
     public ResponseEntity<APIResponse<LearnerMentorSupportResponse>> requestMentorSupport(
             @Valid @RequestBody LearnerMentorSupportRequest request) {
         Long learnerId = SecurityUtil.getCurrentUserId();
-        LearnerMentorSupportResponse response = learnerMentorSupportService.createMentorSupportRequest(learnerId, request);
+        LearnerMentorSupportResponse response = learnerMentorSupportService.createMentorSupportRequest(learnerId,
+                request);
         return ResponseEntity.ok(APIResponse.success("Mentor support request created successfully", response));
     }
 }

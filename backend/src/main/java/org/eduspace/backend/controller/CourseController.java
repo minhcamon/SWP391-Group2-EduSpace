@@ -224,7 +224,7 @@ public class CourseController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
     })
     @GetMapping("/my-learning/in-progress")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<List<CourseProgressResponse>>> getMyLearningCourses() {
 
         Long userId = SecurityUtil.getCurrentUserId();
@@ -242,7 +242,7 @@ public class CourseController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     @GetMapping("/enroll/{classId}/dashboard")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressDashboard(
             @PathVariable Long classId) {
 
@@ -261,7 +261,7 @@ public class CourseController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     @GetMapping("/enroll/{classId}/learning/{moduleId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<CourseProgressDashboardResponse>> getProgressSidebarLearningSpace(
             @PathVariable Long classId, @PathVariable Long moduleId) {
 
@@ -281,7 +281,7 @@ public class CourseController {
             @ApiResponse(responseCode = "403", description = "Không có quyền truy cập")
     })
     @PostMapping("/lessons/{lessonId}/complete")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<?>> completeLesson(@PathVariable Long lessonId, @RequestBody Long classId) {
         Long userId = SecurityUtil.getCurrentUserId();
         progressService.completeLesson(lessonId, userId, classId);

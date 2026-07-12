@@ -27,7 +27,7 @@ public class ClassController {
 
     @Operation(summary = "Lấy danh sách nhóm học tập", description = "Lấy danh sách các study groups (nhóm cộng đồng) trong một lớp học.")
     @GetMapping("/community/{classId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<List<StudyGroupResponse>>> getCommunityGroups(@PathVariable Long classId) {
         List<StudyGroupResponse> response = studyGroupService.getAllStudyGroup(classId);
         return ResponseEntity.ok().body(APIResponse.success("Groups fetched successfully", response));
