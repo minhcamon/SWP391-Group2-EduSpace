@@ -53,7 +53,11 @@ const ClassDetailPage = () => {
         const m = modules.find((mod) => mod.id === selectedModuleId);
         if (!m) return null;
 
-        // Custom contents mapping for rendering module lessons/assignments
+        if (m.contents && m.contents.length > 0) {
+            return m;
+        }
+
+        // Custom contents mapping for rendering module lessons/assignments fallback
         const contents = {
             1: [
                 { type: "Bài học", name: "Giới thiệu Spring Boot Ecosystem & Maven" },
