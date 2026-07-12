@@ -50,7 +50,9 @@ const LearningAreaPage = () => {
     lesson,
     sidebarSections,
     handleSelectLesson,
+    handleSelectAssignment,
     progressPercent,
+    resolvedClassId,
   } = useLearningArea();
 
   const handleRequestMentorSupport = () => {
@@ -152,6 +154,7 @@ const LearningAreaPage = () => {
           isCompleted={isCompleted}
           sidebarSections={sidebarSections}
           onSelectLesson={handleSelectLesson}
+          onSelectAssignment={handleSelectAssignment}
         />
 
         {/* Main Content Area (Video & Tabs) */}

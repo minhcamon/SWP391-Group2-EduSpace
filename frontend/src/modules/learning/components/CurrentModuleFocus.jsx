@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Avatar from "@/components/common/Avatar";
+import { useNavigate } from "react-router";
 
 // Helper function to map lesson state to UI config, avoiding nested ternaries in JSX
 const getLessonStateConfig = (lesson, isUnlocked) => {
@@ -69,7 +70,9 @@ const CurrentModuleFocus = ({
   currentModule,
   partner,
   handleContinueLearning,
+  classId,
 }) => {
+  const navigate = useNavigate();
   if (!currentModule) {
     return (
       <div className="bg-white rounded-2xl p-10 text-center shadow-sm border border-border-light/35 flex flex-col items-center justify-center space-y-3">
@@ -221,6 +224,97 @@ const CurrentModuleFocus = ({
             );
           })}
         </div>
+
+        {/* Module Assignment */}
+        {currentModule.assignment && (
+          <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-medium flex items-center gap-1.5">
+              <Award size={14} className="text-secondary" />
+              Bài tập lớn của Module
+            </h4>
+            <div
+              className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                currentModule.assignment.isCompleted
+                  ? "bg-emerald-50 border-emerald-100 hover:bg-emerald-100/50"
+                  : currentModule.assignment.isLocked
+                  ? "bg-slate border-slate-100 opacity-100 cursor-not-allowed"
+                  : "bg-amber-50/50 border-amber-100 hover:bg-amber-100/30"
+              }`}
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="shrink-0">
+                  {currentModule.assignment.isCompleted ? (
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                      <Check size={12} strokeWidth={3} />
+                    </div>
+                  ) : currentModule.assignment.isLocked ? (
+                    <div className="w-5 h-5 rounded-full bg-slate border border-slate flex items-center justify-center">
+                      <Lock size={10} />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-amber-400 bg-white"></div>
+                  )}
+                </div>
+
+                <div className="space-y-1 min-w-0">
+                  <h4
+                    className={`text-sm font-bold truncate ${
+                      currentModule.assignment.isCompleted
+                        ? "text-neutral-medium line-through decoration-neutral-light/45"
+                        : currentModule.assignment.isLocked
+                        ? "text-neutral-light"
+                        : "text-neutral-dark"
+                    }`}
+                  >
+                    {currentModule.assignment.title}
+                  </h4>
+                  <div className="flex items-center gap-3 text-xs text-neutral-light font-semibold">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        currentModule.assignment.isCompleted
+                          ? "bg-emerald-100 text-emerald-800"
+                          : currentModule.assignment.isLocked
+                          ? "bg-slate text-neutral-light"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {currentModule.assignment.isCompleted
+                        ? "Hoàn thành"
+                        : currentModule.assignment.isLocked
+                        ? "Đang khóa"
+                        : "Chưa hoàn thành"}
+                    </span>
+                    {currentModule.assignment.status && currentModule.assignment.status !== "NOT_STARTED" && (
+                      <span className="text-[10px] text-neutral-medium">
+                        Trạng thái: {currentModule.assignment.status === "SUBMITTED" ? "Chờ chấm" : currentModule.assignment.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  disabled={currentModule.assignment.isLocked}
+                  onClick={() => {
+                    if (classId) {
+                      navigate(`/classes/${classId}/assignments/${currentModule.assignment.id}`);
+                    }
+                  }}
+                  className={`p-2 sm:px-4 sm:py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                    currentModule.assignment.isCompleted
+                      ? "bg-slate-100 hover:bg-slate-200/80 text-neutral-medium"
+                      : currentModule.assignment.isLocked
+                      ? "bg-slate-100 text-neutral-light cursor-not-allowed opacity-80"
+                      : "bg-amber-500 hover:bg-amber-600 text-white shadow-sm hover:scale-[1.02]"
+                  }`}
+                >
+                  {currentModule.assignment.isCompleted ? "Xem bài nộp" : "Vào làm"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Start Learning / Continue button at bottom */}

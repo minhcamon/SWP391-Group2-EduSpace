@@ -44,7 +44,7 @@ public class SubmissionController {
                 return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
 
-        @Operation(summary = "Lấy kết quả đánh giá bài nộp (LEARNER)", description = "Trả về chi tiết điểm số (rubrics) và nhận xét ẩn danh cho bài nộp của chính học viên đang đăng nhập.")
+        @Operation(summary = "Lấy bài làm đã nộp / kết quả đánh giá bài nộp(nếu có) (LEARNER)", description = "Trả về bài làm đã nộp và chi tiết điểm số (rubrics) và nhận xét ẩn danh cho bài nộp của chính học viên đang đăng nhập.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Lấy kết quả đánh giá thành công"),
                         @ApiResponse(responseCode = "400", description = "Không tìm thấy bài nộp hoặc bài review"),

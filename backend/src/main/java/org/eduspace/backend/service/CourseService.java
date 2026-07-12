@@ -145,7 +145,7 @@ public class CourseService {
         courseRequestRepository.save(courseLog);
 
         notificationService.sendToUser(course.getCreator(),
-                "Your course '" + course.getTitle() + "' has been approved and published!",
+                "Khóa học '" + course.getTitle() + "' của bạn đã được phê duyệt và xuất bản!",
                 NotificationType.SYSTEM,
                 course.getId());
 
@@ -182,7 +182,7 @@ public class CourseService {
         courseRequestRepository.save(courseLog);
 
         notificationService.sendToUser(course.getCreator(),
-                "Your course '" + course.getTitle() + "' has been rejected.",
+                "Khóa học '" + course.getTitle() + "' của bạn đã bị từ chối.",
                 NotificationType.SYSTEM,
                 course.getId());
 
@@ -263,13 +263,13 @@ public class CourseService {
 
         if (course.getStatus() == CourseStatus.PENDING) {
             notificationService.sendToRole(Role.ADMIN,
-                    "New course approval request for '" + course.getTitle() + "'",
+                    "Yêu cầu phê duyệt khóa học mới cho '" + course.getTitle() + "'",
                     NotificationType.COURSE_APPROVAL,
                     course.getId());
         }
 
         notificationService.sendToUser(course.getCreator(),
-                "Your course '" + course.getTitle() + "' has been created and is pending approval.",
+                "Khóa học '" + course.getTitle() + "' của bạn đã được tạo và đang chờ phê duyệt.",
                 NotificationType.SYSTEM,
                 course.getId());
 
@@ -485,7 +485,7 @@ public class CourseService {
 
         if (statusChangedToPending) {
             notificationService.sendToRole(Role.ADMIN,
-                    "New course approval request for '" + course.getTitle() + "'",
+                    "Yêu cầu phê duyệt khóa học mới cho '" + course.getTitle() + "'",
                     NotificationType.COURSE_APPROVAL,
                     course.getId());
         }

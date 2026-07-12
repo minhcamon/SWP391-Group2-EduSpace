@@ -1,22 +1,23 @@
 package org.eduspace.backend.dto.progress.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AssignmentProgressResponse {
-    private Long id;
-    private String title;
-    private String status;
+public class CertificateResponse {
     @JsonProperty("isCompleted")
     private boolean isCompleted;
-    @JsonProperty("isLocked")
-    private boolean isLocked;
+    private String userName;
+    private String courseTitle;
+    private String certificateId;
+    private LocalDateTime issuedAt;
+    private String partnerName;
 }

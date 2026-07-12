@@ -34,6 +34,7 @@ import MentorArbitrations from "@/views/mentor/Arbitrations";
 import MentorArbitrationDetail from "@/views/mentor/ArbitrationDetailView";
 import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
+import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
             <Route path="/profile" element={<Profile />}></Route>
             <Route path="/classes/:classId" element={<ClassView />}></Route>
             <Route path="/classes/:classId/assignments/:assignmentId" element={<Assignment />}></Route>
+            <Route path="/classes/:classId/certificate" element={<CertificateView />}></Route>
           </Route>
 
           {/* admin route */}

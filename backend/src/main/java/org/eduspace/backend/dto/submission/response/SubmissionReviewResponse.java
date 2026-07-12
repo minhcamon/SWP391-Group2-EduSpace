@@ -1,5 +1,6 @@
 package org.eduspace.backend.dto.submission.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.eduspace.backend.dto.course.RubricCriteriaDto;
@@ -18,6 +19,9 @@ public class SubmissionReviewResponse {
     private Long submissionId;
     private String assignmentTitle;
     private String assignmentDescription;
+    private String submissionContent;
+    private String status;
+    private LocalDateTime submittedAt;
     private List<RubricCriteriaDto> rubricCriterias;
     private String comments;
 }

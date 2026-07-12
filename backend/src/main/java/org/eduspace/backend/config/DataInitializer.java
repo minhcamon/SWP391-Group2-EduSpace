@@ -31,6 +31,9 @@ public class DataInitializer implements CommandLineRunner {
   private final WaitlistEntryRepository waitlistEntryRepository;
   private final StudyGroupRepository studyGroupRepository;
   private final GroupMemberRepository groupMemberRepository;
+  private final LessonProgressRepository lessonProgressRepository;
+  private final SubmissionRepository submissionRepository;
+  private final ClassTimelineRepository classTimelineRepository;
   private final PasswordEncoder passwordEncoder;
   private final SubmissionRepository submissionRepository;
   private final PeerReviewRepository peerReviewRepository;
@@ -328,6 +331,25 @@ public class DataInitializer implements CommandLineRunner {
         .build();
     lessonRepository.save(reactLesson1);
 
+    // Lessons cho Module 3 (Collections)
+    Lesson javaLesson6 = Lesson.builder()
+        .module(javaModule3)
+        .title("Bài 1: ArrayList và LinkedList")
+        .contentType(LessonContentType.VIDEO)
+        .contentUrl("https://www.youtube.com/embed/dQw4w9WgXcQ")
+        .sortOrder(1)
+        .build();
+    lessonRepository.save(javaLesson6);
+
+    Lesson javaLesson7 = Lesson.builder()
+        .module(javaModule3)
+        .title("Bài 2: HashMap và HashSet")
+        .contentType(LessonContentType.DOCUMENT)
+        .contentUrl("https://docs.oracle.com/javase/tutorial/collections/interfaces/map.html")
+        .sortOrder(2)
+        .build();
+    lessonRepository.save(javaLesson7);
+
     // 5. Seed Assignments
     log.info("Seeding assignments...");
     List<RubricCriteriaDto> rubricJava1 = List.of(
@@ -356,6 +378,18 @@ public class DataInitializer implements CommandLineRunner {
         .module(javaModule2)
         .build();
     assignmentRepository.save(javaAssign2);
+
+    List<RubricCriteriaDto> rubricJava3 = List.of(
+        new RubricCriteriaDto("Cấu trúc code", "Sử dụng Collection đúng loại cho từng bài toán", 5),
+        new RubricCriteriaDto("Hiệu năng", "Lựa chọn Collection phù hợp về time complexity", 5));
+
+    Assignment javaAssign3 = Assignment.builder()
+        .title("Bài tập Collections Framework")
+        .description("Viết chương trình quản lý danh sách sinh viên sử dụng ArrayList và HashMap.")
+        .rubricCriteria(rubricJava3)
+        .module(javaModule3)
+        .build();
+    assignmentRepository.save(javaAssign3);
 
     // 6. Seed Waitlists & Waitlist Entries
     log.info("Seeding waitlists...");
@@ -438,7 +472,7 @@ public class DataInitializer implements CommandLineRunner {
     log.info("Seeding study groups and group members...");
     StudyGroup group1 = StudyGroup.builder()
         .courseClass(javaClass)
-        .module(javaModule1)
+        .module(javaModule3) // Cho pair learning ở Module 3 (cuối)
         .chatChannelId("channel_java_group_1")
         .chatStatus("ACTIVE")
         .build();
@@ -458,7 +492,7 @@ public class DataInitializer implements CommandLineRunner {
 
     StudyGroup group2 = StudyGroup.builder()
         .courseClass(javaClass)
-        .module(javaModule1)
+        .module(javaModule3)
         .chatChannelId("channel_java_group_2")
         .chatStatus("ACTIVE")
         .build();
