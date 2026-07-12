@@ -386,7 +386,7 @@ public class DataInitializer implements CommandLineRunner {
     log.info("Seeding study groups and group members...");
     StudyGroup group1 = StudyGroup.builder()
         .courseClass(javaClass)
-        .module(javaModule1)
+        .module(javaModule3) // Cho pair learning ở Module 3 (cuối)
         .chatChannelId("channel_java_group_1")
         .chatStatus("ACTIVE")
         .build();
@@ -406,7 +406,7 @@ public class DataInitializer implements CommandLineRunner {
 
     StudyGroup group2 = StudyGroup.builder()
         .courseClass(javaClass)
-        .module(javaModule1)
+        .module(javaModule3)
         .chatChannelId("channel_java_group_2")
         .chatStatus("ACTIVE")
         .build();
@@ -451,53 +451,34 @@ public class DataInitializer implements CommandLineRunner {
     // 10. Seed Progress
     log.info("Seeding progress data...");
 
-    // ----- learner1: 100% HOÀN THÀNH (để test Certificate) -----
+    // ----- learner1 & learner2: Demo Flow -----
+    // Hoàn thành FULL Module 1 và Module 2 (Bài học + Bài tập)
+    // Đang ở Module 3: Chỉ mới xong Lesson 6, chưa xong Lesson 7, chưa nộp Assign 3
     ClassMember testMember1 = javaClassMembers.get(0);
-    // Hoàn thành tất cả 7 bài học (module 1, 2, 3)
-    List<Lesson> allJavaLessons = List.of(javaLesson1, javaLesson2, javaLesson3, javaLesson4, javaLesson5, javaLesson6, javaLesson7);
-    for (Lesson lesson : allJavaLessons) {
-      lessonProgressRepository.save(LessonProgress.builder()
-          .classMember(testMember1)
-          .lesson(lesson)
-          .isCompleted(true)
-          .completedAt(LocalDateTime.now().minusDays(2))
-          .build());
-    }
-    // Hoàn thành cả 3 bài tập
-    submissionRepository.save(Submission.builder()
-        .assignment(javaAssign1)
-        .member(testMember1)
-        .submissionContent("Bài 1 của learner1 - đã được chấm điểm.")
-        .status(SubmissionStatus.GRADED)
-        .submittedAt(LocalDateTime.now().minusDays(4))
-        .build());
-    submissionRepository.save(Submission.builder()
-        .assignment(javaAssign2)
-        .member(testMember1)
-        .submissionContent("Bài 2 của learner1 - đã được chấm điểm.")
-        .status(SubmissionStatus.GRADED)
-        .submittedAt(LocalDateTime.now().minusDays(3))
-        .build());
-    submissionRepository.save(Submission.builder()
-        .assignment(javaAssign3)
-        .member(testMember1)
-        .submissionContent("Bài 3 Collections của learner1 - đã được chấm điểm.")
-        .status(SubmissionStatus.GRADED)
-        .submittedAt(LocalDateTime.now().minusDays(2))
-        .build());
-
-    // ----- learner2: Đang học dở (3/10 đơn vị) -----
     ClassMember testMember2 = javaClassMembers.get(1);
-    List<Lesson> partialLessons = List.of(javaLesson1, javaLesson2, javaLesson3);
-    for (Lesson lesson : partialLessons) {
-      lessonProgressRepository.save(LessonProgress.builder()
-          .classMember(testMember2)
-          .lesson(lesson)
-          .isCompleted(true)
-          .completedAt(LocalDateTime.now().minusDays(1))
-          .build());
+
+    List<Lesson> completedLessons = List.of(javaLesson1, javaLesson2, javaLesson3, javaLesson4, javaLesson5, javaLesson6);
+    List<Assignment> completedAssignments = List.of(javaAssign1, javaAssign2);
+
+    for (ClassMember member : List.of(testMember1, testMember2)) {
+      for (Lesson lesson : completedLessons) {
+        lessonProgressRepository.save(LessonProgress.builder()
+            .classMember(member)
+            .lesson(lesson)
+            .isCompleted(true)
+            .completedAt(LocalDateTime.now().minusDays(2))
+            .build());
+      }
+      for (Assignment assign : completedAssignments) {
+        submissionRepository.save(Submission.builder()
+            .assignment(assign)
+            .member(member)
+            .submissionContent("Bài tập " + assign.getTitle() + " của " + member.getUser().getFullName())
+            .status(SubmissionStatus.GRADED)
+            .submittedAt(LocalDateTime.now().minusDays(3))
+            .build());
+      }
     }
-    // learner2 chưa nộp assignment nào
 
     log.info("Database initialization completed successfully.");
   }
