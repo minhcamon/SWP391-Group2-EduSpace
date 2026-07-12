@@ -8,9 +8,6 @@ import java.util.Optional;
 @Repository
 public interface CertificateRepository extends JpaRepository<Certificate, Long> {
     boolean existsByUserIdAndCourseId(Long userId, Long courseId);
-}
 
-@Repository
-public interface CertificateRepository extends JpaRepository<Certificate, Long> {
     Optional<Certificate> findByUserIdAndCourseId(Long userId, Long courseId);
 }
