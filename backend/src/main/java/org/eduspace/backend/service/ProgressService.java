@@ -211,7 +211,7 @@ public class ProgressService {
 
       boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
       if (assignmentResponse != null) {
-        assignmentResponse.setIsLocked(isAssignmentLocked);
+        assignmentResponse.setLocked(isAssignmentLocked);
       }
 
       // Load list of lessons and completed status
@@ -239,7 +239,7 @@ public class ProgressService {
           lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
 
       if (isLocked) {
-        lessonResponses.forEach(l -> l.setIsLocked(true));
+        lessonResponses.forEach(l -> l.setLocked(true));
       }
 
       Long studyGroupId = null;
@@ -285,7 +285,7 @@ public class ProgressService {
         focusModuleId = targetModule.getId();
         if (!targetModule.getLessons().isEmpty()) {
           focusLessonId = targetModule.getLessons().stream()
-              .filter(l -> !l.getIsCompleted())
+              .filter(l -> !l.isCompleted())
               .map(LessonProgressResponse::getId)
               .findFirst()
               .orElse(targetModule.getLessons().get(0).getId());
@@ -295,7 +295,7 @@ public class ProgressService {
       }
     } else {
       ModuleProgressResponse targetModule = modulesProgress.stream()
-          .filter(m -> m.getId().equals(moduleId) && !m.getIsLocked())
+          .filter(m -> m.getId().equals(moduleId) && !m.isLocked())
           .findFirst()
           .orElse(null);
 
@@ -303,7 +303,7 @@ public class ProgressService {
         focusModuleId = targetModule.getId();
         if (!targetModule.getLessons().isEmpty()) {
           focusLessonId = targetModule.getLessons().stream()
-              .filter(l -> !l.getIsCompleted())
+              .filter(l -> !l.isCompleted())
               .map(LessonProgressResponse::getId)
               .findFirst()
               .orElse(targetModule.getLessons().get(0).getId());

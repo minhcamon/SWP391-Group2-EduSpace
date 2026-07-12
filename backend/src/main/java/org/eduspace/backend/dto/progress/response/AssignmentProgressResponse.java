@@ -1,5 +1,7 @@
 package org.eduspace.backend.dto.progress.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,8 @@ public class AssignmentProgressResponse {
     private Long id;
     private String title;
     private String status;
-    private Boolean isCompleted;
-    private Boolean isLocked;
+    @JsonProperty("isCompleted")
+    private boolean isCompleted;
+    @JsonProperty("isLocked")
+    private boolean isLocked;
 }

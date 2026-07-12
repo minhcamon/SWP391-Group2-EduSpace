@@ -3,6 +3,8 @@ package org.eduspace.backend.dto.progress.response;
 import java.util.List;
 import org.eduspace.backend.dto.user.response.PartnerResponse;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,8 @@ public class ModuleProgressResponse {
     private String title;
     private double progress;
     private String status;
-    private Boolean isLocked;
+    @JsonProperty("isLocked")
+    private boolean isLocked;
     private int sortOrder;
     private int completedLessons;
     private int totalLessons;
