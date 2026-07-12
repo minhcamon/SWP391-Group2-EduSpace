@@ -31,6 +31,9 @@ public class DataInitializer implements CommandLineRunner {
   private final WaitlistEntryRepository waitlistEntryRepository;
   private final StudyGroupRepository studyGroupRepository;
   private final GroupMemberRepository groupMemberRepository;
+  private final LessonProgressRepository lessonProgressRepository;
+  private final SubmissionRepository submissionRepository;
+  private final ClassTimelineRepository classTimelineRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Override
@@ -260,6 +263,25 @@ public class DataInitializer implements CommandLineRunner {
         .build();
     lessonRepository.save(reactLesson1);
 
+    // Lessons cho Module 3 (Collections)
+    Lesson javaLesson6 = Lesson.builder()
+        .module(javaModule3)
+        .title("Bài 1: ArrayList và LinkedList")
+        .contentType(LessonContentType.VIDEO)
+        .contentUrl("https://www.youtube.com/embed/dQw4w9WgXcQ")
+        .sortOrder(1)
+        .build();
+    lessonRepository.save(javaLesson6);
+
+    Lesson javaLesson7 = Lesson.builder()
+        .module(javaModule3)
+        .title("Bài 2: HashMap và HashSet")
+        .contentType(LessonContentType.DOCUMENT)
+        .contentUrl("https://docs.oracle.com/javase/tutorial/collections/interfaces/map.html")
+        .sortOrder(2)
+        .build();
+    lessonRepository.save(javaLesson7);
+
     // 5. Seed Assignments
     log.info("Seeding assignments...");
     List<RubricCriteriaDto> rubricJava1 = List.of(
@@ -288,6 +310,18 @@ public class DataInitializer implements CommandLineRunner {
         .module(javaModule2)
         .build();
     assignmentRepository.save(javaAssign2);
+
+    List<RubricCriteriaDto> rubricJava3 = List.of(
+        new RubricCriteriaDto("Cấu trúc code", "Sử dụng Collection đúng loại cho từng bài toán", 5),
+        new RubricCriteriaDto("Hiệu năng", "Lựa chọn Collection phù hợp về time complexity", 5));
+
+    Assignment javaAssign3 = Assignment.builder()
+        .title("Bài tập Collections Framework")
+        .description("Viết chương trình quản lý danh sách sinh viên sử dụng ArrayList và HashMap.")
+        .rubricCriteria(rubricJava3)
+        .module(javaModule3)
+        .build();
+    assignmentRepository.save(javaAssign3);
 
     // 6. Seed Waitlists & Waitlist Entries
     log.info("Seeding waitlists...");
@@ -389,6 +423,81 @@ public class DataInitializer implements CommandLineRunner {
         .classMember(javaClassMembers.get(3))
         .build();
     groupMemberRepository.save(gm4);
+
+    // 9. Seed ClassTimeline (dueDate) cho các module
+    // Tất cả dueDate đã QUA => toàn bộ module được UNLOCK
+    log.info("Seeding class timelines (due dates)...");
+    ClassTimeline timeline1 = ClassTimeline.builder()
+        .courseClass(javaClass)
+        .module(javaModule1)
+        .dueDate(LocalDateTime.now().minusDays(20)) // Module 1: hết hạn 20 ngày trước
+        .build();
+    classTimelineRepository.save(timeline1);
+
+    ClassTimeline timeline2 = ClassTimeline.builder()
+        .courseClass(javaClass)
+        .module(javaModule2)
+        .dueDate(LocalDateTime.now().minusDays(10)) // Module 2: hết hạn 10 ngày trước
+        .build();
+    classTimelineRepository.save(timeline2);
+
+    ClassTimeline timeline3 = ClassTimeline.builder()
+        .courseClass(javaClass)
+        .module(javaModule3)
+        .dueDate(LocalDateTime.now().minusDays(3))  // Module 3 (Collections): hết hạn 3 ngày trước
+        .build();
+    classTimelineRepository.save(timeline3);
+
+    // 10. Seed Progress
+    log.info("Seeding progress data...");
+
+    // ----- learner1: 100% HOÀN THÀNH (để test Certificate) -----
+    ClassMember testMember1 = javaClassMembers.get(0);
+    // Hoàn thành tất cả 7 bài học (module 1, 2, 3)
+    List<Lesson> allJavaLessons = List.of(javaLesson1, javaLesson2, javaLesson3, javaLesson4, javaLesson5, javaLesson6, javaLesson7);
+    for (Lesson lesson : allJavaLessons) {
+      lessonProgressRepository.save(LessonProgress.builder()
+          .classMember(testMember1)
+          .lesson(lesson)
+          .isCompleted(true)
+          .completedAt(LocalDateTime.now().minusDays(2))
+          .build());
+    }
+    // Hoàn thành cả 3 bài tập
+    submissionRepository.save(Submission.builder()
+        .assignment(javaAssign1)
+        .member(testMember1)
+        .submissionContent("Bài 1 của learner1 - đã được chấm điểm.")
+        .status(SubmissionStatus.GRADED)
+        .submittedAt(LocalDateTime.now().minusDays(4))
+        .build());
+    submissionRepository.save(Submission.builder()
+        .assignment(javaAssign2)
+        .member(testMember1)
+        .submissionContent("Bài 2 của learner1 - đã được chấm điểm.")
+        .status(SubmissionStatus.GRADED)
+        .submittedAt(LocalDateTime.now().minusDays(3))
+        .build());
+    submissionRepository.save(Submission.builder()
+        .assignment(javaAssign3)
+        .member(testMember1)
+        .submissionContent("Bài 3 Collections của learner1 - đã được chấm điểm.")
+        .status(SubmissionStatus.GRADED)
+        .submittedAt(LocalDateTime.now().minusDays(2))
+        .build());
+
+    // ----- learner2: Đang học dở (3/10 đơn vị) -----
+    ClassMember testMember2 = javaClassMembers.get(1);
+    List<Lesson> partialLessons = List.of(javaLesson1, javaLesson2, javaLesson3);
+    for (Lesson lesson : partialLessons) {
+      lessonProgressRepository.save(LessonProgress.builder()
+          .classMember(testMember2)
+          .lesson(lesson)
+          .isCompleted(true)
+          .completedAt(LocalDateTime.now().minusDays(1))
+          .build());
+    }
+    // learner2 chưa nộp assignment nào
 
     log.info("Database initialization completed successfully.");
   }
