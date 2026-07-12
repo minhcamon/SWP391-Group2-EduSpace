@@ -35,7 +35,6 @@ public class DataInitializer implements CommandLineRunner {
   private final SubmissionRepository submissionRepository;
   private final ClassTimelineRepository classTimelineRepository;
   private final PasswordEncoder passwordEncoder;
-  private final SubmissionRepository submissionRepository;
   private final PeerReviewRepository peerReviewRepository;
   private final ActiveMentorRepository activeMentorRepository;
   private final IncidentRepository incidentRepository;

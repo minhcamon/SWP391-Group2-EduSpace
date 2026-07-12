@@ -78,4 +78,32 @@ class MentorSystemTest extends SystemTestSupport {
         wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
         assertEquals("/", getCurrentPath(), "Guest access to mentor routes must redirect to home");
     }
+
+    @Test
+    void scenarioD_seededMentorCanOpenIncidentCenterAndIncidentDetail() throws Exception {
+        MentorFixture fixture = loadMentorFixture("mentor1");
+
+        login("mentor1", SEEDED_PASSWORD);
+        enableMentorMode();
+
+        driver.get(baseUrl + "/mentor/incidents");
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Incident Center"));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.tagName("body"), String.valueOf(fixture.incidentId())));
+
+        String incidentListText = driver.findElement(By.tagName("body")).getText();
+        assertTrue(incidentListText.contains(String.valueOf(fixture.incidentId())),
+                "Mentor incident center must show the seeded incident");
+
+        driver.get(baseUrl + "/mentor/incidents/" + fixture.incidentId());
+        wait.until(ExpectedConditions.urlContains("/mentor/incidents/" + fixture.incidentId()));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.tagName("body"), String.valueOf(fixture.incidentId())));
+
+        assertEquals("/mentor/incidents/" + fixture.incidentId(), getCurrentPath(),
+                "Mentor incident detail route must stay open for mentor users");
+        String incidentDetailText = driver.findElement(By.tagName("body")).getText();
+        assertTrue(incidentDetailText.contains(String.valueOf(fixture.incidentId())),
+                "Mentor incident detail must show the selected incident");
+    }
 }
