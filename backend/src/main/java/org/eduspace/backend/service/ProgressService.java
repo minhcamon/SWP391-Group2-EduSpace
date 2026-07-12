@@ -34,6 +34,8 @@ import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +55,10 @@ public class ProgressService {
   private final ProgressHelper progressHelper;
   private final GroupMemberRepository groupMemberRepository;
   private final StudyGroupRepository studyGroupRepository;
-  private final CertificateService certificateService;
+
+  @Lazy
+  @Autowired
+  private CertificateService certificateService;
 
   /**
    * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
