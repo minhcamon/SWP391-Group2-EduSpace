@@ -379,11 +379,7 @@ const useLearningArea = () => {
             }
 
             toast.success("Đã hoàn thành bài học này! Tiếp tục sang bài kế tiếp.", {
-                description: "Tiến độ của nhóm đã được cập nhật.",
-                action: {
-                    label: "Xem Dashboard",
-                    onClick: () => navigate("../dashboard")
-                }
+                description: "Tiến độ của nhóm đã được cập nhật."
             });
         } catch (error) {
             console.error("Đánh dấu hoàn thành bài học thất bại:", error);
