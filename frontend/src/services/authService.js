@@ -96,6 +96,17 @@ const AuthService = {
             const errorMsg = error.response?.data?.message || 'Không thể lấy URL đăng nhập Google!';
             throw new Error(errorMsg);
         }
+    },
+
+    getLearnersCount: async () => {
+        try {
+            const response = await api.get('/user/count/active');
+            return response.data.data;
+        } catch (error) {
+            console.error('Get active users count error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể lấy tổng số người dùng đang hoạt động!';
+            throw new Error(errorMsg, { cause: error });
+        }
     }
 
 };

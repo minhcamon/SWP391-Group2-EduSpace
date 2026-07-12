@@ -13,7 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import RequestRejectDialog from "../components/request/RequestRejectDialog";
 import PendingRequestList from "../components/request/PendingRequestList";
 import useRequest from "../hooks/useRequest";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import AuthService from "@/services/authService";
 
 const MOCK_RECENT_COURSES = [
     {
@@ -64,6 +65,7 @@ const MOCK_CREATOR_REQUESTS = [
 
 const DashboardPage = () => {
     const { user } = useAuth();
+    const [learnersCount, setLearnersCount] = useState(0);
     const {
         publisedCourses,
         pendingCourses,
@@ -92,7 +94,17 @@ const DashboardPage = () => {
         handleRejectClick: handleRequestRejectClick,
     } = useRequest("Admin Dashboard");
 
+    const fetchLearnersCount = useCallback(async () => {
+        try {
+            const count = await AuthService.getLearnersCount();
+            setLearnersCount(count);
+        } catch (error) {
+            console.error("Lỗi khi lấy số lượng học viên:", error);
+        }
+    }, []);
+
     const stats = {
+        learnersCount: learnersCount,
         publisedCoursesLength: publisedCourses.length,
         pendingCoursesLength: pendingCourses.length,
         pendingRequestsLength: pendingRequests.length,
@@ -102,12 +114,14 @@ const DashboardPage = () => {
         fetchPublisedCourses();
         fetchPendingCourses();
         fetchPendingRequests();
-    }, [fetchPendingCourses, fetchPublisedCourses, fetchPendingRequests]);
+        fetchLearnersCount();
+    }, [fetchPendingCourses, fetchPublisedCourses, fetchPendingRequests, fetchLearnersCount]);
 
     const handleReload = () => {
-        fetchPublisedCourses()
+        fetchPublisedCourses();
         fetchPendingCourses();
         fetchPendingRequests();
+        fetchLearnersCount();
     };
 
     return (
