@@ -8,6 +8,7 @@ import ResultReview from "../components/ResultReview"
 import CourseSidebar from "../components/CourseSidebar"
 import StudyGroup from "../components/StudyGroup"
 import Avatar from "@/components/common/Avatar"
+import ReloadButton from "@/components/ui/ReloadButton"
 
 export const AssignmentPage = () => {
   const navigate = useNavigate()
@@ -50,6 +51,7 @@ export const AssignmentPage = () => {
     studyGroup,
     progressPercent,
     activeModule,
+    handleReload,
   } = useAssignment()
 
   if (isLoading) {
@@ -201,32 +203,38 @@ export const AssignmentPage = () => {
             </div>
 
             {/* Tab Selectors */}
-            <div className='flex border-b border-border-light/35'>
-              <button
-                onClick={() => setActiveTab("assignment")}
-                className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all cursor-pointer ${
-                  activeTab === "assignment"
-                    ? "border-primary text-primary font-bold"
-                    : "border-transparent text-neutral-medium hover:text-primary"
-                }`}
-              >
-                1. Bài tập của bạn
-              </button>
-              <button
-                disabled={!isSubmitted}
-                onClick={() => isSubmitted && setActiveTab("review")}
-                title={!isSubmitted ? "Vui lòng nộp bài viết trước để mở khóa đánh giá chéo" : ""}
-                className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all flex items-center gap-1.5 ${
-                  !isSubmitted
-                    ? "border-transparent text-neutral-medium/50 cursor-not-allowed"
-                    : activeTab === "review"
-                      ? "border-primary text-primary font-bold cursor-pointer"
-                      : "border-transparent text-neutral-medium hover:text-primary cursor-pointer"
-                }`}
-              >
-                {!isSubmitted && <Lock className='w-3.5 h-3.5 text-neutral-medium/40' />}
-                2. Đối chiếu & Đánh giá chéo
-              </button>
+            <div className='flex border-b border-border-light/35 justify-between items-center'>
+              <div className='flex'>
+                <button
+                  onClick={() => setActiveTab("assignment")}
+                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all cursor-pointer ${
+                    activeTab === "assignment"
+                      ? "border-primary text-primary font-bold"
+                      : "border-transparent text-neutral-medium hover:text-primary"
+                  }`}
+                >
+                  1. Bài tập của bạn
+                </button>
+                <button
+                  disabled={!isSubmitted}
+                  onClick={() => isSubmitted && setActiveTab("review")}
+                  title={!isSubmitted ? "Vui lòng nộp bài viết trước để mở khóa đánh giá chéo" : ""}
+                  className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all flex items-center gap-1.5 ${
+                    !isSubmitted
+                      ? "border-transparent text-neutral-medium/50 cursor-not-allowed"
+                      : activeTab === "review"
+                        ? "border-primary text-primary font-bold cursor-pointer"
+                        : "border-transparent text-neutral-medium hover:text-primary cursor-pointer"
+                  }`}
+                >
+                  {!isSubmitted && <Lock className='w-3.5 h-3.5 text-neutral-medium/40' />}
+                  2. Đối chiếu & Đánh giá chéo
+                </button>
+              </div>
+
+              <div className='pb-1 pr-1'>
+                <ReloadButton action={handleReload} isLoading={isLoading} />
+              </div>
             </div>
 
             {/* Tab Panel Content */}
