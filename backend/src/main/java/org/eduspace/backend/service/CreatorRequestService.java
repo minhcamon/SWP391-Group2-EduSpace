@@ -71,7 +71,7 @@ public class CreatorRequestService {
                 .build();
 
         notificationService.sendToUser(request.getLearner(),
-                "Your request to become a Creator has been approved. You are now a CREATOR!",
+                "Yêu cầu trở thành Người sáng tạo (Creator) của bạn đã được phê duyệt. Hiện tại bạn đã là CREATOR!",
                 NotificationType.CREATOR_REQUEST,
                 request.getId());
 
@@ -109,7 +109,7 @@ public class CreatorRequestService {
                 .build();
 
         notificationService.sendToUser(request.getLearner(),
-                "Your request to become a Creator has been rejected.",
+                "Yêu cầu trở thành Người sáng tạo (Creator) của bạn đã bị từ chối.",
                 NotificationType.CREATOR_REQUEST,
                 request.getId());
 
@@ -137,7 +137,7 @@ public class CreatorRequestService {
         creatorRequestRepository.save(newRequest);
 
         notificationService.sendToRole(Role.ADMIN,
-                "New Creator request from " + learner.getFullName(),
+                "Yêu cầu trở thành Người sáng tạo mới từ " + learner.getFullName(),
                 NotificationType.CREATOR_REQUEST,
                 newRequest.getId());
     }

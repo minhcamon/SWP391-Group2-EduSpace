@@ -28,9 +28,9 @@ const MyLearningPage = () => {
     );
   }
 
-  const activeCourses = myLearningCourses.filter((c) => c.progressPercentage > 0 && c.progressPercentage < 100);
-  const waitingCourses = myLearningCourses.filter((c) => c.progressPercentage === 0);
-  const completedCourses = myLearningCourses.filter((c) => c.progressPercentage === 100);
+  const activeCourses = myLearningCourses.filter((c) => !c.isCompleted && c.progressPercentage > 0);
+  const waitingCourses = myLearningCourses.filter((c) => !c.isCompleted && c.progressPercentage === 0);
+  const completedCourses = myLearningCourses.filter((c) => c.isCompleted);
 
   return (
     <main className="flex-1 p-6 md:p-10 mx-auto w-full space-y-10">

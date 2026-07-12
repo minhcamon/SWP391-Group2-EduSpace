@@ -53,14 +53,14 @@ public class ProgressService {
   private final ProgressHelper progressHelper;
   private final GroupMemberRepository groupMemberRepository;
   private final StudyGroupRepository studyGroupRepository;
+  private final CertificateService certificateService;
 
   /**
    * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
    * tiến trình hoàn thành trên toàn bộ khóa học. Tiến trình tính trên cả lesson
    * và
-   * assignment (assignment coi là hoàn thành khi có submission GRADED). Các khóa
-   * đã
-   * hoàn thành 100% được loại ra (sẽ hiển thị ở trang "đã hoàn thành" riêng).
+   * assignment (assignment coi là hoàn thành khi có submission GRADED).
+   * Lấy toàn bộ các khóa học (cả đang chờ, đang học và đã hoàn thành).
    */
   public List<CourseProgressResponse> getInProgressCourses(Long userId) {
     List<ClassMember> memberships = classMemberRepository.findByUserId(userId);
@@ -118,10 +118,7 @@ public class ProgressService {
       long totalUnits = totalLessons + totalAssignments;
       long completedUnits = completedLessons + completedAssignments;
 
-      // Đã hoàn thành toàn bộ khóa học -> không thuộc danh sách "đang học"
-      if (totalUnits > 0 && completedUnits >= totalUnits) {
-        continue;
-      }
+      Boolean isCompleted = (totalUnits > 0 && completedUnits >= totalUnits);
 
       double progressPercentage = totalUnits > 0
           ? ((double) completedUnits / totalUnits) * 100
@@ -137,6 +134,7 @@ public class ProgressService {
           .currentLessonId(currentLesson != null ? currentLesson.getId() : null)
           .currentLessonTitle(currentLesson != null ? currentLesson.getTitle() : null)
           .currentModuleTitle(currentModule != null ? currentModule.getTitle() : null)
+          .isCompleted(isCompleted)
           .build());
     }
 
@@ -395,7 +393,14 @@ public class ProgressService {
     }
 
     // Mark the lesson as completed for the user
-    return progressHelper.markLessonAsCompleted(lesson, classMember);
+    boolean result = progressHelper.markLessonAsCompleted(lesson, classMember);
+    
+    // Check if the whole course is completed and issue cert & notification
+    if (result) {
+        certificateService.checkAndIssueCertificate(classMember);
+    }
+    
+    return result;
   }
 
   public MentorPairProgressResponse getPairProgressForMentor(Long pairId, Long mentorUserId) {

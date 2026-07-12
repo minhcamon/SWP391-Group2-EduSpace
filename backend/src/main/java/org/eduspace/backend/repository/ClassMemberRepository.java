@@ -23,6 +23,7 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
                 WHERE cm.user.id = :userId
                   AND cm.courseClass.course.id = :courseId
                   AND cm.learnerStatus = :status
+                  AND cm.contextRole = 'LEARNER'
             """)
     Optional<ClassMember> findActiveEnrollment(
             @Param("userId") Long userId,
@@ -34,6 +35,7 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
                 WHERE cm.user.id = :userId
                   AND cm.courseClass.course.id = :courseId
                   AND cm.learnerStatus IN :statuses
+                  AND cm.contextRole = 'LEARNER'
             """)
     boolean existsEnrollment(
             @Param("userId") Long userId,

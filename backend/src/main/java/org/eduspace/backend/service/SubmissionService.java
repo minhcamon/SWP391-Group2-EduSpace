@@ -40,6 +40,7 @@ public class SubmissionService {
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
+    private final CertificateService certificateService;
 
     @Value("${app.peer-review.pass-ratio:0.8}")
     private double peerReviewPassRatio;
@@ -84,15 +85,18 @@ public class SubmissionService {
                 .orElseThrow(() -> new RuntimeException("Submission not found!"));
 
         PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
-                .orElseThrow(() -> new RuntimeException("Peer review not found!"));
+                .orElse(null);
 
         return SubmissionReviewResponse.builder()
-                .reviewId(peerReview.getId())
+                .reviewId(peerReview != null ? peerReview.getId() : null)
                 .submissionId(submission.getId())
                 .assignmentTitle(submission.getAssignment().getTitle())
                 .assignmentDescription(submission.getAssignment().getDescription())
-                .rubricCriterias(peerReview.getCriteriaScores())
-                .comments(peerReview.getComments())
+                .submissionContent(submission.getSubmissionContent())
+                .status(submission.getStatus().name())
+                .submittedAt(submission.getSubmittedAt())
+                .rubricCriterias(peerReview != null ? peerReview.getCriteriaScores() : null)
+                .comments(peerReview != null ? peerReview.getComments() : null)
                 .build();
     }
 
@@ -128,7 +132,9 @@ public class SubmissionService {
                 .submittedAt(submission.getSubmittedAt())
                 .submitterId(submitter.getId())
                 .submitterName(submitter.getUser().getFullName())
-                .rubricCriterias(assignment.getRubricCriteria())
+                .rubricCriterias(peerReview.getCriteriaScores() != null && !peerReview.getCriteriaScores().isEmpty()
+                        ? peerReview.getCriteriaScores()
+                        : assignment.getRubricCriteria())
                 .build();
     }
 
@@ -200,9 +206,13 @@ public class SubmissionService {
                 .comments(savedReview.getComments())
                 .build();
 
+        if (submission.getStatus() == SubmissionStatus.GRADED) {
+            certificateService.checkAndIssueCertificate(submission.getMember());
+        }
+
 
         notificationService.sendToUser(submission.getMember().getUser(),
-                "Your assignment has been graded by your partner!",
+                "Bài tập của bạn đã được chấm điểm bởi thành viên cùng nhóm!",
                 NotificationType.PEER_REVIEW,
                 savedReview.getId());
 

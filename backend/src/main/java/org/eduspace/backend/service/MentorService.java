@@ -9,6 +9,8 @@ import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
+import org.eduspace.backend.dto.mentor.response.MentorModuleResponse;
+import org.eduspace.backend.dto.mentor.response.MentorModuleContentResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.course.RubricCriteriaDto;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
@@ -43,6 +46,11 @@ public class MentorService {
     private final StudyGroupService studyGroupService;
     private final SubmissionRepository submissionRepository;
     private final PeerReviewRepository peerReviewRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
+    private final LessonProgressRepository lessonProgressRepository;
+    private final AssignmentRepository assignmentRepository;
+    private final ClassTimelineRepository classTimelineRepository;
 
     @Transactional
     public void assignMentorToCourse(Long userId, Long courseId) {
@@ -136,6 +144,85 @@ public class MentorService {
 
         long numberOfPairs = studyGroupRepository.findByCourseClassId(classId).size();
 
+        // Fetch Modules for the Course
+        List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(cc.getCourse().getId());
+        
+        // Fetch Active learners in class to calculate completion rate
+        List<ClassMember> activeLearners = classMemberRepository.findByCourseClassId(classId).stream()
+                .filter(cm -> cm.getContextRole().equals("LEARNER") && cm.getLearnerStatus() == org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                .collect(Collectors.toList());
+
+        List<MentorModuleResponse> moduleResponses = new java.util.ArrayList<>();
+        boolean previousCompleted = true;
+        LocalDateTime now = LocalDateTime.now();
+
+        for (int idx = 0; idx < courseModules.size(); idx++) {
+            CourseModule module = courseModules.get(idx);
+            
+            // Calculate Status
+            String status = "LOCKED";
+            LocalDateTime dueDate = classTimelineRepository.findByCourseClassIdAndModuleId(classId, module.getId());
+            if (dueDate != null) {
+                if (now.isAfter(dueDate)) {
+                    status = "COMPLETED";
+                } else if (previousCompleted) {
+                    status = "ACTIVE";
+                }
+            } else {
+                if (idx == 0) status = "ACTIVE";
+            }
+            previousCompleted = "COMPLETED".equals(status);
+
+            // Calculate Completion Rate across class members
+            double completionRate = 0.0;
+            if (!activeLearners.isEmpty()) {
+                long totalLessons = lessonRepository.countByModuleId(module.getId());
+                Optional<Assignment> assignOpt = assignmentRepository.findByModuleId(module.getId());
+                long totalUnitsPerLearner = totalLessons + (assignOpt.isPresent() ? 1 : 0);
+
+                if (totalUnitsPerLearner > 0) {
+                    double totalProgressSum = 0.0;
+                    for (ClassMember cm : activeLearners) {
+                        long completedLessons = lessonProgressRepository.countCompletedLessonsByClassMemberIdAndModuleId(cm.getId(), module.getId());
+                        long completedAssignments = 0;
+                        if (assignOpt.isPresent()) {
+                            completedAssignments = submissionRepository.findByMemberIdAndAssignmentId(cm.getId(), assignOpt.get().getId())
+                                    .map(sub -> sub.getStatus() == org.eduspace.backend.enums.SubmissionStatus.GRADED ? 1 : 0)
+                                    .orElse(0);
+                        }
+                        totalProgressSum += (double) (completedLessons + completedAssignments) / totalUnitsPerLearner;
+                    }
+                    completionRate = (totalProgressSum / activeLearners.size()) * 100;
+                    completionRate = Math.round(completionRate * 10) / 10.0;
+                }
+            }
+
+            // Fetch Contents (Lessons and Assignments)
+            List<MentorModuleContentResponse> contents = new java.util.ArrayList<>();
+            List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
+            for (Lesson lesson : lessons) {
+                String type = "Bài học";
+                String titleLower = lesson.getTitle().toLowerCase();
+                if (titleLower.contains("thực hành") || titleLower.contains("thuc hanh") || titleLower.contains("practice") || titleLower.contains("lab")) {
+                    type = "Thực hành";
+                }
+                contents.add(new MentorModuleContentResponse(type, lesson.getTitle()));
+            }
+
+            assignmentRepository.findByModuleId(module.getId()).ifPresent(assignment -> {
+                contents.add(new MentorModuleContentResponse("Bài tập", assignment.getTitle()));
+            });
+
+            // Map DTO
+            moduleResponses.add(MentorModuleResponse.builder()
+                    .id((long) (idx + 1))
+                    .title(module.getTitle())
+                    .status(status)
+                    .completionRate(completionRate)
+                    .contents(contents)
+                    .build());
+        }
+
         return MentorClassDetailResponse.builder()
                 .id(cc.getId())
                 .name(cc.getName())
@@ -146,6 +233,7 @@ public class MentorService {
                 .courseDescription(cc.getCourse().getDescription())
                 .mentors(mentorResponses)
                 .numberOfPairs(numberOfPairs)
+                .modules(moduleResponses)
                 .build();
     }
 

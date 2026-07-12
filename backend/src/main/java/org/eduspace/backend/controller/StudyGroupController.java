@@ -37,7 +37,7 @@ public class StudyGroupController {
 
     @Operation(summary = "Gửi tin nhắn vào nhóm", description = "Học viên gửi tin nhắn chat trong study group của mình.")
     @PostMapping("/send-message/{studyGroupId}/{classId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<?>> sendMessage(
             @RequestBody SendMessageRequest request,
             @PathVariable Long studyGroupId,
@@ -59,7 +59,7 @@ public class StudyGroupController {
 
     @Operation(summary = "Lấy tin nhắn nhóm", description = "Lấy lịch sử tin nhắn trong study group.")
     @GetMapping("/messages/{studyGroupId}/{classId}")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     public ResponseEntity<APIResponse<?>> getMessages(
             @PathVariable Long studyGroupId,
             @PathVariable Long classId) {
@@ -80,14 +80,13 @@ public class StudyGroupController {
 
     @Operation(summary = "Lấy trạng thái nộp bài của module", description = "Kiểm tra xem học viên đã hoàn thành (nộp) bài của module hay chưa.")
     @GetMapping("/modules/{moduleId}/submission-status")
-    @PreAuthorize("hasRole('LEARNER') or hasRole('ADMIN')")
     public ResponseEntity<APIResponse<ModuleStatusResponse>> getModuleSubmissionStatus(
             @PathVariable Long moduleId,
             @RequestParam Long learnerId) {
         try {
             // Gọi sang service xử lý dữ liệu thật từ DB
             LearnerModuleStatus status = learnerModuleService.getModuleStatusForLearner(learnerId, moduleId);
-            
+
             // Build dữ liệu trả về kết quả
             ModuleStatusResponse responseData = ModuleStatusResponse.builder()
                     .learnerId(learnerId)

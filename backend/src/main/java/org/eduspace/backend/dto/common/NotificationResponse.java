@@ -1,5 +1,6 @@
 package org.eduspace.backend.dto.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,8 @@ import java.time.LocalDateTime;
 public class NotificationResponse {
     private Long id;
     private String message;
-    private boolean isRead;
+    @JsonProperty("isRead")
+    private boolean read;
     private String type;
     private Long referenceId;
     private LocalDateTime createdAt;

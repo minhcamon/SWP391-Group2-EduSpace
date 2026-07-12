@@ -11,10 +11,6 @@ import org.eduspace.backend.service.SubmissionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +35,7 @@ public class SubmissionController {
                         @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
         })
         @PostMapping("/assignment/submit/{learnerId}")
-        @PreAuthorize("hasRole('LEARNER')")
+        @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
         public ResponseEntity<SubmissionResponseDTO> submitAssignment(
                         @PathVariable Long learnerId,
                         @RequestBody SubmitAssignmentRequest request) {
@@ -48,7 +44,7 @@ public class SubmissionController {
                 return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
 
-        @Operation(summary = "Lấy kết quả đánh giá bài nộp (LEARNER)", description = "Trả về chi tiết điểm số (rubrics) và nhận xét ẩn danh cho bài nộp của chính học viên đang đăng nhập.")
+        @Operation(summary = "Lấy bài làm đã nộp / kết quả đánh giá bài nộp(nếu có) (LEARNER)", description = "Trả về bài làm đã nộp và chi tiết điểm số (rubrics) và nhận xét ẩn danh cho bài nộp của chính học viên đang đăng nhập.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Lấy kết quả đánh giá thành công"),
                         @ApiResponse(responseCode = "400", description = "Không tìm thấy bài nộp hoặc bài review"),
@@ -56,7 +52,7 @@ public class SubmissionController {
                         @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
         })
         @GetMapping("/{classId}/assignment/{assignmentId}/review")
-        @PreAuthorize("hasRole('LEARNER')")
+        @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
         public ResponseEntity<APIResponse<SubmissionReviewResponse>> getSubmissionReview(
                         @PathVariable Long classId,
                         @PathVariable Long assignmentId) {
@@ -75,7 +71,7 @@ public class SubmissionController {
                         @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
         })
         @GetMapping("/{classId}/assignment/{assignmentId}/peer-review-assignment")
-        @PreAuthorize("hasRole('LEARNER')")
+        @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
         public ResponseEntity<APIResponse<PeerReviewAssignmentResponse>> getPeerReviewAssignment(
                         @PathVariable Long classId,
                         @PathVariable Long assignmentId) {
@@ -94,7 +90,7 @@ public class SubmissionController {
                         @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
         })
         @PostMapping("/{classId}/peer-review/{reviewId}/grade")
-        @PreAuthorize("hasRole('LEARNER')")
+        @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
         public ResponseEntity<APIResponse<SubmissionReviewResponse>> gradePeerReview(
                         @PathVariable Long classId,
                         @PathVariable Long reviewId,

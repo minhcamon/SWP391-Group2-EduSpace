@@ -1,5 +1,7 @@
 package org.eduspace.backend.dto.course.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +20,6 @@ public class CourseProgressResponse {
     private Long currentLessonId;
     private String currentLessonTitle;
     private String currentModuleTitle;
+    @JsonProperty("isCompleted")
+    private boolean isCompleted;
 }

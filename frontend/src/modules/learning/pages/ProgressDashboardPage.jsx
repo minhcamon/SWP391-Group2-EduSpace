@@ -66,6 +66,7 @@ const ProgressDashboardPage = () => {
               currentModule={currentModule}
               partner={partner}
               handleContinueLearning={handleContinueLearning}
+              classId={classId}
             />
           </section>
         </div>

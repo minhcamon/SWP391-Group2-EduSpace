@@ -1,16 +1,17 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Menu, X, Search, ArrowLeftRight } from "lucide-react";
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router";
-import AvatarDropDown from "../common/AvatarDropDown";
-import Avatar from "../common/Avatar";
-import Logo from "../common/Logo";
+import { useAuth } from '@/contexts/AuthContext'
+import { Bell, Menu, X, Search, ArrowLeftRight } from 'lucide-react'
+import { useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router'
+import AvatarDropDown from '../common/AvatarDropDown'
+import Avatar from '../common/Avatar'
+import Logo from '../common/Logo'
+import NotificationDropdown from '../common/NotificationDropdown'
 
 const Header = () => {
-  const { user, setMode } = useAuth();
-  const navigate = useNavigate();
-  const [showDropDown, setShowDropDown] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const { user, setMode } = useAuth()
+  const navigate = useNavigate()
+  const [showDropDown, setShowDropDown] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-border-light/35 shadow-sm transition-all duration-200">
@@ -23,13 +24,13 @@ const Header = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
-
             <NavLink
               to="/courses"
               className={({ isActive }) =>
-                `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-neutral-medium hover:text-primary"
+                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                  isActive
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-neutral-medium hover:text-primary'
                 }`
               }
             >
@@ -39,15 +40,15 @@ const Header = () => {
             <NavLink
               to="/my-learning"
               className={({ isActive }) =>
-                `text-sm font-semibold transition-all duration-200 py-1.5 ${isActive
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-neutral-medium hover:text-primary"
+                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                  isActive
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-neutral-medium hover:text-primary'
                 }`
               }
             >
               Học tập của tôi
             </NavLink>
-
           </nav>
 
           {/* Search Bar (Desktop) */}
@@ -65,34 +66,30 @@ const Header = () => {
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
             {/* Switch to Mentor Mode Button (Desktop) */}
-            {user && (user.isMentor || user.role === "CREATOR" || user.role === "ADMIN") && (
-              <button
-                onClick={() => {
-                  setMode("MENTOR");
-                  navigate("/mentor");
-                }}
-                className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-              >
-                <ArrowLeftRight size={13} />
-                <span>Trang quản lý Mentor</span>
-              </button>
-            )}
+            {user &&
+              (user.isMentor ||
+                user.role === 'CREATOR' ||
+                user.role === 'ADMIN') && (
+                <button
+                  onClick={() => {
+                    setMode('MENTOR')
+                    navigate('/mentor')
+                  }}
+                  className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+                >
+                  <ArrowLeftRight size={13} />
+                  <span>Trang quản lý Mentor</span>
+                </button>
+              )}
 
-            {/* Notification Bell (Only if Logged In) */}
-            {user && (
-                            <button className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                                <Bell size={22} />
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary rounded-full"></span>
-                            </button>
-                        )}
+            {/* Notification Bell */}
+            <NotificationDropdown />
 
             {/* User Profile Dropdown or Authentication Buttons */}
             {user ? (
               <div className="relative inline-block text-left">
                 <button
-                  onClick={() =>
-                    setShowDropDown(!showDropDown)
-                  }
+                  onClick={() => setShowDropDown(!showDropDown)}
                   className="hover:cursor-pointer flex items-center justify-center rounded-full p-0.5 border border-slate-200 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                 >
                   <Avatar
@@ -105,9 +102,7 @@ const Header = () => {
                   <>
                     <div
                       className="fixed inset-0 z-10"
-                      onClick={() =>
-                        setShowDropDown(false)
-                      }
+                      onClick={() => setShowDropDown(false)}
                     ></div>
                     <AvatarDropDown />
                   </>
@@ -135,11 +130,7 @@ const Header = () => {
               onClick={() => setShowMobileMenu(!showMobileMenu)}
               className="md:hidden text-neutral-medium hover:text-primary focus:outline-none p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              {showMobileMenu ? (
-                <X size={22} />
-              ) : (
-                <Menu size={22} />
-              )}
+              {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
@@ -177,9 +168,10 @@ const Header = () => {
               to="/courses"
               onClick={() => setShowMobileMenu(false)}
               className={({ isActive }) =>
-                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-neutral-medium hover:bg-slate-50 hover:text-primary"
+                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
                 }`
               }
             >
@@ -187,19 +179,23 @@ const Header = () => {
             </NavLink>
 
             {/* Switch to Mentor Mode Button (Mobile) */}
-            {user && (user.isMentor || user.role === "CREATOR" || user.role === "ADMIN" || user.username?.startsWith("mentor")) && (
-              <button
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  setMode("MENTOR");
-                  navigate("/mentor");
-                }}
-                className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
-              >
-                <ArrowLeftRight size={14} />
-                <span>Trang quản lý Mentor</span>
-              </button>
-            )}
+            {user &&
+              (user.isMentor ||
+                user.role === 'CREATOR' ||
+                user.role === 'ADMIN' ||
+                user.username?.startsWith('mentor')) && (
+                <button
+                  onClick={() => {
+                    setShowMobileMenu(false)
+                    setMode('MENTOR')
+                    navigate('/mentor')
+                  }}
+                  className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                >
+                  <ArrowLeftRight size={14} />
+                  <span>Trang quản lý Mentor</span>
+                </button>
+              )}
             {/* {user && (
                             <NavLink
                                 to="/my-learning"
@@ -265,7 +261,7 @@ const Header = () => {
         </div>
       )}
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

@@ -40,7 +40,7 @@ public class IncidentController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     @Operation(summary = "Get my incidents", description = "Lấy danh sách các yêu cầu đã gửi của learner")
     public ResponseEntity<APIResponse<List<IncidentListResponse>>> getMyIncidents() {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -49,7 +49,7 @@ public class IncidentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MENTOR') or hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
     @Operation(summary = "Get incident details", description = "Lấy chi tiết một sự cố")
     public ResponseEntity<APIResponse<IncidentDetailResponse>> getIncidentDetail(@PathVariable("id") Long incidentId) {
         Long userId = SecurityUtil.getCurrentUserId();

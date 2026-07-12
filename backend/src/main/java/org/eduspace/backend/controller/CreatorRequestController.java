@@ -103,7 +103,7 @@ public class CreatorRequestController {
             @ApiResponse(responseCode = "403", description = "Không có quyền Learner")
     })
     @PostMapping("/send")
-    @PreAuthorize("hasRole('LEARNER')")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR')")
     public ResponseEntity<APIResponse<String>> sendCreatorRequest() {
 
         // Lấy ID của Learner đang đăng nhập từ Security Context (tiện và bảo mật)
