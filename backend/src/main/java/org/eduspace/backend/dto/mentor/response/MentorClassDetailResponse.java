@@ -23,4 +23,5 @@ public class MentorClassDetailResponse {
     private String courseDescription;
     private List<MentorResponse> mentors;
     private long numberOfPairs;
+    private List<MentorModuleResponse> modules;
 }

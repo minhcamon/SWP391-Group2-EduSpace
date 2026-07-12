@@ -22,8 +22,16 @@ public class IncidentService {
     private final ClassMemberRepository classMemberRepository;
 
     public List<IncidentListResponse> getIncidents(Long userId) {
-        List<Incident> incidents = incidentRepository.findByResolvedByUserIdAndStatus(userId,
-                IncidentStatus.IN_PROGRESS);
+        List<ClassMember> managedClasses = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
+        if (managedClasses.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> classIds = managedClasses.stream()
+                .map(cm -> cm.getCourseClass().getId())
+                .toList();
+
+        List<Incident> incidents = incidentRepository.findByReporterCourseClassIds(classIds);
         return incidents.stream().map(this::toListResponse).toList();
     }
 
@@ -36,12 +44,18 @@ public class IncidentService {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident not found"));
 
-        boolean isMentorAssigned = incident.getResolvedBy() != null && incident.getResolvedBy().getUser() != null
-                && incident.getResolvedBy().getUser().getId().equals(userId);
+        boolean isMentorOfClass = false;
+        if (incident.getReporter() != null && incident.getReporter().getCourseClass() != null) {
+            Long classId = incident.getReporter().getCourseClass().getId();
+            isMentorOfClass = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+                .map(cm -> "MENTOR".equals(cm.getContextRole()))
+                .orElse(false);
+        }
+
         boolean isReporter = incident.getReporter() != null && incident.getReporter().getUser() != null
                 && incident.getReporter().getUser().getId().equals(userId);
 
-        if (!isMentorAssigned && !isReporter) {
+        if (!isMentorOfClass && !isReporter) {
             throw new RuntimeException("Incident not found or you don't have permission to access it");
         }
 
