@@ -1,9 +1,9 @@
 
-import { Award, Sparkles, Calendar, Gift, CheckCircle, Info } from "lucide-react"
+import { Award, Calendar, Gift, CheckCircle, Info } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
 
-export const MentorInvitation = ({ isOpen, onOpen, onClose }) => {
+export const MentorInvitation = ({ isOpen, onClose }) => {
   const { user } = useAuth()
   const userName = user?.fullName || "Lê Hoàng Nam"
 
@@ -16,21 +16,6 @@ export const MentorInvitation = ({ isOpen, onOpen, onClose }) => {
 
   return (
     <>
-      {/* Floating Sparkly Mentor Bubble Button */}
-      {!isOpen && (
-        <div className="fixed bottom-8 right-8 z-50 flex items-center gap-3 group">
-          <div className="bg-neutral-dark text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md opacity-0 group-hover:opacity-100 transition-opacity select-none shrink-0">
-            Trở thành Mentor! 🌟
-          </div>
-          <button
-            onClick={onOpen}
-            className="w-14 h-14 bg-secondary hover:bg-secondary/95 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-[0.95] transition-all cursor-pointer border-2 border-white animate-pulse"
-            title="Đăng ký làm Mentor"
-          >
-            <Sparkles className="w-6 h-6 animate-spin-slow" />
-          </button>
-        </div>
-      )}
 
       {/* Mentor Invitation Modal Overlay */}
       {isOpen && (
