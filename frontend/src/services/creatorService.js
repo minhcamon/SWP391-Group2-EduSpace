@@ -100,9 +100,12 @@ const creatorService = {
         }
     },
 
-    getAnalytics: async () => {
+    getAnalytics: async (courseId, timeRange) => {
         try {
-            const res = await api.get("/creator/analytics");
+            const params = {};
+            if (courseId) params.courseId = courseId;
+            if (timeRange) params.timeRange = timeRange;
+            const res = await api.get("/creator/analytics", { params });
             return res.data.data;
         } catch (error) {
             console.error('getAnalytics error at creatorService:', error);

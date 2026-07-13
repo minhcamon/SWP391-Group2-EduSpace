@@ -47,7 +47,7 @@ export default function CreatorAnalytics() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true)
-        const res = await creatorService.getAnalytics()
+        const res = await creatorService.getAnalytics(selectedCourse, timeRange)
         setData(res)
         setError(null)
       } catch (err) {
@@ -58,7 +58,7 @@ export default function CreatorAnalytics() {
       }
     }
     fetchAnalytics()
-  }, [])
+  }, [selectedCourse, timeRange])
 
   if (loading) {
     return (
