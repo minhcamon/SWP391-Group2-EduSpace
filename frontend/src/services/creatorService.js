@@ -98,6 +98,17 @@ const creatorService = {
             const errorMsg = error.response?.data?.message || 'Không thể phê duyệt bàn giao!';
             throw new Error(errorMsg);
         }
+    },
+
+    getAnalytics: async () => {
+        try {
+            const res = await api.get("/creator/analytics");
+            return res.data.data;
+        } catch (error) {
+            console.error('getAnalytics error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải dữ liệu thống kê!';
+            throw new Error(errorMsg, { cause: error });
+        }
     }
 }
 
