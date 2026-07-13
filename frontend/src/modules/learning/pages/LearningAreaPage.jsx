@@ -6,17 +6,16 @@ import {
   MessageSquare,
   Send,
   X,
-  LifeBuoy,
-} from "lucide-react";
-import { toast } from "sonner";
-import VideoPlayer from "../components/VideoPlayer";
-import PairChat from "../components/PairChat";
-import CourseSidebar from "../components/CourseSidebar";
-import StudyGroup from "../components/StudyGroup";
-import useLearningArea from "../hooks/useLearningArea";
-import Badge from "@/components/ui/Badge";
-import Avatar from "@/components/common/Avatar";
-
+  LifeBuoy
+} from 'lucide-react'
+import { toast } from 'sonner'
+import VideoPlayer from '../components/VideoPlayer'
+import PairChat from '../components/PairChat'
+import CourseSidebar from '../components/CourseSidebar'
+import StudyGroup from '../components/StudyGroup'
+import useLearningArea from '../hooks/useLearningArea'
+import Badge from '@/components/ui/Badge'
+import Avatar from '@/components/common/Avatar'
 
 const LearningAreaPage = () => {
   const {
@@ -52,12 +51,14 @@ const LearningAreaPage = () => {
     handleSelectLesson,
     handleSelectAssignment,
     progressPercent,
-    resolvedClassId,
-  } = useLearningArea();
+    resolvedClassId
+  } = useLearningArea()
 
   const handleRequestMentorSupport = () => {
-    toast.success("Đã gửi yêu cầu hỗ trợ đến Mentor lớp! Mentor sẽ tham gia hỗ trợ trong ít phút.");
-  };
+    toast.success(
+      'Đã gửi yêu cầu hỗ trợ đến Mentor lớp! Mentor sẽ tham gia hỗ trợ trong ít phút.'
+    )
+  }
 
   if (isLoading) {
     return (
@@ -69,7 +70,7 @@ const LearningAreaPage = () => {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -96,7 +97,10 @@ const LearningAreaPage = () => {
             onClick={handleRequestMentorSupport}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-secondary text-secondary bg-white hover:bg-secondary/5 hover:scale-[0.98] transition-all text-xs font-bold cursor-pointer active:scale-95 shadow-xs"
           >
-            <LifeBuoy size={14} className="animate-pulse text-secondary" />
+            <LifeBuoy
+              size={14}
+              className="animate-pulse text-secondary"
+            />
             <span className="hidden sm:inline">Yêu cầu Mentor hỗ trợ</span>
             <span className="inline sm:hidden">Cần hỗ trợ</span>
           </button>
@@ -106,8 +110,8 @@ const LearningAreaPage = () => {
             onClick={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-xs font-bold cursor-pointer ${
               isChatSidebarOpen
-                ? "bg-primary text-white border-primary shadow-sm"
-                : "bg-bg-card border-border-light/70 text-neutral-medium hover:text-primary hover:border-primary hover:bg-hover-light"
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-bg-card border-border-light/70 text-neutral-medium hover:text-primary hover:border-primary hover:bg-hover-light'
             }`}
           >
             <MessageSquare size={14} />
@@ -131,7 +135,7 @@ const LearningAreaPage = () => {
             <span className="text-xs font-semibold text-neutral-medium">
               Tiến độ
             </span>
-            <Badge variant={progressPercent === 100 ? "approved" : "secondary"}>
+            <Badge variant={progressPercent === 100 ? 'approved' : 'secondary'}>
               {progressPercent}% Hoàn thành
             </Badge>
           </div>
@@ -188,7 +192,7 @@ const LearningAreaPage = () => {
               </div>
             )}
 
-            <PairChat
+            {/* <PairChat
               activeTab={activeTab}
               onTabChange={setActiveTab}
               sharedNotes={sharedNotes}
@@ -197,7 +201,7 @@ const LearningAreaPage = () => {
               onDownloadMaterial={(file) =>
                 toast.success(`Đang tải file ${file.name}`)
               }
-            />
+            /> */}
 
             {/* Mark completed block */}
             <div className="mt-6 py-6 border-t border-border-light flex flex-col items-center gap-4 text-center">
@@ -211,14 +215,14 @@ const LearningAreaPage = () => {
                   disabled={isCompleted}
                   className={`w-full py-3.5 px-8 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
                     isCompleted
-                      ? "bg-hover-light/60 text-neutral-light cursor-not-allowed border border-border-light/40"
-                      : "bg-secondary text-white hover:shadow-md hover:bg-secondary/90 hover:scale-[1.01]"
+                      ? 'bg-hover-light/60 text-neutral-light cursor-not-allowed border border-border-light/40'
+                      : 'bg-secondary text-white hover:shadow-md hover:bg-secondary/90 hover:scale-[1.01]'
                   }`}
                 >
                   <CheckCircle size={18} />
                   {isCompleted
-                    ? "Bài học đã hoàn thành"
-                    : "Đánh dấu hoàn thành bài học"}
+                    ? 'Bài học đã hoàn thành'
+                    : 'Đánh dấu hoàn thành bài học'}
                 </button>
               </div>
             </div>
@@ -229,14 +233,17 @@ const LearningAreaPage = () => {
         <div
           className={`shrink-0 h-full border-l border-border-light bg-bg-sidebar/90 backdrop-blur-md flex flex-col transition-all duration-300 z-30 ${
             isChatSidebarOpen
-              ? "w-[300px] sm:w-[350px] translate-x-0"
-              : "w-0 translate-x-full md:translate-x-0 overflow-hidden border-l-0"
+              ? 'w-[300px] sm:w-[350px] translate-x-0'
+              : 'w-0 translate-x-full md:translate-x-0 overflow-hidden border-l-0'
           }`}
         >
           {/* Chat Header */}
           <div className="p-4 border-b border-border-light flex items-center justify-between bg-white shrink-0">
             <div className="flex items-center gap-2">
-              <MessageSquare size={16} className="text-primary" />
+              <MessageSquare
+                size={16}
+                className="text-primary"
+              />
               <h3 className="font-bold text-sm text-neutral-dark">
                 Trò chuyện nhóm
               </h3>
@@ -254,7 +261,7 @@ const LearningAreaPage = () => {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 ${msg.isMe ? "flex-row-reverse" : "flex-row"}`}
+                className={`flex gap-2.5 ${msg.isMe ? 'flex-row-reverse' : 'flex-row'}`}
               >
                 {!msg.isMe && (
                   <div
@@ -262,9 +269,9 @@ const LearningAreaPage = () => {
                       const p = studyGroup.find(
                         (m) =>
                           m.name === msg.sender ||
-                          msg.sender.startsWith(m.name.split(" ")[0]),
-                      );
-                      if (p) setSelectedPartner(p);
+                          msg.sender.startsWith(m.name.split(' ')[0])
+                      )
+                      if (p) setSelectedPartner(p)
                     }}
                     className="cursor-pointer hover:scale-105 transition-transform shrink-0"
                     title={`Xem hồ sơ của ${msg.sender}`}
@@ -282,13 +289,13 @@ const LearningAreaPage = () => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[75%] flex flex-col ${msg.isMe ? "items-end" : "items-start"}`}
+                  className={`max-w-[75%] flex flex-col ${msg.isMe ? 'items-end' : 'items-start'}`}
                 >
                   <div
                     className={`p-3 rounded-2xl shadow-xs text-xs leading-relaxed ${
                       msg.isMe
-                        ? "bg-primary text-white rounded-tr-none"
-                        : "bg-white text-neutral-dark rounded-tl-none border border-border-light/35"
+                        ? 'bg-primary text-white rounded-tr-none'
+                        : 'bg-white text-neutral-dark rounded-tl-none border border-border-light/35'
                     }`}
                   >
                     {msg.videoTime && (
@@ -328,7 +335,7 @@ const LearningAreaPage = () => {
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default LearningAreaPage;
+export default LearningAreaPage
