@@ -22,7 +22,9 @@ export const useClassDetail = (classId) => {
         setClassDetail(detailData);
         if (detailData && detailData.modules) {
           setModules(detailData.modules);
-          const activeModule = detailData.modules.find(m => m.status === "ACTIVE") || detailData.modules[0];
+          const activeModule = detailData.modules.find(m => m.status === "ACTIVE")
+            || detailData.modules.find(m => m.status !== "COMPLETED")
+            || detailData.modules[0];
           if (activeModule) {
             setSelectedModuleId(activeModule.id);
           }

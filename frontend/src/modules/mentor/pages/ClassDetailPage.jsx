@@ -106,9 +106,11 @@ const ClassDetailPage = () => {
         );
     }
 
-    const activeModule = modules.find((m) => m.status === "ACTIVE");
+    const activeModule = modules.find((m) => m.status === "ACTIVE")
+        || modules.find((m) => m.status !== "COMPLETED")
+        || modules[modules.length - 1];
     const nextModule = modules.find((m) => m.status === "LOCKED");
-    const showReminder = activeModule && activeModule.completionRate >= 80;
+    const showReminder = activeModule && activeModule.status === "ACTIVE" && activeModule.completionRate >= 80;
 
     return (
         <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
