@@ -15,18 +15,22 @@ import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
+import org.eduspace.backend.dto.study_group.response.ClassLeaderboardResponse;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.entity.GroupMessage;
 import org.eduspace.backend.entity.PeerReview;
 import org.eduspace.backend.entity.StudyGroup;
 import org.eduspace.backend.entity.Submission;
+import org.eduspace.backend.repository.ClassRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.GroupMessageRepository;
 import org.eduspace.backend.repository.PeerReviewRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.eduspace.backend.dto.study_group.response.ClassDetailResponse;
+import org.eduspace.backend.entity.CourseClass;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -44,6 +48,22 @@ public class StudyGroupService {
         private final ProgressService progressService;
         private final SubmissionRepository submissionRepository;
         private final PeerReviewRepository peerReviewRepository;
+        private final ClassRepository classRepository;
+
+        public ClassDetailResponse getClassDetail(Long classId) {
+                CourseClass cc = classRepository.findById(classId)
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+                int totalStudents = classMemberRepository.findByCourseClassIdAndContextRole(classId, "LEARNER").size();
+
+                return ClassDetailResponse.builder()
+                                .classId(cc.getId())
+                                .cohortName(cc.getName())
+                                .courseId(cc.getCourse().getId())
+                                .courseTitle(cc.getCourse().getTitle())
+                                .status(cc.getStatus().name())
+                                .totalStudents(totalStudents)
+                                .build();
+        }
 
         public ClassMember findPartnerForModule(ClassMember learner, Long moduleId) {
                 List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(learner.getId());
@@ -442,6 +462,90 @@ public class StudyGroupService {
                                 .courseName(courseName)
                                 .className(className)
                                 .peerReviews(items)
+                                .build();
+        }
+
+        public ClassLeaderboardResponse getClassLeaderboard(Long classId, Long currentUserId) {
+                CourseClass cc = classRepository.findById(classId)
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+                Long courseId = cc.getCourse().getId();
+
+                // 1. Get all active learners in class
+                List<ClassMember> learners = classMemberRepository.findByCourseClassIdAndContextRole(classId, "LEARNER").stream()
+                                .filter(cm -> cm.getLearnerStatus() == org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                                .collect(Collectors.toList());
+
+                // Calculate progress for each learner and build IndividualEntry list
+                List<ClassLeaderboardResponse.IndividualEntry> individuals = new ArrayList<>();
+                for (ClassMember cm : learners) {
+                        double progressPercentage = progressService.getLearnerProgressPercentage(cm.getId(), courseId);
+                        individuals.add(ClassLeaderboardResponse.IndividualEntry.builder()
+                                        .userId(cm.getUser().getId())
+                                        .name(cm.getUser().getFullName() != null ? cm.getUser().getFullName() : cm.getUser().getUsername())
+                                        .avatar(cm.getUser().getAvatarUrl())
+                                        .progress((int) Math.round(progressPercentage))
+                                        .isSelf(cm.getUser().getId().equals(currentUserId))
+                                        .build());
+                }
+
+                // Sort individuals by progress descending
+                individuals.sort((a, b) -> Integer.compare(b.getProgress(), a.getProgress()));
+                // Set rank for each individual
+                for (int i = 0; i < individuals.size(); i++) {
+                        individuals.get(i).setRank(i + 1);
+                }
+
+                // 2. Get study groups (pairs) in class
+                List<StudyGroup> groups = studyGroupRepository.findByCourseClassId(classId);
+                List<ClassLeaderboardResponse.PairEntry> pairs = new ArrayList<>();
+
+                for (StudyGroup g : groups) {
+                        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(g.getId());
+                        List<String> avatars = new ArrayList<>();
+                        double sumProgress = 0.0;
+                        int memberCount = 0;
+                        boolean pairIsSelf = false;
+
+                        List<String> memberNames = new ArrayList<>();
+                        for (GroupMember gm : groupMembers) {
+                                ClassMember cm = gm.getClassMember();
+                                avatars.add(cm.getUser().getAvatarUrl());
+                                memberNames.add(cm.getUser().getFullName() != null ? cm.getUser().getFullName() : cm.getUser().getUsername());
+                                double progressPercentage = progressService.getLearnerProgressPercentage(cm.getId(), courseId);
+                                sumProgress += progressPercentage;
+                                memberCount++;
+                                if (cm.getUser().getId().equals(currentUserId)) {
+                                        pairIsSelf = true;
+                                }
+                        }
+
+                        int avgProgress = memberCount > 0 ? (int) Math.round(sumProgress / memberCount) : 0;
+                        String pairName = "Cặp #" + g.getId();
+                        if (memberNames.size() == 1) {
+                                pairName = memberNames.get(0) + " (Độc hành)";
+                        } else if (memberNames.size() >= 2) {
+                                pairName = String.join(" & ", memberNames);
+                        }
+
+                        pairs.add(ClassLeaderboardResponse.PairEntry.builder()
+                                        .studyGroupId(g.getId())
+                                        .name(pairName)
+                                        .avatars(avatars)
+                                        .progress(avgProgress)
+                                        .isSelf(pairIsSelf)
+                                        .build());
+                }
+
+                // Sort pairs by progress descending
+                pairs.sort((a, b) -> Integer.compare(b.getProgress(), a.getProgress()));
+                // Set rank for each pair
+                for (int i = 0; i < pairs.size(); i++) {
+                        pairs.get(i).setRank(i + 1);
+                }
+
+                return ClassLeaderboardResponse.builder()
+                                .individual(individuals)
+                                .pairs(pairs)
                                 .build();
         }
 }
