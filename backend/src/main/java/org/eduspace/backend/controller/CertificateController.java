@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/classes")
+@RequestMapping("/api/certificate")
 @RequiredArgsConstructor
 public class CertificateController {
 
     private final CertificateService certificateService;
 
-    @GetMapping("/{classId}/certificate")
+    @GetMapping("/{classId}")
     public ResponseEntity<CertificateResponse> getCertificateDetails(@PathVariable Long classId) {
         Long userId = SecurityUtil.getCurrentUserId();
         CertificateResponse response = certificateService.getCertificateDetails(classId, userId);
