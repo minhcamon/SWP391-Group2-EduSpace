@@ -10,25 +10,36 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import EmptyState from "@/components/ui/EmptyState";
 import { Inbox } from "lucide-react";
+import { useSearchParams } from "react-router";
 
 const ListCoursesPage = () => {
     const [courses, setCourses] = useState([]);
+    const [searchParams] = useSearchParams();
+    const search = searchParams.get("search") || "";
 
     useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const data = await courseService.getPublishedCourses();
+                setCourses(data);
+            } catch (error) {
+                console.error("Lỗi fetch khóa học tại ListCoursesPage: ", error);
+                toast.error("Lỗi khi tải khóa học");
+            }
+        };
         fetchCourses();
     }, []);
 
-    const fetchCourses = async () => {
-        try {
-            const data = await courseService.getPublishedCourses();
-            setCourses(data);
-        } catch (error) {
-            console.error("Lỗi fetch khóa học tại ListCoursesPage: ", error);
-            toast.error("Lỗi khi tải khóa học");
-        }
-    };
+    const filteredCourses = courses.filter((course) => {
+        const query = search.toLowerCase().trim();
+        if (!query) return true;
+        return (
+            (course.title && course.title.toLowerCase().includes(query)) ||
+            (course.description && course.description.toLowerCase().includes(query))
+        );
+    });
 
-    const getCourseLength = courses.length;
+    const getCourseLength = filteredCourses.length;
 
     return (
         <main className="w-full mx-auto px-4 grow container">
@@ -47,20 +58,30 @@ const ListCoursesPage = () => {
             </Card>
 
             <div className="mt-5">
-                Hiện tại đang có{" "}
+                {search ? (
+                    <>
+                        Kết quả tìm kiếm cho "
+                        <strong className="text-primary">{search}</strong>
+                        ": Có{" "}
+                    </>
+                ) : (
+                    "Hiện tại đang có "
+                )}
                 <strong className="text-secondary">{getCourseLength}</strong>{" "}
                 khóa học
             </div>
 
-            {courses.length == 0 ? (
+            {filteredCourses.length == 0 ? (
                 <div className="mt-4 pb-2">
                     <EmptyState icon={Inbox}>
-                        Hiện tại chưa có khóa học nào
+                        {search
+                            ? "Không tìm thấy khóa học nào phù hợp với tìm kiếm của bạn"
+                            : "Hiện tại chưa có khóa học nào"}
                     </EmptyState>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
-                    {courses.map((course) => (
+                    {filteredCourses.map((course) => (
                         <CourseItem key={course.id} course={course} />
                     ))}
                 </div>
