@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router'
-import { mockClasses } from '@/lib/mockData'
 import classService from '@/services/classService'
+import { toast } from 'sonner'
 
 export const useClassDetails = (classId) => {
   const [searchParams] = useSearchParams()
@@ -13,24 +13,25 @@ export const useClassDetails = (classId) => {
     const fetchClassDetails = async () => {
       try {
         setIsLoading(true)
-        const rawClass = mockClasses[classId] || mockClasses['1']
-        if (rawClass) {
-          const urlStatus = searchParams.get('status')
-          const finalStatus = urlStatus
-            ? urlStatus.toUpperCase()
-            : rawClass.status
+        const classDetailRes = await classService.getClassById(classId)
+        const classInfo = classDetailRes.data
+
+        if (classInfo) {
           const updatedClassData = {
-            ...rawClass,
-            classId: classId,
-            cohortName:
-              classId === 'L04'
-                ? 'Lớp L04'
-                : classId === 'L05'
-                  ? 'Lớp L05'
-                  : rawClass.cohortName,
-            status: finalStatus
+            classId: classInfo.classId,
+            cohortName: classInfo.cohortName,
+            courseId: classInfo.courseId,
+            courseTitle: classInfo.courseTitle,
+            status: classInfo.status,
+            totalStudents: classInfo.totalStudents,
+            activePersonnel: [],
+            leaderboard: {
+              individual: [],
+              pairs: []
+            }
           }
 
+          // 1. Fetch community groups (pairs)
           try {
             const communityResponse = await classService.getCommunity(classId)
             const communityData = communityResponse?.data
@@ -44,9 +45,17 @@ export const useClassDetails = (classId) => {
                     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100'
                 }))
 
+                const memberNames = members.map(m => m.name)
+                let pairName = `Nhóm ${String(idx + 1).padStart(2, '0')}`
+                if (memberNames.length === 1) {
+                  pairName = `${memberNames[0]} (Độc hành)`
+                } else if (memberNames.length >= 2) {
+                  pairName = memberNames.join(' & ')
+                }
+
                 return {
                   id: group.studyGroupId || idx,
-                  pairName: `Nhóm ${String(idx + 1).padStart(2, '0')}`,
+                  pairName,
                   status:
                     group.status === 'ACTIVE' || group.status === 'OPENING'
                       ? 'ACTIVE'
@@ -63,6 +72,19 @@ export const useClassDetails = (classId) => {
             )
           }
 
+          // 2. Fetch Leaderboard ranking
+          try {
+            const leaderboardRes = await classService.getClassLeaderboard(classId)
+            if (leaderboardRes && leaderboardRes.data) {
+              updatedClassData.leaderboard = {
+                individual: leaderboardRes.data.individual || [],
+                pairs: leaderboardRes.data.pairs || []
+              }
+            }
+          } catch (leaderboardErr) {
+            console.warn('Failed to fetch class leaderboard:', leaderboardErr)
+          }
+
           setClassData(updatedClassData)
         } else {
           setError('Không tìm thấy thông tin lớp học.')
@@ -77,34 +99,15 @@ export const useClassDetails = (classId) => {
     fetchClassDetails()
   }, [classId, searchParams])
 
-  const addReaction = (feedId, emoji) => {
-    setClassData((prev) => {
-      if (!prev) return prev
-      const updatedFeed = prev.activeFeed.map((item) => {
-        if (item.id === feedId) {
-          const updatedReactions = item.reactions.map((r) => {
-            if (r.emoji === emoji) {
-              return {
-                ...r,
-                count: r.userReacted ? r.count - 1 : r.count + 1,
-                userReacted: !r.userReacted
-              }
-            }
-            return r
-          })
-          return { ...item, reactions: updatedReactions }
-        }
-        return item
-      })
-      return { ...prev, activeFeed: updatedFeed }
-    })
+  const findStudyBuddy = () => {
+    toast.info('Đang tìm kiếm bạn học đồng hành...')
   }
 
   return {
     classData,
     isLoading,
     error,
-    addReaction
+    findStudyBuddy
   }
 }
 

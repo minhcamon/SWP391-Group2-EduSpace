@@ -44,9 +44,8 @@ export const ClassLeaderboard = ({
         {/* Header */}
         <div className="grid grid-cols-12 gap-3 px-6 py-4 border-b border-border-light/25 bg-bg-card/40 font-semibold text-xs text-neutral-light uppercase tracking-wider">
           <div className="col-span-2">Hạng</div>
-          <div className="col-span-5">Thành viên</div>
-          <div className="col-span-3 text-center">Tiến độ</div>
-          <div className="col-span-2 text-right">Điểm số</div>
+          <div className="col-span-6">Thành viên</div>
+          <div className="col-span-4 text-center">Tiến độ</div>
         </div>
 
         {/* Body */}
@@ -75,7 +74,7 @@ export const ClassLeaderboard = ({
                   </span>
                 </div>
 
-                <div className="col-span-5 flex items-center gap-3">
+                <div className="col-span-6 flex items-center gap-3">
                   <Avatar
                     src={item.avatar}
                     alt={item.name}
@@ -89,13 +88,15 @@ export const ClassLeaderboard = ({
                     >
                       {item.name} {item.isSelf && "(Bạn)"}
                     </p>
-                    <p className="text-[11px] text-neutral-light">
-                      {item.target}
-                    </p>
+                    {item.target && (
+                      <p className="text-[11px] text-neutral-light">
+                        {item.target}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="col-span-3 px-2">
+                <div className="col-span-4 px-2">
                   <div className="flex justify-between items-center text-[10px] text-neutral-medium mb-1">
                     <span>Hoàn thành {item.progress}%</span>
                   </div>
@@ -107,12 +108,6 @@ export const ClassLeaderboard = ({
                       style={{ width: `${item.progress}%` }}
                     />
                   </div>
-                </div>
-
-                <div className="col-span-2 text-right">
-                  <span className="text-sm font-bold text-primary">
-                    {item.points}
-                  </span>
                 </div>
               </div>
             ))
@@ -140,18 +135,16 @@ export const ClassLeaderboard = ({
                   </span>
                 </div>
 
-                <div className="col-span-5 flex items-center gap-3">
+                <div className="col-span-6 flex items-center gap-3">
                   <div className="flex -space-x-3">
-                    <Avatar
-                      src={item.avatars[0]}
-                      alt="Student 1"
-                      className="w-9 h-9 border-2 border-white"
-                    />
-                    <Avatar
-                      src={item.avatars[1]}
-                      alt="Student 2"
-                      className="w-9 h-9 border-2 border-white"
-                    />
+                    {item.avatars && item.avatars.map((avatar, idx) => (
+                      <Avatar
+                        key={idx}
+                        src={avatar}
+                        alt={`Student ${idx + 1}`}
+                        className="w-9 h-9 border-2 border-white"
+                      />
+                    ))}
                   </div>
                   <div>
                     <p
@@ -161,13 +154,15 @@ export const ClassLeaderboard = ({
                     >
                       {item.name}
                     </p>
-                    <p className="text-[11px] text-neutral-light">
-                      {item.detail}
-                    </p>
+                    {item.detail && (
+                      <p className="text-[11px] text-neutral-light">
+                        {item.detail}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <div className="col-span-3 px-2">
+                <div className="col-span-4 px-2">
                   <div className="flex justify-between items-center text-[10px] text-neutral-medium mb-1">
                     <span>TB {item.progress}%</span>
                   </div>
@@ -180,12 +175,6 @@ export const ClassLeaderboard = ({
                     />
                   </div>
                 </div>
-
-                <div className="col-span-2 text-right">
-                  <span className="text-sm font-bold text-primary">
-                    {item.points}
-                  </span>
-                </div>
               </div>
             ))
           )}
@@ -196,7 +185,7 @@ export const ClassLeaderboard = ({
             onClick={() => toast.info("Đang hiển thị toàn bộ thành viên...")}
             className="text-xs text-primary font-bold hover:underline cursor-pointer"
           >
-            Xem tất cả 10 thành viên
+            Xem tất cả {individualLeaderboard.length} thành viên
           </button>
         </div>
       </div>
