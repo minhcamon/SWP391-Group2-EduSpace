@@ -26,7 +26,7 @@ const courseService = {
       throw new Error(errorMsg);
     }
   },
-  
+
   getCourseByCreator: async () => {
     try {
       const response = await api.get('/course/my-courses');
@@ -39,9 +39,11 @@ const courseService = {
 
   },
 
-  getPublishedCourses: async () => {
+  getPublishedCourses: async (page = 0, size = 6) => {
     try {
-      const response = await api.get('/course/all');
+      const response = await api.get('/course/all', {
+        params: { page, size }
+      });
       return response.data.data;
     } catch (error) {
       console.error('Get Published Courses error at CourseService:', error);

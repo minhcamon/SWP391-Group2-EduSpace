@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
 import org.eduspace.backend.dto.mentor.request.AssignMentorRequestDto;
 import org.eduspace.backend.dto.mentor.request.HandoverRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
@@ -78,11 +79,11 @@ public class CreatorController {
     @GetMapping("/analytics")
     @PreAuthorize("hasRole('CREATOR')")
     @Operation(summary = "Get Creator Analytics", description = "Lấy dữ liệu thống kê phân tích của Creator")
-    public ResponseEntity<APIResponse<org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse>> getAnalytics(
+    public ResponseEntity<APIResponse<CreatorAnalyticsResponse>> getAnalytics(
             @RequestParam(required = false) String courseId,
             @RequestParam(required = false) String timeRange) {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId, courseId, timeRange);
+        CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId, courseId, timeRange);
         return ResponseEntity.ok(APIResponse.success("Get analytics successfully", response));
     }
 }

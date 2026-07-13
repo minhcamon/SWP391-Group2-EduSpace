@@ -10,7 +10,6 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.service.AuthService;
 import org.eduspace.backend.repository.UserRepository;
-import org.eduspace.backend.enums.Role;
 import org.eduspace.backend.enums.UserStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -31,7 +31,6 @@ public class CertificateService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
     private final CertificateRepository certificateRepository;
-    private final StudyGroupService groupService;
     private final NotificationService notificationService;
 
     @Transactional

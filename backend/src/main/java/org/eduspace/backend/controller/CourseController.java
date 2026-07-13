@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.common.APIResponse;
+import org.eduspace.backend.dto.common.PagedResponse;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
 import org.eduspace.backend.dto.course.request.UpdateCourseRequest;
 import org.eduspace.backend.dto.course.response.CourseProgressResponse;
@@ -165,10 +166,12 @@ public class CourseController {
             @ApiResponse(responseCode = "200", description = "Lấy danh sách khóa học thành công"),
     })
     @GetMapping("/all")
-    public ResponseEntity<APIResponse<List<CourseResponse>>> getAllPublishedCourses() {
+    public ResponseEntity<APIResponse<PagedResponse<CourseResponse>>> getAllPublishedCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
         Long currentUserId = SecurityUtil.getCurrentUserIdAndAllowNull();
 
-        List<CourseResponse> courses = courseService.getAllPublishedCourses(currentUserId);
+        PagedResponse<CourseResponse> courses = courseService.getAllPublishedCourses(currentUserId, page, size);
         return ResponseEntity.ok(
                 APIResponse.success("Successfully fetched courses", courses));
     }

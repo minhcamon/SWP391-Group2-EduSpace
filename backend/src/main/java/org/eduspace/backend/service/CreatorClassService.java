@@ -10,6 +10,7 @@ import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
@@ -203,7 +204,8 @@ public class CreatorClassService {
         for (Course c : targetCourses) {
             List<CourseClass> classes = classRepository.findByCourseId(c.getId());
             for (CourseClass cc : classes) {
-                List<ClassMember> learners = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "LEARNER");
+                List<ClassMember> learners = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(),
+                        "LEARNER");
                 for (ClassMember cm : learners) {
                     if (limitDate != null && cm.getJoinedAt() != null && cm.getJoinedAt().isBefore(limitDate)) {
                         continue;
@@ -255,9 +257,9 @@ public class CreatorClassService {
 
         // Build monthly trends dynamically from actual joinedAt dates
         List<CreatorAnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
-        java.time.LocalDate now = java.time.LocalDate.now();
+        LocalDate now = LocalDate.now();
         for (int i = 4; i >= 0; i--) {
-            java.time.LocalDate date = now.minusMonths(i);
+            LocalDate date = now.minusMonths(i);
             String monthLabel = "T" + date.getMonthValue();
             if (i == 0) {
                 monthLabel += " (Hiện tại)";
