@@ -11,7 +11,7 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
       <div className="p-6 grow flex flex-col justify-between">
         <div>
           {/* Title & Description */}
-          <h4 className="text-lg font-bold text-neutral-dark mb-1 group-hover:text-primary transition-colors duration-200">
+          <h4 className="text-lg font-bold text-neutral-dark mb-1 transition-colors duration-200">
             {course.courseName}
           </h4>
           <p className="text-xs font-semibold text-neutral-medium mb-6">
