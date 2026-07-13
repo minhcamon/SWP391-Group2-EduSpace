@@ -78,9 +78,11 @@ public class CreatorController {
     @GetMapping("/analytics")
     @PreAuthorize("hasRole('CREATOR')")
     @Operation(summary = "Get Creator Analytics", description = "Lấy dữ liệu thống kê phân tích của Creator")
-    public ResponseEntity<APIResponse<org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse>> getAnalytics() {
+    public ResponseEntity<APIResponse<org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse>> getAnalytics(
+            @RequestParam(required = false) String courseId,
+            @RequestParam(required = false) String timeRange) {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId);
+        org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId, courseId, timeRange);
         return ResponseEntity.ok(APIResponse.success("Get analytics successfully", response));
     }
 }

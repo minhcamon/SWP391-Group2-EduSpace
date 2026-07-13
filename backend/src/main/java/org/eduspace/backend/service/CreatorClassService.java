@@ -166,7 +166,7 @@ public class CreatorClassService {
         withdrawRequestRepository.save(request);
     }
 
-    public CreatorAnalyticsResponse getCreatorAnalytics(Long creatorId) {
+    public CreatorAnalyticsResponse getCreatorAnalytics(Long creatorId, String courseId, String timeRange) {
         // 1. Get courses created by this creator
         List<Course> creatorCourses = courseRepository.getCoursesByCreatorId(creatorId);
 
@@ -176,41 +176,44 @@ public class CreatorClassService {
             coursesList.add(new CreatorAnalyticsResponse.CourseOption(String.valueOf(c.getId()), c.getTitle()));
         }
 
-        // 2. Fetch all class members (learners) in courses created by this creator
+        // Filter courses list according to courseId param
+        List<Course> targetCourses = new ArrayList<>();
+        if (courseId != null && !courseId.equals("all")) {
+            Long targetCourseId = Long.parseLong(courseId);
+            Course c = courseRepository.findById(targetCourseId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+            if (!c.getCreator().getId().equals(creatorId)) {
+                throw new RuntimeException("Bạn không có quyền xem thống kê khóa học này");
+            }
+            targetCourses.add(c);
+        } else {
+            targetCourses.addAll(creatorCourses);
+        }
+
+        // Setup time range limit
+        LocalDateTime limitDate = null;
+        if ("7days".equals(timeRange)) {
+            limitDate = LocalDateTime.now().minusDays(7);
+        } else if ("30days".equals(timeRange)) {
+            limitDate = LocalDateTime.now().minusDays(30);
+        }
+
+        // 2. Fetch all class members (learners) in selected courses
         List<ClassMember> allLearners = new ArrayList<>();
-        for (Course c : creatorCourses) {
+        for (Course c : targetCourses) {
             List<CourseClass> classes = classRepository.findByCourseId(c.getId());
             for (CourseClass cc : classes) {
                 List<ClassMember> learners = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "LEARNER");
-                allLearners.addAll(learners);
+                for (ClassMember cm : learners) {
+                    if (limitDate != null && cm.getJoinedAt() != null && cm.getJoinedAt().isBefore(limitDate)) {
+                        continue;
+                    }
+                    allLearners.add(cm);
+                }
             }
         }
 
         int total = allLearners.size();
-        if (total == 0) {
-            // Default empty/fallback values
-            return CreatorAnalyticsResponse.builder()
-                    .courses(coursesList)
-                    .stats(CreatorAnalyticsResponse.Stats.builder()
-                            .totalEnrolled(0)
-                            .passedCount(0)
-                            .failedCount(0)
-                            .droppedCount(0)
-                            .passRate(0)
-                            .failRate(0)
-                            .dropRate(0)
-                            .avgScore(8.2)
-                            .build())
-                    .monthlyTrends(List.of(
-                            new CreatorAnalyticsResponse.MonthlyTrend("T1", 42),
-                            new CreatorAnalyticsResponse.MonthlyTrend("T2", 68),
-                            new CreatorAnalyticsResponse.MonthlyTrend("T3", 120),
-                            new CreatorAnalyticsResponse.MonthlyTrend("T4", 95),
-                            new CreatorAnalyticsResponse.MonthlyTrend("T5 (Hiện tại)", 145)
-                    ))
-                    .build();
-        }
-
         int dropped = 0;
         int failed = 0;
         int passed = 0;
@@ -225,10 +228,19 @@ public class CreatorClassService {
             }
         }
 
-        // Calculate rates
-        int passRate = (int) Math.round((double) passed / total * 100);
-        int failRate = (int) Math.round((double) failed / total * 100);
-        int dropRate = (int) Math.round((double) dropped / total * 100);
+        int passRate = 0;
+        int failRate = 0;
+        int dropRate = 0;
+        if (total > 0) {
+            passRate = (int) Math.round((double) passed / total * 100);
+            failRate = (int) Math.round((double) failed / total * 100);
+            dropRate = (int) Math.round((double) dropped / total * 100);
+
+            // Adjust sum to 100%
+            if (passRate + failRate + dropRate != 100) {
+                passRate = 100 - failRate - dropRate;
+            }
+        }
 
         CreatorAnalyticsResponse.Stats stats = CreatorAnalyticsResponse.Stats.builder()
                 .totalEnrolled(total)
@@ -238,17 +250,29 @@ public class CreatorClassService {
                 .passRate(passRate)
                 .failRate(failRate)
                 .dropRate(dropRate)
-                .avgScore(8.2)
+                .avgScore(total > 0 ? 8.2 : 0.0)
                 .build();
 
-        // Monthly Trend grouping
-        List<CreatorAnalyticsResponse.MonthlyTrend> trends = List.of(
-                new CreatorAnalyticsResponse.MonthlyTrend("T1", 42),
-                new CreatorAnalyticsResponse.MonthlyTrend("T2", 68),
-                new CreatorAnalyticsResponse.MonthlyTrend("T3", 120),
-                new CreatorAnalyticsResponse.MonthlyTrend("T4", 95),
-                new CreatorAnalyticsResponse.MonthlyTrend("T5 (Hiện tại)", total)
-        );
+        // Build monthly trends dynamically from actual joinedAt dates
+        List<CreatorAnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
+        java.time.LocalDate now = java.time.LocalDate.now();
+        for (int i = 4; i >= 0; i--) {
+            java.time.LocalDate date = now.minusMonths(i);
+            String monthLabel = "T" + date.getMonthValue();
+            if (i == 0) {
+                monthLabel += " (Hiện tại)";
+            }
+            final int targetMonth = date.getMonthValue();
+            final int targetYear = date.getYear();
+
+            long count = allLearners.stream()
+                    .filter(cm -> cm.getJoinedAt() != null
+                            && cm.getJoinedAt().getMonthValue() == targetMonth
+                            && cm.getJoinedAt().getYear() == targetYear)
+                    .count();
+
+            trends.add(new CreatorAnalyticsResponse.MonthlyTrend(monthLabel, (int) count));
+        }
 
         return CreatorAnalyticsResponse.builder()
                 .courses(coursesList)
