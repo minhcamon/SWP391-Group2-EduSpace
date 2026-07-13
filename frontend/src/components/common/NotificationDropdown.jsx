@@ -4,7 +4,7 @@ import { Bell, Info, Award, UserPlus, BookOpen } from "lucide-react";
 import useNotifications from "@/modules/shared-features/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const NotificationDropdown = () => {
+export const NotificationDropdown = ({ triggerClass = "text-neutral-medium hover:text-primary hover:bg-slate-50" }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
@@ -85,7 +85,7 @@ export const NotificationDropdown = () => {
     <div className="relative">
       <button
         onClick={() => setShowNotifications(!showNotifications)}
-        className="relative p-1.5 text-neutral-medium hover:text-primary rounded-full hover:bg-slate-50 transition-all duration-200 cursor-pointer focus:outline-none"
+        className={`relative p-1.5 rounded-full transition-all duration-200 cursor-pointer focus:outline-none ${triggerClass}`}
       >
         <Bell size={22} />
         {unreadCount > 0 && (
