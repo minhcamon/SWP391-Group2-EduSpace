@@ -74,4 +74,13 @@ public class CreatorController {
         creatorClassService.approveHandover(requestId, creatorId);
         return ResponseEntity.ok(APIResponse.success("Phê duyệt và hoàn tất bàn giao lớp học thành công!", null));
     }
+
+    @GetMapping("/analytics")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Get Creator Analytics", description = "Lấy dữ liệu thống kê phân tích của Creator")
+    public ResponseEntity<APIResponse<org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse>> getAnalytics() {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId);
+        return ResponseEntity.ok(APIResponse.success("Get analytics successfully", response));
+    }
 }

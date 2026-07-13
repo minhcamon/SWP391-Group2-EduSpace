@@ -30,4 +30,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     @Query("SELECT s FROM Submission s WHERE s.member.id IN :memberIds ORDER BY s.submittedAt DESC")
     List<Submission> findByMemberIds(@Param("memberIds") List<Long> memberIds);
+
+    List<Submission> findByMemberId(Long memberId);
 }
