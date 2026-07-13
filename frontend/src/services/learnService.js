@@ -153,7 +153,7 @@ const learnService = {
 
   getCertificateDetails: async (classId) => {
     try {
-      const response = await api.get(`/classes/${classId}/certificate`)
+      const response = await api.get(`/certificate/${classId}`)
       return response.data
     } catch (error) {
       console.error("Lỗi lấy thông tin chứng chỉ tại learnService:", error)
