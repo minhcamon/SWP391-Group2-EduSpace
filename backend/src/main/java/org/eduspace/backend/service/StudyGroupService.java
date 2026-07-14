@@ -203,18 +203,26 @@ public class StudyGroupService {
                 if (!"MENTOR".equals(mentorMembership.getContextRole())) {
                         throw new RuntimeException("You are not a mentor in this class");
                 }
-
+                
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
+                Long courseId = (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null)
+                                ? studyGroup.getCourseClass().getCourse().getId()
+                                : null;
+
                 List<MentorPairDetailResponse.PairMemberResponse> memberResponses = groupMembers.stream()
                                 .map(gm -> {
                                         ClassMember cm = gm.getClassMember();
+                                        int p = 0;
+                                        if (courseId != null) {
+                                                p = (int) Math.round(progressService.getLearnerProgressPercentage(cm.getId(), courseId));
+                                        }
                                         return MentorPairDetailResponse.PairMemberResponse.builder()
-                                                        .userId(cm.getUser() != null ? cm.getUser().getId() : null)
-                                                        .name(cm.getUser() != null ? cm.getUser().getFullName() : null)
-                                                        .avatarUrl(cm.getUser() != null ? cm.getUser().getAvatarUrl()
-                                                                        : null)
-                                                        .email(cm.getUser() != null ? cm.getUser().getEmail() : null)
-                                                        .build();
+                                                         .userId(cm.getUser() != null ? cm.getUser().getId() : null)
+                                                         .name(cm.getUser() != null ? cm.getUser().getFullName() : null)
+                                                         .avatarUrl(cm.getUser() != null ? cm.getUser().getAvatarUrl() : null)
+                                                         .email(cm.getUser() != null ? cm.getUser().getEmail() : null)
+                                                         .progress(p)
+                                                         .build();
                                 })
                                 .toList();
 
@@ -226,8 +234,7 @@ public class StudyGroupService {
                                 : null;
                 double sumProgress = 0.0;
                 int progress = 0;
-                if (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null) {
-                        Long courseId = studyGroup.getCourseClass().getCourse().getId();
+                if (courseId != null) {
                         for (GroupMember gm : groupMembers) {
                                 sumProgress += progressService.getLearnerProgressPercentage(gm.getClassMember().getId(),
                                                 courseId);

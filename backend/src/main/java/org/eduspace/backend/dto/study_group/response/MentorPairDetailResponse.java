@@ -30,5 +30,6 @@ public class MentorPairDetailResponse {
         private String name;
         private String avatarUrl;
         private String email;
+        private Integer progress;
     }
 }
