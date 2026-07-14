@@ -25,6 +25,7 @@ import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.CourseStatus;
 import org.eduspace.backend.enums.LearnerStatus;
+import org.eduspace.backend.enums.LessonContentType;
 import org.eduspace.backend.enums.NotificationType;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.enums.Role;
@@ -261,6 +262,7 @@ public class CourseService {
             if (moduleRequest.getLessons() != null) {
 
                 for (CreateLessonRequest lessonRequest : moduleRequest.getLessons()) {
+                    validateLessonUrl(lessonRequest.getContentType(), lessonRequest.getContentUrl());
 
                     Lesson lesson = Lesson.builder()
                             .module(module)
@@ -618,8 +620,10 @@ public class CourseService {
                 lesson.setTitle(lessonRequest.getTitle());
             if (lessonRequest.getContentType() != null)
                 lesson.setContentType(lessonRequest.getContentType());
-            if (lessonRequest.getContentUrl() != null)
+            if (lessonRequest.getContentUrl() != null) {
+                validateLessonUrl(lesson.getContentType(), lessonRequest.getContentUrl());
                 lesson.setContentUrl(lessonRequest.getContentUrl());
+            }
             if (lessonRequest.getSortOrder() != null)
                 lesson.setSortOrder(lessonRequest.getSortOrder());
 
@@ -646,6 +650,17 @@ public class CourseService {
             assignment.setRubricCriteria(assignmentRequest.getRubricCriteria());
 
         assignmentRepository.save(assignment);
+    }
+
+    private void validateLessonUrl(LessonContentType contentType, String contentUrl) {
+        if (contentType == LessonContentType.VIDEO || contentType == LessonContentType.DOCUMENT) {
+            if (contentUrl == null || contentUrl.trim().isEmpty() || contentUrl.equalsIgnoreCase("N/A")) {
+                throw new RuntimeException("Đường dẫn học liệu không được để trống cho bài học dạng Video hoặc Tài liệu");
+            }
+            if (!contentUrl.startsWith("http://") && !contentUrl.startsWith("https://")) {
+                throw new RuntimeException("Đường dẫn học liệu không hợp lệ (phải bắt đầu bằng http:// hoặc https://)");
+            }
+        }
     }
 
 }
