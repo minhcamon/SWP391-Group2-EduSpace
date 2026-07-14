@@ -44,6 +44,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        seedWaitlist();
         if (userRepository.count() > 0) {
             log.info("Database already initialized. Skipping seeding.");
             return;
@@ -432,5 +433,52 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Accounts: learner1/123456, learner2/123456, mentor1/123456, creator1/123456, admin/123456");
         log.info(
                 "Trạng thái learner1 & learner2: Module 1 & 2 hoàn thành, Module 3 đang học (lesson3_1 done, lesson3_2 + assign3 còn lại)");
+        seedWaitlist();
+    }
+
+    private void seedWaitlist() {
+        courseRepository.findByIsDeletedFalse().stream()
+                .filter(c -> "Xây dựng ứng dụng Web với React & Node.js".equals(c.getTitle()))
+                .findFirst()
+                .ifPresent(reactCourse -> {
+                    Waitlist activeWaitlist = waitlistRepository
+                            .findByCourseIdAndStatus(reactCourse.getId(), WaitlistStatus.OPENING)
+                            .orElseGet(() -> waitlistRepository.save(Waitlist.builder()
+                                    .course(reactCourse)
+                                    .status(WaitlistStatus.OPENING)
+                                    .createdAt(LocalDateTime.now())
+                                    .build()));
+
+                    int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
+                    if (currentCount < 9) {
+                        log.info("React course waitlist has {} members. Seeding up to 9...", currentCount);
+                        for (int i = currentCount + 1; i <= 9; i++) {
+                            final int index = i;
+                            String username = "waitlist_user" + index;
+                            User waitlistUser = userRepository.findByUsername(username)
+                                    .orElseGet(() -> userRepository.save(User.builder()
+                                            .fullName("Học viên Chờ " + index)
+                                            .username(username)
+                                            .password(passwordEncoder.encode("password123"))
+                                            .email(username + "@eduspace.vn")
+                                            .role(Role.LEARNER)
+                                            .status(UserStatus.ACTIVE)
+                                            .authProvider(AuthProvider.LOCAL)
+                                            .createdAt(LocalDateTime.now())
+                                            .totalExp(0)
+                                            .build()));
+
+                            boolean isAlreadyWaiting = waitlistEntryRepository.isUserAlreadyWaiting(reactCourse.getId(), waitlistUser.getId());
+                            if (!isAlreadyWaiting) {
+                                waitlistEntryRepository.save(WaitlistEntry.builder()
+                                        .waitlist(activeWaitlist)
+                                        .user(waitlistUser)
+                                        .enrolledAt(LocalDateTime.now())
+                                        .build());
+                            }
+                        }
+                        log.info("Waitlist seeding complete for React course.");
+                    }
+                });
     }
 }
