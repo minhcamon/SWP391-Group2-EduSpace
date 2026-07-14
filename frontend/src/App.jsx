@@ -16,6 +16,7 @@ import CreatorCourses from "@/views/creator/Courses";
 import CreatorCourseDetail from "@/views/creator/CourseDetail";
 import CreatorCourseBuilder from "@/views/creator/CourseBuilder";
 import CreatorAnalytics from "@/views/creator/Analytics";
+import CreatorMentorApplications from "@/views/creator/MentorApplications";
 import AdminDashboard from "@/views/admin/Dashboard";
 import AdminRequests from "@/views/admin/Requests";
 import AdminCourses from "@/views/admin/Courses";
@@ -96,6 +97,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["CREATOR"]} />}>
             <Route path="/creator" element={<CreatorHome />}></Route>
             <Route path="/creator/courses" element={<CreatorCourses />}></Route>
+            <Route path="/creator/mentor-applications" element={<CreatorMentorApplications />}></Route>
             <Route
               path="/creator/courses/:id"
               element={<CreatorCourseDetail />}

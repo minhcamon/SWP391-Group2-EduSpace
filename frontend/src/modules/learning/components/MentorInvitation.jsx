@@ -1,17 +1,27 @@
-
+import { useState } from "react"
 import { Award, Calendar, Gift, CheckCircle, Info } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
+import mentorService from "@/services/mentorService"
 
-export const MentorInvitation = ({ isOpen, onClose }) => {
+export const MentorInvitation = ({ isOpen, onClose, classId }) => {
   const { user } = useAuth()
   const userName = user?.fullName || "Lê Hoàng Nam"
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleBecomeMentor = () => {
-    onClose()
-    toast.success("Đăng ký ứng tuyển Mentor thành công!", {
-      description: "Chúng tôi sẽ xem xét thành tích học tập và liên hệ sớm nhất.",
-    })
+  const handleBecomeMentor = async () => {
+    setIsSubmitting(true)
+    try {
+      await mentorService.applyToBecomeMentor(classId)
+      toast.success("Đăng ký ứng tuyển Mentor thành công!", {
+        description: "Chúng tôi sẽ xem xét thành tích học tập và liên hệ sớm nhất.",
+      })
+      onClose()
+    } catch (error) {
+      toast.error(error.message || "Đăng ký làm Mentor thất bại!")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -90,9 +100,17 @@ export const MentorInvitation = ({ isOpen, onClose }) => {
               <div className="flex flex-col items-center gap-2 pt-2">
                 <button 
                   onClick={handleBecomeMentor}
-                  className="w-full py-3.5 bg-secondary hover:bg-secondary/95 text-white text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.98] hover:scale-[1.01] cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-secondary hover:bg-secondary/95 text-white text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.98] hover:scale-[1.01] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sẵn sàng trở thành Mentor
+                  {isSubmitting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    "Sẵn sàng trở thành Mentor"
+                  )}
                 </button>
                 <button 
                   onClick={onClose}

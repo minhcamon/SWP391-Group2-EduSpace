@@ -1,5 +1,4 @@
 import api from "@/lib/axios";
-import { mockArbitrations } from "@/modules/mentor/utils/mockData";
 export const mentorService = {
     /**
      * Fetches the classes mentored by the current mentor.
@@ -191,6 +190,17 @@ export const mentorService = {
             console.error('getPairById error at mentorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết nhóm học tập!';
             throw new Error(errorMsg);
+        }
+    },
+
+    applyToBecomeMentor: async (classId) => {
+        try {
+            const response = await api.post(`/mentor-applications/apply/${classId}`);
+            return response.data.message;
+        } catch (error) {
+            console.error('applyToBecomeMentor error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể gửi đơn đăng ký làm Mentor!';
+            throw new Error(errorMsg, { cause: error });
         }
     }
 };

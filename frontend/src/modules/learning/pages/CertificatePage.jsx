@@ -303,6 +303,7 @@ export const CertificatePage = () => {
       <MentorInvitation
         isOpen={showMentorModal}
         onClose={() => setShowMentorModal(false)}
+        classId={classId}
       />
     </>
   )
