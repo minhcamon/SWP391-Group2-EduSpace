@@ -6,6 +6,7 @@ import { toast } from "sonner";
 export const useCourse = (usingPage, adminId) => {
     const [pendingCourses, setPendingCourses] = useState([]);
     const [publisedCourses, setPublisedCourses] = useState([]);
+    const [totalPublished, setTotalPublished] = useState(0);
     const [courseRequestsHistory, setCourseRequestsHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,7 +34,8 @@ export const useCourse = (usingPage, adminId) => {
         await runWithLoading(setIsLoading, async () => {
             try {
                 const data = await courseService.getPublishedCourses();
-                setPublisedCourses(data);
+                setPublisedCourses(data.content || []);
+                setTotalPublished(data.totalElements || 0);
             } catch (error) {
                 console.error(
                     `Lỗi khi lấy khóa học công khai tại ${usingPage}: `,
@@ -78,7 +80,7 @@ export const useCourse = (usingPage, adminId) => {
             );
             toast.error("Lỗi khi duyệt khóa học");
         }
-    }, [usingPage, fetchCourseRequestsHistory])
+    }, [usingPage, fetchPublisedCourses, fetchCourseRequestsHistory])
 
     const handleRejectClick = useCallback((courseId) => {
         setSelectedCourseId(courseId);
@@ -124,6 +126,7 @@ export const useCourse = (usingPage, adminId) => {
     return {
         pendingCourses,
         publisedCourses,
+        totalPublished,
         courseRequestsHistory,
         rejectReason,
         isRejectDialogOpen,
