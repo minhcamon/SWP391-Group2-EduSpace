@@ -13,4 +13,5 @@ public class GroupMemberInfo {
     private Long userId;
     private String fullName;
     private String avatarUrl;
+    private Double progress;
 }

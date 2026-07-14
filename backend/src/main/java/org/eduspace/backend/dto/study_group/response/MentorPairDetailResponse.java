@@ -16,7 +16,7 @@ public class MentorPairDetailResponse {
     private String pairName;
     private String className;
     private String status;
-    private Integer progress;
+    private Double progress;
     private PairMemberResponse student1;
     private PairMemberResponse student2;
     private List<PairMemberResponse> members;
@@ -30,6 +30,6 @@ public class MentorPairDetailResponse {
         private String name;
         private String avatarUrl;
         private String email;
-        private Integer progress;
+        private Double progress;
     }
 }

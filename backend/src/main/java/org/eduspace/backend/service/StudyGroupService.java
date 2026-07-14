@@ -153,28 +153,36 @@ public class StudyGroupService {
 
                 for (StudyGroup studyGroup : studyGroups) {
                         List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
+                        Long courseId = (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null)
+                                        ? studyGroup.getCourseClass().getCourse().getId()
+                                        : null;
 
                         List<GroupMemberInfo> members = groupMembers.stream()
                                         .map(gm -> {
                                                 ClassMember cm = gm.getClassMember();
+                                                Double p = 0.0;
+                                                if (courseId != null) {
+                                                        p = progressService.getLearnerProgressPercentage(
+                                                                        cm.getId(), courseId);
+                                                }
                                                 return GroupMemberInfo.builder()
                                                                 .userId(cm.getUser().getId())
                                                                 .fullName(cm.getUser().getFullName())
                                                                 .avatarUrl(cm.getUser().getAvatarUrl())
+                                                                .progress(p)
                                                                 .build();
                                         })
                                         .toList();
 
                         double sumProgress = 0.0;
-                        int averageProgress = 0;
-                        if (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null) {
-                                Long courseId = studyGroup.getCourseClass().getCourse().getId();
+                        double averageProgress = 0.0;
+                        if (courseId != null) {
                                 for (GroupMember gm : groupMembers) {
                                         sumProgress += progressService.getLearnerProgressPercentage(
                                                         gm.getClassMember().getId(), courseId);
                                 }
-                                averageProgress = groupMembers.isEmpty() ? 0
-                                                : (int) Math.round(sumProgress / groupMembers.size());
+                                averageProgress = groupMembers.isEmpty() ? 0.0
+                                                : Math.round((sumProgress / groupMembers.size()) * 10.0) / 10.0;
                         }
 
                         groups.add(StudyGroupResponse.builder()
@@ -212,9 +220,9 @@ public class StudyGroupService {
                 List<MentorPairDetailResponse.PairMemberResponse> memberResponses = groupMembers.stream()
                                 .map(gm -> {
                                         ClassMember cm = gm.getClassMember();
-                                        int p = 0;
+                                        Double p = 0.0;
                                         if (courseId != null) {
-                                                p = (int) Math.round(progressService.getLearnerProgressPercentage(cm.getId(), courseId));
+                                                p = progressService.getLearnerProgressPercentage(cm.getId(), courseId);
                                         }
                                         return MentorPairDetailResponse.PairMemberResponse.builder()
                                                          .userId(cm.getUser() != null ? cm.getUser().getId() : null)
@@ -233,15 +241,15 @@ public class StudyGroupService {
                                 ? memberResponses.get(1)
                                 : null;
                 double sumProgress = 0.0;
-                int progress = 0;
+                double progress = 0.0;
                 if (courseId != null) {
                         for (GroupMember gm : groupMembers) {
                                 sumProgress += progressService.getLearnerProgressPercentage(gm.getClassMember().getId(),
                                                 courseId);
                         }
-                        progress = groupMembers.isEmpty() ? 0 : (int) Math.round(sumProgress / groupMembers.size());
+                        progress = groupMembers.isEmpty() ? 0.0 : Math.round((sumProgress / groupMembers.size()) * 10.0) / 10.0;
                 }
-                String status = progress < 50 ? "SLOW" : "ACTIVE";
+                String status = progress < 50.0 ? "SLOW" : "ACTIVE";
 
                 return MentorPairDetailResponse.builder()
                                 .id(studyGroup.getId())
