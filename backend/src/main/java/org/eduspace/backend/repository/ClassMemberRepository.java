@@ -12,41 +12,52 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> {
-    Optional<ClassMember> findByUserIdAndCourseClassId(Long userId, Long classId);
+        Optional<ClassMember> findByUserIdAndCourseClassId(Long userId, Long classId);
 
-    List<ClassMember> findByUserId(Long userId);
+        List<ClassMember> findByUserId(Long userId);
 
-    List<ClassMember> findByCourseClassId(Long classId);
+        List<ClassMember> findByCourseClassId(Long classId);
 
-    @Query("""
-                SELECT cm FROM ClassMember cm
-                WHERE cm.user.id = :userId
-                  AND cm.courseClass.course.id = :courseId
-                  AND cm.learnerStatus = :status
-                  AND cm.contextRole = 'LEARNER'
-            """)
-    Optional<ClassMember> findActiveEnrollment(
-            @Param("userId") Long userId,
-            @Param("courseId") Long courseId,
-            @Param("status") LearnerStatus status);
+        @Query("""
+                            SELECT cm FROM ClassMember cm
+                            WHERE cm.user.id = :userId
+                              AND cm.courseClass.course.id = :courseId
+                              AND cm.learnerStatus = :status
+                              AND cm.contextRole = 'LEARNER'
+                        """)
+        Optional<ClassMember> findActiveEnrollment(
+                        @Param("userId") Long userId,
+                        @Param("courseId") Long courseId,
+                        @Param("status") LearnerStatus status);
 
-    @Query("""
-                SELECT COUNT(cm) > 0 FROM ClassMember cm
-                WHERE cm.user.id = :userId
-                  AND cm.courseClass.course.id = :courseId
-                  AND cm.learnerStatus IN :statuses
-                  AND cm.contextRole = 'LEARNER'
-            """)
-    boolean existsEnrollment(
-            @Param("userId") Long userId,
-            @Param("courseId") Long courseId,
-            @Param("statuses") List<LearnerStatus> statuses);
+        @Query("""
+                            SELECT COUNT(cm) > 0 FROM ClassMember cm
+                            WHERE cm.user.id = :userId
+                              AND cm.courseClass.course.id = :courseId
+                              AND cm.learnerStatus IN :statuses
+                              AND cm.contextRole = 'LEARNER'
+                        """)
+        boolean existsEnrollment(
+                        @Param("userId") Long userId,
+                        @Param("courseId") Long courseId,
+                        @Param("statuses") List<LearnerStatus> statuses);
 
-    long countByUserIdAndContextRole(Long userId, String contextRole);
+        @Query("""
+                            SELECT cm FROM ClassMember cm
+                            WHERE cm.user.id = :userId
+                              AND cm.courseClass.course.id = :courseId
+                              AND cm.learnerStatus = :status
+                        """)
+        Optional<ClassMember> findActiveMember(
+                        @Param("userId") Long userId,
+                        @Param("courseId") Long courseId,
+                        @Param("status") LearnerStatus status);
 
-    List<ClassMember> findByUserIdAndContextRole(Long userId, String contextRole);
+        long countByUserIdAndContextRole(Long userId, String contextRole);
 
-    Optional<ClassMember> findByUserIdAndCourseClassIdAndContextRole(Long userId, Long classId, String contextRole);
+        List<ClassMember> findByUserIdAndContextRole(Long userId, String contextRole);
 
-    List<ClassMember> findByCourseClassIdAndContextRole(Long classId, String contextRole);
-}
+        Optional<ClassMember> findByUserIdAndCourseClassIdAndContextRole(Long userId, Long classId, String contextRole);
+
+        List<ClassMember> findByCourseClassIdAndContextRole(Long classId, String contextRole);
+}

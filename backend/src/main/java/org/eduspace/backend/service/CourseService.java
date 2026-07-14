@@ -86,8 +86,7 @@ public class CourseService {
         // Get the current page of courses
         List<Course> pagedCourses = allCourses.subList(
                 Math.min(startIndex, totalElements),
-                Math.min(endIndex, totalElements)
-        );
+                Math.min(endIndex, totalElements));
 
         // Map to response DTOs
         List<CourseResponse> courseResponses = pagedCourses.stream()
@@ -97,7 +96,7 @@ public class CourseService {
 
                     if (userId != null) {
                         Optional<ClassMember> activeMember = classMemberRepository
-                                .findActiveEnrollment(userId, course.getId(), LearnerStatus.ACTIVE);
+                                .findActiveMember(userId, course.getId(), LearnerStatus.ACTIVE);
 
                         if (activeMember.isPresent()) {
                             enrollmentStatus = "ENROLLED";
