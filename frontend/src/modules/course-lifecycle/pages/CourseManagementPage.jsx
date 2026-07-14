@@ -46,8 +46,7 @@ export default function CourseManagement() {
     setIsDeleteModalOpen,
     deleteCourseTitle,
     handleArchive,
-    handleRestore,
-    handleManageClass
+    handleRestore
   } = useCourseManagement();
 
   return (
@@ -113,9 +112,9 @@ export default function CourseManagement() {
       </div>
 
       {/* Filter Tabs & Search Bar Row */}
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-border-light/30 shadow-sm">
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white p-4 rounded-2xl border border-border-light/30 shadow-sm w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full lg:w-auto">
-          <TabsList className="flex-wrap h-auto gap-1 bg-transparent p-0">
+          <TabsList className="flex flex-row flex-wrap h-auto !h-auto gap-2 bg-transparent p-0 w-full justify-start py-1">
             {[
               { label: 'Tất cả', value: 'ALL', count: courses.length },
               { label: 'Cần xử lý', value: 'REJECTED', count: courses.filter(c => c.status?.toUpperCase() === 'REJECTED').length },
@@ -127,13 +126,13 @@ export default function CourseManagement() {
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border border-transparent ${activeTab === tab.value
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-transparent shrink-0 ${activeTab === tab.value
                   ? 'bg-primary text-white shadow-sm shadow-primary/20'
                   : 'text-neutral-medium hover:bg-slate-50'
                   }`}
               >
-                <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold ${activeTab === tab.value ? 'bg-white/20 text-primary' : 'bg-primary/10 text-mute'
+                <span className="whitespace-nowrap">{tab.label}</span>
+                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold transition-colors ${activeTab === tab.value ? 'bg-primary text-white' : 'bg-neutral-dark/10 text-neutral-dark'
                   }`}>
                   {tab.count}
                 </span>
@@ -142,8 +141,9 @@ export default function CourseManagement() {
           </TabsList>
         </Tabs>
 
-        <div className="relative w-full lg:w-80">
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
+        {/* Search Bar Container */}
+        <div className="relative w-full lg:w-80 flex items-center shrink-0">
+          <span className="absolute left-3.5 flex items-center text-neutral-light z-10 pointer-events-none">
             <Search size={16} />
           </span>
           <input
@@ -287,12 +287,23 @@ export default function CourseManagement() {
                     </div>
                   </CardContent>
 
-                  <div className="p-5 pt-0">
+                  <div className="px-5 pb-5 pt-0 flex gap-3">
                     <Button
-                      onClick={() => handleManageClass(course.title)}
-                      className="w-full border border-primary/20 hover:border-primary text-primary hover:bg-primary hover:text-white font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      variant="outline"
+                      asChild
+                      className="flex-1 border border-primary/20 hover:border-primary text-primary hover:bg-primary/5 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
-                      Quản lý lớp học
+                      <Link to={`/creator/courses/${course.id}/view`}>
+                        Xem chi tiết
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="flex-1 bg-primary text-white hover:bg-primary/90 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Link to={`/creator/courses/${course.id}`}>
+                        Quản lý lớp học
+                      </Link>
                     </Button>
                   </div>
                 </Card>

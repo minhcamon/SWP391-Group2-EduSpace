@@ -4,11 +4,11 @@ import RoadmapItem from "./RoadmapItem";
 
 const RoadmapContainer = () => {
     return (
-        <div className="container mx-auto px-4 my-4">
+        <div className="mt-12">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Lộ trình đề xuất</h1>
                 <Link to="/roadmaps">
-                    <div className="flex hover:opacity-80">
+                    <div className="flex hover:opacity-80 transform transition-all duration-300 hover:-translate-y-1.5">
                         <span className="text-primary font-semibold">
                             Xem tất cả
                         </span>
@@ -19,8 +19,7 @@ const RoadmapContainer = () => {
                     </div>
                 </Link>
             </div>
-            <div className="flex grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
-                <RoadmapItem actionText="Bắt đầu ngay" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                 <RoadmapItem actionText="Bắt đầu ngay" />
                 <RoadmapItem actionText="Bắt đầu ngay" />
                 <RoadmapItem actionText="Bắt đầu ngay" />

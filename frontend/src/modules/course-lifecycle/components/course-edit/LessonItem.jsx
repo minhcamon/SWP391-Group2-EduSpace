@@ -12,7 +12,7 @@ export default function LessonItem({
   handleDeleteLesson
 }) {
   return (
-    <Draggable key={lesson.id} draggableId={lesson.id} index={index} isDragDisabled={mode === 'VIEW'}>
+    <Draggable key={lesson.id} draggableId={`lesson-${lesson.id}`} index={index} isDragDisabled={mode === 'VIEW'}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
@@ -80,7 +80,21 @@ export default function LessonItem({
                     }}
                     disabled={mode === 'VIEW'}
                   />
-                  <span className="text-[10px] text-gray-400 font-bold uppercase block">{lesson.content_type} • Bài học lý thuyết</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-gray-400 font-bold uppercase block">
+                      {lesson.content_type} • Bài học lý thuyết
+                    </span>
+                    {lesson.content_url && lesson.content_url !== 'N/A' && (
+                      <a
+                        href={lesson.content_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-primary underline truncate block max-w-xs hover:text-primary/80 transition-colors"
+                      >
+                        {lesson.content_url}
+                      </a>
+                    )}
+                  </div>
                 </div>
                 {mode !== 'VIEW' && (
                   <button onClick={() => handleDeleteLesson(modId, lesson.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">

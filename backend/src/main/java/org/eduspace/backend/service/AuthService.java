@@ -17,7 +17,6 @@ import org.eduspace.backend.security.SecurityUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {

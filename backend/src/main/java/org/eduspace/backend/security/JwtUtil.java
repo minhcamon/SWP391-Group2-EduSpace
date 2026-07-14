@@ -3,6 +3,7 @@ package org.eduspace.backend.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.eduspace.backend.entity.User;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import java.util.Map;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-
     private final long EXPIRATION_TIME = 3600000;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {

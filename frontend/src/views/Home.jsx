@@ -1,18 +1,18 @@
-import React from "react";
 import CourseContainer from "@/modules/course-lifecycle/components/CourseContainer";
+import MyLearningContainer from "@/modules/learning/components/MyLearningContainer";
 import Header from "@/components/layouts/Header";
-import RoadmapContainer from "@/modules/roadmap/components/RoadmapContainer";
 import Footer from "@/components/layouts/Footer";
 
 const Home = () => {
     return (
         <>
-            <div>
+            <div className="min-h-screen w-full bg-gray-50 flex flex-col">
                 <Header />
-                <div className="min-h-screen">
+                <main className="mx-auto w-full px-4 py-12 grow max-w-300 space-y-12">
                     <CourseContainer />
-                    <RoadmapContainer />
-                </div>
+                    <MyLearningContainer />
+                    {/* <RoadmapContainer /> */}
+                </main>
                 <Footer />
             </div>
         </>

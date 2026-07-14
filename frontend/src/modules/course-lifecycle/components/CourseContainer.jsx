@@ -12,9 +12,10 @@ const CourseContainer = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const data = await courseService.getPublishedCourses();
-
-                setCourses(data);
+                // Fetch first page with 10 courses
+                const data = await courseService.getPublishedCourses(0, 6);
+                // data is now a PagedResponse object with content, currentPage, totalPages, etc.
+                setCourses(data.content || []);
             } catch (error) {
                 console.error(
                     "Lỗi fetch khóa học tại CourseContainer: ",
@@ -28,11 +29,11 @@ const CourseContainer = () => {
     }, []);
 
     return (
-        <div className="container mx-auto px-4 my-4">
-            <div className="flex justify-between">
+        <div>
+            <div className="flex justify-between mb-4">
                 <h1 className="text-2xl font-bold">Khóa học phổ biến</h1>
                 <Link to="/courses">
-                    <div className="flex hover:opacity-80">
+                    <div className="flex hover:opacity-80 transform transition-all duration-300 hover:-translate-y-1.5">
                         <span className="text-primary font-semibold">
                             Xem tất cả
                         </span>
@@ -51,8 +52,8 @@ const CourseContainer = () => {
                     </EmptyState>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 gap-6 pb-2">
-                    {courses.slice(0, 4).map((course) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {courses.slice(0, 3).map((course) => (
                         <CourseItem key={course.id} course={course} />
                     ))}
                 </div>
