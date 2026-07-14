@@ -12,9 +12,10 @@ const CourseContainer = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const data = await courseService.getPublishedCourses();
-
-                setCourses(data);
+                // Fetch first page with 10 courses
+                const data = await courseService.getPublishedCourses(0, 6);
+                // data is now a PagedResponse object with content, currentPage, totalPages, etc.
+                setCourses(data.content || []);
             } catch (error) {
                 console.error(
                     "Lỗi fetch khóa học tại CourseContainer: ",

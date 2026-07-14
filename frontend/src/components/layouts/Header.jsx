@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { Bell, Menu, X, Search, ArrowLeftRight } from 'lucide-react'
-import { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router'
+import { Menu, X, Search, ArrowLeftRight } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Link, NavLink, useNavigate, useSearchParams } from 'react-router'
 import AvatarDropDown from '../common/AvatarDropDown'
 import Avatar from '../common/Avatar'
 import Logo from '../common/Logo'
@@ -12,6 +12,31 @@ const Header = () => {
   const navigate = useNavigate()
   const [showDropDown, setShowDropDown] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  
+  const [searchParams] = useSearchParams()
+  const currentSearch = searchParams.get('search') || ''
+  const [searchQuery, setSearchQuery] = useState(currentSearch)
+  const [prevSearch, setPrevSearch] = useState(currentSearch)
+  const inputRef = useRef(null)
+
+  if (currentSearch !== prevSearch) {
+    setPrevSearch(currentSearch)
+    setSearchQuery(currentSearch)
+  }
+
+  useEffect(() => {
+    if (currentSearch && inputRef.current && document.activeElement !== inputRef.current) {
+      inputRef.current.focus()
+      // Move cursor to end of text
+      const len = inputRef.current.value.length
+      inputRef.current.setSelectionRange(len, len)
+    }
+  }, [currentSearch])
+
+  const handleSearchChange = (val) => {
+    setSearchQuery(val)
+    navigate(`/courses?search=${encodeURIComponent(val)}`, { replace: true })
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-border-light/35 shadow-sm transition-all duration-200">
@@ -57,8 +82,11 @@ const Header = () => {
               <Search size={16} />
             </span>
             <input
+              ref={inputRef}
               type="text"
               placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary rounded-full py-1.5 pl-9 pr-4 text-xs w-40 transition-all duration-200 focus:w-56 outline-none"
             />
           </div>
@@ -147,6 +175,8 @@ const Header = () => {
             <input
               type="text"
               placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary rounded-full py-2 pl-9 pr-4 text-xs outline-none"
             />
           </div>
@@ -177,6 +207,22 @@ const Header = () => {
             >
               Khóa học
             </NavLink>
+
+            {user && (
+              <NavLink
+                to="/my-learning"
+                onClick={() => setShowMobileMenu(false)}
+                className={({ isActive }) =>
+                  `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                  }`
+                }
+              >
+                Học tập của tôi
+              </NavLink>
+            )}
 
             {/* Switch to Mentor Mode Button (Mobile) */}
             {user &&

@@ -13,10 +13,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import RequestRejectDialog from "../components/request/RequestRejectDialog";
 import PendingRequestList from "../components/request/PendingRequestList";
 import useRequest from "../hooks/useRequest";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import AuthService from "@/services/authService";
 
-const MOCK_RECENT_COURSES = [
+/* const MOCK_RECENT_COURSES = [
     {
         id: 101,
         title: "Xây dựng Kiến trúc Cloud Native với AWS & Kubernetes",
@@ -61,13 +61,13 @@ const MOCK_CREATOR_REQUESTS = [
         status: "PENDING",
         created_at: "2026-06-10T11:15:00Z",
     },
-];
+]; */
 
 const DashboardPage = () => {
     const { user } = useAuth();
     const [learnersCount, setLearnersCount] = useState(0);
     const {
-        publisedCourses,
+        totalPublished,
         pendingCourses,
         isRejectDialogOpen: isCourseRejectOpen,
         isSubmittingReject: isSubmittingCourseReject,
@@ -94,18 +94,9 @@ const DashboardPage = () => {
         handleRejectClick: handleRequestRejectClick,
     } = useRequest("Admin Dashboard");
 
-    const fetchLearnersCount = useCallback(async () => {
-        try {
-            const count = await AuthService.getLearnersCount();
-            setLearnersCount(count);
-        } catch (error) {
-            console.error("Lỗi khi lấy số lượng học viên:", error);
-        }
-    }, []);
-
     const stats = {
         learnersCount: learnersCount,
-        publisedCoursesLength: publisedCourses.length,
+        publisedCoursesLength: totalPublished,
         pendingCoursesLength: pendingCourses.length,
         pendingRequestsLength: pendingRequests.length,
     };
@@ -114,14 +105,18 @@ const DashboardPage = () => {
         fetchPublisedCourses();
         fetchPendingCourses();
         fetchPendingRequests();
-        fetchLearnersCount();
-    }, [fetchPendingCourses, fetchPublisedCourses, fetchPendingRequests, fetchLearnersCount]);
+        AuthService.getLearnersCount()
+            .then((count) => setLearnersCount(count))
+            .catch((error) => console.error("Lỗi khi lấy số lượng học viên:", error));
+    }, [fetchPendingCourses, fetchPublisedCourses, fetchPendingRequests]);
 
     const handleReload = () => {
         fetchPublisedCourses();
         fetchPendingCourses();
         fetchPendingRequests();
-        fetchLearnersCount();
+        AuthService.getLearnersCount()
+            .then((count) => setLearnersCount(count))
+            .catch((error) => console.error("Lỗi khi lấy số lượng học viên:", error));
     };
 
     return (

@@ -1,36 +1,31 @@
-
-import { Award, Sparkles, Calendar, Gift, CheckCircle, Info } from "lucide-react"
+import { useState } from "react"
+import { Award, Calendar, Gift, CheckCircle, Info } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
+import mentorService from "@/services/mentorService"
 
-export const MentorInvitation = ({ isOpen, onOpen, onClose }) => {
+export const MentorInvitation = ({ isOpen, onClose, classId }) => {
   const { user } = useAuth()
   const userName = user?.fullName || "Lê Hoàng Nam"
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleBecomeMentor = () => {
-    onClose()
-    toast.success("Đăng ký ứng tuyển Mentor thành công!", {
-      description: "Chúng tôi sẽ xem xét thành tích học tập và liên hệ sớm nhất.",
-    })
+  const handleBecomeMentor = async () => {
+    setIsSubmitting(true)
+    try {
+      await mentorService.applyToBecomeMentor(classId)
+      toast.success("Đăng ký ứng tuyển Mentor thành công!", {
+        description: "Chúng tôi sẽ xem xét thành tích học tập và liên hệ sớm nhất.",
+      })
+      onClose()
+    } catch (error) {
+      toast.error(error.message || "Đăng ký làm Mentor thất bại!")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <>
-      {/* Floating Sparkly Mentor Bubble Button */}
-      {!isOpen && (
-        <div className="fixed bottom-8 right-8 z-50 flex items-center gap-3 group">
-          <div className="bg-neutral-dark text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md opacity-0 group-hover:opacity-100 transition-opacity select-none shrink-0">
-            Trở thành Mentor! 🌟
-          </div>
-          <button
-            onClick={onOpen}
-            className="w-14 h-14 bg-secondary hover:bg-secondary/95 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-[0.95] transition-all cursor-pointer border-2 border-white animate-pulse"
-            title="Đăng ký làm Mentor"
-          >
-            <Sparkles className="w-6 h-6 animate-spin-slow" />
-          </button>
-        </div>
-      )}
 
       {/* Mentor Invitation Modal Overlay */}
       {isOpen && (
@@ -105,9 +100,17 @@ export const MentorInvitation = ({ isOpen, onOpen, onClose }) => {
               <div className="flex flex-col items-center gap-2 pt-2">
                 <button 
                   onClick={handleBecomeMentor}
-                  className="w-full py-3.5 bg-secondary hover:bg-secondary/95 text-white text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.98] hover:scale-[1.01] cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-secondary hover:bg-secondary/95 text-white text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.98] hover:scale-[1.01] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sẵn sàng trở thành Mentor
+                  {isSubmitting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    "Sẵn sàng trở thành Mentor"
+                  )}
                 </button>
                 <button 
                   onClick={onClose}

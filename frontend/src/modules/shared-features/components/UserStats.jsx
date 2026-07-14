@@ -1,6 +1,5 @@
-import React from "react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { BookOpen, Trophy, CheckCircle2 } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 const UserStats = ({ coursesCount }) => {
     return (
@@ -18,7 +17,7 @@ const UserStats = ({ coursesCount }) => {
                 </CardContent>
             </Card>
 
-            {/* Points */}
+            {/* Points - Commented out as requested
             <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
                 <CardContent className="p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary shrink-0">
@@ -30,8 +29,9 @@ const UserStats = ({ coursesCount }) => {
                     </div>
                 </CardContent>
             </Card>
+            */}
 
-            {/* Status Check */}
+            {/* Status Check - Commented out as requested
             <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0px_10px_30px_rgba(79,70,229,0.04)] transition-all">
                 <CardContent className="p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
@@ -43,6 +43,7 @@ const UserStats = ({ coursesCount }) => {
                     </div>
                 </CardContent>
             </Card>
+            */}
         </div>
     );
 };

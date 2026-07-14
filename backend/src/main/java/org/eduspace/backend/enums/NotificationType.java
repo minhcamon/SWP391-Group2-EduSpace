@@ -4,5 +4,6 @@ public enum NotificationType {
     SYSTEM,
     COURSE_APPROVAL,
     CREATOR_REQUEST,
-    PEER_REVIEW
+    PEER_REVIEW,
+    MENTOR_APPLICATION
 }

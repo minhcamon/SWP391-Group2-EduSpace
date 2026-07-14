@@ -85,6 +85,11 @@ const Sidebar = () => {
                     icon: BookOpen,
                     path: "/creator/courses",
                 },
+                {
+                    text: "Quản lý đơn mentor",
+                    icon: Users,
+                    path: "/creator/mentor-applications",
+                },
             ],
         },
     ];

@@ -166,7 +166,10 @@ const UserProfile = () => {
         <UserBioCard user={user} profileForm={profileForm} />
 
         {/* Right: Quick Stats Column */}
-        <UserStats coursesCount={coursesCount} />
+        <div className="flex flex-col gap-4">
+          <UserStats coursesCount={coursesCount} />
+          <StudyMotivationCard />
+        </div>
       </div>
 
       {/* Form Sections */}
@@ -194,9 +197,6 @@ const UserProfile = () => {
         <div className="space-y-6">
           {/* Content Creator Upgrade card */}
           <CreatorUpgradeCard user={user} />
-
-          {/* Studying motivation card */}
-          <StudyMotivationCard />
         </div>
       </div>
     </div>

@@ -26,7 +26,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.eduspace.backend.enums.NotificationType;
@@ -40,7 +42,10 @@ public class SubmissionService {
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
-    private final CertificateService certificateService;
+
+    @Lazy
+    @Autowired
+    private CertificateService certificateService;
 
     @Value("${app.peer-review.pass-ratio:0.8}")
     private double peerReviewPassRatio;

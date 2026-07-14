@@ -98,6 +98,64 @@ const creatorService = {
             const errorMsg = error.response?.data?.message || 'Không thể phê duyệt bàn giao!';
             throw new Error(errorMsg);
         }
+    },
+
+    getAnalytics: async (courseId, timeRange) => {
+        try {
+            const params = {};
+            if (courseId) params.courseId = courseId;
+            if (timeRange) params.timeRange = timeRange;
+            const res = await api.get("/creator/analytics", { params });
+            return res.data.data;
+        } catch (error) {
+            console.error('getAnalytics error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải dữ liệu thống kê!';
+            throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    getMentorApplications: async () => {
+        try {
+            const res = await api.get("/creator/mentor-applications");
+            return res.data.data;
+        } catch (error) {
+            console.error('getMentorApplications error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách đơn xin làm mentor!';
+            throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    getMentorApplicationDetails: async (applicationId) => {
+        try {
+            const res = await api.get(`/creator/mentor-applications/${applicationId}`);
+            return res.data.data;
+        } catch (error) {
+            console.error('getMentorApplicationDetails error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết đơn xin làm mentor!';
+            throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    approveMentorApplication: async (applicationId) => {
+        try {
+            const res = await api.put(`/creator/mentor-applications/${applicationId}/approve`);
+            return res.data.message || 'Phê duyệt đơn thành công!';
+        } catch (error) {
+            console.error('approveMentorApplication error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể phê duyệt đơn!';
+            throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    rejectMentorApplication: async (applicationId, rejectedReason) => {
+        try {
+            const res = await api.put(`/creator/mentor-applications/${applicationId}/reject`, { rejectedReason });
+            return res.data.message || 'Từ chối đơn thành công!';
+        } catch (error) {
+            console.error('rejectMentorApplication error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể từ chối đơn!';
+            throw new Error(errorMsg, { cause: error });
+        }
     }
 }
 

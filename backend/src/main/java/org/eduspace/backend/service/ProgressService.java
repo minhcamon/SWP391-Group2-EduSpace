@@ -20,8 +20,11 @@ import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.Submission;
 import org.eduspace.backend.entity.GroupMember;
 import org.eduspace.backend.entity.StudyGroup;
+import org.eduspace.backend.entity.WaitlistEntry;
 import org.eduspace.backend.dto.progress.response.AssignmentProgressResponse;
 import org.eduspace.backend.enums.LearnerStatus;
+import org.eduspace.backend.enums.WaitlistStatus;
+import org.eduspace.backend.repository.WaitlistEntryRepository;
 import org.eduspace.backend.enums.SubmissionStatus;
 import org.eduspace.backend.helper.ProgressHelper;
 import org.eduspace.backend.repository.AssignmentRepository;
@@ -34,6 +37,8 @@ import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +58,11 @@ public class ProgressService {
   private final ProgressHelper progressHelper;
   private final GroupMemberRepository groupMemberRepository;
   private final StudyGroupRepository studyGroupRepository;
-  private final CertificateService certificateService;
+  private final WaitlistEntryRepository waitlistEntryRepository;
+
+  @Lazy
+  @Autowired
+  private CertificateService certificateService;
 
   /**
    * Lấy danh sách các khóa học mà Learner ĐANG HỌC (in-progress), kèm phần trăm
@@ -135,6 +144,25 @@ public class ProgressService {
           .currentLessonTitle(currentLesson != null ? currentLesson.getTitle() : null)
           .currentModuleTitle(currentModule != null ? currentModule.getTitle() : null)
           .isCompleted(isCompleted)
+          .build());
+    }
+
+    List<WaitlistEntry> waitlistEntries = waitlistEntryRepository.findByUserIdAndStatus(userId, WaitlistStatus.OPENING);
+    for (WaitlistEntry entry : waitlistEntries) {
+      Course course = entry.getWaitlist().getCourse();
+      if (course == null || course.isDeleted()) {
+        continue;
+      }
+      result.add(CourseProgressResponse.builder()
+          .courseId(course.getId())
+          .courseName(course.getTitle())
+          .courseDescription(course.getDescription())
+          .progressPercentage(0.0)
+          .classId(null)
+          .currentLessonId(null)
+          .currentLessonTitle(null)
+          .currentModuleTitle(null)
+          .isCompleted(false)
           .build());
     }
 

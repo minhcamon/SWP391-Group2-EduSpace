@@ -1,6 +1,7 @@
 package org.eduspace.backend.repository;
 
 import org.eduspace.backend.entity.WaitlistEntry;
+import org.eduspace.backend.enums.WaitlistStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,9 @@ public interface WaitlistEntryRepository extends JpaRepository<WaitlistEntry, Lo
     int countByWaitlistId(Long waitlistId);
 
     List<WaitlistEntry> findByWaitlistId(Long waitlistId);
+
+    @Query("SELECT we FROM WaitlistEntry we " +
+           "JOIN we.waitlist w " +
+           "WHERE we.user.id = :userId AND w.status = :status")
+    List<WaitlistEntry> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") WaitlistStatus status);
 }

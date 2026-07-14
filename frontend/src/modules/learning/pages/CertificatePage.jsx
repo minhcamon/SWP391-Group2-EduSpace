@@ -1,15 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  Award,
-  Users,
-  Heart,
-  Send,
-  Download,
-  Share2,
-  Lock,
-  ChevronLeft
-} from 'lucide-react'
-import { toast } from 'sonner'
+import { Award, Users, Heart, Lock, ChevronLeft } from 'lucide-react'
 import useCertificate from '../hooks/useCertificate'
 import MentorInvitation from '../components/MentorInvitation'
 
@@ -144,8 +134,14 @@ export const CertificatePage = () => {
     return `${date.getDate()} tháng ${date.getMonth() + 1}, ${date.getFullYear()}`
   }
 
-  const { userName, partnerName, courseTitle, certificateId, issuedAt } =
-    certificateData
+  const {
+    userName,
+    partnerName,
+    courseTitle,
+    certificateId,
+    issuedAt,
+    author
+  } = certificateData
   const completionDate = formatCompletionDate(issuedAt)
 
   // const handleSendGratitude = () => {
@@ -220,7 +216,7 @@ export const CertificatePage = () => {
                   <p>ID: {certificateId}</p>
                 </div>
 
-                {/* Pair Learning Model Badge */}
+                {/* Pair Learning Model Badge
                 <div className="bg-primary/5 px-4 py-3 rounded-xl flex items-center gap-3 border border-primary/10 shadow-xs animate-pulse-slow shrink-0">
                   <Users className="text-primary w-7 h-7" />
                   <div className="text-left">
@@ -228,10 +224,10 @@ export const CertificatePage = () => {
                       Pair Learning Model
                     </p>
                     <p className="text-xs font-bold text-neutral-dark">
-                      Bạn đồng hành: {partnerName}
+                      Bạn đồng hành: {partnerName || 'Chưa ghép cặp'}
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="text-center md:text-right text-xs text-neutral-dark font-semibold">
                   <div className="w-24 h-12 bg-slate-50 border border-slate-100 rounded flex items-center justify-center mb-1 mx-auto md:ml-auto">
@@ -239,7 +235,9 @@ export const CertificatePage = () => {
                       Signature
                     </span>
                   </div>
-                  <p className="text-neutral-medium">Course Instructor</p>
+                  <p className="text-neutral-medium">
+                    {author || 'Course Instructor'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -256,7 +254,7 @@ export const CertificatePage = () => {
           </div>
 
           {/* Kudos Section */}
-          <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-50/70 p-5 rounded-2xl w-full max-w-2xl border border-border-light/35 shadow-xs">
+          {/* <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-50/70 p-5 rounded-2xl w-full max-w-2xl border border-border-light/35 shadow-xs">
             <div className="relative shrink-0">
               <img
                 alt="Partner Avatar"
@@ -285,34 +283,27 @@ export const CertificatePage = () => {
             >
               <Send className="w-3.5 h-3.5" />
               Gửi lời cảm ơn
-            </button> */}
-          </div>
+            </button> 
+          </div> */}
 
           {/* Primary Actions */}
-          {/* <div className='flex flex-col sm:flex-row gap-4 w-full justify-center mt-2'>
+          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
             <button
-              onClick={handleDownloadPdf}
-              className='px-8 py-3.5 bg-secondary hover:bg-secondary/95 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer'
+              onClick={() => setShowMentorModal(true)}
+              className="px-8 py-3.5 bg-secondary hover:bg-secondary/95 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer"
             >
-              <Download className='w-4 h-4' />
-              Tải xuống Chứng chỉ (PDF)
+              <Award className="w-4 h-4" />
+              Đăng ký trở thành Mentor
             </button>
-            <button
-              onClick={handleShareLinkedIn}
-              className='px-8 py-3.5 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-xs hover:-translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer'
-            >
-              <Share2 className='w-4 h-4' />
-              Chia sẻ lên LinkedIn
-            </button>
-          </div> */}
+          </div>
         </div>
       </div>
 
       {/* Mentor Invitation Component */}
       <MentorInvitation
         isOpen={showMentorModal}
-        onOpen={() => setShowMentorModal(true)}
         onClose={() => setShowMentorModal(false)}
+        classId={classId}
       />
     </>
   )

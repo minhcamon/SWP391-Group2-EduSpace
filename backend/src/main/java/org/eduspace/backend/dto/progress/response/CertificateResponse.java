@@ -19,5 +19,5 @@ public class CertificateResponse {
     private String courseTitle;
     private String certificateId;
     private LocalDateTime issuedAt;
-    private String partnerName;
+    private String author;
 }

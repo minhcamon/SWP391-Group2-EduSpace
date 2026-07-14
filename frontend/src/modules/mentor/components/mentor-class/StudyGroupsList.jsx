@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router";
 import { Users, Bell } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -6,13 +5,6 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/common/Avatar";
 
 const StudyGroupsList = ({ pairs, handleSendReminder }) => {
-    const getMemberProgress = (pair, memberIndex) => {
-        const baseProgress = pair.progress ?? 70;
-        if (memberIndex === 0) return Math.max(0, Math.min(100, baseProgress - (pair.studyGroupId % 2 === 0 ? 12 : 5)));
-        if (memberIndex === 1) return Math.min(100, baseProgress + (pair.studyGroupId % 2 === 0 ? 5 : 12));
-        return Math.max(0, Math.min(100, baseProgress - 8)); // 3rd member progress
-    };
-
     const getGroupDiagnostic = (pair, memberProgresses) => {
         const minProgress = memberProgresses.length > 0 ? Math.min(...memberProgresses) : 0;
         const maxProgress = memberProgresses.length > 0 ? Math.max(...memberProgresses) : 0;
@@ -37,7 +29,7 @@ const StudyGroupsList = ({ pairs, handleSendReminder }) => {
             </h3>
             <div className="grid grid-cols-1 gap-4">
                 {pairs.map((pair) => {
-                    const memberProgresses = pair.members ? pair.members.map((_, idx) => getMemberProgress(pair, idx)) : [];
+                    const memberProgresses = pair.members ? pair.members.map((m) => m.progress ?? 0) : [];
                     const minProgress = memberProgresses.length > 0 ? Math.min(...memberProgresses) : 0;
                     const isWarningGroup = pair.status === "SLOW" || minProgress < 60;
                     const diagnostic = getGroupDiagnostic(pair, memberProgresses);
@@ -69,7 +61,7 @@ const StudyGroupsList = ({ pairs, handleSendReminder }) => {
                                         return (
                                             <div
                                                 key={member.userId || idx}
-                                                className="flex-1 min-w-[125px] bg-slate-50/50 border border-slate-100 rounded-xl p-3 flex flex-col items-center text-center shadow-xs"
+                                                className="flex-1 min-w-31.25 bg-slate-50/50 border border-slate-100 rounded-xl p-3 flex flex-col items-center text-center shadow-xs"
                                             >
                                                 <Avatar
                                                     src={member.avatarUrl}

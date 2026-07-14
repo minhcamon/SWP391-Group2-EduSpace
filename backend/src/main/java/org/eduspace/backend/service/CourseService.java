@@ -2,6 +2,7 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 
+import org.eduspace.backend.dto.common.PagedResponse;
 import org.eduspace.backend.dto.course.request.AdminRejectCourseRequest;
 import org.eduspace.backend.dto.course.request.CreateAssignmentRequest;
 import org.eduspace.backend.dto.course.request.CreateCourseRequest;
@@ -70,19 +71,32 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
 
-    public List<CourseResponse> getAllPublishedCourses(Long userId) {
-        List<Course> courses = courseRepository.findByIsDeletedFalse().stream()
+    public PagedResponse<CourseResponse> getAllPublishedCourses(Long userId, int page, int size) {
+        // Get all published courses
+        List<Course> allCourses = courseRepository.findByIsDeletedFalse().stream()
                 .filter(course -> course.getStatus() == CourseStatus.PUBLISHED)
                 .toList();
 
-        return courses.stream()
+        // Calculate pagination
+        int totalElements = allCourses.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int startIndex = page * size;
+        int endIndex = Math.min(startIndex + size, totalElements);
+
+        // Get the current page of courses
+        List<Course> pagedCourses = allCourses.subList(
+                Math.min(startIndex, totalElements),
+                Math.min(endIndex, totalElements));
+
+        // Map to response DTOs
+        List<CourseResponse> courseResponses = pagedCourses.stream()
                 .map(course -> {
                     String enrollmentStatus = null;
                     Long targetClassId = null;
 
                     if (userId != null) {
                         Optional<ClassMember> activeMember = classMemberRepository
-                                .findActiveEnrollment(userId, course.getId(), LearnerStatus.ACTIVE);
+                                .findActiveMember(userId, course.getId(), LearnerStatus.ACTIVE);
 
                         if (activeMember.isPresent()) {
                             enrollmentStatus = "ENROLLED";
@@ -104,6 +118,17 @@ public class CourseService {
                             .build();
                 })
                 .collect(Collectors.toList());
+
+        // Build paged response
+        return PagedResponse.<CourseResponse>builder()
+                .content(courseResponses)
+                .currentPage(page)
+                .totalPages(totalPages)
+                .totalElements(totalElements)
+                .pageSize(size)
+                .hasNext(page < totalPages - 1)
+                .hasPrevious(page > 0)
+                .build();
     }
 
     public List<CourseResponse> getPendingCourses() {

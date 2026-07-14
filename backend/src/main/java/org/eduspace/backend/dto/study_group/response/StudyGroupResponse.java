@@ -15,6 +15,6 @@ public class StudyGroupResponse {
     private Long studyGroupId;
     private List<GroupMemberInfo> members;
     private String status;
-    private Integer progress;
+    private Double progress;
 }
 

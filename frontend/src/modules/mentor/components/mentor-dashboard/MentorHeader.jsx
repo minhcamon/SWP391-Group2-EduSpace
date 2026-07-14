@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Menu, X, Search, ArrowLeftRight, HelpCircle } from "lucide-react";
+import { Menu, X, Search, ArrowLeftRight, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import AvatarDropDown from "@/components/common/AvatarDropDown";
 import Avatar from "@/components/common/Avatar";
 import Logo from "@/components/common/Logo";
+import NotificationDropdown from "@/components/common/NotificationDropdown";
 
 const MentorHeader = () => {
     const { user, setMode } = useAuth();
@@ -94,10 +95,7 @@ const MentorHeader = () => {
 
                         {/* Notification Bell */}
                         {user && (
-                            <button className="relative p-2 text-white/90 hover:text-white rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer">
-                                <Bell size={20} />
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full ring-2 ring-primary"></span>
-                            </button>
+                            <NotificationDropdown triggerClass="text-white/90 hover:text-white hover:bg-white/10" />
                         )}
 
                         {/* User Profile Dropdown */}
