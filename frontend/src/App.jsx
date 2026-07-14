@@ -75,10 +75,6 @@ function App() {
 
           {/* Authenticated user routes */}
           <Route
-            path="/profile"
-            element={<Profile />}
-          ></Route>
-          <Route
             path="/courses/:courseId/learn"
             element={<LearningArea />}
           ></Route>
