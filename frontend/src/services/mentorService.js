@@ -193,6 +193,17 @@ export const mentorService = {
         }
     },
 
+    getPairChat: async (pairId) => {
+        try {
+            const response = await api.get(`/mentor/pairs/${pairId}/chat`);
+            return response.data.data;
+        } catch (error) {
+            console.error('getPairChat error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải lịch sử trò chuyện!';
+            throw new Error(errorMsg, { cause: error });
+        }
+    },
+
     applyToBecomeMentor: async (classId) => {
         try {
             const response = await api.post(`/mentor-applications/apply/${classId}`);
