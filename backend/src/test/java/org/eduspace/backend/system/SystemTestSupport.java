@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -136,6 +137,107 @@ abstract class SystemTestSupport {
         }
     }
 
+    protected ArbitrationFixture createPendingArbitrationFixture(String username) throws Exception {
+        String fixtureSql = """
+                SELECT
+                    cls.class_id,
+                    cls.name AS class_name,
+                    c.title AS course_title,
+                    reporter.id AS reporter_member_id,
+                    reporter_user.fullname AS reporter_name,
+                    reported.id AS reported_member_id,
+                    a.assignment_id,
+                    a.title AS assignment_title
+                FROM users u
+                JOIN class_members mentor_cm ON mentor_cm.user_id = u.user_id
+                JOIN classes cls ON cls.class_id = mentor_cm.class_id
+                JOIN courses c ON c.course_id = cls.course_id
+                JOIN class_members reporter ON reporter.class_id = cls.class_id
+                    AND reporter.context_role = 'LEARNER'
+                JOIN users reporter_user ON reporter_user.user_id = reporter.user_id
+                JOIN class_members reported ON reported.class_id = cls.class_id
+                    AND reported.context_role = 'LEARNER'
+                    AND reported.id <> reporter.id
+                JOIN modules m ON m.course_id = c.course_id
+                JOIN assignments a ON a.module_id = m.module_id
+                WHERE u.username = ?
+                  AND mentor_cm.context_role = 'MENTOR'
+                ORDER BY reporter.id, reported.id, a.assignment_id
+                LIMIT 1
+                """;
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement fixtureStatement = connection.prepareStatement(fixtureSql)) {
+            fixtureStatement.setString(1, username);
+
+            try (ResultSet resultSet = fixtureStatement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected seeded mentor arbitration fixture to exist for " + username);
+
+                Long submissionId = insertSubmission(
+                        connection,
+                        resultSet.getLong("assignment_id"),
+                        resultSet.getLong("reporter_member_id"));
+                Long incidentId = insertArbitrationIncident(
+                        connection,
+                        submissionId,
+                        resultSet.getLong("reporter_member_id"),
+                        resultSet.getLong("reported_member_id"));
+
+                return new ArbitrationFixture(
+                        incidentId,
+                        resultSet.getString("class_name"),
+                        resultSet.getString("course_title"),
+                        resultSet.getString("assignment_title"),
+                        resultSet.getString("reporter_name"));
+            }
+        }
+    }
+
+    private Long insertSubmission(Connection connection, Long assignmentId, Long learnerMemberId) throws Exception {
+        String sql = """
+                INSERT INTO submissions (assignment_id, learner_id, submission_content, submitted_at, status)
+                VALUES (?, ?, ?, NOW(), 'PENDING')
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, assignmentId);
+            statement.setLong(2, learnerMemberId);
+            statement.setString(3, "System test arbitration submission " + shortId());
+            statement.executeUpdate();
+
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                assertTrue(keys.next(), "Expected generated submission id");
+                return keys.getLong(1);
+            }
+        }
+    }
+
+    private Long insertArbitrationIncident(
+            Connection connection,
+            Long submissionId,
+            Long reporterMemberId,
+            Long reportedMemberId) throws Exception {
+        String sql = """
+                INSERT INTO incidents
+                    (incident_type, submission_id, reporter_id, reported_id, reason, evidence_url, status, created_at)
+                VALUES
+                    ('PEER_REVIEW_DISPUTE', ?, ?, ?, ?, NULL, 'PENDING', NOW())
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, submissionId);
+            statement.setLong(2, reporterMemberId);
+            statement.setLong(3, reportedMemberId);
+            statement.setString(4, "System test arbitration needs mentor grading " + shortId());
+            statement.executeUpdate();
+
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                assertTrue(keys.next(), "Expected generated arbitration incident id");
+                return keys.getLong(1);
+            }
+        }
+    }
+
     protected String getCurrentPath() {
         return URI.create(driver.getCurrentUrl()).getPath();
     }
@@ -173,4 +275,11 @@ abstract class SystemTestSupport {
             String courseTitle,
             Long studyGroupId,
             Long incidentId) {}
+
+    protected record ArbitrationFixture(
+            Long incidentId,
+            String className,
+            String courseTitle,
+            String assignmentTitle,
+            String reporterName) {}
 }

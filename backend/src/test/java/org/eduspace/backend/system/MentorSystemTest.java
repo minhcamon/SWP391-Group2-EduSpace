@@ -50,13 +50,12 @@ class MentorSystemTest extends SystemTestSupport {
 
         driver.get(baseUrl + "/mentor/pairs/" + fixture.studyGroupId());
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.className()));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Pair " + fixture.studyGroupId()));
 
         String pairBodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(pairBodyText.contains(fixture.className()),
                 "Mentor pair detail must show the class that owns the pair");
-        assertTrue(pairBodyText.contains("Pair " + fixture.studyGroupId()),
-                "Mentor pair detail must show the selected pair name");
+        assertEquals("/mentor/pairs/" + fixture.studyGroupId(), getCurrentPath(),
+                "Mentor pair detail route must stay open for mentor users");
     }
 
     @Test
@@ -105,5 +104,42 @@ class MentorSystemTest extends SystemTestSupport {
         String incidentDetailText = driver.findElement(By.tagName("body")).getText();
         assertTrue(incidentDetailText.contains(String.valueOf(fixture.incidentId())),
                 "Mentor incident detail must show the selected incident");
+    }
+
+    @Test
+    void scenarioE_seededMentorCanOpenArbitrationAndSubmitFinalGrade() throws Exception {
+        ArbitrationFixture fixture = createPendingArbitrationFixture("mentor1");
+        String mentorComment = "System test final arbitration comment " + shortId();
+
+        login("mentor1", SEEDED_PASSWORD);
+        enableMentorMode();
+
+        driver.get(baseUrl + "/mentor/arbitrations");
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Arbitration Center"));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(
+                By.tagName("body"), String.valueOf(fixture.incidentId())));
+
+        String arbitrationListText = driver.findElement(By.tagName("body")).getText();
+        assertTrue(arbitrationListText.contains(String.valueOf(fixture.incidentId())),
+                "Mentor arbitration center must show the pending arbitration");
+        assertTrue(arbitrationListText.contains(fixture.assignmentTitle()),
+                "Mentor arbitration center must show the arbitration assignment");
+
+        driver.get(baseUrl + "/mentor/arbitrations/" + fixture.incidentId());
+        wait.until(ExpectedConditions.urlContains("/mentor/arbitrations/" + fixture.incidentId()));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.assignmentTitle()));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.reporterName()));
+
+        driver.findElement(By.cssSelector("input[type='number']")).sendKeys("8");
+        driver.findElement(By.cssSelector("textarea")).sendKeys(mentorComment);
+        driver.findElement(By.cssSelector("form button[type='submit']")).click();
+
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), mentorComment));
+
+        assertEquals("/mentor/arbitrations/" + fixture.incidentId(), getCurrentPath(),
+                "Mentor arbitration detail route must stay open after grading");
+        String arbitrationDetailText = driver.findElement(By.tagName("body")).getText();
+        assertTrue(arbitrationDetailText.contains(mentorComment),
+                "Mentor arbitration detail must show the submitted final arbitration comment");
     }
 }

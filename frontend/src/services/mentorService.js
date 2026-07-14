@@ -170,7 +170,19 @@ export const mentorService = {
      */
     submitArbitrationGrade: async (id, finalScore, comment) => {
         try {
-            const response = await api.put(`/mentor/arbitrations/${id}/grade`, { finalScore, comment });
+            const normalizedScore = Number(finalScore);
+            const response = await api.post(`/mentor/arbitrations/${id}/grade`, {
+                finalScore: normalizedScore,
+                comments: comment,
+                criteriaScores: [
+                    {
+                        criterionName: 'Mentor final review',
+                        description: 'Final score submitted by mentor after arbitration review',
+                        maxPoint: 10,
+                        score: normalizedScore
+                    }
+                ]
+            });
             return response.data.message;
         } catch (error) {
             console.error('submitArbitrationGrade error at mentorService:', error);
