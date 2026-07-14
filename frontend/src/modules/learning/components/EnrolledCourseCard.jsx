@@ -23,16 +23,16 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
         <div className="space-y-4">
           <div>
             <div className="flex justify-between items-center text-xs font-semibold mb-1.5 text-neutral-medium">
-              <span>Tiến độ</span>
-              <span className={isCompleted ? "font-bold text-green-600" : "font-bold text-primary"}>
-                {course.progressPercentage}%
+              <span>{!course.classId ? "Trạng thái" : "Tiến độ"}</span>
+              <span className={isCompleted ? "font-bold text-green-600" : !course.classId ? "font-bold text-amber-500" : "font-bold text-primary"}>
+                {!course.classId ? "Đang chờ ghép lớp" : `${course.progressPercentage}%`}
               </span>
             </div>
             {/* Progress Bar Track */}
             <div className="w-full h-2 bg-slate-100 dark:bg-muted/55 rounded-full overflow-hidden">
               {/* Progress Fill */}
               <div
-                className={`h-full rounded-full transition-all duration-500 ease-out ${isCompleted ? "bg-green-500" : "bg-secondary"
+                className={`h-full rounded-full transition-all duration-500 ease-out ${isCompleted ? "bg-green-500" : !course.classId ? "bg-amber-500" : "bg-secondary"
                   }`}
                 style={{
                   width: `${course.progressPercentage}%`,
@@ -52,6 +52,17 @@ const EnrolledCourseCard = ({ course, onContinue }) => {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
             >
               🏆 Xem chứng chỉ
+            </Button>
+          ) : !course.classId ? (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/courses/${course.courseId}`);
+              }}
+              variant="outline"
+              className="w-full border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white font-semibold transition-all duration-200 active:scale-[0.98] py-2 h-auto"
+            >
+              Xem hàng chờ
             </Button>
           ) : (
             <Button

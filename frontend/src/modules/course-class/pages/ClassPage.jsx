@@ -35,8 +35,6 @@ export const ClassPage = () => {
 
   const [leaderboardMode, setLeaderboardMode] = useState('individual')
 
-
-
   useEffect(() => {
     if (!isLoading && classData) {
       console.log('classData: ', classData)
@@ -95,8 +93,6 @@ export const ClassPage = () => {
     }
   })
 
-
-
   return (
     <main className="grow flex flex-col w-full">
       {/* Main Section */}
@@ -118,30 +114,33 @@ export const ClassPage = () => {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
-                Cohort #{classData.classId || '104'}
+                Lớp #{classData.classId || '104'}
               </span>
               <span className="text-xs text-neutral-light font-medium flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" /> {classData.totalStudents || 0} Học viên hoạt động
+                <Users className="w-3.5 h-3.5" /> {classData.totalStudents || 0}{' '}
+                Học viên hoạt động
               </span>
-              {isCreator && (
+              {/* {isCreator && (
                 <span className="text-xs text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100/50">
-                  <TrendingUp className="w-3.5 h-3.5" /> Hiệu suất lớp: 84% (+2.5%)
+                  <TrendingUp className="w-3.5 h-3.5" /> Hiệu suất lớp: 84%
+                  (+2.5%)
                 </span>
-              )}
+              )} */}
             </div>
 
             <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
-              {isActualCreator
+              {/* {isActualCreator
                 ? 'Bảng điều khiển Giảng viên'
                 : isMentorOfThisClass
                   ? 'Bảng điều khiển Mentor'
-                  : 'Bảng tin Lớp học'}
+                  : 'Bảng tin Lớp học'} */}
+              Bảng tin Lớp học
             </h1>
-            <p className="text-sm text-neutral-medium mt-1">
+            {/* <p className="text-sm text-neutral-medium mt-1">
               {isCreator
                 ? 'Theo dõi tiến độ ghép cặp, xem kết quả làm bài tập và quản lý các hoạt động lớp.'
                 : 'Cập nhật các hoạt động mới nhất và theo dõi bảng xếp hạng của lớp.'}
-            </p>
+            </p> */}
           </div>
 
           <div className="flex items-center gap-2">
@@ -166,7 +165,7 @@ export const ClassPage = () => {
         </div>
 
         {/* Unified Tabs Selector (Only for Creators) */}
-        {isCreator && (
+        {/* {isCreator && (
           <div className="flex border-b border-border-light/30 mb-6">
             <button
               onClick={() => setActiveTab('leaderboard')}
@@ -202,7 +201,7 @@ export const ClassPage = () => {
               </span>
             </button>
           </div>
-        )}
+        )} */}
 
         <div className="space-y-6 max-w-5xl">
           {activeTab === 'leaderboard' && (
@@ -210,9 +209,7 @@ export const ClassPage = () => {
               <ClassLeaderboard
                 leaderboardMode={leaderboardMode}
                 setLeaderboardMode={setLeaderboardMode}
-                individualLeaderboard={
-                  classData?.leaderboard?.individual || []
-                }
+                individualLeaderboard={classData?.leaderboard?.individual || []}
                 pairLeaderboard={classData?.leaderboard?.pairs || []}
               />
               <ClassPersonnel

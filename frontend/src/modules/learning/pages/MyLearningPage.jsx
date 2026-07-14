@@ -28,8 +28,8 @@ const MyLearningPage = () => {
     );
   }
 
-  const activeCourses = myLearningCourses.filter((c) => !c.isCompleted && c.progressPercentage > 0);
-  const waitingCourses = myLearningCourses.filter((c) => !c.isCompleted && c.progressPercentage === 0);
+  const activeCourses = myLearningCourses.filter((c) => !c.isCompleted && c.classId);
+  const waitingCourses = myLearningCourses.filter((c) => !c.isCompleted && !c.classId);
   const completedCourses = myLearningCourses.filter((c) => c.isCompleted);
 
   return (
