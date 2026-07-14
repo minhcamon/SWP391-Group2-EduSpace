@@ -5,27 +5,31 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Workflow 2: Course creation and approval lifecycle using Selenium. */
+/** Course lifecycle system tests using Selenium. */
 class CourseApprovalSystemTest extends SystemTestSupport {
 
     @Test
-    void scenarioA_creatorCreatesPendingCourseAdminPublishesAndGuestSeesIt() throws Exception {
+    void creatorCreatesPendingCourseAdminPublishesAndGuestSeesIt() throws Exception {
         TestUser creator = register("creator");
         TestUser admin = register("admin");
         setRole(creator.username(), "CREATOR");
         setRole(admin.username(), "ADMIN");
 
         String title = "System Test Course " + shortId();
-        String description = "Course created by an end-to-end workflow test";
 
         login(creator.username());
-        createPendingCourse(title, description);
+        createPendingCourse(title, "Course created by an end-to-end workflow test");
 
         driver.get(baseUrl + "/creator/courses");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("body")));
@@ -53,7 +57,7 @@ class CourseApprovalSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioB_creatorCanSaveDraftCourse() throws Exception {
+    void creatorCanSaveDraftCourse() throws Exception {
         TestUser creator = register("draftcreator");
         setRole(creator.username(), "CREATOR");
 
@@ -61,11 +65,8 @@ class CourseApprovalSystemTest extends SystemTestSupport {
 
         login(creator.username());
         driver.get(baseUrl + "/creator/create-course");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("course-title"))).sendKeys(title);
-        driver.findElement(By.id("course-desc")).sendKeys("Draft course created by system test");
-
-        driver.findElement(By.xpath("//button[contains(@class,'border-primary') and contains(@class,'text-primary')]"))
-                .click();
+        fillCourseOverview(title, "Draft course created by system test");
+        clickSaveDraft();
 
         wait.until(ExpectedConditions.urlContains("/creator/courses"));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("body")));
@@ -74,7 +75,104 @@ class CourseApprovalSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioC_learnerCannotOpenCreatorCourseBuilder() throws Exception {
+    void creatorCanSaveDraftCourseWithVideoLinkLesson() throws Exception {
+        TestUser creator = register("videocreator");
+        setRole(creator.username(), "CREATOR");
+
+        String title = "Video Link Course " + shortId();
+        String lessonTitle = "External Video Lesson " + shortId();
+        String videoUrl = "https://example.com/course-video-" + shortId() + ".mp4";
+
+        login(creator.username());
+        driver.get(baseUrl + "/creator/create-course");
+        fillCourseOverview(title, "Course with a pasted video URL");
+
+        addModule();
+        addVideoLessonWithPastedUrl(lessonTitle, videoUrl);
+        clickSaveDraft();
+
+        wait.until(ExpectedConditions.urlContains("/creator/courses"));
+
+        int savedLessons = queryForInt("""
+                SELECT COUNT(*)
+                FROM lessons l
+                JOIN modules m ON l.module_id = m.module_id
+                JOIN courses c ON m.course_id = c.course_id
+                WHERE c.title = ? AND l.title = ? AND l.content_type = 'VIDEO' AND l.content_url = ?
+                """, title, lessonTitle, videoUrl);
+
+        assertEquals(1, savedLessons, "Video lesson URL must be persisted with the created draft course");
+    }
+
+    @Test
+    void creatorCanUploadDocumentLessonWhenSavingDraftCourse() throws Exception {
+        TestUser creator = register("doccreator");
+        setRole(creator.username(), "CREATOR");
+
+        String title = "Document Upload Course " + shortId();
+        String lessonTitle = "Uploaded Document Lesson " + shortId();
+        Path document = Files.createTempFile("eduspace-e2e-", ".pdf");
+        Files.writeString(document, """
+                %PDF-1.4
+                1 0 obj
+                << /Type /Catalog /Pages 2 0 R >>
+                endobj
+                2 0 obj
+                << /Type /Pages /Count 0 >>
+                endobj
+                trailer
+                << /Root 1 0 R >>
+                %%EOF
+                """);
+
+        login(creator.username());
+        driver.get(baseUrl + "/creator/create-course");
+        fillCourseOverview(title, "Course with an uploaded document lesson");
+
+        addModule();
+        addDocumentLessonWithUpload(lessonTitle, document);
+        clickSaveDraft();
+
+        wait.until(ExpectedConditions.urlContains("/creator/courses"));
+
+        int savedLessons = queryForInt("""
+                SELECT COUNT(*)
+                FROM lessons l
+                JOIN modules m ON l.module_id = m.module_id
+                JOIN courses c ON m.course_id = c.course_id
+                WHERE c.title = ?
+                  AND l.title = ?
+                  AND l.content_type = 'DOCUMENT'
+                  AND (l.content_url LIKE 'http://%' OR l.content_url LIKE 'https://%')
+                """, title, lessonTitle);
+
+        assertEquals(1, savedLessons, "Uploaded document lesson must be persisted with a public URL");
+    }
+
+    @Test
+    void videoLessonRejectsInvalidUrlBeforeSaving() throws Exception {
+        TestUser creator = register("invalidvideo");
+        setRole(creator.username(), "CREATOR");
+
+        login(creator.username());
+        driver.get(baseUrl + "/creator/create-course");
+        fillCourseOverview("Invalid Video URL Course " + shortId(), "Course used to validate bad lesson URLs");
+
+        addModule();
+        openInlineVideoForm();
+        clickPasteVideoLinkMode();
+        lessonTitleInput().sendKeys("Invalid URL Lesson");
+        videoUrlInput().sendKeys("ftp://invalid-video-url");
+        clickInlineConfirm();
+
+        WebElement toast = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-sonner-toast]")));
+        assertFalse(toast.getText().isBlank(), "Invalid lesson URL must show a validation toast");
+        assertTrue(getCurrentPath().equals("/creator/create-course"),
+                "Invalid lesson URL must keep the creator on the course builder");
+    }
+
+    @Test
+    void learnerCannotOpenCreatorCourseBuilder() throws Exception {
         TestUser learner = register("courselearner");
         setRole(learner.username(), "LEARNER");
 
@@ -87,7 +185,7 @@ class CourseApprovalSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioC_creatorCannotOpenAdminCourseModeration() throws Exception {
+    void creatorCannotOpenAdminCourseModeration() throws Exception {
         TestUser creator = register("securecourse");
         setRole(creator.username(), "CREATOR");
 
@@ -100,7 +198,7 @@ class CourseApprovalSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioC_pendingCourseIsNotPubliclyVisible() throws Exception {
+    void pendingCourseIsNotPubliclyVisible() throws Exception {
         TestUser creator = register("pendingcourse");
         setRole(creator.username(), "CREATOR");
 
@@ -117,10 +215,75 @@ class CourseApprovalSystemTest extends SystemTestSupport {
                 "Pending course must not be visible on the public course list");
     }
 
-    private void createPendingCourse(String title, String description) {
-        driver.get(baseUrl + "/creator/create-course");
+    private void fillCourseOverview(String title, String description) {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("course-title"))).sendKeys(title);
         driver.findElement(By.id("course-desc")).sendKeys(description);
+    }
+
+    private void clickSaveDraft() {
+        driver.findElement(By.xpath("//button[contains(@class,'border-primary') and contains(@class,'text-primary')]"))
+                .click();
+    }
+
+    private void addModule() {
+        wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//button[contains(@class,'bg-primary/10') and contains(@class,'text-primary')]")))
+                .click();
+    }
+
+    private void openInlineVideoForm() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(., 'Video')]"))).click();
+    }
+
+    private void openInlineDocumentForm() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("(//button[contains(@class,'border-dashed')])[2]")))
+                .click();
+    }
+
+    private void clickPasteVideoLinkMode() {
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(., 'link video')]"))).click();
+    }
+
+    private WebElement lessonTitleInput() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'Ti') or contains(@placeholder,'lesson') or contains(@placeholder,'bai')]")));
+    }
+
+    private WebElement videoUrlInput() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'link video') or contains(@placeholder,'YouTube')]")));
+    }
+
+    private void clickInlineConfirm() {
+        driver.findElement(By.xpath("//button[contains(., 'X') and contains(., 'c nh')]")).click();
+    }
+
+    private void addVideoLessonWithPastedUrl(String lessonTitle, String videoUrl) {
+        openInlineVideoForm();
+        clickPasteVideoLinkMode();
+        lessonTitleInput().sendKeys(lessonTitle);
+        videoUrlInput().sendKeys(videoUrl);
+        clickInlineConfirm();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[contains(@href, '" + videoUrl + "')]")));
+    }
+
+    private void addDocumentLessonWithUpload(String lessonTitle, Path document) {
+        openInlineDocumentForm();
+        lessonTitleInput().sendKeys(lessonTitle);
+        WebElement fileInput = driver.findElement(By.cssSelector("input[type='file']"));
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].classList.remove('hidden'); arguments[0].style.display='block';",
+                fileInput);
+        fileInput.sendKeys(document.toAbsolutePath().toString());
+        new WebDriverWait(driver, Duration.ofSeconds(90))
+                .until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("a[href^='http']")));
+        clickInlineConfirm();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(., '" + lessonTitle + "')]")));
+    }
+
+    private void createPendingCourse(String title, String description) {
+        driver.get(baseUrl + "/creator/create-course");
+        fillCourseOverview(title, description);
 
         driver.findElement(By.xpath("//button[contains(@class,'bg-primary') and contains(@class,'text-white')]"))
                 .click();
@@ -141,11 +304,5 @@ class CourseApprovalSystemTest extends SystemTestSupport {
 
     private boolean isElementPresent(By locator) {
         return !driver.findElements(locator).isEmpty();
-    }
-
-    private void logout() {
-        ((JavascriptExecutor) driver).executeScript("window.localStorage.clear();");
-        ((JavascriptExecutor) driver).executeScript("window.sessionStorage.clear();");
-        driver.get(baseUrl + "/login");
     }
 }
