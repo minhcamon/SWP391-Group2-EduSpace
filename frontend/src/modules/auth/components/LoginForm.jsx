@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Mail, Lock, AlertCircle, X } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router";
 import { toast } from "sonner";
 import authService from "@/services/authService";
 import GoogleIcon from "@/assets/google-icon-logo.svg";
@@ -11,11 +11,24 @@ import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
 
 const LoginForm = () => {
+    const location = useLocation();
     const [formData, setFormData] = useState({
         username: "",
         password: "",
     });
     const [rememberMe, setRememberMe] = useState(false);
+    const [showResendModal, setShowResendModal] = useState(false);
+    const [resendEmail, setResendEmail] = useState("");
+    const [isResending, setIsResending] = useState(false);
+
+    // Show message from navigation state (e.g., after email verification)
+    useEffect(() => {
+        if (location.state?.message) {
+            toast.info(location.state.message, { duration: 5000 });
+            // Clear the state to prevent showing the message again on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -46,15 +59,123 @@ const LoginForm = () => {
                 navigate("/");
             } catch (error) {
                 console.error("Login failed at LoginForm:", error);
-                toast.error(error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
+                const errorMsg = error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
+                
+                // Check if error is due to unverified account
+                if (errorMsg.includes("not verified") || errorMsg.includes("chưa xác thực") || errorMsg.includes("verify your account")) {
+                    // Try to extract email from username if it's an email, otherwise leave empty
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    setResendEmail(emailPattern.test(username) ? username : "");
+                    setShowResendModal(true);
+                } else {
+                    toast.error(errorMsg);
+                }
             }
         };
 
         await runWithLoading(setIsSubmitting, handleLogin);
     };
 
+    const handleResendVerification = async () => {
+        if (!resendEmail || !resendEmail.includes('@')) {
+            toast.error('Vui lòng nhập email hợp lệ');
+            return;
+        }
+
+        setIsResending(true);
+        try {
+            await authService.resendVerificationEmail(resendEmail);
+            toast.success('Email xác thực mới đã được gửi! Vui lòng kiểm tra hộp thư của bạn.', {
+                duration: 6000
+            });
+            setShowResendModal(false);
+            setResendEmail("");
+        } catch (error) {
+            toast.error(error.message || 'Không thể gửi email xác thực. Vui lòng thử lại.');
+        } finally {
+            setIsResending(false);
+        }
+    };
+
     return (
         <>
+            {/* Resend Verification Modal */}
+            {showResendModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+                        {/* Close button */}
+                        <button
+                            onClick={() => setShowResendModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        {/* Icon */}
+                        <div className="flex justify-center mb-4">
+                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                                <AlertCircle className="w-8 h-8 text-orange-600" />
+                            </div>
+                        </div>
+
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+                            Tài khoản chưa xác thực
+                        </h2>
+
+                        {/* Description */}
+                        <p className="text-gray-600 text-center mb-6">
+                            Vui lòng kiểm tra email để xác thực tài khoản. Nếu bạn chưa nhận được email hoặc link đã hết hạn, hãy nhập email để nhận link mới.
+                        </p>
+
+                        {/* Email Input */}
+                        <div className="mb-6">
+                            <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email của bạn
+                            </Label>
+                            <Input
+                                type="email"
+                                value={resendEmail}
+                                onChange={(e) => setResendEmail(e.target.value)}
+                                placeholder="name@example.com"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                disabled={isResending}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Link xác thực có hiệu lực trong 1 phút
+                            </p>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex gap-3">
+                            <Button
+                                onClick={() => setShowResendModal(false)}
+                                variant="outline"
+                                className="flex-1 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                disabled={isResending}
+                            >
+                                Hủy
+                            </Button>
+                            <Button
+                                onClick={handleResendVerification}
+                                disabled={isResending || !resendEmail}
+                                className="flex-1 py-3 px-4 bg-secondary hover:bg-[#ea580c] text-white font-semibold rounded-lg transition-colors disabled:bg-gray-400 flex items-center justify-center gap-2"
+                                isLoading={isResending}
+                            >
+                                {isResending ? (
+                                    "Đang gửi..."
+                                ) : (
+                                    <>
+                                        <Mail size={16} />
+                                        Gửi lại email
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Username Field */}
@@ -172,6 +293,14 @@ const LoginForm = () => {
                 Chưa có tài khoản?{" "}
                 <Link className="font-bold text-primary hover:opacity-95 transition-opacity" to="/signup">
                     Đăng ký ngay
+                </Link>
+            </p>
+
+            {/* Resend Verification Link */}
+            <p className="mt-3 text-center text-xs text-neutral-medium">
+                Chưa nhận được email xác thực?{" "}
+                <Link className="font-bold text-orange-600 hover:opacity-95 transition-opacity" to="/resend-verification">
+                    Gửi lại email
                 </Link>
             </p>
 

@@ -5,37 +5,39 @@ import { Toaster } from 'sonner'
 import RouteProgressBar from '@/components/common/RouteProgressBar'
 
 // Import page anchors
-import Home from '@/views/Home'
-import Login from '@/views/auth/Login'
-import Register from '@/views/auth/Register'
-import GoogleCallback from '@/views/auth/GoogleCallback'
-import Courses from '@/views/Courses'
-import Profile from '@/views/UserProfile'
-import CreatorHome from '@/views/creator/Home'
-import CreatorCourses from '@/views/creator/Courses'
-import CreatorCourseDetail from '@/views/creator/CourseDetail'
-import CreatorCourseBuilder from '@/views/creator/CourseBuilder'
-import CreatorAnalytics from '@/views/creator/Analytics'
-import CreatorMentorApplications from '@/views/creator/MentorApplications'
-import AdminDashboard from '@/views/admin/Dashboard'
-import AdminRequests from '@/views/admin/Requests'
-import AdminCourses from '@/views/admin/Courses'
-import Error from '@/views/Error'
-import LearningArea from '@/views/learning/LearningArea'
-import ProgressDashboard from '@/views/learning/ProgressDashboard'
-import MyLearning from '@/views/learning/MyLearning'
-import LearnerCourseDetail from '@/views/LearnerCourseDetail'
-import ClassView from '@/views/learning/ClassView'
-import Assignment from '@/views/learning/Assignment'
-import MentorDashboard from '@/views/mentor/Dashboard'
-import MentorIncidents from '@/views/mentor/Incidents'
-import MentorIncidentDetail from '@/views/mentor/IncidentDetailView'
-import MentorPairDetail from '@/views/mentor/PairDetailView'
-import MentorArbitrations from '@/views/mentor/Arbitrations'
-import MentorArbitrationDetail from '@/views/mentor/ArbitrationDetailView'
-import MentorClasses from '@/views/mentor/Classes'
-import MentorClassDetail from '@/views/mentor/ClassDetailView'
-import CertificateView from '@/views/learning/CertificateView'
+import Home from "@/views/Home";
+import Login from "@/views/auth/Login";
+import Register from "@/views/auth/Register";
+import VerifyEmail from "@/views/auth/VerifyEmail";
+import ResendVerification from "@/views/auth/ResendVerification";
+import GoogleCallback from "@/views/auth/GoogleCallback";
+import Courses from "@/views/Courses";
+import Profile from "@/views/UserProfile";
+import CreatorHome from "@/views/creator/Home";
+import CreatorCourses from "@/views/creator/Courses";
+import CreatorCourseDetail from "@/views/creator/CourseDetail";
+import CreatorCourseBuilder from "@/views/creator/CourseBuilder";
+import CreatorAnalytics from "@/views/creator/Analytics";
+import CreatorMentorApplications from "@/views/creator/MentorApplications";
+import AdminDashboard from "@/views/admin/Dashboard";
+import AdminRequests from "@/views/admin/Requests";
+import AdminCourses from "@/views/admin/Courses";
+import Error from "@/views/Error";
+import LearningArea from "@/views/learning/LearningArea";
+import ProgressDashboard from "@/views/learning/ProgressDashboard";
+import MyLearning from "@/views/learning/MyLearning";
+import LearnerCourseDetail from "@/views/LearnerCourseDetail";
+import ClassView from "@/views/learning/ClassView";
+import Assignment from "@/views/learning/Assignment";
+import MentorDashboard from "@/views/mentor/Dashboard";
+import MentorIncidents from "@/views/mentor/Incidents";
+import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
+import MentorPairDetail from "@/views/mentor/PairDetailView";
+import MentorArbitrations from "@/views/mentor/Arbitrations";
+import MentorArbitrationDetail from "@/views/mentor/ArbitrationDetailView";
+import MentorClasses from "@/views/mentor/Classes";
+import MentorClassDetail from "@/views/mentor/ClassDetailView";
+import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
   return (
@@ -48,18 +50,11 @@ function App() {
         />
         <Routes>
           {/* public route */}
-          <Route
-            path="/"
-            element={<Home />}
-          ></Route>
-          <Route
-            path="/signup"
-            element={<Register />}
-          ></Route>
-          <Route
-            path="/login"
-            element={<Login />}
-          ></Route>
+          <Route path="/" element={<Home />}></Route>
+          <Route path="/signup" element={<Register />}></Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route path="/verify-email" element={<VerifyEmail />}></Route>
+          <Route path="/resend-verification" element={<ResendVerification />}></Route>
           <Route
             path="/oauth2/redirect"
             element={<GoogleCallback />}

@@ -17,12 +17,14 @@ import org.eduspace.backend.security.SecurityUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
         if (request.getUsername() != null && userRepository.existsByUsername(request.getUsername())) {
@@ -33,19 +35,93 @@ public class AuthService {
             throw new RuntimeException("This email is already in use");
         }
 
+        // Generate verification token (valid for 1 minute)
+        String verificationToken = jwtUtil.generateEmailVerificationToken(request.getEmail());
+
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
+                .status(UserStatus.PENDING)
+                .verificationToken(verificationToken)
+                .verificationTokenExpiry(LocalDateTime.now().plusMinutes(1))
                 .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
 
+        // Send verification email
+        emailService.sendVerificationEmail(request.getEmail(), verificationToken);
+
         return AuthResponse.builder()
                 .build();
+    }
+
+    public void verifyEmail(String token) {
+        if (!jwtUtil.isEmailVerificationToken(token)) {
+            throw new RuntimeException("Invalid verification token");
+        }
+
+        if (jwtUtil.isTokenExpired(token)) {
+            throw new RuntimeException("Verification token has expired");
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            return;
+        }
+
+        if (!token.equals(user.getVerificationToken())) {
+            throw new RuntimeException("Invalid verification token");
+        }
+
+        if (user.getVerificationTokenExpiry() != null
+                && LocalDateTime.now().isAfter(user.getVerificationTokenExpiry())) {
+            throw new RuntimeException("Verification token has expired");
+        }
+
+        // Activate the account
+        user.setStatus(UserStatus.ACTIVE);
+        user.setVerificationToken(null);
+        user.setVerificationTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    public void resendVerificationEmail(String email) {
+        // Validate email format
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Email không được để trống");
+        }
+        
+        if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new RuntimeException("Email không hợp lệ");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email này"));
+
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            throw new RuntimeException("Tài khoản đã được xác thực. Bạn có thể đăng nhập ngay.");
+        }
+
+        if (user.getStatus() != UserStatus.PENDING) {
+            throw new RuntimeException("Tài khoản không ở trạng thái chờ xác thực");
+        }
+
+        // Generate new verification token
+        String newVerificationToken = jwtUtil.generateEmailVerificationToken(email);
+
+        user.setVerificationToken(newVerificationToken);
+        user.setVerificationTokenExpiry(LocalDateTime.now().plusMinutes(1));
+        userRepository.save(user);
+
+        // Send new verification email
+        emailService.sendVerificationEmail(email, newVerificationToken);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -63,9 +139,9 @@ public class AuthService {
             throw new RuntimeException("Invalid username or password.");
         }
 
-        // CHECK STATUS
+        // Check if account is verified
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new RuntimeException("Account disabled");
+            throw new RuntimeException("Account not verified. Please check your email to verify your account.");
         }
 
         String token = jwtUtil.generateToken(user);
