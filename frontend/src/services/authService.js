@@ -71,13 +71,16 @@ const AuthService = {
         }
     },
 
-    registerCreator: async (creatorData) => {
+    registerCreator: async (file) => {
         try {
-            const payload = {
-                reason: creatorData.portfolioUrl
-            };
-            console.log('Payload for creator registration:', payload);            
-            const response = await api.post('/creator-requests/send', payload);
+            const formData = new FormData();
+            formData.append('file', file);
+            console.log('FormData for creator registration created with file:', file.name);            
+            const response = await api.post('/creator-requests/send', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             return response.data.message || 'Đăng ký làm Creator thành công!';
         } catch (error) {
             console.error('Register creator error at AuthService:', error);

@@ -20,4 +20,5 @@ public class CreatorRequestApprovalResponse {
     private LocalDateTime processedAt;
     private String status;
     private String reason;
+    private String documentUrl;
 }

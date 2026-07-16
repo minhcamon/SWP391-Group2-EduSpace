@@ -11,6 +11,15 @@ import {
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 
+const getDownloadUrl = (url) => {
+    if (!url) return "";
+    // If it's a Cloudinary URL, inject fl_attachment flag to force download
+    if (url.includes("/upload/")) {
+        return url.replace("/upload/", "/upload/fl_attachment/");
+    }
+    return url;
+};
+
 const RequestTable = ({
     requests,
     isHistory = false,
@@ -32,17 +41,11 @@ const RequestTable = ({
                                 <TableHead className="py-4 px-6 w-72 font-bold text-gray-500">
                                     Ứng viên
                                 </TableHead>
-                                {!isHistory ? (
-                                    <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
-                                        Đơn trình bày / Minh chứng
-                                    </TableHead>
-                                ) : (
-                                    <TableHead className="py-4 px-6 w-2 font-bold text-gray-500">
-                                        Email
-                                    </TableHead>
-                                )}
+                                <TableHead className="py-4 px-6 w-64 font-bold text-gray-500">
+                                    Minh chứng
+                                </TableHead>
                                 {isHistory && (
-                                    <TableHead className="py-4 px-6 w-2 font-bold text-gray-500">
+                                    <TableHead className="py-4 px-6 w-36 font-bold text-gray-500">
                                         Ngày xử lý
                                     </TableHead>
                                 )}
@@ -88,33 +91,31 @@ const RequestTable = ({
                                                 />{" "}
                                                 {request.learnerName}
                                             </div>
-                                            {!isHistory && (
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                                    <Mail
-                                                        size={14}
-                                                        className="text-secondary"
-                                                    />{" "}
-                                                    {request.learnerEmail}
-                                                </div>
+                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                <Mail
+                                                    size={14}
+                                                    className="text-secondary"
+                                                />{" "}
+                                                {request.learnerEmail}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="py-5 px-6">
+                                            {request.documentUrl ? (
+                                                <a
+                                                    href={getDownloadUrl(request.documentUrl)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    download
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-primary hover:bg-primary/95 transition-all shadow-sm active:scale-[0.98]"
+                                                >
+                                                    📥 Tải tài liệu
+                                                </a>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 italic">Không có tài liệu</span>
                                             )}
                                         </TableCell>
-                                        {!isHistory ? (
-                                            <TableCell className="py-5 px-6">
-                                                {request.documentUrl}
-                                            </TableCell>
-                                        ) : (
-                                            <TableCell className="py-5 px-6">
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                                    <Mail
-                                                        size={14}
-                                                        className="text-secondary"
-                                                    />{" "}
-                                                    {request.learnerEmail}
-                                                </div>
-                                            </TableCell>
-                                        )}
                                         {isHistory && (
-                                            <TableCell className="py-4 px-6 w-2 font-bold text-gray-500">
+                                            <TableCell className="py-4 px-6 w-36 font-bold text-gray-500">
                                                 {new Date(
                                                     request.processedAt,
                                                 ).toLocaleDateString("vi-VN")}

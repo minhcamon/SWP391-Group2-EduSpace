@@ -68,6 +68,7 @@ public class CreatorRequestService {
                         : null)
                 .approvedBy(adminId)
                 .processedAt(LocalDateTime.now())
+                .documentUrl(updatedRequest.getDocumentUrl())
                 .build();
 
         notificationService.sendToUser(request.getLearner(),
@@ -106,6 +107,7 @@ public class CreatorRequestService {
                 .approvedBy(adminId)
                 .processedAt(LocalDateTime.now())
                 .reason(updatedRequest.getReason())
+                .documentUrl(updatedRequest.getDocumentUrl())
                 .build();
 
         notificationService.sendToUser(request.getLearner(),
@@ -117,7 +119,7 @@ public class CreatorRequestService {
     }
 
     @Transactional
-    public void createCreatorRequest(Long learnerId) {
+    public void createCreatorRequest(Long learnerId, String documentUrl) {
 
         User learner = userRepository.findById(learnerId)
                 .orElseThrow(() -> new RuntimeException(
@@ -131,6 +133,7 @@ public class CreatorRequestService {
 
         CreatorRequest newRequest = CreatorRequest.builder()
                 .learner(learner)
+                .documentUrl(documentUrl)
                 .status(RequestStatus.PENDING)
                 .build();
 
@@ -162,6 +165,7 @@ public class CreatorRequestService {
                     .approvedBy(adminId)
                     .processedAt(req.getProcessedAt())
                     .status(req.getStatus().name())
+                    .documentUrl(req.getDocumentUrl())
                     .build();
 
             responseList.add(res);
