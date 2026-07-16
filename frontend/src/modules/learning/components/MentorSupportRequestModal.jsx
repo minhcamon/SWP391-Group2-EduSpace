@@ -2,6 +2,8 @@ import { X, AlertCircle, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import learnService from '@/services/learnService'
+import InputFile from '@/components/ui/InputFile'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/Dialog'
 
 // Danh sách các loại incident từ backend enum
 const INCIDENT_TYPES = [
@@ -128,26 +130,25 @@ const MentorSupportRequestModal = ({ isOpen, onClose, courseId, studyGroupId, st
     }))
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl w-full p-0 overflow-hidden flex flex-col max-h-[90vh] gap-0 border-none bg-white rounded-2xl shadow-2xl" showCloseButton={false}>
         {/* Header */}
-        <div className="p-6 border-b border-border-light flex items-center justify-between bg-gradient-to-r from-secondary/5 to-primary/5">
+        <div className="p-6 border-b border-border-light flex items-center justify-between bg-linear-to-r from-secondary/5 to-primary/5">
           <div>
-            <h2 className="text-xl font-bold text-neutral-dark flex items-center gap-2">
+            <DialogTitle className="text-xl font-bold text-neutral-dark flex items-center gap-2">
               <AlertCircle size={24} className="text-secondary" />
               Yêu cầu hỗ trợ từ Mentor
-            </h2>
-            <p className="text-sm text-neutral-medium mt-1">
+            </DialogTitle>
+            <DialogDescription className="text-sm text-neutral-medium mt-1">
               Mô tả chi tiết vấn đề để Mentor có thể hỗ trợ bạn tốt nhất
-            </p>
+            </DialogDescription>
           </div>
           <button
+            type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-2 hover:bg-hover-light rounded-lg transition-colors text-neutral-medium disabled:opacity-50"
+            className="p-2 hover:bg-hover-light rounded-lg transition-colors text-neutral-medium disabled:opacity-50 cursor-pointer"
           >
             <X size={20} />
           </button>
@@ -236,28 +237,31 @@ const MentorSupportRequestModal = ({ isOpen, onClose, courseId, studyGroupId, st
             </div>
           </div>
 
-          {/* Evidence URL */}
-          <div>
-            <label className="block text-sm font-semibold text-neutral-dark mb-2">
-              Link bằng chứng {selectedIncidentType?.requiresEvidence && <span className="text-error">*</span>}
+          {/* Evidence URL / File Upload using premium InputFile component */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-neutral-dark">
+              Bằng chứng xác thực {selectedIncidentType?.requiresEvidence && <span className="text-error">*</span>}
               <span className="text-xs text-neutral-medium font-normal ml-2">
-                (screenshot, video, link,...)
+                (Hình ảnh, video, tài liệu hoặc đường dẫn URL)
               </span>
             </label>
-            <div className="relative">
-              <input
-                type="url"
-                value={formData.evidenceUrl}
-                onChange={(e) => handleChange('evidenceUrl', e.target.value)}
-                placeholder="https://example.com/evidence.png"
-                maxLength={2000}
-                className="w-full px-4 py-3 pl-10 border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-              <Upload size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-medium" />
-            </div>
-            <p className="text-xs text-neutral-medium mt-1">
-              Có thể upload ảnh/video lên Google Drive, Imgur, YouTube và dán link vào đây
-            </p>
+            <InputFile
+              accept="image/*,video/*,application/pdf"
+              maxSize={5 * 1024 * 1024} // 5MB limit
+              multiple={false}
+              autoUpload={true}
+              onChange={(data) => {
+                handleChange('evidenceUrl', data.url || '');
+              }}
+              variant="learner"
+              split="3-7"
+              placeholder="Dán link Drive, ảnh hoặc tải lên tệp minh chứng trực tiếp..."
+            />
+            {formData.evidenceUrl && (
+              <p className="text-xs text-primary truncate mt-1">
+                Bằng chứng đã lưu: <a href={formData.evidenceUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-primary/80">{formData.evidenceUrl}</a>
+              </p>
+            )}
           </div>
 
           {/* Warning Box for Urgent */}
@@ -275,19 +279,19 @@ const MentorSupportRequestModal = ({ isOpen, onClose, courseId, studyGroupId, st
         </form>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-border-light bg-bg-base flex items-center justify-end gap-3">
+        <div className="p-6 border-t border-border-light bg-bg-base flex items-center justify-end gap-3 rounded-b-2xl">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-xl border border-border-light text-neutral-dark hover:bg-hover-light transition-all font-semibold disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl border border-border-light text-neutral-dark hover:bg-hover-light transition-all font-semibold disabled:opacity-50 cursor-pointer"
           >
             Hủy bỏ
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || !formData.incidentType || !formData.reason || formData.reason.length < 10}
-            className="px-6 py-2.5 rounded-xl bg-secondary text-white hover:bg-secondary/90 hover:shadow-md transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-secondary text-white hover:bg-secondary/90 hover:shadow-md transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -299,8 +303,8 @@ const MentorSupportRequestModal = ({ isOpen, onClose, courseId, studyGroupId, st
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

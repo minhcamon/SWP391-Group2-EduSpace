@@ -9,6 +9,7 @@ import { runWithLoading } from "@/utils/utils";
 import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import Button from "@/components/ui/Button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/Dialog';
 
 const LoginForm = () => {
     const location = useLocation();
@@ -100,13 +101,13 @@ const LoginForm = () => {
     return (
         <>
             {/* Resend Verification Modal */}
-            {showResendModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+            <Dialog open={showResendModal} onOpenChange={(open) => !open && setShowResendModal(false)}>
+                <DialogContent className="max-w-md w-full p-6 bg-white rounded-2xl shadow-2xl gap-0" showCloseButton={false}>
                         {/* Close button */}
                         <button
+                            type="button"
                             onClick={() => setShowResendModal(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer z-10"
                         >
                             <X size={20} />
                         </button>
@@ -119,17 +120,17 @@ const LoginForm = () => {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+                        <DialogTitle className="text-2xl font-bold text-gray-900 text-center mb-2">
                             Tài khoản chưa xác thực
-                        </h2>
+                        </DialogTitle>
 
                         {/* Description */}
-                        <p className="text-gray-600 text-center mb-6">
+                        <DialogDescription className="text-gray-600 text-center mb-6">
                             Vui lòng kiểm tra email để xác thực tài khoản. Nếu bạn chưa nhận được email hoặc link đã hết hạn, hãy nhập email để nhận link mới.
-                        </p>
+                        </DialogDescription>
 
                         {/* Email Input */}
-                        <div className="mb-6">
+                        <div className="mb-6 text-left">
                             <Label className="block text-sm font-medium text-gray-700 mb-2">
                                 Email của bạn
                             </Label>
@@ -172,9 +173,8 @@ const LoginForm = () => {
                                 )}
                             </Button>
                         </div>
-                    </div>
-                </div>
-            )}
+                </DialogContent>
+            </Dialog>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
