@@ -273,15 +273,30 @@ public class AuthService {
                 .build();
     }
 
+    private final java.util.concurrent.ConcurrentHashMap<String, OtpData> otpCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class OtpData {
+        private final String otp;
+        private final LocalDateTime expiry;
+
+        public OtpData(String otp, LocalDateTime expiry) {
+            this.otp = otp;
+            this.expiry = expiry;
+        }
+
+        public String getOtp() { return otp; }
+        public LocalDateTime getExpiry() { return expiry; }
+    }
+
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống!"));
 
         // Generate 6-digit random OTP
         String otp = String.valueOf(100000 + new java.util.Random().nextInt(900000));
-        user.setOtp(otp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
-        userRepository.save(user);
+        
+        // Store in RAM cache
+        otpCache.put(request.getEmail(), new OtpData(otp, LocalDateTime.now().plusMinutes(5)));
 
         emailService.sendOtpEmail(request.getEmail(), otp);
     }
@@ -290,18 +305,20 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống!"));
 
-        if (user.getOtp() == null || !user.getOtp().equals(request.getOtp())) {
+        OtpData otpData = otpCache.get(request.getEmail());
+
+        if (otpData == null || !otpData.getOtp().equals(request.getOtp())) {
             throw new RuntimeException("Mã OTP không chính xác!");
         }
 
-        if (user.getOtpExpiry() == null || LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+        if (otpData.getExpiry() == null || LocalDateTime.now().isAfter(otpData.getExpiry())) {
+            // Remove expired OTP
+            otpCache.remove(request.getEmail());
             throw new RuntimeException("Mã OTP đã hết hạn!");
         }
 
-        // Clear OTP values
-        user.setOtp(null);
-        user.setOtpExpiry(null);
-        userRepository.save(user);
+        // Clear OTP from RAM cache
+        otpCache.remove(request.getEmail());
 
         // Generate and return reset token
         return jwtUtil.generateResetPasswordToken(request.getEmail());
