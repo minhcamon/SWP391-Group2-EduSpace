@@ -162,6 +162,18 @@ const learnService = {
       })
     }
   },
+
+  sendMentorSupportRequest: async (requestData) => {
+    try {
+      const response = await api.post("/learner/mentor-support", requestData)
+      return response.data
+    } catch (error) {
+      console.error("Lỗi gửi yêu cầu hỗ trợ Mentor tại learnService:", error)
+      throw new Error(error.response?.data?.message || "Không thể gửi yêu cầu hỗ trợ đến Mentor", {
+        cause: error,
+      })
+    }
+  }
 }
 
 export default learnService

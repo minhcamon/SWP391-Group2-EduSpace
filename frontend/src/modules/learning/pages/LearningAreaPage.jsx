@@ -8,16 +8,20 @@ import {
   X,
   LifeBuoy
 } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import VideoPlayer from '../components/VideoPlayer'
 import PairChat from '../components/PairChat'
 import CourseSidebar from '../components/CourseSidebar'
 import StudyGroup from '../components/StudyGroup'
+import MentorSupportRequestModal from '../components/MentorSupportRequestModal'
 import useLearningArea from '../hooks/useLearningArea'
 import Badge from '@/components/ui/Badge'
 import Avatar from '@/components/common/Avatar'
 
 const LearningAreaPage = () => {
+  const [isMentorSupportModalOpen, setIsMentorSupportModalOpen] = useState(false)
+  
   const {
     isSidebarOpen,
     setIsSidebarOpen,
@@ -51,13 +55,13 @@ const LearningAreaPage = () => {
     handleSelectLesson,
     handleSelectAssignment,
     progressPercent,
-    resolvedClassId
+    resolvedClassId,
+    courseId,
+    studyGroupId
   } = useLearningArea()
 
   const handleRequestMentorSupport = () => {
-    toast.success(
-      'Đã gửi yêu cầu hỗ trợ đến Mentor lớp! Mentor sẽ tham gia hỗ trợ trong ít phút.'
-    )
+    setIsMentorSupportModalOpen(true)
   }
 
   if (isLoading) {
@@ -334,6 +338,15 @@ const LearningAreaPage = () => {
           </form>
         </div>
       </main>
+
+      {/* Mentor Support Request Modal */}
+      <MentorSupportRequestModal
+        isOpen={isMentorSupportModalOpen}
+        onClose={() => setIsMentorSupportModalOpen(false)}
+        courseId={courseId}
+        studyGroupId={studyGroupId}
+        studyGroup={studyGroup}
+      />
     </div>
   )
 }
