@@ -150,6 +150,39 @@ const AuthService = {
             const errorMsg = error.response?.data?.message || 'Không thể tải ảnh lên. Vui lòng thử lại!';
             throw new Error(errorMsg);
         }
+    },
+
+    forgotPassword: async (email) => {
+        try {
+            const response = await api.post('/auth/forgot-password', { email });
+            return response.data.message || 'Mã OTP đã được gửi!';
+        } catch (error) {
+            console.error('Forgot password error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể yêu cầu đặt lại mật khẩu. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    verifyOtp: async (email, otp) => {
+        try {
+            const response = await api.post('/auth/verify-otp', { email, otp });
+            return response.data.data; // This is the reset password JWT token
+        } catch (error) {
+            console.error('Verify OTP error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Xác thực OTP thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    resetPassword: async (resetToken, password) => {
+        try {
+            const response = await api.post('/auth/reset-password', { resetToken, password });
+            return response.data.message || 'Đặt lại mật khẩu thành công!';
+        } catch (error) {
+            console.error('Reset password error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
     }
 
 };

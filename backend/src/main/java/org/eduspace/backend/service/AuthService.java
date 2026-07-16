@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import org.eduspace.backend.dto.auth.request.LoginRequest;
 import org.eduspace.backend.dto.auth.request.RegisterRequest;
 import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
+import org.eduspace.backend.dto.auth.request.ForgotPasswordRequest;
+import org.eduspace.backend.dto.auth.request.VerifyOtpRequest;
 import org.eduspace.backend.dto.auth.response.AuthResponse;
 import org.eduspace.backend.dto.user.request.UpdateProfileRequest;
 import org.eduspace.backend.dto.user.response.UserResponse;
@@ -23,9 +25,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final EmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
         if (request.getUsername() != null && userRepository.existsByUsername(request.getUsername())) {
@@ -269,5 +271,39 @@ public class AuthService {
                 .bio(user.getBio())
                 .role(user.getRole().name())
                 .build();
+    }
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống!"));
+
+        // Generate 6-digit random OTP
+        String otp = String.valueOf(100000 + new java.util.Random().nextInt(900000));
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(request.getEmail(), otp);
+    }
+
+    public String verifyOtp(VerifyOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống!"));
+
+        if (user.getOtp() == null || !user.getOtp().equals(request.getOtp())) {
+            throw new RuntimeException("Mã OTP không chính xác!");
+        }
+
+        if (user.getOtpExpiry() == null || LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+            throw new RuntimeException("Mã OTP đã hết hạn!");
+        }
+
+        // Clear OTP values
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+        userRepository.save(user);
+
+        // Generate and return reset token
+        return jwtUtil.generateResetPasswordToken(request.getEmail());
     }
 }

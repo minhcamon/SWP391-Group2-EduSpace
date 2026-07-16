@@ -10,6 +10,7 @@ import Login from "@/views/auth/Login";
 import Register from "@/views/auth/Register";
 import VerifyEmail from "@/views/auth/VerifyEmail";
 import ResendVerification from "@/views/auth/ResendVerification";
+import ForgotPassword from "@/views/auth/ForgotPassword";
 import GoogleCallback from "@/views/auth/GoogleCallback";
 import Courses from "@/views/Courses";
 import Profile from "@/views/UserProfile";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/login" element={<Login />}></Route>
           <Route path="/verify-email" element={<VerifyEmail />}></Route>
           <Route path="/resend-verification" element={<ResendVerification />}></Route>
+          <Route path="/forgot-password" element={<ForgotPassword />}></Route>
           <Route
             path="/oauth2/redirect"
             element={<GoogleCallback />}

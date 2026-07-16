@@ -12,6 +12,8 @@ import org.eduspace.backend.dto.auth.request.CheckUsernameRequest;
 import org.eduspace.backend.dto.auth.request.LoginRequest;
 import org.eduspace.backend.dto.auth.request.RegisterRequest;
 import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
+import org.eduspace.backend.dto.auth.request.ForgotPasswordRequest;
+import org.eduspace.backend.dto.auth.request.VerifyOtpRequest;
 import org.eduspace.backend.dto.auth.response.AuthResponse;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.repository.UserRepository;
@@ -168,6 +170,46 @@ public class AuthController {
                 APIResponse.success(
                         "Password reset successfully.",
                         null));
+    }
+
+    @Operation(summary = "Yêu cầu đặt lại mật khẩu (Gửi OTP)", description = "Nhập email để hệ thống gửi mã OTP xác thực qua email.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Gửi mã OTP thành công"),
+            @ApiResponse(responseCode = "400", description = "Email không tồn tại hoặc lỗi trong quá trình xử lý")
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<APIResponse<Object>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.forgotPassword(request);
+            return ResponseEntity.ok(
+                    APIResponse.success(
+                            "Mã OTP đã được gửi về email của bạn. Vui lòng kiểm tra hộp thư!",
+                            null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    APIResponse.error(400, e.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Xác thực mã OTP", description = "Nhập email và OTP nhận được để xác thực. Trả về token đổi mật khẩu nếu hợp lệ.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Xác thực OTP thành công, trả về reset token"),
+            @ApiResponse(responseCode = "400", description = "Mã OTP không chính xác hoặc đã hết hạn")
+    })
+    @PostMapping("/verify-otp")
+    public ResponseEntity<APIResponse<String>> verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request) {
+        try {
+            String resetToken = authService.verifyOtp(request);
+            return ResponseEntity.ok(
+                    APIResponse.success(
+                            "Xác thực mã OTP thành công!",
+                            resetToken));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    APIResponse.error(400, e.getMessage(), null));
+        }
     }
 
 }

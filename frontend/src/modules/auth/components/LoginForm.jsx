@@ -238,7 +238,7 @@ const LoginForm = () => {
                         </Label>
                     </div>
                     <div className="text-xs">
-                        <Link to="#" className="font-semibold text-primary hover:opacity-95 transition-opacity">
+                        <Link to="/forgot-password" className="font-semibold text-primary hover:opacity-95 transition-opacity">
                             Quên mật khẩu?
                         </Link>
                     </div>
