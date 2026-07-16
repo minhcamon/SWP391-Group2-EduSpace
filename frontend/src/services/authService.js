@@ -129,6 +129,24 @@ const AuthService = {
             const errorMsg = error.response?.data?.message || 'Không thể gửi email xác thực. Vui lòng thử lại!';
             throw new Error(errorMsg);
         }
+    },
+
+    uploadAvatar: async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await api.post('/user/avatar', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data.data;
+        } catch (error) {
+            console.error('Upload avatar error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải ảnh lên. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
     }
 
 };

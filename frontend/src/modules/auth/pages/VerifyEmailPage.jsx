@@ -25,32 +25,25 @@ const VerifyEmailPage = () => {
                 const response = await AuthService.verifyEmail(token);
                 setStatus('success');
                 setMessage(response);
-
-                // Redirect to login after 3 seconds
-                setTimeout(() => {
-                    navigate('/login', {
-                        state: { message: 'Tài khoản đã được xác thực. Vui lòng đăng nhập!' }
-                    });
-                }, 3000);
             } catch (error) {
                 const errorMessage = error.message || 'Xác thực email thất bại. Vui lòng thử lại.';
-                
+
                 // Check if account is already verified
                 if (errorMessage.includes('already verified') || errorMessage.includes('đã được xác thực')) {
                     setStatus('success');
                     setMessage('Tài khoản của bạn đã được xác thực trước đó. Bạn có thể đăng nhập ngay!');
-                    
+
                     setTimeout(() => {
                         navigate('/login', {
                             state: { message: 'Tài khoản đã được xác thực. Vui lòng đăng nhập!' }
                         });
                     }, 3000);
-                } 
+                }
                 // Check if token expired
                 else if (errorMessage.includes('expired') || errorMessage.includes('hết hạn')) {
                     setStatus('expired');
                     setMessage('Link xác thực đã hết hạn (1 phút). Vui lòng nhập email để nhận link mới.');
-                } 
+                }
                 else {
                     setStatus('error');
                     setMessage(errorMessage);

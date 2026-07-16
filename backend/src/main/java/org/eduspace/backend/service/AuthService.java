@@ -8,6 +8,7 @@ import org.eduspace.backend.dto.auth.request.LoginRequest;
 import org.eduspace.backend.dto.auth.request.RegisterRequest;
 import org.eduspace.backend.dto.auth.request.ResetPasswordRequest;
 import org.eduspace.backend.dto.auth.response.AuthResponse;
+import org.eduspace.backend.dto.user.request.UpdateProfileRequest;
 import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.UserStatus;
@@ -175,10 +176,58 @@ public class AuthService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
+                .bio(user.getBio())
                 .role(user.getRole().name())
                 .build();
 
         return userResponse;
+    }
+
+    public UserResponse updateProfile(UpdateProfileRequest request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found or not authenticated"));
+
+        // Validate email if it's being changed
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Email đã được sử dụng bởi tài khoản khác");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        // Update fields only if they are provided
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
+
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+
+        // Save updated user
+        user = userRepository.save(user);
+
+        // Return updated profile
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatarUrl(user.getAvatarUrl())
+                .bio(user.getBio())
+                .role(user.getRole().name())
+                .build();
     }
 
     public void resetPassword(ResetPasswordRequest request) {
@@ -199,5 +248,26 @@ public class AuthService {
                         request.getPassword()));
 
         userRepository.save(user);
+    }
+
+    public UserResponse updateAvatar(String avatarUrl) {
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found or not authenticated"));
+
+        user.setAvatarUrl(avatarUrl);
+        user = userRepository.save(user);
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatarUrl(user.getAvatarUrl())
+                .bio(user.getBio())
+                .role(user.getRole().name())
+                .build();
     }
 }

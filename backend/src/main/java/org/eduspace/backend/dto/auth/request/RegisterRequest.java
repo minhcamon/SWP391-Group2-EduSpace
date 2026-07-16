@@ -15,7 +15,7 @@ public class RegisterRequest {
     private String fullName;
 
     @NotBlank(message = "Cannot be left username blank")
-    @Size(min = 4, max = 30, message = "At least 4-30 characters")
+    @Size(min = 4, max = 30, message = "Username at least 4-30 characters")
     @Pattern(regexp = "^[^@\\s]+$", message = "User does not include '@' character")
     private String username;
 

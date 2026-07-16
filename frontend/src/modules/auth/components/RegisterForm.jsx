@@ -47,14 +47,6 @@ const RegisterForm = () => {
                 toast.success(successMessage || "Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác thực tài khoản.", {
                     duration: 6000,
                 });
-                // Don't navigate immediately - show message
-                setTimeout(() => {
-                    navigate("/login", { 
-                        state: { 
-                            message: "Vui lòng kiểm tra email của bạn để xác thực tài khoản trước khi đăng nhập." 
-                        } 
-                    });
-                }, 2000);
             } catch (error) {
                 console.error("Registration failed: ", error);
                 toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");

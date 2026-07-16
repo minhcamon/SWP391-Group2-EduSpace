@@ -32,9 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth", description = "Các API xác thực tài khoản (Đăng ký, Đăng nhập, Xác thực Email)")
 public class AuthController {
 
-    private final JwtUtil jwtUtil;
     private final AuthService authService;
-    private final EmailService emailService;
     private final UserRepository userRepository;
 
     @Operation(summary = "Đăng nhập tài khoản local", description = "Đăng nhập bằng username hoặc email và mật khẩu.")
@@ -62,7 +60,9 @@ public class AuthController {
         AuthResponse response = authService.register(request);
 
         return ResponseEntity.ok(
-                APIResponse.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.", response));
+                APIResponse.success(
+                        "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
+                        response));
     }
 
     @Operation(summary = "Xác thực email", description = "Xác thực tài khoản người dùng thông qua token được gửi qua email.")
@@ -76,7 +76,9 @@ public class AuthController {
         try {
             authService.verifyEmail(token);
             return ResponseEntity.ok(
-                    APIResponse.success("Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.", null));
+                    APIResponse.success(
+                            "Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.",
+                            null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     APIResponse.error(400, e.getMessage(), null));
@@ -94,7 +96,9 @@ public class AuthController {
         try {
             authService.resendVerificationEmail(request.getEmail());
             return ResponseEntity.ok(
-                    APIResponse.success("Email xác thực mới đã được gửi. Vui lòng kiểm tra hộp thư của bạn.", null));
+                    APIResponse.success(
+                            "Email xác thực mới đã được gửi. Vui lòng kiểm tra hộp thư của bạn.",
+                            null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     APIResponse.error(400, e.getMessage(), null));
