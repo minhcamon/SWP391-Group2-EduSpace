@@ -33,33 +33,45 @@ public class SystemService {
         Waitlist waitlist = waitlistRepository.findById(waitlistId)
                 .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
 
-        waitlist.setStatus(WaitlistStatus.FULLED);
-        waitlistRepository.save(waitlist);
-
-        String generatedClassName = waitlist.getCourse().getTitle().replaceAll("\\s+", "_").toUpperCase()
-                + "_B" + System.currentTimeMillis() % 1000;
-
-        CourseClass newClass = CourseClass.builder()
-                .course(waitlist.getCourse())
-                .name(generatedClassName)
-                .activatedAt(LocalDateTime.now())
-                .status(ClassStatus.RUNNING)
-                .build();
-        CourseClass savedClass = classRepository.save(newClass);
+        Course course = waitlist.getCourse();
+        Integer minStudents = course.getMinStudentsToStart();
 
         List<WaitlistEntry> allEntries = waitlistEntryRepository.findByWaitlistId(waitlistId);
 
-        if (allEntries.size() < 10) {
-            throw new RuntimeException("Error: Not enough 10 members to start the class.");
+        // Flexible validation: use course's minimum instead of hard-coded 10
+        if (allEntries.size() < minStudents) {
+            throw new RuntimeException("Error: Not enough students to start the class. Minimum required: " + minStudents);
         }
-        List<WaitlistEntry> entries = allEntries.subList(0, 10);
 
+        // Take up to 10 students (or all if less than 10)
+        int studentsToEnroll = Math.min(allEntries.size(), 10);
+        List<WaitlistEntry> entries = allEntries.subList(0, studentsToEnroll);
+
+        // Sort by experience (highest to lowest)
         entries.sort((a, b) -> {
             int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
             int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
             return Integer.compare(expB, expA);
         });
 
+        // Update waitlist status
+        waitlist.setStatus(WaitlistStatus.FULLED);
+        waitlistRepository.save(waitlist);
+
+        // Generate class name
+        String generatedClassName = course.getTitle().replaceAll("\\s+", "_").toUpperCase()
+                + "_B" + System.currentTimeMillis() % 1000;
+
+        // Create new class
+        CourseClass newClass = CourseClass.builder()
+                .course(course)
+                .name(generatedClassName)
+                .activatedAt(LocalDateTime.now())
+                .status(ClassStatus.RUNNING)
+                .build();
+        CourseClass savedClass = classRepository.save(newClass);
+
+        // Enroll students and notify
         List<ClassMember> savedMembers = new ArrayList<>();
         for (WaitlistEntry entry : entries) {
             ClassMember member = ClassMember.builder()
@@ -75,30 +87,52 @@ public class SystemService {
             waitlistEntryRepository.delete(entry);
 
             notificationService.sendToUser(entry.getUser(),
-                    "Khóa học " + waitlist.getCourse().getTitle() + " của bạn đã bắt đầu!",
+                    "Khóa học " + course.getTitle() + " của bạn đã bắt đầu!",
                     NotificationType.SYSTEM,
                     savedClass.getId());
         }
 
+        // Get first module for initial pairing
         List<CourseModule> modules = moduleRepository
                 .findByCourseIdOrderBySortOrder(savedClass.getCourse().getId());
         CourseModule firstModule = modules.isEmpty() ? null : modules.get(0);
 
-        int left = 0;
-        int right = savedMembers.size() - 1;
-        int groupIndex = 1;
+        // Create study groups with improved pairing algorithm
+        createStudyGroupsWithPairing(savedMembers, savedClass, firstModule);
 
+        // Create timeline
+        this.createTimelineForClass(savedClass.getId());
+
+        return savedClass.getId();
+    }
+
+    /**
+     * Create study groups by pairing pro students (high exp) with newbie students (low exp)
+     * Handles odd number of students by creating a 3-person group
+     */
+    private void createStudyGroupsWithPairing(List<ClassMember> members, CourseClass courseClass, CourseModule module) {
+        if (members.isEmpty()) {
+            return;
+        }
+
+        int left = 0;
+        int right = members.size() - 1;
+        int groupIndex = 1;
+        List<StudyGroup> createdGroups = new ArrayList<>();
+
+        // Pair students: highest exp with lowest exp
         while (left < right) {
-            ClassMember proStudent = savedMembers.get(left);
-            ClassMember newbieStudent = savedMembers.get(right);
+            ClassMember proStudent = members.get(left);
+            ClassMember newbieStudent = members.get(right);
 
             StudyGroup studyGroup = StudyGroup.builder()
-                    .courseClass(savedClass)
-                    .module(firstModule)
-                    .chatChannelId("chat_room_g" + groupIndex + "_" + savedClass.getId())
+                    .courseClass(courseClass)
+                    .module(module)
+                    .chatChannelId("chat_room_g" + groupIndex + "_" + courseClass.getId())
                     .chatStatus("ACTIVE")
                     .build();
             StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+            createdGroups.add(savedGroup);
 
             GroupMember memberLeft = GroupMember.builder()
                     .studyGroup(savedGroup)
@@ -117,9 +151,17 @@ public class SystemService {
             groupIndex++;
         }
 
-        this.createTimelineForClass(savedClass.getId());
+        // Handle odd number: add the middle student to the first group (highest exp group)
+        if (left == right && !createdGroups.isEmpty()) {
+            ClassMember middleStudent = members.get(left);
+            StudyGroup firstGroup = createdGroups.get(0);
 
-        return savedClass.getId();
+            GroupMember middleMember = GroupMember.builder()
+                    .studyGroup(firstGroup)
+                    .classMember(middleStudent)
+                    .build();
+            groupMemberRepository.save(middleMember);
+        }
     }
 
     @Transactional

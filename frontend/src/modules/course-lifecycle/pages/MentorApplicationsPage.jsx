@@ -366,16 +366,17 @@ export default function MentorApplicationsPage() {
 
       {/* Detail Modal */}
       <Dialog open={isDetailOpen && !!selectedApp} onOpenChange={(open) => !open && setIsDetailOpen(false)}>
-        <DialogContent className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]" showCloseButton={false}>
+        {selectedApp && (
+          <DialogContent className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]" showCloseButton={false}>
             {/* Modal Header */}
             <header className="bg-neutral-dark p-6 text-white flex items-center justify-between">
               <div>
                 <DialogTitle className="text-lg font-black flex items-center gap-2">
                   Đơn ứng tuyển làm Mentor:{' '}
-                  <span className="text-secondary">{selectedApp?.userName}</span>
+                  <span className="text-secondary">{selectedApp.userName}</span>
                 </DialogTitle>
                 <DialogDescription className="text-[10px] text-slate-300 font-semibold mt-1">
-                  Khóa học: {selectedApp?.courseTitle}
+                  Khóa học: {selectedApp.courseTitle}
                 </DialogDescription>
               </div>
               <button
@@ -649,7 +650,8 @@ export default function MentorApplicationsPage() {
               </div>
             </footer>
           </DialogContent>
-        </Dialog>
+        )}
+      </Dialog>
 
       {/* Reject Reason Dialog */}
       <Dialog open={isRejectOpen} onOpenChange={(open) => !open && (setIsRejectOpen(false), setRejectReason(''))}>

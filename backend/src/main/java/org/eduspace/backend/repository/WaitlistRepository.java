@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,17 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
     List<User> findUsersByWaitListId(@Param("waitlistId") Long waitlistId);
 
     Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
+
+    List<Waitlist> findByStatus(WaitlistStatus status);
+
+    @Query("""
+            SELECT w FROM Waitlist w
+            WHERE w.status = :status
+            AND w.createdAt <= :thresholdDate
+            """)
+    List<Waitlist> findByStatusAndCreatedAtBefore(
+            @Param("status") WaitlistStatus status,
+            @Param("thresholdDate") LocalDateTime thresholdDate);
 
     @Modifying
     @Query("""

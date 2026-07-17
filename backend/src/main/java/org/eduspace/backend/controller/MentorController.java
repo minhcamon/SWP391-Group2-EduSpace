@@ -15,7 +15,6 @@ import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsRespon
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
-import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.eduspace.backend.service.ProgressService;
@@ -94,8 +93,6 @@ public class MentorController {
         MentorPairPeerReviewsResponse response = studyGroupService.getPairPeerReviewsForMentor(pairId, mentorUserId);
         return ResponseEntity.ok(APIResponse.success("Get pair peer reviews successfully", response));
     }
-
-
 
     @GetMapping("/classes")
     @PreAuthorize("hasRole('MENTOR')")

@@ -107,10 +107,7 @@ const Header = () => {
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
             {/* Switch to Mentor Mode Button (Desktop) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN') && (
+            {user && (user.isMentor || user.role === 'ADMIN') && (
                 <button
                   onClick={() => {
                     setMode('MENTOR')
@@ -230,11 +227,7 @@ const Header = () => {
             )}
 
             {/* Switch to Mentor Mode Button (Mobile) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN' ||
-                user.username?.startsWith('mentor')) && (
+            {user && (user.isMentor || user.role === 'ADMIN') && (
                 <button
                   onClick={() => {
                     setShowMobileMenu(false)
