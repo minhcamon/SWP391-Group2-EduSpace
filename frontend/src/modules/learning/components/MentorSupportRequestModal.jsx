@@ -132,7 +132,18 @@ const MentorSupportRequestModal = ({ isOpen, onClose, courseId, studyGroupId, st
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl w-full p-0 overflow-hidden flex flex-col max-h-[90vh] gap-0 border-none bg-white rounded-2xl shadow-2xl" showCloseButton={false}>
+      <DialogContent
+  className="
+    w-[calc(100%-2rem)]       /* Mobile: chừa lề 1rem mỗi bên cho thoáng */
+    md:w-[90%]                /* Tablet: rộng 90% màn hình */
+    lg:w-full                 /* Desktop: rộng tối đa */
+    lg:max-w-[1000px]         /* Giới hạn tối đa 1000px ở màn hình lớn */
+    max-h-[90vh] 
+    p-0 overflow-hidden flex flex-col gap-0 border-none bg-white 
+    rounded-2xl shadow-2xl
+  " 
+  showCloseButton={false}
+>
         {/* Header */}
         <div className="p-6 border-b border-border-light flex items-center justify-between bg-linear-to-r from-secondary/5 to-primary/5">
           <div>

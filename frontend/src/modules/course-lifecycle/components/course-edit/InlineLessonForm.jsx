@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
 import InputFile from '@/components/ui/InputFile';
 
 // Loại file chấp nhận theo từng content type
