@@ -63,6 +63,19 @@ const Header = () => {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
             <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                  isActive
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-neutral-medium hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
+            <NavLink
               to="/courses"
               className={({ isActive }) =>
                 `text-sm font-semibold transition-all duration-200 py-1.5 ${
@@ -75,18 +88,35 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            <NavLink
-              to="/my-learning"
-              className={({ isActive }) =>
-                `text-sm font-semibold transition-all duration-200 py-1.5 ${
-                  isActive
-                    ? 'text-primary border-b-2 border-primary'
-                    : 'text-neutral-medium hover:text-primary'
-                }`
-              }
-            >
-              Học tập của tôi
-            </NavLink>
+            {user && (
+              <>
+                <NavLink
+                  to="/my-learning"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
+            )}
           </nav>
 
           {/* Search Bar (Desktop) */}
@@ -200,6 +230,20 @@ const Header = () => {
                             Lộ trình
                         </NavLink> */}
             <NavLink
+              to="/"
+              onClick={() => setShowMobileMenu(false)}
+              className={({ isActive }) =>
+                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
+            <NavLink
               to="/courses"
               onClick={() => setShowMobileMenu(false)}
               className={({ isActive }) =>
@@ -214,19 +258,35 @@ const Header = () => {
             </NavLink>
 
             {user && (
-              <NavLink
-                to="/my-learning"
-                onClick={() => setShowMobileMenu(false)}
-                className={({ isActive }) =>
-                  `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
-                  }`
-                }
-              >
-                Học tập của tôi
-              </NavLink>
+              <>
+                <NavLink
+                  to="/my-learning"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
             )}
 
             {/* Switch to Mentor Mode Button (Mobile) */}

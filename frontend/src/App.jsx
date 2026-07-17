@@ -27,6 +27,7 @@ import Error from "@/views/Error";
 import LearningArea from "@/views/learning/LearningArea";
 import ProgressDashboard from "@/views/learning/ProgressDashboard";
 import MyLearning from "@/views/learning/MyLearning";
+import MyIncidents from "@/views/learning/MyIncidents";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
 import Assignment from "@/views/learning/Assignment";
@@ -68,24 +69,27 @@ function App() {
             element={<LearnerCourseDetail />}
           ></Route>
 
-          {/* Authenticated user routes */}
-          <Route
-            path="/courses/:courseId/learn"
-            element={<LearningArea />}
-          ></Route>
-          <Route
-            path="/courses/:courseId/dashboard"
-            element={<ProgressDashboard />}
-          ></Route>
-          <Route
-            path="/my-learning"
-            element={<MyLearning />}
-          ></Route>
-          {/* Authenticated user routes */}
           <Route element={<ProtectedRoute />}>
+          {/* Authenticated user routes */}
+            <Route
+              path="/courses/:courseId/learn"
+              element={<LearningArea />}
+            ></Route>
+            <Route
+              path="/courses/:courseId/dashboard"
+              element={<ProgressDashboard />}
+            ></Route>
             <Route
               path="/profile"
               element={<Profile />}
+            ></Route>
+            <Route
+            path="/my-learning"
+            element={<MyLearning />}
+          ></Route>
+            <Route
+              path="/my-incidents"
+              element={<MyIncidents />}
             ></Route>
             <Route
               path="/classes/:classId"

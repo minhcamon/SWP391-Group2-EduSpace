@@ -173,6 +173,18 @@ const learnService = {
         cause: error,
       })
     }
+  },
+
+  getMyIncidents: async () => {
+    try {
+      const response = await api.get('/incidents/my');
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi lấy danh sách khiếu nại tại learnService:', error);
+      throw new Error(error.response?.data?.message || 'Không thể tải danh sách khiếu nại!', {
+        cause: error,
+      });
+    }
   }
 }
 
