@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from 'react-router'
 import { AuthProvider } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import { Toaster } from 'sonner'
-import RouteProgressBar from '@/components/common/RouteProgressBar'
 
 // Import page anchors
 import Home from "@/views/Home";
@@ -43,7 +42,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <RouteProgressBar />
+
         <Toaster
           position="bottom-right"
           richColors
