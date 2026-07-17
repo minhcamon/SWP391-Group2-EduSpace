@@ -121,9 +121,9 @@ export default function MentorApplicationsPage() {
   // Filter logic
   const filteredApps = applications.filter((app) => {
     const matchesSearch =
-      app.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.courseTitle.toLowerCase().includes(searchTerm.toLowerCase())
+      app?.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app?.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app?.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === 'ALL' || app.status === statusFilter
 
@@ -367,288 +367,292 @@ export default function MentorApplicationsPage() {
       {/* Detail Modal */}
       <Dialog open={isDetailOpen && !!selectedApp} onOpenChange={(open) => !open && setIsDetailOpen(false)}>
         <DialogContent className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]" showCloseButton={false}>
-            {/* Modal Header */}
-            <header className="bg-neutral-dark p-6 text-white flex items-center justify-between">
-              <div>
-                <DialogTitle className="text-lg font-black flex items-center gap-2">
-                  Đơn ứng tuyển làm Mentor:{' '}
-                  <span className="text-secondary">{selectedApp?.userName}</span>
-                </DialogTitle>
-                <DialogDescription className="text-[10px] text-slate-300 font-semibold mt-1">
-                  Khóa học: {selectedApp?.courseTitle}
-                </DialogDescription>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDetailOpen(false)}
-                className="p-1.5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-white"
-              >
-                <X size={20} />
-              </button>
-            </header>
-
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Applicant Info Banner */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-indigo-50 text-primary rounded-lg">
-                    <Users size={16} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-neutral-medium font-bold block uppercase">
-                      Họ và tên
-                    </span>
-                    <span className="font-bold text-neutral-dark">
-                      {selectedApp.userName}
-                    </span>
-                  </div>
+          {selectedApp && (
+            <>
+              {/* Modal Header */}
+              <header className="bg-neutral-dark p-6 text-white flex items-center justify-between">
+                <div>
+                  <DialogTitle className="text-lg font-black flex items-center gap-2">
+                    Đơn ứng tuyển làm Mentor:{' '}
+                    <span className="text-secondary">{selectedApp.userName}</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-[10px] text-slate-300 font-semibold mt-1">
+                    Khóa học: {selectedApp.courseTitle}
+                  </DialogDescription>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDetailOpen(false)}
+                  className="p-1.5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-white"
+                >
+                  <X size={20} />
+                </button>
+              </header>
 
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                    <Mail size={16} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-neutral-medium font-bold block uppercase">
-                      Địa chỉ Email
-                    </span>
-                    <span className="font-bold text-neutral-dark">
-                      {selectedApp.userEmail}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                    <Calendar size={16} />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-neutral-medium font-bold block uppercase">
-                      Ngày nộp đơn
-                    </span>
-                    <span className="font-bold text-neutral-dark">
-                      {formatDate(selectedApp.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {selectedApp.status === 'REJECTED' &&
-                selectedApp.rejectedReason && (
-                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex gap-3 text-rose-800 text-xs font-semibold">
-                    <AlertCircle
-                      size={18}
-                      className="shrink-0 text-rose-600"
-                    />
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Applicant Info Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-indigo-50 text-primary rounded-lg">
+                      <Users size={16} />
+                    </div>
                     <div>
-                      <p className="font-bold">Lý do từ chối:</p>
-                      <p className="mt-1 text-rose-700">
-                        {selectedApp.rejectedReason}
-                      </p>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">
+                        Họ và tên
+                      </span>
+                      <span className="font-bold text-neutral-dark">
+                        {selectedApp.userName}
+                      </span>
                     </div>
                   </div>
-                )}
 
-              {/* Assignments / Submissions Details */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-black text-secondary flex items-center gap-1.5">
-                  <FileText size={16} /> Kết quả làm bài tập trong khóa học
-                </h3>
-
-                {selectedApp.submissions?.length === 0 ? (
-                  <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-neutral-medium text-xs font-semibold">
-                    Ứng viên này chưa nộp bài tập nào trong lớp học.
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                      <Mail size={16} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">
+                        Địa chỉ Email
+                      </span>
+                      <span className="font-bold text-neutral-dark">
+                        {selectedApp.userEmail}
+                      </span>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {selectedApp.submissions.map((sub, idx) => {
-                      const isExpanded = expandedSubmissions[idx]
-                      const totalRubricScore = sub.criteriaScores && sub.criteriaScores.length > 0
-                        ? sub.criteriaScores.reduce((sum, item) => sum + (item.score || 0), 0)
-                        : sub.finalScore
-                      const totalRubricMax = sub.criteriaScores && sub.criteriaScores.length > 0
-                        ? sub.criteriaScores.reduce((sum, item) => sum + (item.maxPoint || 0), 0)
-                        : 100
-                      const scorePercentage = totalRubricMax > 0 ? (totalRubricScore / totalRubricMax) * 100 : 0
 
-                      return (
-                        <div
-                          key={idx}
-                          className="border border-slate-100 rounded-xl overflow-hidden shadow-2xs"
-                        >
-                          {/* Accordion Trigger Header */}
-                          <button
-                            onClick={() => toggleSubmissionExpand(idx)}
-                            className="w-full px-5 py-4 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between text-left cursor-pointer transition-colors"
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                      <Calendar size={16} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">
+                        Ngày nộp đơn
+                      </span>
+                      <span className="font-bold text-neutral-dark">
+                        {formatDate(selectedApp.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedApp.status === 'REJECTED' &&
+                  selectedApp.rejectedReason && (
+                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex gap-3 text-rose-800 text-xs font-semibold">
+                      <AlertCircle
+                        size={18}
+                        className="shrink-0 text-rose-600"
+                      />
+                      <div>
+                        <p className="font-bold">Lý do từ chối:</p>
+                        <p className="mt-1 text-rose-700">
+                          {selectedApp.rejectedReason}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                {/* Assignments / Submissions Details */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-black text-secondary flex items-center gap-1.5">
+                    <FileText size={16} /> Kết quả làm bài tập trong khóa học
+                  </h3>
+
+                  {selectedApp.submissions?.length === 0 ? (
+                    <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-neutral-medium text-xs font-semibold">
+                      Ứng viên này chưa nộp bài tập nào trong lớp học.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedApp.submissions.map((sub, idx) => {
+                        const isExpanded = expandedSubmissions[idx]
+                        const totalRubricScore = sub.criteriaScores && sub.criteriaScores.length > 0
+                          ? sub.criteriaScores.reduce((sum, item) => sum + (item.score || 0), 0)
+                          : sub.finalScore
+                        const totalRubricMax = sub.criteriaScores && sub.criteriaScores.length > 0
+                          ? sub.criteriaScores.reduce((sum, item) => sum + (item.maxPoint || 0), 0)
+                          : 100
+                        const scorePercentage = totalRubricMax > 0 ? (totalRubricScore / totalRubricMax) * 100 : 0
+
+                        return (
+                          <div
+                            key={idx}
+                            className="border border-slate-100 rounded-xl overflow-hidden shadow-2xs"
                           >
-                            <div className="grow pr-4">
-                              <h4 className="text-xs font-black text-neutral-dark">
-                                {sub.assignmentTitle}
-                              </h4>
-                              <p className="text-[10px] text-neutral-medium line-clamp-1 mt-0.5">
-                                {sub.assignmentDescription}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-4 shrink-0">
-                              {sub.finalScore !== null ? (
-                                <span
-                                  className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
-                                    scorePercentage >= 80
-                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                                      : scorePercentage >= 50
-                                        ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                                        : 'bg-rose-50 text-rose-700 border border-rose-100'
-                                  }`}
-                                >
-                                  Điểm: {totalRubricScore}/{totalRubricMax}
-                                </span>
-                              ) : (
-                                <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">
-                                  Chưa chấm
-                                </span>
-                              )}
-                              {isExpanded ? (
-                                <ChevronUp size={16} />
-                              ) : (
-                                <ChevronDown size={16} />
-                              )}
-                            </div>
-                          </button>
-
-                          {/* Accordion Content */}
-                          {isExpanded && (
-                            <div className="p-5 border-t border-slate-100 bg-white space-y-4 text-xs font-medium">
-                              {/* Assignment Desc */}
-                              <div>
-                                <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
-                                  Mô tả đề bài
-                                </h5>
-                                <p className="text-neutral-dark bg-slate-50/50 p-3 rounded-lg border border-slate-100 whitespace-pre-wrap font-semibold leading-relaxed">
+                            {/* Accordion Trigger Header */}
+                            <button
+                              onClick={() => toggleSubmissionExpand(idx)}
+                              className="w-full px-5 py-4 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between text-left cursor-pointer transition-colors"
+                            >
+                              <div className="grow pr-4">
+                                <h4 className="text-xs font-black text-neutral-dark">
+                                  {sub.assignmentTitle}
+                                </h4>
+                                <p className="text-[10px] text-neutral-medium line-clamp-1 mt-0.5">
                                   {sub.assignmentDescription}
                                 </p>
                               </div>
-
-                              {/* Submission Content */}
-                              <div>
-                                <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
-                                  Nội dung bài làm
-                                </h5>
-                                <div className="text-neutral-dark bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-x-auto font-mono text-[11px] whitespace-pre-wrap">
-                                  {sub.submissionContent}
-                                </div>
+                              <div className="flex items-center gap-4 shrink-0">
+                                {sub.finalScore !== null ? (
+                                  <span
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
+                                      scorePercentage >= 80
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                        : scorePercentage >= 50
+                                          ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                                          : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                    }`}
+                                  >
+                                    Điểm: {totalRubricScore}/{totalRubricMax}
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">
+                                    Chưa chấm
+                                  </span>
+                                )}
+                                {isExpanded ? (
+                                  <ChevronUp size={16} />
+                                ) : (
+                                  <ChevronDown size={16} />
+                                )}
                               </div>
+                            </button>
 
-                              {/* Review section */}
-                              {sub.finalScore !== null && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                  {/* Comments */}
-                                  <div className="bg-indigo-50/30 p-4 rounded-xl border border-indigo-100/50 space-y-2">
-                                    <h5 className="font-bold text-primary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
-                                      <MessageSquare size={13} /> Góp ý & nhận
-                                      xét của reviewer
-                                    </h5>
-                                    <p className="text-neutral-dark font-semibold leading-relaxed italic whitespace-pre-wrap">
-                                      "
-                                      {sub.comments ||
-                                        'Không có nhận xét chi tiết.'}
-                                      "
-                                    </p>
-                                  </div>
+                            {/* Accordion Content */}
+                            {isExpanded && (
+                              <div className="p-5 border-t border-slate-100 bg-white space-y-4 text-xs font-medium">
+                                {/* Assignment Desc */}
+                                <div>
+                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
+                                    Mô tả đề bài
+                                  </h5>
+                                  <p className="text-neutral-dark bg-slate-50/50 p-3 rounded-lg border border-slate-100 whitespace-pre-wrap font-semibold leading-relaxed">
+                                    {sub.assignmentDescription}
+                                  </p>
+                                </div>
 
-                                  {/* Rubrics breakdown */}
-                                  <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-100 space-y-2">
-                                    <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider">
-                                      Chi tiết tiêu chí đánh giá (Rubrics)
-                                    </h5>
-                                    {sub.criteriaScores &&
-                                    sub.criteriaScores.length > 0 ? (
-                                      <div className="space-y-1.5">
-                                        {sub.criteriaScores.map(
-                                          (criterion, cIdx) => (
-                                            <div
-                                              key={cIdx}
-                                              className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100"
-                                            >
-                                              <div>
-                                                <p className="font-bold text-neutral-dark text-[11px]">
-                                                  {criterion.criterionName}
-                                                </p>
-                                                <p className="text-[9px] text-neutral-medium">
-                                                  {criterion.description}
-                                                </p>
-                                              </div>
-                                              <span className="font-black text-primary text-[11px] bg-indigo-50 px-2 py-0.5 rounded-md">
-                                                {criterion.score}/
-                                                {criterion.maxPoint}
-                                              </span>
-                                            </div>
-                                          )
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <p className="text-neutral-light italic text-[11px]">
-                                        Không có thông tin rubrics chi tiết.
-                                      </p>
-                                    )}
+                                {/* Submission Content */}
+                                <div>
+                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
+                                    Nội dung bài làm
+                                  </h5>
+                                  <div className="text-neutral-dark bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-x-auto font-mono text-[11px] whitespace-pre-wrap">
+                                    {sub.submissionContent}
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Modal Footer Actions */}
-            <footer className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-              <div>
-                <span className="text-neutral-medium text-xs font-bold mr-2">
-                  Trạng thái hiện tại:
-                </span>
-                {getStatusBadge(selectedApp.status)}
+                                {/* Review section */}
+                                {sub.finalScore !== null && (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    {/* Comments */}
+                                    <div className="bg-indigo-50/30 p-4 rounded-xl border border-indigo-100/50 space-y-2">
+                                      <h5 className="font-bold text-primary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                                        <MessageSquare size={13} /> Góp ý & nhận
+                                        xét của reviewer
+                                      </h5>
+                                      <p className="text-neutral-dark font-semibold leading-relaxed italic whitespace-pre-wrap">
+                                        "
+                                        {sub.comments ||
+                                          'Không có nhận xét chi tiết.'}
+                                        "
+                                      </p>
+                                    </div>
+
+                                    {/* Rubrics breakdown */}
+                                    <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-100 space-y-2">
+                                      <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider">
+                                        Chi tiết tiêu chí đánh giá (Rubrics)
+                                      </h5>
+                                      {sub.criteriaScores &&
+                                      sub.criteriaScores.length > 0 ? (
+                                        <div className="space-y-1.5">
+                                          {sub.criteriaScores.map(
+                                            (criterion, cIdx) => (
+                                              <div
+                                                key={cIdx}
+                                                className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100"
+                                              >
+                                                <div>
+                                                  <p className="font-bold text-neutral-dark text-[11px]">
+                                                    {criterion.criterionName}
+                                                  </p>
+                                                  <p className="text-[9px] text-neutral-medium">
+                                                    {criterion.description}
+                                                  </p>
+                                                </div>
+                                                <span className="font-black text-primary text-[11px] bg-indigo-50 px-2 py-0.5 rounded-md">
+                                                  {criterion.score}/
+                                                  {criterion.maxPoint}
+                                                </span>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <p className="text-neutral-light italic text-[11px]">
+                                          Không có thông tin rubrics chi tiết.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsDetailOpen(false)}
-                  className="px-4 py-2.5 border border-gray-200 hover:bg-slate-100 text-neutral-medium rounded-xl font-bold cursor-pointer transition-colors active:scale-95"
-                >
-                  Đóng
-                </button>
+              {/* Modal Footer Actions */}
+              <footer className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <div>
+                  <span className="text-neutral-medium text-xs font-bold mr-2">
+                    Trạng thái hiện tại:
+                  </span>
+                  {getStatusBadge(selectedApp.status)}
+                </div>
 
-                {selectedApp.status === 'PENDING' && (
-                  <>
-                    <button
-                      onClick={() => setIsRejectOpen(true)}
-                      disabled={isSubmitting}
-                      className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
-                    >
-                      Từ chối đơn
-                    </button>
-                    <button
-                      onClick={() => handleApprove(selectedApp.id)}
-                      disabled={isSubmitting}
-                      className="px-5 py-2.5 bg-primary hover:bg-[#0785b1] text-white rounded-xl font-bold shadow-md cursor-pointer transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                          Đang duyệt...
-                        </>
-                      ) : (
-                        'Đồng ý nhận làm Mentor'
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-            </footer>
-          </DialogContent>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsDetailOpen(false)}
+                    className="px-4 py-2.5 border border-gray-200 hover:bg-slate-100 text-neutral-medium rounded-xl font-bold cursor-pointer transition-colors active:scale-95"
+                  >
+                    Đóng
+                  </button>
+
+                  {selectedApp.status === 'PENDING' && (
+                    <>
+                      <button
+                        onClick={() => setIsRejectOpen(true)}
+                        disabled={isSubmitting}
+                        className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold cursor-pointer transition-colors active:scale-95 disabled:opacity-50"
+                      >
+                        Từ chối đơn
+                      </button>
+                      <button
+                        onClick={() => handleApprove(selectedApp.id)}
+                        disabled={isSubmitting}
+                        className="px-5 py-2.5 bg-primary hover:bg-[#0785b1] text-white rounded-xl font-bold shadow-md cursor-pointer transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            Đang duyệt...
+                          </>
+                        ) : (
+                          'Đồng ý nhận làm Mentor'
+                        )}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </footer>
+            </>
+          )}
+        </DialogContent>
         </Dialog>
 
       {/* Reject Reason Dialog */}

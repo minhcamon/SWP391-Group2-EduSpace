@@ -19,6 +19,22 @@ const Header = () => {
   const [prevSearch, setPrevSearch] = useState(currentSearch)
   const inputRef = useRef(null)
   const avatarRef = useRef(null)
+  const getManagementConfig = () => {
+    if (!user) return null
+    if (user.role === 'ADMIN') {
+      return { path: '/admin', label: 'Trang quản trị viên', mode: 'ADMIN' }
+    }
+    if (user.role === 'CREATOR') {
+      return { path: '/creator', label: 'Trang quản lý bài học', mode: 'CREATOR' }
+    }
+    if (user.isMentor || user.role === 'MENTOR' || user.username?.startsWith('mentor')) {
+      return { path: '/mentor', label: 'Trang quản lý Mentor', mode: 'MENTOR' }
+    }
+    return null
+  }
+
+  const mgmtConfig = getManagementConfig()
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -88,7 +104,7 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            {user && (
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
               <>
                 <NavLink
                   to="/my-learning"
@@ -136,22 +152,19 @@ const Header = () => {
 
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
-            {/* Switch to Mentor Mode Button (Desktop) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN') && (
-                <button
-                  onClick={() => {
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-                >
-                  <ArrowLeftRight size={13} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Desktop) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+              >
+                <ArrowLeftRight size={13} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
 
             {/* Notification Bell */}
             <NotificationDropdown />
@@ -257,7 +270,7 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            {user && (
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
               <>
                 <NavLink
                   to="/my-learning"
@@ -289,24 +302,20 @@ const Header = () => {
               </>
             )}
 
-            {/* Switch to Mentor Mode Button (Mobile) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN' ||
-                user.username?.startsWith('mentor')) && (
-                <button
-                  onClick={() => {
-                    setShowMobileMenu(false)
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
-                >
-                  <ArrowLeftRight size={14} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Mobile) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false)
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+              >
+                <ArrowLeftRight size={14} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
             {/* {user && (
                             <NavLink
                                 to="/my-learning"
