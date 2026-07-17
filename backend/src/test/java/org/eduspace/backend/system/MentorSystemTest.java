@@ -9,15 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Workflow 5: Mentor dashboard, class monitoring, and pair access using Selenium. */
+/** Workflow 5: Mentor dashboard, class monitoring, incidents, and arbitration using Selenium. */
 @EnabledIfSystemProperty(named = "system.test.enabled", matches = "true")
 class MentorSystemTest extends SystemTestSupport {
 
+    private static final String SEEDED_MENTOR_USERNAME = "mentor1";
+
     @Test
     void scenarioA_seededMentorCanOpenDashboardAndSeeAssignedClass() throws Exception {
-        MentorFixture fixture = loadMentorFixture("mentor1");
+        MentorFixture fixture = loadMentorFixture(SEEDED_MENTOR_USERNAME);
 
-        String token = login("mentor1", SEEDED_PASSWORD);
+        String token = login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         assertFalse(token.isBlank(), "Seeded mentor login must store access_token in localStorage");
 
         enableMentorMode();
@@ -33,19 +35,20 @@ class MentorSystemTest extends SystemTestSupport {
 
     @Test
     void scenarioB_seededMentorCanOpenClassDetailAndPairDetail() throws Exception {
-        MentorFixture fixture = loadMentorFixture("mentor1");
+        MentorFixture fixture = loadMentorFixture(SEEDED_MENTOR_USERNAME);
+        String expectedPairCode = pairCode(fixture.studyGroupId());
 
-        login("mentor1", SEEDED_PASSWORD);
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
 
         driver.get(baseUrl + "/mentor/classes/" + fixture.classId());
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.className()));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "PAIR-0" + fixture.studyGroupId()));
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), expectedPairCode));
 
         String classBodyText = driver.findElement(By.tagName("body")).getText();
         assertTrue(classBodyText.contains(fixture.courseTitle()),
                 "Mentor class detail must show the course title");
-        assertTrue(classBodyText.contains("PAIR-0" + fixture.studyGroupId()),
+        assertTrue(classBodyText.contains(expectedPairCode),
                 "Mentor class detail must show the seeded study group");
 
         driver.get(baseUrl + "/mentor/pairs/" + fixture.studyGroupId());
@@ -60,7 +63,7 @@ class MentorSystemTest extends SystemTestSupport {
 
     @Test
     void scenarioC_mentorRouteRequiresMentorModeAfterLogin() {
-        login("mentor1", SEEDED_PASSWORD);
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
 
         driver.get(baseUrl + "/mentor");
 
@@ -69,8 +72,8 @@ class MentorSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioC_guestCannotOpenMentorRoutes() throws Exception {
-        MentorFixture fixture = loadMentorFixture("mentor1");
+    void scenarioD_guestCannotOpenMentorRoutes() throws Exception {
+        MentorFixture fixture = loadMentorFixture(SEEDED_MENTOR_USERNAME);
 
         driver.get(baseUrl + "/mentor/classes/" + fixture.classId());
 
@@ -79,10 +82,10 @@ class MentorSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioD_seededMentorCanOpenIncidentCenterAndIncidentDetail() throws Exception {
-        MentorFixture fixture = loadMentorFixture("mentor1");
+    void scenarioE_seededMentorCanOpenIncidentCenterAndIncidentDetail() throws Exception {
+        MentorFixture fixture = loadMentorFixture(SEEDED_MENTOR_USERNAME);
 
-        login("mentor1", SEEDED_PASSWORD);
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
 
         driver.get(baseUrl + "/mentor/incidents");
@@ -107,11 +110,11 @@ class MentorSystemTest extends SystemTestSupport {
     }
 
     @Test
-    void scenarioE_seededMentorCanOpenArbitrationAndSubmitFinalGrade() throws Exception {
-        ArbitrationFixture fixture = createPendingArbitrationFixture("mentor1");
+    void scenarioF_seededMentorCanOpenArbitrationAndSubmitFinalGrade() throws Exception {
+        ArbitrationFixture fixture = createPendingArbitrationFixture(SEEDED_MENTOR_USERNAME);
         String mentorComment = "System test final arbitration comment " + shortId();
 
-        login("mentor1", SEEDED_PASSWORD);
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
 
         driver.get(baseUrl + "/mentor/arbitrations");
@@ -130,8 +133,8 @@ class MentorSystemTest extends SystemTestSupport {
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.assignmentTitle()));
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.reporterName()));
 
-        driver.findElement(By.cssSelector("input[type='number']")).sendKeys("8");
-        driver.findElement(By.cssSelector("textarea")).sendKeys(mentorComment);
+        driver.findElement(By.cssSelector("form input[type='number']")).sendKeys("8");
+        driver.findElement(By.cssSelector("form textarea")).sendKeys(mentorComment);
         driver.findElement(By.cssSelector("form button[type='submit']")).click();
 
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), mentorComment));
@@ -141,5 +144,9 @@ class MentorSystemTest extends SystemTestSupport {
         String arbitrationDetailText = driver.findElement(By.tagName("body")).getText();
         assertTrue(arbitrationDetailText.contains(mentorComment),
                 "Mentor arbitration detail must show the submitted final arbitration comment");
+    }
+
+    private static String pairCode(Long studyGroupId) {
+        return "PAIR-0" + studyGroupId;
     }
 }
