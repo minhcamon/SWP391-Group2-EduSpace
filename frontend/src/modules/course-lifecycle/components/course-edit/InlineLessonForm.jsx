@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { X, UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
-import courseService from '@/services/courseService';
+import React from 'react';
+import { X } from 'lucide-react';
+import InputFile from '@/components/ui/InputFile';
 
 // Loại file chấp nhận theo từng content type
 const ACCEPT_MAP = {
@@ -17,29 +16,7 @@ export default function InlineLessonForm({
   setInlineData,
   handleSaveInlineLesson
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState('');
-
   const isText = activeConfig.type === 'TEXT';
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setFileName(file.name);
-    try {
-      const url = await courseService.uploadMedia(file);
-      setInlineData({ ...inlineData, url });
-      toast.success('Tải file lên thành công!');
-    } catch (error) {
-      setFileName('');
-      setInlineData({ ...inlineData, url: '' });
-      toast.error(error.message || 'Tải file lên thất bại!');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
     <div className="ml-6 p-4 border border-primary/30 bg-primary/5 rounded-xl space-y-3 animate-in fade-in duration-200">
@@ -52,7 +29,7 @@ export default function InlineLessonForm({
         </button>
       </div>
 
-      <div className={isText ? "block" : "grid grid-cols-2 gap-3"}>
+      <div className={isText ? "block" : "grid grid-cols-[4fr_6fr] gap-3"}>
         <input
           type="text"
           placeholder={isText ? "Tên Chủ đề nhỏ..." : "Tiêu đề bài học..."}
@@ -62,35 +39,19 @@ export default function InlineLessonForm({
         />
         {!isText && (
           <div className="space-y-1">
-            <label className={`flex items-center gap-2 p-2 text-xs bg-white border border-border-light/40 rounded-lg cursor-pointer hover:border-primary/50 ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
-              {uploading ? (
-                <Loader2 size={14} className="text-primary animate-spin" />
-              ) : inlineData.url ? (
-                <CheckCircle2 size={14} className="text-green-500" />
-              ) : (
-                <UploadCloud size={14} className="text-gray-400" />
-              )}
-              <span className="truncate text-gray-500">
-                {uploading ? 'Đang tải lên...' : fileName || 'Chọn file học liệu...'}
-              </span>
-              <input
-                type="file"
-                accept={ACCEPT_MAP[activeConfig.type] || undefined}
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="hidden"
-              />
-            </label>
-            {inlineData.url && !uploading && (
-              <a
-                href={inlineData.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block truncate text-[10px] text-primary underline"
-              >
-                {inlineData.url}
-              </a>
-            )}
+            <InputFile
+              accept={ACCEPT_MAP[activeConfig.type] || undefined}
+              maxSize={50 * 1024 * 1024} // 50MB limit
+              multiple={false}
+              autoUpload={true}
+              onChange={(data) => {
+                setInlineData({ ...inlineData, url: data.url || '' });
+              }}
+              variant="default"
+              split="3-7"
+              size="sm"
+              placeholder={`Dán URL hoặc tải học liệu...`}
+            />
           </div>
         )}
       </div>
@@ -99,7 +60,7 @@ export default function InlineLessonForm({
         <button onClick={() => setActiveConfig(null)} className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[10px] font-bold text-gray-500 cursor-pointer">Hủy</button>
         <button
           onClick={() => handleSaveInlineLesson(modId)}
-          disabled={uploading || (!isText && !inlineData.url)}
+          disabled={!isText && !inlineData.url}
           className="px-3 py-1 bg-primary text-white rounded-md text-[10px] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Xác nhận

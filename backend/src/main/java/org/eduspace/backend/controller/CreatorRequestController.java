@@ -14,9 +14,13 @@ import org.eduspace.backend.dto.creator_request.request.CreatorRequestApprovalRe
 import org.eduspace.backend.dto.creator_request.response.CreatorRequestApprovalResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CreatorRequestService;
+import org.eduspace.backend.service.CloudinaryService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/creator-requests")
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class CreatorRequestController {
 
     private final CreatorRequestService creatorRequestService;
+    private final CloudinaryService cloudinaryService;
 
     @Operation(summary = "Lấy danh sách yêu cầu nâng cấp lên Creator đang chờ duyệt (ADMIN)", description = "Lấy tất cả các yêu cầu đăng ký làm Creator từ Học viên đang ở trạng thái PENDING.")
     @ApiResponses(value = {
@@ -95,22 +100,38 @@ public class CreatorRequestController {
         return ResponseEntity.ok(APIResponse.success("Creator request processed successfully", response));
     }
 
-    @Operation(summary = "Gửi yêu cầu nâng cấp lên Creator (LEARNER)", description = "Học viên điền lý do, kinh nghiệm để gửi đơn lên Ban quản trị chờ duyệt.")
+    @Operation(summary = "Gửi yêu cầu nâng cấp lên Creator (LEARNER)", description = "Học viên gửi đơn nâng cấp kèm tài liệu minh chứng lên Cloudinary và lưu thông tin vào hệ thống.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Gửi yêu cầu thành công"),
-            @ApiResponse(responseCode = "400", description = "Dữ liệu gửi lên không hợp lệ"),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu hoặc tài liệu gửi lên không hợp lệ"),
             @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
             @ApiResponse(responseCode = "403", description = "Không có quyền Learner")
     })
-    @PostMapping("/send")
+    @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('LEARNER','MENTOR')")
-    public ResponseEntity<APIResponse<String>> sendCreatorRequest() {
+    public ResponseEntity<APIResponse<String>> sendCreatorRequest(
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    APIResponse.error(400, "Tài liệu minh chứng không được để trống", null));
+        }
+
+        // Validate file size (10MB max)
+        long maxSize = 10 * 1024 * 1024;
+        if (file.getSize() > maxSize) {
+            return ResponseEntity.badRequest().body(
+                    APIResponse.error(400, "Kích thước tài liệu không được vượt quá 10MB", null));
+        }
+
+        // Upload file to Cloudinary
+        String documentUrl = cloudinaryService.uploadFile(file);
 
         // Lấy ID của Learner đang đăng nhập từ Security Context (tiện và bảo mật)
         Long learnerId = SecurityUtil.getCurrentUserId();
 
         // Gọi xuống service để xử lý lưu vào DB
-        creatorRequestService.createCreatorRequest(learnerId);
+        creatorRequestService.createCreatorRequest(learnerId, documentUrl);
 
         return ResponseEntity.ok(
                 APIResponse.success(

@@ -2,7 +2,6 @@ package org.eduspace.backend.dto.auth.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,11 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VerifyOtpRequest {
 
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Invalid email")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng")
     private String email;
 
-    @NotBlank(message = "OTP cannot be blank")
-    @Pattern(regexp = "^\\d{6}$", message = "OTP must be 6 digits")
+    @NotBlank(message = "OTP không được để trống")
     private String otp;
 }

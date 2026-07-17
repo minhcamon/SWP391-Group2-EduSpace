@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OtpRequest {
+public class ForgotPasswordRequest {
 
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Invalid email")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng")
     private String email;
 }

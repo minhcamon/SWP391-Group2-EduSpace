@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner'
 import creatorService from '@/services/creatorService'
 import { runWithLoading } from '@/utils/utils'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/Dialog'
 
 export default function MentorApplicationsPage() {
   const [applications, setApplications] = useState([])
@@ -364,21 +365,21 @@ export default function MentorApplicationsPage() {
       </div>
 
       {/* Detail Modal */}
-      {isDetailOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
-          <div className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 border border-slate-100 text-left flex flex-col max-h-[90vh]">
+      <Dialog open={isDetailOpen && !!selectedApp} onOpenChange={(open) => !open && setIsDetailOpen(false)}>
+        <DialogContent className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]" showCloseButton={false}>
             {/* Modal Header */}
             <header className="bg-neutral-dark p-6 text-white flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-black flex items-center gap-2">
+                <DialogTitle className="text-lg font-black flex items-center gap-2">
                   Đơn ứng tuyển làm Mentor:{' '}
-                  <span className="text-secondary">{selectedApp.userName}</span>
-                </h2>
-                <p className="text-[10px] text-slate-300 font-semibold mt-1">
-                  Khóa học: {selectedApp.courseTitle}
-                </p>
+                  <span className="text-secondary">{selectedApp?.userName}</span>
+                </DialogTitle>
+                <DialogDescription className="text-[10px] text-slate-300 font-semibold mt-1">
+                  Khóa học: {selectedApp?.courseTitle}
+                </DialogDescription>
               </div>
               <button
+                type="button"
                 onClick={() => setIsDetailOpen(false)}
                 className="p-1.5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-white"
               >
@@ -647,19 +648,21 @@ export default function MentorApplicationsPage() {
                 )}
               </div>
             </footer>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        </Dialog>
 
       {/* Reject Reason Dialog */}
-      {isRejectOpen && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 border border-slate-100 text-left">
+      <Dialog open={isRejectOpen} onOpenChange={(open) => !open && (setIsRejectOpen(false), setRejectReason(''))}>
+        <DialogContent className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left" showCloseButton={false}>
             <header className="p-5 border-b border-gray-100 flex items-center justify-between">
-              <h4 className="text-sm font-black text-rose-700 flex items-center gap-1.5">
+              <DialogTitle className="text-sm font-black text-rose-700 flex items-center gap-1.5">
                 <AlertCircle size={18} /> Nhập lý do từ chối đơn ứng tuyển
-              </h4>
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                Vui lòng cung cấp phản hồi từ chối đơn ứng tuyển Mentor
+              </DialogDescription>
               <button
+                type="button"
                 onClick={() => {
                   setIsRejectOpen(false)
                   setRejectReason('')
@@ -720,9 +723,8 @@ export default function MentorApplicationsPage() {
                 </button>
               </footer>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

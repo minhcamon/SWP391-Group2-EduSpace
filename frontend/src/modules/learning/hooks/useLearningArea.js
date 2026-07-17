@@ -437,7 +437,10 @@ const useLearningArea = () => {
         sidebarSections,
         handleSelectLesson,
         handleSelectAssignment,
-        progressPercent
+        progressPercent,
+        resolvedClassId,
+        courseId,
+        studyGroupId: activeModule?.studyGroupId
     };
 };
 

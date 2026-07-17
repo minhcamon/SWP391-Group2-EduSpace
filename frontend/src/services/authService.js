@@ -71,13 +71,16 @@ const AuthService = {
         }
     },
 
-    registerCreator: async (creatorData) => {
+    registerCreator: async (file) => {
         try {
-            const payload = {
-                reason: creatorData.portfolioUrl
-            };
-            console.log('Payload for creator registration:', payload);            
-            const response = await api.post('/creator-requests/send', payload);
+            const formData = new FormData();
+            formData.append('file', file);
+            console.log('FormData for creator registration created with file:', file.name);            
+            const response = await api.post('/creator-requests/send', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             return response.data.message || 'Đăng ký làm Creator thành công!';
         } catch (error) {
             console.error('Register creator error at AuthService:', error);
@@ -106,6 +109,79 @@ const AuthService = {
             console.error('Get active users count error at AuthService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể lấy tổng số người dùng đang hoạt động!';
             throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    verifyEmail: async (token) => {
+        try {
+            const response = await api.get(`/auth/verify-email?token=${token}`);
+            return response.data.message || 'Xác thực email thành công!';
+        } catch (error) {
+            console.error('Verify email error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Xác thực email thất bại. Token không hợp lệ hoặc đã hết hạn!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    resendVerificationEmail: async (email) => {
+        try {
+            const response = await api.post('/auth/resend-verification', { email });
+            return response.data.message || 'Email xác thực mới đã được gửi!';
+        } catch (error) {
+            console.error('Resend verification email error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể gửi email xác thực. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    uploadAvatar: async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await api.post('/user/avatar', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data.data;
+        } catch (error) {
+            console.error('Upload avatar error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải ảnh lên. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    forgotPassword: async (email) => {
+        try {
+            const response = await api.post('/auth/forgot-password', { email });
+            return response.data.message || 'Mã OTP đã được gửi!';
+        } catch (error) {
+            console.error('Forgot password error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể yêu cầu đặt lại mật khẩu. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    verifyOtp: async (email, otp) => {
+        try {
+            const response = await api.post('/auth/verify-otp', { email, otp });
+            return response.data.data; // This is the reset password JWT token
+        } catch (error) {
+            console.error('Verify OTP error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Xác thực OTP thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    resetPassword: async (resetToken, password) => {
+        try {
+            const response = await api.post('/auth/reset-password', { resetToken, password });
+            return response.data.message || 'Đặt lại mật khẩu thành công!';
+        } catch (error) {
+            console.error('Reset password error at AuthService:', error);
+            const errorMsg = error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại!';
+            throw new Error(errorMsg);
         }
     }
 
