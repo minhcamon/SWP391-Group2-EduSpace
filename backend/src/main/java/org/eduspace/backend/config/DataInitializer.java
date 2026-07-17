@@ -415,7 +415,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Seeding incident data...");
 
         Incident inc1 = incidentRepository.save(Incident.builder()
-                .incidentType(IncidentType.PEER_REVIEW_DISPUTE)
+                .incidentType(IncidentType.ASSIGNMENT_DISPUTE)
                 .reporter(extraMembers.get(0))
                 .reported(extraMembers.get(1))
                 .reason("Học viên chấm điểm chéo không khách quan, đánh giá sai lệch bài tập Java.")

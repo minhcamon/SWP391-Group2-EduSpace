@@ -54,17 +54,7 @@ const MentorHeader = () => {
                             Trung tâm Sự cố
                         </NavLink>
 
-                        <NavLink
-                            to="/mentor/arbitrations"
-                            className={({ isActive }) =>
-                                `text-sm font-semibold transition-all duration-200 py-1.5 border-b-2 ${isActive
-                                    ? "text-white border-white"
-                                    : "text-white/75 border-transparent hover:text-white hover:border-white/50"
-                                }`
-                            }
-                        >
-                            Phân xử Điểm
-                        </NavLink>
+
 
                         <NavLink
                             to="/mentor/classes"
@@ -166,18 +156,7 @@ const MentorHeader = () => {
                         >
                             Trung tâm Sự cố
                         </NavLink>
-                        <NavLink
-                            to="/mentor/arbitrations"
-                            onClick={() => setShowMobileMenu(false)}
-                            className={({ isActive }) =>
-                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
-                                    ? "bg-white/25 text-white"
-                                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                                }`
-                            }
-                        >
-                            Phân xử Điểm
-                        </NavLink>
+
                         <NavLink
                             to="/mentor/classes"
                             onClick={() => setShowMobileMenu(false)}

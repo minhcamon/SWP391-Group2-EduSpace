@@ -34,8 +34,6 @@ import MentorDashboard from "@/views/mentor/Dashboard";
 import MentorIncidents from "@/views/mentor/Incidents";
 import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
 import MentorPairDetail from "@/views/mentor/PairDetailView";
-import MentorArbitrations from "@/views/mentor/Arbitrations";
-import MentorArbitrationDetail from "@/views/mentor/ArbitrationDetailView";
 import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
 import CertificateView from "@/views/learning/CertificateView";
@@ -173,14 +171,7 @@ function App() {
               path="/mentor/pairs/:id"
               element={<MentorPairDetail />}
             ></Route>
-            <Route
-              path="/mentor/arbitrations"
-              element={<MentorArbitrations />}
-            ></Route>
-            <Route
-              path="/mentor/arbitrations/:id"
-              element={<MentorArbitrationDetail />}
-            ></Route>
+
             <Route
               path="/mentor/classes"
               element={<MentorClasses />}

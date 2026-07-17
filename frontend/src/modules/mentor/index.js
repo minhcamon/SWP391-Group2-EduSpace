@@ -4,6 +4,4 @@ export { default as ClassDetailPage } from "./pages/ClassDetailPage";
 export { default as PairDetailPage } from "./pages/PairDetailPage";
 export { default as IncidentsPage } from "./pages/IncidentsPage";
 export { default as IncidentDetailPage } from "./pages/IncidentDetailPage";
-export { default as ArbitrationsPage } from "./pages/ArbitrationsPage";
-export { default as ArbitrationDetailPage } from "./pages/ArbitrationDetailPage";
 export { default as MentorHeader } from "./components/mentor-dashboard/MentorHeader";

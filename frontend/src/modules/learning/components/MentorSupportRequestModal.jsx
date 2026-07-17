@@ -8,15 +8,9 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 // Danh sách các loại incident từ backend enum
 const INCIDENT_TYPES = [
   {
-    value: 'PEER_REVIEW_DISPUTE',
-    label: 'Khiếu nại điểm chấm chéo',
-    description: 'Điểm do bạn học chấm có vấn đề hoặc nhầm lẫn',
-    requiresSubmission: true
-  },
-  {
-    value: 'GRADE_OVERRIDE_REQUEST',
-    label: 'Yêu cầu Mentor chấm lại',
-    description: 'Yêu cầu Mentor nhảy vào chấm lại bài hoặc ghi đè điểm',
+    value: 'ASSIGNMENT_DISPUTE',
+    label: 'Tranh chấp bài tập / Yêu cầu chấm lại',
+    description: 'Tranh chấp điểm số bài tập (bao gồm chấm chéo) hoặc yêu cầu chấm lại',
     requiresSubmission: true
   },
   {

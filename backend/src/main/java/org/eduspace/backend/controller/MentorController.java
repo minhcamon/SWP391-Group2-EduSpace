@@ -8,11 +8,9 @@ import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
-import org.eduspace.backend.dto.mentor.request.RejectArbitrationRequest;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
-import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
@@ -97,45 +95,7 @@ public class MentorController {
         return ResponseEntity.ok(APIResponse.success("Get pair peer reviews successfully", response));
     }
 
-    @GetMapping("/arbitrations")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Get list of arbitration requests", description = "Lấy danh sách các yêu cầu phân xử cho lớp mentor quản lý")
-    public ResponseEntity<APIResponse<List<MentorArbitrationResponse>>> getArbitrations() {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        List<MentorArbitrationResponse> response = mentorService.getArbitrationsForMentor(mentorUserId);
-        return ResponseEntity.ok(APIResponse.success("Get arbitration requests successfully", response));
-    }
 
-    @GetMapping("/arbitrations/{id}")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Get arbitration request detail", description = "Xem chi tiết yêu cầu phân xử cho mentor trong lớp")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> getArbitrationDetail(@PathVariable("id") Long incidentId) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.getArbitrationDetailForMentor(incidentId, mentorUserId);
-        return ResponseEntity.ok(APIResponse.success("Get arbitration request detail successfully", response));
-    }
-
-    @PostMapping("/arbitrations/{id}/grade")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Regrade peer review in arbitration", description = "Mentor chấm điểm lại cho bài nộp trong yêu cầu phân xử")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> gradeArbitration(
-            @PathVariable("id") Long incidentId,
-            @Valid @RequestBody PeerReviewGradeRequest request) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.gradeArbitrationSubmission(incidentId, mentorUserId, request);
-        return ResponseEntity.ok(APIResponse.success("Regraded and resolved arbitration request successfully", response));
-    }
-
-    @PostMapping("/arbitrations/{id}/reject")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Reject arbitration request", description = "Từ chối phân xử cho yêu cầu phân xử trong lớp mentor quản lý")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> rejectArbitration(
-            @PathVariable("id") Long incidentId,
-            @Valid @RequestBody RejectArbitrationRequest request) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.rejectArbitrationRequest(incidentId, mentorUserId, request);
-        return ResponseEntity.ok(APIResponse.success("Rejected arbitration request successfully", response));
-    }
 
     @GetMapping("/classes")
     @PreAuthorize("hasRole('MENTOR')")

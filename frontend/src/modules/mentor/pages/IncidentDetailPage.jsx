@@ -1,25 +1,25 @@
 import React from "react";
 import { useParams, Link } from "react-router";
-import { ArrowLeft, ShieldAlert, Play, CheckCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import useIncidentDetail from "../hooks/useIncidentDetail";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 
 // Import relocated components
 import IncidentReportCard from "../components/mentor-incident/IncidentReportCard";
 import IncidentDisputeCard from "../components/mentor-incident/IncidentDisputeCard";
 import IncidentHistoryLog from "../components/mentor-incident/IncidentHistoryLog";
+import IncidentActionCard from "../components/mentor-incident/IncidentActionCard";
 
 const IncidentDetailPage = () => {
   const { id } = useParams();
   const {
     incident,
     isLoading,
-    resolutionText,
-    setResolutionText,
     isSubmitting,
     handleClaim,
-    handleResolve
+    handleResolve,
+    handleReject,
+    handleWarn
   } = useIncidentDetail(id);
 
   const getStatusBadge = (status) => {
@@ -41,8 +41,8 @@ const IncidentDetailPage = () => {
 
   const getTypeLabel = (type) => {
     switch (type) {
-      case "PEER_REVIEW_DISPUTE":
-        return "Tranh chấp chấm chéo";
+      case "ASSIGNMENT_DISPUTE":
+        return "Tranh chấp bài tập";
       case "INACTIVE_PARTNER":
         return "Bạn học không hoạt động";
       case "MEMBER_CONFLICT":
@@ -85,7 +85,9 @@ const IncidentDetailPage = () => {
     historyData.push({
       id: 2,
       time: new Date(incident.solvedAt).toLocaleString("vi-VN"),
-      action: `Mentor ${incident.resolvedByName || ""} giải quyết sự cố: ${incident.resolutionNote || ""}`
+      action: incident.status === "REJECTED"
+        ? `Mentor ${incident.resolvedByName || ""} từ chối phân xử: ${incident.resolutionNote || ""}`
+        : `Mentor ${incident.resolvedByName || ""} giải quyết sự cố: ${incident.resolutionNote || ""}`
     });
   } else if (incident.status === "IN_PROGRESS") {
     historyData.push({
@@ -132,84 +134,23 @@ const IncidentDetailPage = () => {
       {/* Main Content Grid 7:3 */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
         {/* Left Column (7): Incident details, evidence, history */}
+        
         <div className="lg:col-span-7 flex flex-col gap-6">
           <IncidentReportCard incident={incident} />
-          <IncidentDisputeCard incident={incident} />
-          <IncidentHistoryLog history={historyData} />
+          {incident.incidentType === "ASSIGNMENT_DISPUTE" && <IncidentDisputeCard incident={incident} />}
         </div>
 
         {/* Right Column (3): Resolve / Claim Actions */}
         <div className="lg:col-span-3 flex flex-col gap-6">
-          {incident.status === "PENDING" && (
-            <Card className="border border-primary/20 bg-primary/5 text-center p-6">
-              <ShieldAlert className="mx-auto text-primary mb-3" size={32} />
-              <h4 className="font-bold text-neutral-dark text-base mb-1">Sự cố đang Chờ xử lý</h4>
-              <p className="text-xs text-neutral-medium mb-4 leading-relaxed">
-                Nhận xử lý sự cố để chuyển trạng thái sang Đang hoạt động và bắt đầu can thiệp giải quyết.
-              </p>
-              <button
-                onClick={handleClaim}
-                disabled={isSubmitting}
-                className="w-full bg-primary text-white text-xs font-bold py-2.5 rounded-xl hover:bg-primary/95 transition-all shadow-sm active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Play size={14} />
-                <span>{isSubmitting ? "Đang xử lý..." : "Tiếp nhận giải quyết"}</span>
-              </button>
-            </Card>
-          )}
-
-          {incident.status === "IN_PROGRESS" && (
-            <Card className="border border-border-light/35 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-bold text-neutral-dark">Phương án giải quyết</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleResolve} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-neutral-medium mb-1.5 uppercase tracking-wide">
-                      Ghi chú / Kết luận giải quyết
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={resolutionText}
-                      onChange={(e) => setResolutionText(e.target.value)}
-                      placeholder="Nhập nội dung phán quyết, phương án điều chỉnh điểm hoặc hình thức hỗ trợ..."
-                      className="w-full p-3 border border-border-light/65 rounded-xl text-sm focus:outline-none focus:border-primary resize-none bg-white font-semibold"
-                    ></textarea>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-emerald-700 transition-all shadow-sm active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <CheckCircle size={14} />
-                    <span>{isSubmitting ? "Đang xử lý..." : "Đóng & Hoàn tất sự cố"}</span>
-                  </button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {incident.status === "RESOLVED" && (
-            <Card className="border border-emerald-200 bg-emerald-50 text-emerald-950 p-5 shadow-sm">
-              <div className="flex gap-2">
-                <CheckCircle className="text-emerald-600 shrink-0 mt-0.5" size={18} />
-                <div>
-                  <h4 className="font-bold text-sm text-emerald-800">Sự cố đã được giải quyết</h4>
-                  {incident.resolutionNote && (
-                    <div className="text-xs text-emerald-700 mt-2 italic font-semibold">
-                      " {incident.resolutionNote} "
-                    </div>
-                  )}
-                  {incident.resolvedByName && (
-                    <div className="text-[10px] text-neutral-medium mt-1 font-bold">
-                      Bởi: {incident.resolvedByName}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          )}
+          <IncidentActionCard
+            incident={incident}
+            isSubmitting={isSubmitting}
+            handleClaim={handleClaim}
+            handleResolve={handleResolve}
+            handleReject={handleReject}
+            handleWarn={handleWarn}
+          />
+          <IncidentHistoryLog history={historyData} />
         </div>
       </div>
     </div>

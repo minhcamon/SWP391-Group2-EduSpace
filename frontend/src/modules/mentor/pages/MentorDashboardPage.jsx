@@ -17,7 +17,6 @@ export const MentorDashboardPage = () => {
     slowPairs,
     brokenPairs,
     pendingIncidentsCount,
-    pendingArbitrationsCount,
     rescueQueue
   } = useMentorDashboard()
 
@@ -36,8 +35,8 @@ export const MentorDashboardPage = () => {
 
   const getIncidentTypeLabel = (type) => {
     switch (type) {
-      case 'PEER_REVIEW_DISPUTE':
-        return 'Tranh chấp chấm chéo'
+      case 'ASSIGNMENT_DISPUTE':
+        return 'Tranh chấp bài tập'
       case 'INACTIVE_PARTNER':
         return 'Bạn học vắng mặt'
       case 'MEMBER_CONFLICT':
@@ -65,7 +64,7 @@ export const MentorDashboardPage = () => {
       </div>
 
       {/* KPIs Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {/* KPI 1 */}
         <div className="bg-white rounded-xl p-4 border border-border-light/30 shadow-sm flex flex-col items-center justify-center text-center">
           <span className="text-3xl font-extrabold text-primary mb-1">
@@ -109,15 +108,6 @@ export const MentorDashboardPage = () => {
           </span>
           <span className="text-[10px] text-neutral-medium uppercase font-bold tracking-wide">
             Sự cố chờ xử lý
-          </span>
-        </div>
-        {/* KPI 6 */}
-        <div className="bg-white rounded-xl p-4 border border-border-light/30 shadow-sm flex flex-col items-center justify-center text-center">
-          <span className="text-3xl font-extrabold text-neutral-dark mb-1">
-            {pendingArbitrationsCount}
-          </span>
-          <span className="text-[10px] text-neutral-medium uppercase font-bold tracking-wide">
-            Đơn chờ phân xử
           </span>
         </div>
       </div>

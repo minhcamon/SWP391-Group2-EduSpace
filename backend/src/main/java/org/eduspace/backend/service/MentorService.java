@@ -3,16 +3,13 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
-import org.eduspace.backend.dto.mentor.request.RejectArbitrationRequest;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
-import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.mentor.response.MentorModuleResponse;
 import org.eduspace.backend.dto.mentor.response.MentorModuleContentResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
-import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.course.RubricCriteriaDto;
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
@@ -324,176 +321,5 @@ public class MentorService {
                 .build();
     }
 
-    public List<MentorArbitrationResponse> getArbitrationsForMentor(Long userId) {
-        List<ClassMember> managedClasses = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
-        if (managedClasses.isEmpty()) {
-            throw new RuntimeException("Bạn không quản lý lớp học nào");
-        }
 
-        List<Long> classIds = managedClasses.stream()
-                .map(cm -> cm.getCourseClass().getId())
-                .collect(Collectors.toList());
-
-        List<Incident> incidents = incidentRepository.findByReporterCourseClassIds(classIds);
-
-        return incidents.stream()
-                .map(this::toArbitrationResponse)
-                .collect(Collectors.toList());
-    }
-
-    public MentorArbitrationResponse getArbitrationDetailForMentor(Long incidentId, Long userId) {
-        Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
-
-        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
-                ? incident.getReporter().getCourseClass().getId() : null;
-
-        if (classId == null) {
-            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu lớp học)");
-        }
-
-        // Verify if user is mentor in this class
-        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
-                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
-
-        return toArbitrationResponse(incident);
-    }
-
-    private MentorArbitrationResponse toArbitrationResponse(Incident i) {
-        String reporterName = i.getReporter() != null && i.getReporter().getUser() != null
-                ? i.getReporter().getUser().getFullName() : null;
-        Long reporterUserId = i.getReporter() != null && i.getReporter().getUser() != null
-                ? i.getReporter().getUser().getId() : null;
-
-        String reportedName = i.getReported() != null && i.getReported().getUser() != null
-                ? i.getReported().getUser().getFullName() : null;
-        Long reportedUserId = i.getReported() != null && i.getReported().getUser() != null
-                ? i.getReported().getUser().getId() : null;
-
-        Long classId = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                ? i.getReporter().getCourseClass().getId() : null;
-        String className = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                ? i.getReporter().getCourseClass().getName() : null;
-        String courseTitle = i.getReporter() != null && i.getReporter().getCourseClass() != null
-                && i.getReporter().getCourseClass().getCourse() != null
-                ? i.getReporter().getCourseClass().getCourse().getTitle() : null;
-
-        Long submissionId = i.getSubmission() != null ? i.getSubmission().getId() : null;
-        String submissionTitle = i.getSubmission() != null && i.getSubmission().getAssignment() != null
-                ? i.getSubmission().getAssignment().getTitle() : null;
-
-        String resolvedByName = i.getResolvedBy() != null && i.getResolvedBy().getUser() != null
-                ? i.getResolvedBy().getUser().getFullName() : null;
-
-        return MentorArbitrationResponse.builder()
-                .id(i.getId())
-                .incidentType(i.getIncidentType())
-                .reporterUserId(reporterUserId)
-                .reporterName(reporterName)
-                .reportedUserId(reportedUserId)
-                .reportedName(reportedName)
-                .reason(i.getReason())
-                .evidenceUrl(i.getEvidenceUrl())
-                .status(i.getStatus())
-                .classId(classId)
-                .className(className)
-                .courseTitle(courseTitle)
-                .submissionId(submissionId)
-                .submissionTitle(submissionTitle)
-                .resolvedByName(resolvedByName)
-                .resolutionNote(i.getResolutionNote())
-                .createdAt(i.getCreatedAt())
-                .solvedAt(i.getSolvedAt())
-                .build();
-    }
-
-    @Transactional
-    public MentorArbitrationResponse gradeArbitrationSubmission(Long incidentId, Long mentorUserId, PeerReviewGradeRequest request) {
-        Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
-
-        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
-                ? incident.getReporter().getCourseClass().getId() : null;
-
-        if (classId == null) {
-            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu thông tin lớp học)");
-        }
-
-        ClassMember mentorMember = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(mentorUserId, classId, "MENTOR")
-                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
-
-        Submission submission = incident.getSubmission();
-        if (submission == null) {
-            throw new RuntimeException("Yêu cầu phân xử không đi kèm bài nộp nào để chấm điểm");
-        }
-
-        PeerReview peerReview = peerReviewRepository.findBySubmission_Id(submission.getId())
-                .orElse(null);
-
-        if (peerReview == null) {
-            peerReview = PeerReview.builder()
-                    .submission(submission)
-                    .build();
-        }
-
-        List<RubricCriteriaDto> criteriaScores = request.getCriteriaScores();
-        int totalScore = 0;
-        int maxPossibleScore = 0;
-        if (criteriaScores != null) {
-            totalScore = criteriaScores.stream()
-                    .filter(Objects::nonNull)
-                    .mapToInt(score -> Objects.requireNonNullElse(score.getScore(), 0))
-                    .sum();
-
-            maxPossibleScore = criteriaScores.stream()
-                    .filter(Objects::nonNull)
-                    .mapToInt(score -> Objects.requireNonNullElse(score.getMaxPoint(), 0))
-                    .sum();
-        }
-
-        double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
-        double passThreshold = 0.8;
-        submission.setStatus(passRatio >= passThreshold ? SubmissionStatus.GRADED : SubmissionStatus.FAILED);
-
-        peerReview.setCriteriaScores(criteriaScores);
-        peerReview.setFinalScore(totalScore);
-        peerReview.setComments(request.getComments());
-        peerReview.setReviewAt(LocalDateTime.now());
-        peerReview.setOverridden(true);
-
-        peerReviewRepository.save(peerReview);
-        submissionRepository.save(submission);
-
-        incident.setStatus(IncidentStatus.RESOLVED);
-        incident.setResolvedBy(mentorMember);
-        incident.setSolvedAt(LocalDateTime.now());
-        incident.setResolutionNote("Mentor chấm lại bài: " + request.getComments());
-        incidentRepository.save(incident);
-
-        return toArbitrationResponse(incident);
-    }
-
-    @Transactional
-    public MentorArbitrationResponse rejectArbitrationRequest(Long incidentId, Long mentorUserId, RejectArbitrationRequest request) {
-        Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu phân xử"));
-
-        Long classId = incident.getReporter() != null && incident.getReporter().getCourseClass() != null
-                ? incident.getReporter().getCourseClass().getId() : null;
-
-        if (classId == null) {
-            throw new RuntimeException("Yêu cầu phân xử không hợp lệ (thiếu thông tin lớp học)");
-        }
-
-        ClassMember mentorMember = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(mentorUserId, classId, "MENTOR")
-                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này và không có quyền truy cập"));
-
-        incident.setStatus(IncidentStatus.REJECTED);
-        incident.setResolvedBy(mentorMember);
-        incident.setSolvedAt(LocalDateTime.now());
-        incident.setResolutionNote("Từ chối phân xử: " + request.getReason());
-        incidentRepository.save(incident);
-
-        return toArbitrationResponse(incident);
-    }
 }

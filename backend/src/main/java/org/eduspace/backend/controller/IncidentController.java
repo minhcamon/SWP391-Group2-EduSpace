@@ -78,20 +78,20 @@ public class IncidentController {
 
     }
 
-    @PostMapping("/{id}/mediate")
+    @PutMapping("/{id}/reject")
     @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Mediate a pair incident", description = "Mentor hòa giải hai bạn học viên và đóng sự cố")
-    public ResponseEntity<APIResponse<String>> mediateIncident(
+    @Operation(summary = "Reject an incident", description = "Mentor từ chối xử lý sự cố (ví dụ: tranh chấp không hợp lệ)")
+    public ResponseEntity<APIResponse<String>> rejectIncident(
             @PathVariable("id") Long incidentId,
             @Valid @RequestBody ResolveIncidentRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
-        incidentService.mediateIncident(incidentId, userId, request);
-        return ResponseEntity.ok(APIResponse.success("Mediated incident successfully", null));
+        incidentService.rejectIncident(incidentId, userId, request);
+        return ResponseEntity.ok(APIResponse.success("Rejected incident successfully", null));
     }
 
-    @PostMapping("/{id}/warn")
+    @PutMapping("/{id}/warn")
     @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Warn learner in incident", description = "Mentor cảnh báo học viên và đóng sự cố")
+    @Operation(summary = "Warn learner in incident", description = "Mentor cảnh báo/nhắc nhở học viên và giữ sự cố ở trạng thái đang xử lý")
     public ResponseEntity<APIResponse<String>> warnIncident(
             @PathVariable("id") Long incidentId,
             @Valid @RequestBody ResolveIncidentRequest request) {

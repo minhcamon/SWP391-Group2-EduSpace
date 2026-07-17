@@ -126,9 +126,9 @@ export const mentorService = {
     /**
      * Resolves an incident.
      */
-    resolveIncident: async (id, resolutionNote) => {
+    resolveIncident: async (id, payload) => {
         try {
-            const response = await api.put(`/incidents/${id}/resolve`, { resolutionNote });
+            const response = await api.put(`/incidents/${id}/resolve`, payload);
             return response.data.message;
         } catch (error) {
             console.error('resolveIncident error at mentorService:', error);
@@ -138,43 +138,29 @@ export const mentorService = {
     },
 
     /**
-     * Fetches all arbitrations.
+     * Rejects an incident.
      */
-    getArbitrations: async () => {
+    rejectIncident: async (id, payload) => {
         try {
-            const response = await api.get(`/mentor/arbitrations`);
-            return response.data.data;
-        } catch (error) {
-            console.error('getArbitrations error at mentorService:', error);
-            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách đơn phân xử!';
-            throw new Error(errorMsg);
-        }
-    },
-
-    /**
-     * Fetches arbitration by ID.
-     */
-    getArbitrationById: async (id) => {
-        try {
-            const response = await api.get(`/mentor/arbitrations/${id}`);
-            return response.data.data;
-        } catch (error) {
-            console.error('getArbitrationById error at mentorService:', error);
-            const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết đơn phân xử!';
-            throw new Error(errorMsg);
-        }
-    },
-
-    /**
-     * Submits final score for arbitration.
-     */
-    submitArbitrationGrade: async (id, finalScore, comment) => {
-        try {
-            const response = await api.put(`/mentor/arbitrations/${id}/grade`, { finalScore, comment });
+            const response = await api.put(`/incidents/${id}/reject`, payload);
             return response.data.message;
         } catch (error) {
-            console.error('submitArbitrationGrade error at mentorService:', error);
-            const errorMsg = error.response?.data?.message || 'Không thể chấm điểm phân xử!';
+            console.error('rejectIncident error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể từ chối sự cố!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Warns learner in incident.
+     */
+    warnIncident: async (id, payload) => {
+        try {
+            const response = await api.put(`/incidents/${id}/warn`, payload);
+            return response.data.message;
+        } catch (error) {
+            console.error('warnIncident error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể cảnh cáo học viên!';
             throw new Error(errorMsg);
         }
     },
