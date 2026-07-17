@@ -165,13 +165,13 @@ const IncidentsPage = () => {
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-border-light/35 rounded-2xl p-12 text-center shadow-sm">
+        <div className="bg-white border border-border-light/35 rounded-md p-12 text-center shadow-sm">
           <AlertTriangle size={48} className="mx-auto text-neutral-light mb-4" />
           <h3 className="text-lg font-bold text-neutral-dark mb-1">Không tìm thấy sự cố nào</h3>
           <p className="text-sm text-neutral-medium">Không có sự cố nào khớp với bộ lọc hiện tại.</p>
         </div>
       ) : (
-        <div className="bg-white border border-border-light/35 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-border-light/35 rounded-md shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>

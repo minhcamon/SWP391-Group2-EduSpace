@@ -18,6 +18,19 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState(currentSearch)
   const [prevSearch, setPrevSearch] = useState(currentSearch)
   const inputRef = useRef(null)
+  const avatarRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (avatarRef.current && !avatarRef.current.contains(event.target)) {
+        setShowDropDown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   if (currentSearch !== prevSearch) {
     setPrevSearch(currentSearch)
@@ -113,9 +126,9 @@ const Header = () => {
             {/* Notification Bell */}
             <NotificationDropdown />
 
-            {/* User Profile Dropdown or Authentication Buttons */}
+             {/* User Profile Dropdown or Authentication Buttons */}
             {user ? (
-              <div className="relative inline-block text-left">
+              <div ref={avatarRef} className="relative inline-block text-left">
                 <button
                   onClick={() => setShowDropDown(!showDropDown)}
                   className="hover:cursor-pointer flex items-center justify-center rounded-full p-0.5 border border-slate-200 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
@@ -126,15 +139,7 @@ const Header = () => {
                     className="w-8 h-8"
                   />
                 </button>
-                {showDropDown && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowDropDown(false)}
-                    ></div>
-                    <AvatarDropDown />
-                  </>
-                )}
+                {showDropDown && <AvatarDropDown />}
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-3">
@@ -146,7 +151,7 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-primary hover:bg-[#3f38c9] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-[0_4px_12px_rgba(79,70,229,0.2)] transition-all duration-200 active:scale-[0.98]"
+                  className="bg-primary hover:bg-primary/40 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-[0_4px_12px_rgba(79,70,229,0.2)] transition-all duration-200 active:scale-[0.98]"
                 >
                   Đăng ký
                 </Link>
