@@ -414,8 +414,33 @@ public class DataInitializer implements CommandLineRunner {
         // ── 12. INCIDENTS (sample data) ───────────────────────────────────────────
         log.info("Seeding incident data...");
 
+        // Create a submission for extraMembers.get(0)
+        Submission subDispute = submissionRepository.save(Submission.builder()
+                .assignment(assign1)
+                .member(extraMembers.get(0))
+                .submissionContent("Bài nộp cần chấm lại: public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hello World\"); } }")
+                .status(SubmissionStatus.GRADED)
+                .submittedAt(LocalDateTime.now().minusDays(3))
+                .build());
+
+        // Create a PeerReview for the submission, reviewed by extraMembers.get(1)
+        List<RubricCriteriaDto> rubricScores = List.of(
+                new RubricCriteriaDto("Chạy đúng", "Chương trình biên dịch và chạy không lỗi", 5, 2),
+                new RubricCriteriaDto("Cú pháp chuẩn", "Đặt tên biến và cấu trúc code đúng quy chuẩn", 3, 1),
+                new RubricCriteriaDto("Hiệu năng", "Sử dụng bộ nhớ tối ưu", 2, 0)
+        );
+        peerReviewRepository.save(PeerReview.builder()
+                .submission(subDispute)
+                .criteriaScores(rubricScores)
+                .finalScore(3)
+                .comments("Bài làm quá sơ sài, copy từ mạng.")
+                .reviewAt(LocalDateTime.now().minusDays(2))
+                .isOverridden(false)
+                .build());
+
         Incident inc1 = incidentRepository.save(Incident.builder()
                 .incidentType(IncidentType.ASSIGNMENT_DISPUTE)
+                .submission(subDispute)
                 .reporter(extraMembers.get(0))
                 .reported(extraMembers.get(1))
                 .reason("Học viên chấm điểm chéo không khách quan, đánh giá sai lệch bài tập Java.")
