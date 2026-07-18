@@ -1,4 +1,7 @@
 .idea/
 .vscode/
 package.json
+backend/Dockerfile
+frontend/Dockerfile
+docker-compose.yaml
 backend/src/main/resources/data.sql

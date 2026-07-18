@@ -93,6 +93,16 @@ abstract class SystemTestSupport {
         ((JavascriptExecutor) driver).executeScript("window.localStorage.setItem('currentMode', 'MENTOR');");
     }
 
+    protected void setRole(String username, String role) throws Exception {
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(
+                     "UPDATE users SET role = ? WHERE username = ?")) {
+            statement.setString(1, role);
+            statement.setString(2, username);
+            assertEquals(1, statement.executeUpdate(), "Expected exactly one test user to be promoted");
+        }
+    }
+
     protected MentorFixture loadMentorFixture(String username) throws Exception {
         String sql = """
                 SELECT
