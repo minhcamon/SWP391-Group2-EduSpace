@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -203,6 +204,125 @@ abstract class SystemTestSupport {
         }
     }
 
+    protected LearningFixture loadLearningFixture(String username) throws Exception {
+        String sql = """
+                SELECT
+                    u.user_id,
+                    cm.id AS member_id,
+                    cls.class_id,
+                    c.course_id,
+                    c.title AS course_title,
+                    l.title AS lesson_title,
+                    a.assignment_id,
+                    a.title AS assignment_title
+                FROM users u
+                JOIN class_members cm ON cm.user_id = u.user_id
+                JOIN classes cls ON cls.class_id = cm.class_id
+                JOIN courses c ON c.course_id = cls.course_id
+                JOIN modules m ON m.course_id = c.course_id
+                JOIN lessons l ON l.module_id = m.module_id
+                JOIN assignments a ON a.module_id = m.module_id
+                WHERE u.username = ?
+                  AND cm.context_role = 'LEARNER'
+                ORDER BY m.sort_order DESC, l.sort_order
+                LIMIT 1
+                """;
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected seeded learning fixture to exist for " + username);
+
+                return new LearningFixture(
+                        resultSet.getLong("user_id"),
+                        resultSet.getLong("member_id"),
+                        resultSet.getLong("class_id"),
+                        resultSet.getLong("course_id"),
+                        resultSet.getString("course_title"),
+                        resultSet.getString("lesson_title"),
+                        resultSet.getLong("assignment_id"),
+                        resultSet.getString("assignment_title"));
+            }
+        }
+    }
+
+    protected LearningWorkflowFixture prepareLearningWorkflowFixture(
+            String learnerUsername,
+            String reviewerUsername) throws Exception {
+        LearningFixture learner = loadLearningFixture(learnerUsername);
+        LearningFixture reviewer = loadLearningFixture(reviewerUsername);
+
+        assertEquals(learner.classId(), reviewer.classId(), "Workflow learners must be in the same class");
+        assertEquals(learner.assignmentId(), reviewer.assignmentId(), "Workflow learners must use the same assignment");
+
+        resetAssignmentSubmissions(learner.assignmentId(), learner.memberId(), reviewer.memberId());
+
+        return new LearningWorkflowFixture(learner, reviewer);
+    }
+
+    private void resetAssignmentSubmissions(Long assignmentId, Long firstMemberId, Long secondMemberId) throws Exception {
+        String deletePeerReviewsSql = """
+                DELETE pr
+                FROM peer_reviews pr
+                JOIN submissions s ON s.submission_id = pr.submission_id
+                WHERE s.assignment_id = ?
+                  AND s.learner_id IN (?, ?)
+                """;
+        String deleteSubmissionsSql = """
+                DELETE FROM submissions
+                WHERE assignment_id = ?
+                  AND learner_id IN (?, ?)
+                """;
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword)) {
+            try (PreparedStatement statement = connection.prepareStatement(deletePeerReviewsSql)) {
+                statement.setLong(1, assignmentId);
+                statement.setLong(2, firstMemberId);
+                statement.setLong(3, secondMemberId);
+                statement.executeUpdate();
+            }
+            try (PreparedStatement statement = connection.prepareStatement(deleteSubmissionsSql)) {
+                statement.setLong(1, assignmentId);
+                statement.setLong(2, firstMemberId);
+                statement.setLong(3, secondMemberId);
+                statement.executeUpdate();
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Map<String, Object> apiRequest(String method, String path, Object body) {
+        Object response = ((JavascriptExecutor) driver).executeAsyncScript("""
+                const method = arguments[0];
+                const path = arguments[1];
+                const body = arguments[2];
+                const done = arguments[arguments.length - 1];
+                const token = window.localStorage.getItem('access_token');
+                fetch('/api' + path, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: 'Bearer ' + token } : {})
+                    },
+                    body: body == null ? undefined : JSON.stringify(body)
+                })
+                    .then(async (res) => {
+                        const text = await res.text();
+                        let parsed = null;
+                        try {
+                            parsed = text ? JSON.parse(text) : null;
+                        } catch {
+                            parsed = text;
+                        }
+                        done({ ok: res.ok, status: res.status, body: parsed });
+                    })
+                    .catch((error) => done({ ok: false, status: 0, error: String(error) }));
+                """, method, path, body);
+
+        return (Map<String, Object>) response;
+    }
+
     private Long insertSubmission(Connection connection, Long assignmentId, Long learnerMemberId) throws Exception {
         String sql = """
                 INSERT INTO submissions (assignment_id, learner_id, submission_content, submitted_at, status)
@@ -292,4 +412,18 @@ abstract class SystemTestSupport {
             String courseTitle,
             String assignmentTitle,
             String reporterName) {}
+
+    protected record LearningFixture(
+            Long userId,
+            Long memberId,
+            Long classId,
+            Long courseId,
+            String courseTitle,
+            String lessonTitle,
+            Long assignmentId,
+            String assignmentTitle) {}
+
+    protected record LearningWorkflowFixture(
+            LearningFixture learner,
+            LearningFixture reviewer) {}
 }
