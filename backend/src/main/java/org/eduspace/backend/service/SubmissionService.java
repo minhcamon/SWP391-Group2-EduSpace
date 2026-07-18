@@ -240,12 +240,12 @@ public class SubmissionService {
         Long moduleId = assignment.getModule().getId();
         Long classMemberId = submission.getMember().getId();
 
-        Optional<Long> studyGroupIdOpt = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
+        List<Long> studyGroupIdList = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
                 moduleId);
-        if (studyGroupIdOpt.isEmpty())
+        if (studyGroupIdList.isEmpty())
             return;
 
-        Long studyGroupId = studyGroupIdOpt.get();
+        Long studyGroupId = studyGroupIdList.get(0);
         List<GroupMember> members = groupMemberRepository.findByStudyGroupId(studyGroupId);
         if (members == null || members.isEmpty())
             return;

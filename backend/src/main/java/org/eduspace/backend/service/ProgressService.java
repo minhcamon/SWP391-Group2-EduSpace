@@ -292,6 +292,7 @@ public class ProgressService {
       StudyGroup studyGroup = userGroupMembers.stream()
           .map(GroupMember::getStudyGroup)
           .filter(g -> g.getModule() != null && g.getModule().getId().equals(module.getId()))
+          .sorted((g1, g2) -> Long.compare(g2.getId(), g1.getId()))
           .findFirst()
           .orElse(null);
 
@@ -328,9 +329,9 @@ public class ProgressService {
       Long studyGroupId = null;
 
       if (!isLocked && partnerClassMember != null) {
-        studyGroupId = groupMemberRepository
-            .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId())
-            .orElse(null);
+        List<Long> studyGroupIdList = groupMemberRepository
+            .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId());
+        studyGroupId = studyGroupIdList.isEmpty() ? null : studyGroupIdList.get(0);
       }
 
       List<LessonProgressResponse> finalLessonResponses = lessonResponses;

@@ -71,6 +71,7 @@ public class StudyGroupService {
         StudyGroup studyGroup = userGroupMembers.stream()
                 .map(GroupMember::getStudyGroup)
                 .filter(g -> g.getModule() != null && g.getModule().getId().equals(moduleId))
+                .sorted((g1, g2) -> Long.compare(g2.getId(), g1.getId()))
                 .findFirst()
                 .orElse(null);
 
