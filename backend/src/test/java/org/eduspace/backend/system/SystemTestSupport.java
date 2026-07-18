@@ -261,6 +261,58 @@ abstract class SystemTestSupport {
         return new LearningWorkflowFixture(learner, reviewer);
     }
 
+    protected MentorIncidentFixture createPendingMentorIncidentFixture(
+            String mentorUsername,
+            String incidentType,
+            String reason) throws Exception {
+        String fixtureSql = """
+                SELECT
+                    reporter.id AS reporter_member_id,
+                    reported.id AS reported_member_id
+                FROM users mentor_user
+                JOIN class_members mentor_cm ON mentor_cm.user_id = mentor_user.user_id
+                JOIN class_members reporter ON reporter.class_id = mentor_cm.class_id
+                    AND reporter.context_role = 'LEARNER'
+                JOIN class_members reported ON reported.class_id = mentor_cm.class_id
+                    AND reported.context_role = 'LEARNER'
+                    AND reported.id <> reporter.id
+                WHERE mentor_user.username = ?
+                  AND mentor_cm.context_role = 'MENTOR'
+                ORDER BY reporter.id, reported.id
+                LIMIT 1
+                """;
+        String insertSql = """
+                INSERT INTO incidents
+                    (incident_type, reporter_id, reported_id, reason, evidence_url, status, created_at)
+                VALUES
+                    (?, ?, ?, ?, NULL, 'PENDING', NOW())
+                """;
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement fixtureStatement = connection.prepareStatement(fixtureSql)) {
+            fixtureStatement.setString(1, mentorUsername);
+
+            try (ResultSet resultSet = fixtureStatement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected learner pair fixture for mentor " + mentorUsername);
+
+                try (PreparedStatement insertStatement = connection.prepareStatement(
+                        insertSql,
+                        Statement.RETURN_GENERATED_KEYS)) {
+                    insertStatement.setString(1, incidentType);
+                    insertStatement.setLong(2, resultSet.getLong("reporter_member_id"));
+                    insertStatement.setLong(3, resultSet.getLong("reported_member_id"));
+                    insertStatement.setString(4, reason);
+                    insertStatement.executeUpdate();
+
+                    try (ResultSet keys = insertStatement.getGeneratedKeys()) {
+                        assertTrue(keys.next(), "Expected generated incident id");
+                        return new MentorIncidentFixture(keys.getLong(1), reason);
+                    }
+                }
+            }
+        }
+    }
+
     private void resetAssignmentSubmissions(Long assignmentId, Long firstMemberId, Long secondMemberId) throws Exception {
         String deletePeerReviewsSql = """
                 DELETE pr
@@ -426,4 +478,8 @@ abstract class SystemTestSupport {
     protected record LearningWorkflowFixture(
             LearningFixture learner,
             LearningFixture reviewer) {}
+
+    protected record MentorIncidentFixture(
+            Long incidentId,
+            String reason) {}
 }
