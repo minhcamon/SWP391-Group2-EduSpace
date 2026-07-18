@@ -41,26 +41,6 @@ const AvatarDropDown = () => {
                     <User size={16} />
                     Hồ sơ cá nhân
                 </Link>
-
-                {user?.role === "ADMIN" && (
-                    <Link
-                        to="/admin"
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-neutral-medium hover:bg-slate-50 hover:text-primary transition-all duration-150"
-                    >
-                        <Shield size={16} />
-                        Trang quản trị viên
-                    </Link>
-                )}
-
-                {user?.role === "CREATOR" && (
-                    <Link
-                        to="/creator"
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-neutral-medium hover:bg-slate-50 hover:text-primary transition-all duration-150"
-                    >
-                        <BookOpen size={16} />
-                        Trang quản lý bài học
-                    </Link>
-                )}
             </div>
 
             {/* Logout Option */}

@@ -19,6 +19,22 @@ const Header = () => {
   const [prevSearch, setPrevSearch] = useState(currentSearch)
   const inputRef = useRef(null)
   const avatarRef = useRef(null)
+  const getManagementConfig = () => {
+    if (!user) return null
+    if (user.role === 'ADMIN') {
+      return { path: '/admin', label: 'Trang quản trị viên', mode: 'ADMIN' }
+    }
+    if (user.role === 'CREATOR') {
+      return { path: '/creator', label: 'Trang quản lý bài học', mode: 'CREATOR' }
+    }
+    if (user.isMentor || user.role === 'MENTOR' || user.username?.startsWith('mentor')) {
+      return { path: '/mentor', label: 'Trang quản lý Mentor', mode: 'MENTOR' }
+    }
+    return null
+  }
+
+  const mgmtConfig = getManagementConfig()
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,6 +79,19 @@ const Header = () => {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
             <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                  isActive
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-neutral-medium hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
+            <NavLink
               to="/courses"
               className={({ isActive }) =>
                 `text-sm font-semibold transition-all duration-200 py-1.5 ${
@@ -75,18 +104,35 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            <NavLink
-              to="/my-learning"
-              className={({ isActive }) =>
-                `text-sm font-semibold transition-all duration-200 py-1.5 ${
-                  isActive
-                    ? 'text-primary border-b-2 border-primary'
-                    : 'text-neutral-medium hover:text-primary'
-                }`
-              }
-            >
-              Học tập của tôi
-            </NavLink>
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
+              <>
+                <NavLink
+                  to="/my-learning"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
+            )}
           </nav>
 
           {/* Search Bar (Desktop) */}
@@ -106,19 +152,19 @@ const Header = () => {
 
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
-            {/* Switch to Mentor Mode Button (Desktop) */}
-            {user && (user.isMentor || user.role === 'ADMIN') && (
-                <button
-                  onClick={() => {
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-                >
-                  <ArrowLeftRight size={13} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Desktop) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+              >
+                <ArrowLeftRight size={13} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
 
             {/* Notification Bell */}
             <NotificationDropdown />
@@ -197,6 +243,20 @@ const Header = () => {
                             Lộ trình
                         </NavLink> */}
             <NavLink
+              to="/"
+              onClick={() => setShowMobileMenu(false)}
+              className={({ isActive }) =>
+                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
+            <NavLink
               to="/courses"
               onClick={() => setShowMobileMenu(false)}
               className={({ isActive }) =>
@@ -210,36 +270,52 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            {user && (
-              <NavLink
-                to="/my-learning"
-                onClick={() => setShowMobileMenu(false)}
-                className={({ isActive }) =>
-                  `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
-                  }`
-                }
-              >
-                Học tập của tôi
-              </NavLink>
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
+              <>
+                <NavLink
+                  to="/my-learning"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
             )}
 
-            {/* Switch to Mentor Mode Button (Mobile) */}
-            {user && (user.isMentor || user.role === 'ADMIN') && (
-                <button
-                  onClick={() => {
-                    setShowMobileMenu(false)
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
-                >
-                  <ArrowLeftRight size={14} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Mobile) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false)
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+              >
+                <ArrowLeftRight size={14} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
             {/* {user && (
                             <NavLink
                                 to="/my-learning"
