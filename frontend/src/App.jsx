@@ -36,6 +36,8 @@ import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
 import MentorPairDetail from "@/views/mentor/PairDetailView";
 import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
+import MentorTeachingConfig from "@/views/mentor/TeachingConfig";
+import CreatorWithdrawRequests from "@/views/creator/WithdrawRequests";
 import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
@@ -134,6 +136,10 @@ function App() {
               path="/creator/mentor-applications"
               element={<CreatorMentorApplications />}
             ></Route>
+            <Route
+              path="/creator/withdraw-requests"
+              element={<CreatorWithdrawRequests />}
+            ></Route>
             {/* <Route
               path="/creator/courses/:id"
               element={<CreatorCourseDetail />}
@@ -182,6 +188,10 @@ function App() {
             <Route
               path="/mentor/classes/:classId"
               element={<MentorClassDetail />}
+            ></Route>
+            <Route
+              path="/mentor/teaching-config"
+              element={<MentorTeachingConfig />}
             ></Route>
           </Route>
 

@@ -15,17 +15,19 @@ import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
 import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.Role;
+import org.eduspace.backend.enums.MentorStatus;
+import org.eduspace.backend.dto.mentor.response.ActiveMentorResponse;
+import org.eduspace.backend.exception.BadRequestException;
 import org.eduspace.backend.repository.*;
 import org.eduspace.backend.entity.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -240,86 +242,30 @@ public class MentorService {
 
         return studyGroupService.getAllStudyGroup(classId);
     }
+    public List<ActiveMentorResponse> getActiveCoursesForMentor(Long userId) {
+        List<Certificate> certificates = certificateRepository.findByUserId(userId);
+        List<Course> completedCourses = certificates.stream().map(Certificate::getCourse).toList();
+
+        List<ActiveMentor> activeRegistrations = activeMentorRepository.findByUserId(userId);
+        Map<Long, ActiveMentor> regMap = activeRegistrations.stream()
+                .collect(Collectors.toMap(am -> am.getCourse().getId(), am -> am));
+
+        return completedCourses.stream().map(course -> {
+            ActiveMentor am = regMap.get(course.getId());
+            return ActiveMentorResponse.builder()
+                    .courseId(course.getId())
+                    .courseTitle(course.getTitle())
+                    .isRegistered(am != null)
+                    .status(am != null ? am.getMentorStatus() : null)
+                    .build();
+        }).collect(Collectors.toList());
+    }
 
     @Transactional
-    public void createWithdrawRequest(Long userId, WithdrawRequestDto dto) {
-        // Check if user is mentor in this class
-        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, dto.getClassId(), "MENTOR")
-                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
-
-        CourseClass cc = classRepository.findById(dto.getClassId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
-
-        User mentor = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-
-        // Check if there is already a PENDING or HANDOVER_PENDING request for this class
-        List<WithdrawRequest> existing = withdrawRequestRepository.findByMentorId(userId).stream()
-                .filter(r -> r.getCourseClass().getId().equals(dto.getClassId()) &&
-                        (r.getStatus() == WithdrawStatus.PENDING ||
-                                r.getStatus() == WithdrawStatus.HANDOVER_PENDING))
-                .toList();
-        if (!existing.isEmpty()) {
-            throw new RuntimeException("Bạn đã gửi yêu cầu rút lui cho lớp học này và đang chờ xử lý!");
-        }
-
-        WithdrawRequest request = WithdrawRequest.builder()
-                .courseClass(cc)
-                .mentor(mentor)
-                .reason(dto.getReason())
-                .expectedLeaveDate(dto.getExpectedLeaveDate())
-                .status(WithdrawStatus.PENDING)
-                .build();
-
-        withdrawRequestRepository.save(request);
+    public void updateActiveMentorStatus(Long userId, Long courseId, MentorStatus status) {
+        ActiveMentor am = activeMentorRepository.findByUserIdAndCourseId(userId, courseId)
+                .orElseThrow(() -> new BadRequestException("Bạn chưa đăng ký làm Mentor cho khóa học này"));
+        am.setMentorStatus(status);
+        activeMentorRepository.save(am);
     }
-
-    public WithdrawDetailResponse getWithdrawRequest(Long requestId, Long userId) {
-        WithdrawRequest request = withdrawRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu rút lui"));
-
-        // Auth check: user must be the mentor who requested, OR the creator of the course of the class, OR admin.
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-
-        boolean isAuthorized = request.getMentor().getId().equals(userId)
-                || request.getCourseClass().getCourse().getCreator().getId().equals(userId)
-                || user.getRole() == Role.ADMIN;
-
-        if (!isAuthorized) {
-            throw new RuntimeException("Bạn không có quyền xem yêu cầu rút lui này");
-        }
-
-        MentorResponse mentorRes = MentorResponse.builder()
-                .id(request.getMentor().getId())
-                .fullName(request.getMentor().getFullName())
-                .email(request.getMentor().getEmail())
-                .avatarUrl(request.getMentor().getAvatarUrl())
-                .build();
-
-        MentorResponse newMentorRes = null;
-        if (request.getNewMentor() != null) {
-            newMentorRes = MentorResponse.builder()
-                    .id(request.getNewMentor().getId())
-                    .fullName(request.getNewMentor().getFullName())
-                    .email(request.getNewMentor().getEmail())
-                    .avatarUrl(request.getNewMentor().getAvatarUrl())
-                    .build();
-        }
-
-        return WithdrawDetailResponse.builder()
-                .id(request.getId())
-                .classId(request.getCourseClass().getId())
-                .className(request.getCourseClass().getName())
-                .mentor(mentorRes)
-                .reason(request.getReason())
-                .expectedLeaveDate(request.getExpectedLeaveDate())
-                .status(request.getStatus())
-                .newMentor(newMentorRes)
-                .createdAt(request.getCreatedAt())
-                .updatedAt(request.getUpdatedAt())
-                .build();
-    }
-
-
 }

@@ -90,6 +90,11 @@ const Sidebar = () => {
                     icon: Users,
                     path: "/creator/mentor-applications",
                 },
+                {
+                    text: "Yêu cầu rút lui",
+                    icon: Form,
+                    path: "/creator/withdraw-requests",
+                },
             ],
         },
     ];

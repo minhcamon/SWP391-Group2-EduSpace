@@ -78,9 +78,42 @@ const creatorService = {
         }
     },
 
-    initiateHandover: async (requestId, newMentorId) => {
+    getWithdrawRequests: async () => {
         try {
-            const res = await api.post(`/creator/handover/${requestId}`, { newMentorId });
+            const res = await api.get("/creator/withdraw-requests");
+            return res.data.data;
+        } catch (error) {
+            console.error('getWithdrawRequests error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách đơn xin rút lui!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    getActiveMentorsForClass: async (classId) => {
+        try {
+            const res = await api.get(`/creator/classes/${classId}/active-mentors`);
+            return res.data.data;
+        } catch (error) {
+            console.error('getActiveMentorsForClass error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách mentor khả dụng!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    rejectWithdrawRequest: async (requestId) => {
+        try {
+            const res = await api.post(`/creator/withdraw-requests/${requestId}/reject`);
+            return res.data.message || 'Từ chối đơn rút lui thành công!';
+        } catch (error) {
+            console.error('rejectWithdrawRequest error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể từ chối đơn rút lui!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    initiateHandover: async (requestId, newMentorUserId) => {
+        try {
+            const res = await api.post(`/creator/withdraw-requests/${requestId}/initiate-handover`, { newMentorUserId });
             return res.data.message || 'Thiết lập bàn giao thành công!';
         } catch (error) {
             console.error('initiateHandover error at creatorService:', error);
@@ -91,11 +124,22 @@ const creatorService = {
 
     approveHandover: async (requestId) => {
         try {
-            const res = await api.post(`/creator/handover/${requestId}/approve`);
+            const res = await api.post(`/creator/withdraw-requests/${requestId}/approve-handover`);
             return res.data.message || 'Phê duyệt bàn giao thành công!';
         } catch (error) {
             console.error('approveHandover error at creatorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể phê duyệt bàn giao!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    creatorTakeOver: async (requestId) => {
+        try {
+            const res = await api.post(`/creator/withdraw-requests/${requestId}/take-over`);
+            return res.data.message || 'Creator tiếp quản lớp học thành công!';
+        } catch (error) {
+            console.error('creatorTakeOver error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tự tiếp quản lớp học!';
             throw new Error(errorMsg);
         }
     },
