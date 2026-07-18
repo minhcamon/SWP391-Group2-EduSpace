@@ -135,6 +135,15 @@ public class MentorController {
         return ResponseEntity.ok(APIResponse.success("Gửi yêu cầu rút lui thành công!", withdrawService.convertToDto(request)));
     }
 
+    @PostMapping("/classes/{classId}/withdraw-requests/cancel")
+    @PreAuthorize("hasRole('MENTOR')")
+    @Operation(summary = "Cancel Withdrawal Request", description = "Hủy yêu cầu rút lui khỏi lớp học đang chờ duyệt")
+    public ResponseEntity<APIResponse<String>> cancelWithdrawRequest(@PathVariable Long classId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        withdrawService.cancelWithdrawRequest(userId, classId);
+        return ResponseEntity.ok(APIResponse.success("Hủy yêu cầu rút lui thành công!", null));
+    }
+
     @GetMapping("/withdraw-requests")
     @PreAuthorize("hasRole('MENTOR')")
     @Operation(summary = "Get My Withdraw Requests", description = "Xem lịch sử yêu cầu rút lui của bản thân")

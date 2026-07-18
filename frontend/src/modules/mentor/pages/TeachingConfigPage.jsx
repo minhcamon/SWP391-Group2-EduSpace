@@ -13,9 +13,13 @@ export const TeachingConfigPage = () => {
         refresh
     } = useActiveMentorConfig();
 
+    const registeredCount = activeCourses.filter(c => c.isRegistered).length;
+    const availableCount  = activeCourses.filter(c => c.isRegistered && c.status === 'AVAILABLE').length;
+    const busyCount       = activeCourses.filter(c => c.isRegistered && c.status === 'BUSY').length;
+
     if (isLoading) {
         return (
-            <div className="grow flex items-center justify-center min-h-[400px] bg-neutral-lightest/30">
+            <div className="grow flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm font-semibold text-neutral-medium">
@@ -27,32 +31,55 @@ export const TeachingConfigPage = () => {
     }
 
     return (
-        <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            {/* Elegant Header with Gradient Background Decoration */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-primary/95 to-primary-dark text-white rounded-3xl p-6 sm:p-8 shadow-lg border border-primary/20 mb-8">
-                <div className="absolute right-0 bottom-0 translate-y-1/4 translate-x-1/4 opacity-10">
-                    <BookOpen size={240} />
+        <div className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full font-sans">
+            {/* Header — đồng bộ MentorDashboardPage */}
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-dark tracking-tight">
+                        Cấu hình giảng dạy
+                    </h1>
+                    <p className="text-sm text-neutral-medium mt-1">
+                        Đăng ký hỗ trợ các khóa học bạn đã hoàn thành và thay đổi trạng thái sẵn sàng nhận lớp.
+                    </p>
                 </div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                            Cấu hình giảng dạy
-                        </h1>
-                        <p className="text-white/80 text-sm mt-2 max-w-2xl leading-relaxed">
-                            Đăng ký hỗ trợ các khóa học bạn đã hoàn thành (nhận chứng chỉ) và thay đổi trạng thái sẵn sàng nhận lớp. Creator sẽ dựa trên danh sách này để phân công hoặc điều động bạn hỗ trợ học viên.
-                        </p>
-                    </div>
-                    <button
-                        onClick={refresh}
-                        className="self-start md:self-auto flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/25 rounded-xl px-4 py-2.5 text-xs font-bold transition-all active:scale-[0.98]"
-                    >
-                        <RefreshCw size={14} className="animate-hover-spin" />
-                        <span>Tải lại dữ liệu</span>
-                    </button>
+                <button
+                    onClick={refresh}
+                    className="self-start sm:self-auto flex items-center gap-2 bg-white hover:bg-slate-50 text-neutral-dark border border-border-light/50 rounded-xl px-4 py-2.5 text-xs font-bold transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                >
+                    <RefreshCw size={14} />
+                    <span>Tải lại dữ liệu</span>
+                </button>
+            </div>
+
+            {/* KPIs Grid — đồng bộ MentorDashboardPage */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white rounded-xl p-4 border border-border-light/30 shadow-sm flex flex-col items-center justify-center text-center">
+                    <span className="text-3xl font-extrabold text-primary mb-1">
+                        {activeCourses.length}
+                    </span>
+                    <span className="text-[10px] text-neutral-medium uppercase font-bold tracking-wide">
+                        Khóa học khả dụng
+                    </span>
+                </div>
+                <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-200/60 shadow-sm flex flex-col items-center justify-center text-center">
+                    <span className="text-3xl font-extrabold text-emerald-600 mb-1">
+                        {availableCount}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 uppercase font-bold tracking-wide">
+                        Sẵn sàng nhận lớp
+                    </span>
+                </div>
+                <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-200/60 shadow-sm flex flex-col items-center justify-center text-center">
+                    <span className="text-3xl font-extrabold text-amber-600 mb-1">
+                        {busyCount}
+                    </span>
+                    <span className="text-[10px] text-amber-600 uppercase font-bold tracking-wide">
+                        Đang bận / Tạm nghỉ
+                    </span>
                 </div>
             </div>
 
-            {/* Empty State */}
+            {/* Course Cards Grid */}
             {activeCourses.length === 0 ? (
                 <div className="bg-white border border-border-light/40 rounded-3xl p-12 text-center shadow-sm">
                     <div className="w-16 h-16 bg-neutral-lightest/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border-light/20">
@@ -75,8 +102,8 @@ export const TeachingConfigPage = () => {
                             <Card
                                 key={course.courseId}
                                 className={`group overflow-hidden rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${
-                                    course.isRegistered 
-                                        ? 'bg-white border-border-light/40' 
+                                    course.isRegistered
+                                        ? 'bg-white border-border-light/40'
                                         : 'bg-neutral-lightest/20 border-border-light/20'
                                 }`}
                             >
@@ -84,10 +111,9 @@ export const TeachingConfigPage = () => {
                                     {/* Card Header Info */}
                                     <div>
                                         <div className="flex items-center justify-between gap-2 mb-3.5">
-                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">
+                                            <Badge variant="outline" className="bg-emerald-600/5 text-emerald-600 border-emerald-600/10 text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide">
                                                 {course.subject || 'Khóa học'}
                                             </Badge>
-                                            
                                             <div className="flex items-center gap-1 text-emerald-600">
                                                 <ShieldCheck size={14} />
                                                 <span className="text-[10px] font-bold uppercase tracking-wide">
@@ -95,8 +121,7 @@ export const TeachingConfigPage = () => {
                                                 </span>
                                             </div>
                                         </div>
-
-                                        <h3 className="font-bold text-neutral-dark text-base leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2">
+                                        <h3 className="font-bold text-neutral-dark text-base leading-snug group-hover:text-emerald-600 transition-colors duration-200 line-clamp-2">
                                             {course.courseTitle}
                                         </h3>
                                     </div>
@@ -116,7 +141,6 @@ export const TeachingConfigPage = () => {
                                                         </span>
                                                     </div>
                                                 </div>
-
                                                 {/* Action toggle group */}
                                                 <div className="bg-neutral-lightest p-1 rounded-xl flex border border-border-light/30 shadow-inner">
                                                     <button
@@ -148,7 +172,7 @@ export const TeachingConfigPage = () => {
                                                 </span>
                                                 <button
                                                     onClick={() => handleRegisterActiveCourse(course.courseId)}
-                                                    className="w-full bg-gradient-to-r from-primary to-primary-light hover:from-primary/95 hover:to-primary-light/95 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+                                                    className="w-full bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600/95 hover:to-emerald-500/95 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
                                                 >
                                                     <UserCheck size={14} />
                                                     <span>Đăng ký nhận lớp giảng dạy</span>

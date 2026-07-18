@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 @Service
 @RequiredArgsConstructor
@@ -118,6 +120,7 @@ public class MentorService {
                                         .status(group.getChatStatus())
                                         .build())
                                     .collect(Collectors.toList()))
+                            .membershipStatus(cm.getLearnerStatus())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -125,7 +128,7 @@ public class MentorService {
 
     public MentorClassDetailResponse getMentorClassDetail(Long classId, Long userId) {
         // Check if user is mentor in this class
-        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
+        ClassMember currentCm = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
                 .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
 
         CourseClass cc = classRepository.findById(classId)
@@ -233,6 +236,7 @@ public class MentorService {
                 .mentors(mentorResponses)
                 .numberOfPairs(numberOfPairs)
                 .modules(moduleResponses)
+                .membershipStatus(currentCm.getLearnerStatus())
                 .build();
     }
 
@@ -248,9 +252,18 @@ public class MentorService {
 
         List<ActiveMentor> activeRegistrations = activeMentorRepository.findByUserId(userId);
         Map<Long, ActiveMentor> regMap = activeRegistrations.stream()
-                .collect(Collectors.toMap(am -> am.getCourse().getId(), am -> am));
+                .collect(Collectors.toMap(
+                        am -> am.getCourse().getId(),
+                        am -> am,
+                        (existing, replacement) -> existing
+                ));
 
-        return completedCourses.stream().map(course -> {
+        Set<Course> allCourses = new LinkedHashSet<>(completedCourses);
+        for (ActiveMentor am : activeRegistrations) {
+            allCourses.add(am.getCourse());
+        }
+
+        return allCourses.stream().map(course -> {
             ActiveMentor am = regMap.get(course.getId());
             return ActiveMentorResponse.builder()
                     .courseId(course.getId())

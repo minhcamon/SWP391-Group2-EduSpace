@@ -68,6 +68,20 @@ export const mentorService = {
     },
 
     /**
+     * Cancels a pending withdraw request for a class.
+     */
+    cancelWithdrawRequest: async (classId) => {
+        try {
+            const response = await api.post(`/mentor/classes/${classId}/withdraw-requests/cancel`);
+            return response.data.message;
+        } catch (error) {
+            console.error('cancelWithdrawRequest error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể hủy yêu cầu rút khỏi lớp!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
      * Fetches all withdraw requests of current mentor.
      */
     getMyWithdrawRequests: async () => {

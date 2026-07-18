@@ -100,6 +100,42 @@ public class WithdrawService {
         request.setResolvedAt(LocalDateTime.now());
         classMemberRepository.save(request.getClassMember());
         withdrawRequestRepository.save(request);
+
+        String msg = String.format("Yêu cầu rút lui khỏi lớp %s của bạn đã bị từ chối.",
+                request.getClassMember().getCourseClass().getName());
+        notificationService.sendToUser(request.getClassMember().getUser(), msg, org.eduspace.backend.enums.NotificationType.SYSTEM, request.getClassMember().getCourseClass().getId());
+    }
+
+    @Transactional
+    public void cancelWithdrawRequest(Long mentorUserId, Long classId) {
+        ClassMember membership = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, mentorUserId, "MENTOR")
+                .orElseThrow(() -> new BadRequestException("Bạn không thuộc lớp này"));
+
+        if (membership.getLearnerStatus() != LearnerStatus.PENDING_WITHDRAWAL) {
+            throw new BadRequestException("Lớp học không ở trạng thái chờ rút lui");
+        }
+
+        WithdrawRequest request = withdrawRequestRepository
+                .findByClassMemberIdAndStatusIn(
+                        membership.getId(),
+                        List.of(WithdrawStatus.PENDING, WithdrawStatus.HANDOVER_PENDING)
+                )
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy đơn xin rút lui đang chờ xử lý"));
+
+        if (request.getStatus() == WithdrawStatus.HANDOVER_PENDING && request.getReplacementMember() != null) {
+            request.getReplacementMember().setLearnerStatus(LearnerStatus.INACTIVE);
+            classMemberRepository.save(request.getReplacementMember());
+        }
+
+        membership.setLearnerStatus(LearnerStatus.ACTIVE);
+        request.setStatus(WithdrawStatus.REJECTED);
+        request.setResolvedAt(LocalDateTime.now());
+        
+        classMemberRepository.save(membership);
+        withdrawRequestRepository.save(request);
     }
 
     @Transactional
@@ -154,6 +190,17 @@ public class WithdrawService {
         request.setResolvedAt(LocalDateTime.now());
         classMemberRepository.save(request.getClassMember());
         withdrawRequestRepository.save(request);
+
+        String msg = String.format("Yêu cầu rút lui khỏi lớp %s của bạn đã được phê duyệt thành công.",
+                request.getClassMember().getCourseClass().getName());
+        notificationService.sendToUser(request.getClassMember().getUser(), msg, org.eduspace.backend.enums.NotificationType.SYSTEM, request.getClassMember().getCourseClass().getId());
+
+        if (request.getReplacementMember() != null) {
+            String replacementMsg = String.format("Bạn đã được phân công tiếp quản làm Mentor cho lớp %s thay thế cho Mentor %s.",
+                    request.getClassMember().getCourseClass().getName(),
+                    request.getClassMember().getUser().getFullName());
+            notificationService.sendToUser(request.getReplacementMember().getUser(), replacementMsg, org.eduspace.backend.enums.NotificationType.SYSTEM, request.getClassMember().getCourseClass().getId());
+        }
     }
 
     @Transactional
@@ -179,6 +226,10 @@ public class WithdrawService {
         request.setResolvedAt(LocalDateTime.now());
         classMemberRepository.save(request.getClassMember());
         withdrawRequestRepository.save(request);
+
+        String msg = String.format("Yêu cầu rút lui khỏi lớp %s của bạn đã được phê duyệt thành công.",
+                request.getClassMember().getCourseClass().getName());
+        notificationService.sendToUser(request.getClassMember().getUser(), msg, org.eduspace.backend.enums.NotificationType.SYSTEM, request.getClassMember().getCourseClass().getId());
     }
 
     @Transactional(readOnly = true)

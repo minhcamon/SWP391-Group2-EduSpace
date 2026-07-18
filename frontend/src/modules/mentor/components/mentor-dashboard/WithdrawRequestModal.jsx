@@ -55,7 +55,7 @@ export const WithdrawRequestModal = ({ isOpen, onClose, classId, className, onSu
             <div className="relative bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-border-light/35 animate-in zoom-in-95 duration-200">
                 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-red-500/10 to-amber-500/10 px-6 py-5 border-b border-border-light/20 flex items-center justify-between">
+                <div className="bg-linear-to-r from-red-500/10 to-amber-500/10 px-6 py-5 border-b border-border-light/20 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
                             <AlertTriangle size={18} />

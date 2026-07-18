@@ -12,4 +12,5 @@ public interface WithdrawRequestRepository extends JpaRepository<WithdrawRequest
     List<WithdrawRequest> findByClassMemberCourseClassCourseCreatorId(Long creatorId);
     List<WithdrawRequest> findByClassMemberUserId(Long mentorId);
     boolean existsByClassMemberIdAndStatusIn(Long classMemberId, List<WithdrawStatus> statuses);
+    List<WithdrawRequest> findByClassMemberIdAndStatusIn(Long classMemberId, List<WithdrawStatus> statuses);
 }
