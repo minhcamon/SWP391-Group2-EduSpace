@@ -262,7 +262,9 @@ public class ProgressService {
       boolean isOverdue = timeline != null && now.isAfter(timeline);
       boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
 
-      if (previousModuleAllowsNext) {
+      boolean isModuleStarted = !studyGroupRepository.findByCourseClassIdAndModuleId(classId, module.getId()).isEmpty();
+
+      if (previousModuleAllowsNext || isModuleStarted) {
         isLocked = false;
         status = progressHelper.determineModuleStatus(isCompletedModule);
 
