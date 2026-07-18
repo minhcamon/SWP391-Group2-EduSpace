@@ -313,6 +313,179 @@ abstract class SystemTestSupport {
         }
     }
 
+    protected EnrollmentFixture createNearlyFullWaitlistFixture(String finalLearnerUsername) throws Exception {
+        String suffix = shortId();
+        Long finalLearnerId = findUserId(finalLearnerUsername);
+
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword)) {
+            Long courseId = insertSystemEnrollmentCourse(connection, suffix);
+            insertSystemEnrollmentModule(connection, courseId);
+            Long waitlistId = insertSystemEnrollmentWaitlist(connection, courseId);
+
+            for (int i = 0; i < 9; i++) {
+                Long userId = insertSystemEnrollmentUser(connection, suffix, i);
+                insertSystemEnrollmentWaitlistEntry(connection, waitlistId, userId, i);
+            }
+
+            return new EnrollmentFixture(
+                    courseId,
+                    waitlistId,
+                    finalLearnerId,
+                    countClassesForCourse(courseId),
+                    countClassMembershipsForCourseAndUser(courseId, finalLearnerId));
+        }
+    }
+
+    protected String waitlistStatus(Long waitlistId) throws Exception {
+        String sql = "SELECT status FROM waitlists WHERE wait_list_id = ?";
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, waitlistId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected waitlist to exist");
+                return resultSet.getString("status");
+            }
+        }
+    }
+
+    protected int countClassesForCourse(Long courseId) throws Exception {
+        String sql = "SELECT COUNT(*) FROM classes WHERE course_id = ?";
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, courseId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected class count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    protected int countClassMembershipsForCourseAndUser(Long courseId, Long userId) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM class_members cm
+                JOIN classes c ON c.class_id = cm.class_id
+                WHERE c.course_id = ?
+                  AND cm.user_id = ?
+                  AND cm.context_role = 'LEARNER'
+                """;
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, courseId);
+            statement.setLong(2, userId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected class membership count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    protected int countOpenWaitlistEntries(Long waitlistId) throws Exception {
+        String sql = "SELECT COUNT(*) FROM waitlist_entries WHERE waitlist_id = ?";
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, waitlistId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected waitlist entry count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    private Long findUserId(String username) throws Exception {
+        String sql = "SELECT user_id FROM users WHERE username = ?";
+        try (Connection connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected seeded user to exist: " + username);
+                return resultSet.getLong("user_id");
+            }
+        }
+    }
+
+    private Long insertSystemEnrollmentCourse(Connection connection, String suffix) throws Exception {
+        String sql = """
+                INSERT INTO courses (title, description, status, created_at, is_deleted)
+                VALUES (?, ?, 'PUBLISHED', NOW(), false)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, "System Enrollment Course " + suffix);
+            statement.setString(2, "Course generated for waitlist system workflow testing");
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                assertTrue(keys.next(), "Expected generated course id");
+                return keys.getLong(1);
+            }
+        }
+    }
+
+    private void insertSystemEnrollmentModule(Connection connection, Long courseId) throws Exception {
+        String sql = """
+                INSERT INTO modules
+                    (title, priority, days, base_exp, speed_bonus_exp, sort_order, course_id)
+                VALUES
+                    ('System Enrollment Module', 'LOW', 7, 10, 5, 1, ?)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, courseId);
+            statement.executeUpdate();
+        }
+    }
+
+    private Long insertSystemEnrollmentWaitlist(Connection connection, Long courseId) throws Exception {
+        String sql = """
+                INSERT INTO waitlists (course_id, created_at, status)
+                VALUES (?, NOW(), 'OPENING')
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, courseId);
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                assertTrue(keys.next(), "Expected generated waitlist id");
+                return keys.getLong(1);
+            }
+        }
+    }
+
+    private Long insertSystemEnrollmentUser(Connection connection, String suffix, int index) throws Exception {
+        String username = "system_wait_" + suffix + "_" + index;
+        String sql = """
+                INSERT INTO users
+                    (fullname, username, password, email, role, status, auth_provider, created_at, total_exp)
+                VALUES
+                    (?, ?, 'not-used', ?, 'LEARNER', 'ACTIVE', 'LOCAL', NOW(), ?)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, "System Waitlist User " + index);
+            statement.setString(2, username);
+            statement.setString(3, username + "@example.com");
+            statement.setInt(4, index * 10);
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                assertTrue(keys.next(), "Expected generated waitlist user id");
+                return keys.getLong(1);
+            }
+        }
+    }
+
+    private void insertSystemEnrollmentWaitlistEntry(
+            Connection connection,
+            Long waitlistId,
+            Long userId,
+            int offsetMinutes) throws Exception {
+        String sql = """
+                INSERT INTO waitlist_entries (waitlist_id, user_id, enrolled_at)
+                VALUES (?, ?, DATE_SUB(NOW(), INTERVAL ? MINUTE))
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, waitlistId);
+            statement.setLong(2, userId);
+            statement.setInt(3, 30 - offsetMinutes);
+            statement.executeUpdate();
+        }
+    }
+
     private void resetAssignmentSubmissions(Long assignmentId, Long firstMemberId, Long secondMemberId) throws Exception {
         String deletePeerReviewsSql = """
                 DELETE pr
@@ -482,4 +655,11 @@ abstract class SystemTestSupport {
     protected record MentorIncidentFixture(
             Long incidentId,
             String reason) {}
+
+    protected record EnrollmentFixture(
+            Long courseId,
+            Long waitlistId,
+            Long finalLearnerId,
+            int classCountBefore,
+            int finalLearnerMembershipCountBefore) {}
 }
