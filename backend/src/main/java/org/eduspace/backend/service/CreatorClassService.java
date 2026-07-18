@@ -3,6 +3,7 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
+import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.entity.*;
 import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.LearnerStatus;
@@ -26,6 +27,8 @@ public class CreatorClassService {
     private final UserRepository userRepository;
     private final WithdrawRequestRepository withdrawRequestRepository;
     private final CourseRepository courseRepository;
+    private final ClassTimelineRepository classTimelineRepository;
+    private final StudyGroupRepository studyGroupRepository;
 
     private CourseClass checkCreatorOwnershipAndGetClass(Long classId, Long creatorId) {
         CourseClass cc = classRepository.findById(classId)
@@ -281,5 +284,50 @@ public class CreatorClassService {
                 .stats(stats)
                 .monthlyTrends(trends)
                 .build();
+    }
+
+    public List<ClassTimelineResponse> getClassesTimeline(Long courseId, Long creatorId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        if (!course.getCreator().getId().equals(creatorId)) {
+            throw new RuntimeException("Bạn không có quyền quản lý khóa học này");
+        }
+
+        List<CourseClass> classes = classRepository.findByCourseId(courseId).stream()
+                .filter(cc -> cc.getStatus() == org.eduspace.backend.enums.ClassStatus.RUNNING 
+                        || cc.getStatus() == org.eduspace.backend.enums.ClassStatus.COMPLETED)
+                .collect(Collectors.toList());
+        List<ClassTimelineResponse> response = new ArrayList<>();
+
+        for (CourseClass cc : classes) {
+            List<ClassTimeline> timelines = classTimelineRepository.findByCourseClassId(cc.getId());
+            List<ClassTimelineResponse.ModuleTimelineItem> items = new ArrayList<>();
+
+            for (ClassTimeline ct : timelines) {
+                List<StudyGroup> groups = studyGroupRepository.findByCourseClassIdAndModuleId(cc.getId(), ct.getModule().getId());
+                boolean isStarted = !groups.isEmpty();
+
+                items.add(ClassTimelineResponse.ModuleTimelineItem.builder()
+                        .moduleId(ct.getModule().getId())
+                        .moduleTitle(ct.getModule().getTitle())
+                        .sortOrder(ct.getModule().getSortOrder())
+                        .dueDate(ct.getDueDate())
+                        .isStarted(isStarted)
+                        .groupCount(groups.size())
+                        .build());
+            }
+
+            // Sắp xếp các module theo thứ tự sortOrder
+            items.sort((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()));
+
+            response.add(ClassTimelineResponse.builder()
+                    .classId(cc.getId())
+                    .className(cc.getName())
+                    .classStatus(cc.getStatus().name())
+                    .timeline(items)
+                    .build());
+        }
+
+        return response;
     }
 }

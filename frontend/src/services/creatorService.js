@@ -156,6 +156,30 @@ const creatorService = {
             const errorMsg = error.response?.data?.message || 'Không thể từ chối đơn!';
             throw new Error(errorMsg, { cause: error });
         }
+    },
+
+    getClassesTimeline: async (courseId) => {
+        try {
+            const res = await api.get(`/creator/courses/${courseId}/classes-timeline`);
+            return res.data.data;
+        } catch (error) {
+            console.error('getClassesTimeline error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải dòng thời gian lớp học!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    rematchGroup: async (classId, moduleId) => {
+        try {
+            const res = await api.post(`/system/rematch-group/${classId}`, null, {
+                params: { moduleId }
+            });
+            return res.data.message || 'Khởi chạy module thành công!';
+        } catch (error) {
+            console.error('rematchGroup error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể khởi chạy module!';
+            throw new Error(errorMsg);
+        }
     }
 }
 

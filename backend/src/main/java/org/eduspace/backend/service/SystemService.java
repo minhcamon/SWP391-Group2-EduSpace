@@ -203,6 +203,35 @@ public class SystemService {
                                 .orElseThrow(() -> new RuntimeException("Error: Class not found."));
                 CourseModule module = moduleRepository.findById(moduleId)
                                 .orElseThrow(() -> new RuntimeException("Error: Module not found."));
+
+                // Validation: Chỉ cho phép kích hoạt khi module ngay phía trước đã được kích hoạt
+                List<CourseModule> modules = moduleRepository
+                                .findByCourseIdOrderBySortOrder(courseClass.getCourse().getId());
+                int currentIndex = -1;
+                for (int i = 0; i < modules.size(); i++) {
+                        if (modules.get(i).getId().equals(moduleId)) {
+                                currentIndex = i;
+                                break;
+                        }
+                }
+
+                if (currentIndex > 0) {
+                        CourseModule prevModule = modules.get(currentIndex - 1);
+                        boolean prevStarted = !studyGroupRepository
+                                        .findByCourseClassIdAndModuleId(classId, prevModule.getId()).isEmpty();
+                        if (!prevStarted) {
+                                throw new RuntimeException("Không thể kích hoạt module này vì module trước đó (" 
+                                                + prevModule.getTitle() + ") chưa được kích hoạt.");
+                        }
+                }
+
+                // Validation: Không cho phép kích hoạt ghép nhóm lại nếu module này đã được chia nhóm rồi
+                boolean alreadyStarted = !studyGroupRepository
+                                .findByCourseClassIdAndModuleId(classId, moduleId).isEmpty();
+                if (alreadyStarted) {
+                        throw new RuntimeException("Module này đã được chia nhóm rồi, không thể thực hiện chia lại nhóm.");
+                }
+
                 List<ClassMember> members = classMemberRepository.findByCourseClassId(classId);
 
                 members.sort((a, b) -> {

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
+import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.dto.mentor.request.AssignMentorRequestDto;
 import org.eduspace.backend.dto.mentor.request.HandoverRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
@@ -85,5 +86,14 @@ public class CreatorController {
         Long creatorId = SecurityUtil.getCurrentUserId();
         CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId, courseId, timeRange);
         return ResponseEntity.ok(APIResponse.success("Get analytics successfully", response));
+    }
+
+    @GetMapping("/courses/{courseId}/classes-timeline")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Get Classes Timeline", description = "Lấy dòng thời gian các module của các lớp học thuộc khóa học (chỉ cho Creator sở hữu)")
+    public ResponseEntity<APIResponse<List<ClassTimelineResponse>>> getClassesTimeline(@PathVariable Long courseId) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        List<ClassTimelineResponse> response = creatorClassService.getClassesTimeline(courseId, creatorId);
+        return ResponseEntity.ok(APIResponse.success("Get classes timeline successfully", response));
     }
 }
