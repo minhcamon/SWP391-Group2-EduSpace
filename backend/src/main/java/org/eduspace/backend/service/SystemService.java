@@ -93,6 +93,7 @@ public class SystemService {
         int left = 0;
         int right = savedMembers.size() - 1;
         int groupIndex = 1;
+        StudyGroup savedGroup = null;
 
         while (left < right) {
             ClassMember proStudent = savedMembers.get(left);
@@ -104,7 +105,7 @@ public class SystemService {
                     .chatChannelId("chat_room_g" + groupIndex + "_" + savedClass.getId())
                     .chatStatus("ACTIVE")
                     .build();
-            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+            savedGroup = studyGroupRepository.save(studyGroup);
 
             GroupMember memberLeft = GroupMember.builder()
                     .studyGroup(savedGroup)
@@ -121,6 +122,14 @@ public class SystemService {
             left++;
             right--;
             groupIndex++;
+        }
+
+        if (left == right && savedGroup != null) {
+            GroupMember memberOdd = GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(savedMembers.get(left))
+                    .build();
+            groupMemberRepository.save(memberOdd);
         }
 
         this.createTimelineForClass(savedClass.getId());
@@ -175,6 +184,7 @@ public class SystemService {
         int left = 0;
         int right = members.size() - 1;
         int groupIndex = 1;
+        StudyGroup savedGroup = null;
 
         while (left < right) {
             StudyGroup studyGroup = StudyGroup.builder()
@@ -183,7 +193,7 @@ public class SystemService {
                     .chatChannelId("manual_chat_g" + groupIndex + "_" + classId)
                     .chatStatus("ACTIVE")
                     .build();
-            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+            savedGroup = studyGroupRepository.save(studyGroup);
 
             groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
                     .classMember(members.get(left)).build());
@@ -193,6 +203,13 @@ public class SystemService {
             left++;
             right--;
             groupIndex++;
+        }
+
+        if (left == right && savedGroup != null) {
+            groupMemberRepository.save(GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(members.get(left))
+                    .build());
         }
     }
 
