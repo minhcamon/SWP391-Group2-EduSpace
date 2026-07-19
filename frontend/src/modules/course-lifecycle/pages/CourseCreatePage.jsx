@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import creatorService from '@/services/creatorService';
 import { toast } from 'sonner';
-import { Play, CheckCircle, Calendar, Users } from 'lucide-react';
+import { Play, CheckCircle, Calendar, Users, Lock } from 'lucide-react';
 
 export default function CreateCourse({ mode: propMode }) {
   const { id } = useParams();
@@ -75,6 +75,7 @@ export default function CreateCourse({ mode: propMode }) {
     try {
       await creatorService.rematchGroup(classId, moduleId);
       toast.success("Ghép nhóm học viên cho module thành công!");
+      await fetchTimelines();
     } catch (err) {
       toast.error(err.message || "Lỗi khi kích hoạt module");
     } finally {
@@ -227,18 +228,28 @@ export default function CreateCourse({ mode: propMode }) {
                                 </div>
                               </td>
                               <td className="py-4 px-6 text-center">
-                                <button
-                                  onClick={() => handleStartModule(activeClass.classId, item.moduleId)}
-                                  disabled={rematchingModuleId !== null}
-                                  className="px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-                                >
-                                  {rematchingModuleId === item.moduleId ? (
-                                    <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                  ) : (
-                                    <Play className="text-[10px] fill-current" />
-                                  )}
-                                  Kích hoạt
-                                </button>
+                                {item.isStarted || item.started || index === 0 ? (
+                                  <span className="px-4.5 py-2.5 bg-green-50 text-green-700 border border-green-200/50 text-xs font-bold rounded-xl inline-flex items-center justify-center gap-1.5 shadow-xs select-none">
+                                    <CheckCircle size={12} className="text-green-600 shrink-0" /> Đã kích hoạt
+                                  </span>
+                                ) : (index > 1 && !(activeClass.timeline[index - 1].isStarted || activeClass.timeline[index - 1].started)) ? (
+                                  <span className="px-4.5 py-2.5 bg-gray-50 text-gray-400 border border-gray-100 text-xs font-bold rounded-xl inline-flex items-center justify-center gap-1.5 shadow-xs select-none cursor-not-allowed">
+                                    <Lock size={12} className="text-gray-300 shrink-0" /> Khóa
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleStartModule(activeClass.classId, item.moduleId)}
+                                    disabled={rematchingModuleId !== null}
+                                    className="px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                                  >
+                                    {rematchingModuleId === item.moduleId ? (
+                                      <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                      <Play className="text-[10px] fill-current" />
+                                    )}
+                                    Kích hoạt
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           );

@@ -78,4 +78,15 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
 
         @Query("SELECT COUNT(cm) FROM ClassMember cm WHERE cm.courseClass.id = :classId AND cm.contextRole = 'MENTOR' AND cm.learnerStatus = 'ACTIVE'")
         long countActiveMentorsInClass(@Param("classId") Long classId);
+
+        @Query("""
+            SELECT COUNT(cm) FROM ClassMember cm
+            WHERE cm.user.id = :userId
+              AND cm.contextRole = :contextRole
+              AND cm.courseClass.status = :status
+        """)
+        long countActiveClassesByMentor(
+                @Param("userId") Long userId,
+                @Param("contextRole") String contextRole,
+                @Param("status") org.eduspace.backend.enums.ClassStatus status);
 }

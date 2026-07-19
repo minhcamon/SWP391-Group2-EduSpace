@@ -74,6 +74,15 @@ public class CreatorClassService {
             throw new RuntimeException("Mentor này đã được gán vào lớp học rồi!");
         }
 
+        // Check if mentor has reached class limit of 2
+        long activeClasses = classMemberRepository.countActiveClassesByMentor(
+                mentorId,
+                "MENTOR",
+                org.eduspace.backend.enums.ClassStatus.RUNNING);
+        if (activeClasses >= 2) {
+            throw new RuntimeException("Mentor này đã đạt giới hạn quản lý tối đa 2 lớp học!");
+        }
+
         ClassMember newMember = ClassMember.builder()
                 .courseClass(cc)
                 .user(mentor)
