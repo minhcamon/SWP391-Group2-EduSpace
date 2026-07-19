@@ -36,6 +36,7 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
                 SELECT w
                 FROM Waitlist w
                 WHERE w.course.creator.id = :creatorId
+                AND w.status = org.eduspace.backend.enums.WaitlistStatus.OPENING
                 ORDER BY w.createdAt DESC
             """)
     List<Waitlist> findByCreatorId(@Param("creatorId") Long creatorId);

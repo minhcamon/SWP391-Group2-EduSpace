@@ -142,6 +142,11 @@ public class WaitlistService {
         public WaitlistResponse getWaitlistDetails(Long waitlistId) {
                 Waitlist waitlist = waitlistRepository.findById(waitlistId)
                                 .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + waitlistId));
+                
+                if (waitlist.getStatus() != WaitlistStatus.OPENING) {
+                        throw new RuntimeException("Hàng chờ này đã đóng hoặc đã được mở thành lớp học.");
+                }
+
                 List<WaitlistEntry> entries = waitlistEntryRepository.findByWaitlistId(waitlistId);
                 return mapToWaitlistResponse(waitlist, entries);
         }
