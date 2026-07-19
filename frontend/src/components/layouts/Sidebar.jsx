@@ -86,9 +86,19 @@ const Sidebar = () => {
                     path: "/creator/courses",
                 },
                 {
+                    text: "Quản lý hàng chờ (Waitlist)",
+                    icon: GraduationCap,
+                    path: "/creator/waitlist",
+                },
+                {
                     text: "Quản lý đơn mentor",
                     icon: Users,
                     path: "/creator/mentor-applications",
+                },
+                {
+                    text: "Yêu cầu rút lui",
+                    icon: Form,
+                    path: "/creator/withdraw-requests",
                 },
             ],
         },

@@ -19,7 +19,6 @@ import CreatorCourseDetail from "@/views/creator/CourseDetail";
 import CreatorCourseBuilder from "@/views/creator/CourseBuilder";
 import CreatorAnalytics from "@/views/creator/Analytics";
 import CreatorMentorApplications from "@/views/creator/MentorApplications";
-import WaitlistManagement from "@/views/creator/WaitlistManagement";
 import AdminDashboard from "@/views/admin/Dashboard";
 import AdminRequests from "@/views/admin/Requests";
 import AdminCourses from "@/views/admin/Courses";
@@ -37,6 +36,9 @@ import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
 import MentorPairDetail from "@/views/mentor/PairDetailView";
 import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
+import MentorTeachingConfig from "@/views/mentor/TeachingConfig";
+import CreatorWithdrawRequests from "@/views/creator/WithdrawRequests";
+import CreatorWaitlists from "@/views/creator/Waitlists";
 import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
@@ -136,8 +138,8 @@ function App() {
               element={<CreatorMentorApplications />}
             ></Route>
             <Route
-              path="/creator/courses/:courseId/waitlist"
-              element={<WaitlistManagement />}
+              path="/creator/withdraw-requests"
+              element={<CreatorWithdrawRequests />}
             ></Route>
             {/* <Route
               path="/creator/courses/:id"
@@ -154,6 +156,10 @@ function App() {
             <Route
               path="/creator/analytics"
               element={<CreatorAnalytics />}
+            ></Route>
+            <Route
+              path="/creator/waitlist"
+              element={<CreatorWaitlists />}
             ></Route>
             <Route
               path="/creator/create-course"
@@ -187,6 +193,10 @@ function App() {
             <Route
               path="/mentor/classes/:classId"
               element={<MentorClassDetail />}
+            ></Route>
+            <Route
+              path="/mentor/teaching-config"
+              element={<MentorTeachingConfig />}
             ></Route>
           </Route>
 

@@ -67,6 +67,18 @@ const MentorHeader = () => {
                         >
                             Quản lý Lớp học
                         </NavLink>
+
+                        <NavLink
+                            to="/mentor/teaching-config"
+                            className={({ isActive }) =>
+                                `text-sm font-semibold transition-all duration-200 py-1.5 border-b-2 ${isActive
+                                    ? "text-white border-white"
+                                    : "text-white/75 border-transparent hover:text-white hover:border-white/50"
+                                }`
+                            }
+                        >
+                            Cấu hình giảng dạy
+                        </NavLink>
                     </nav>
 
                     {/* Right Action Section */}
@@ -168,6 +180,19 @@ const MentorHeader = () => {
                             }
                         >
                             Quản lý Lớp học
+                        </NavLink>
+
+                        <NavLink
+                            to="/mentor/teaching-config"
+                            onClick={() => setShowMobileMenu(false)}
+                            className={({ isActive }) =>
+                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
+                                    ? "bg-white/25 text-white"
+                                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                                }`
+                            }
+                        >
+                            Cấu hình giảng dạy
                         </NavLink>
 
                         {/* Switch to Learner Mode Button (Mobile) */}

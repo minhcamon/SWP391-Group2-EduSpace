@@ -24,4 +24,5 @@ public class MentorClassDetailResponse {
     private List<MentorResponse> mentors;
     private long numberOfPairs;
     private List<MentorModuleResponse> modules;
+    private org.eduspace.backend.enums.LearnerStatus membershipStatus;
 }

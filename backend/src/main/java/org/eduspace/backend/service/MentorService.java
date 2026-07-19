@@ -13,16 +13,21 @@ import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.Role;
+import org.eduspace.backend.enums.MentorStatus;
+import org.eduspace.backend.dto.mentor.response.ActiveMentorResponse;
+import org.eduspace.backend.exception.BadRequestException;
 import org.eduspace.backend.repository.*;
 import org.eduspace.backend.entity.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 @Service
 @RequiredArgsConstructor
@@ -119,23 +124,51 @@ public class MentorService {
                                 .collect(Collectors.toList());
         }
 
-        public MentorClassDetailResponse getMentorClassDetail(Long classId, Long userId) {
-                // Check if user is mentor in this class
-                classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
-                                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
+    public List<MentorClassResponse> getMentorClasses(Long userId) {
+        List<ClassMember> classMembers = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
+        return classMembers.stream()
+                .map(cm -> {
+                    CourseClass cc = cm.getCourseClass();
+                    List<StudyGroup> groups = studyGroupRepository.findByCourseClassId(cc.getId());
+                    long numberOfPairs = groups.size();
+                    return MentorClassResponse.builder()
+                            .id(cc.getId())
+                            .name(cc.getName())
+                            .activatedAt(cc.getActivatedAt())
+                            .status(cc.getStatus())
+                            .courseId(cc.getCourse().getId())
+                            .courseTitle(cc.getCourse().getTitle())
+                            .numberOfPairs(numberOfPairs)
+                            .studyGroups(
+                                groups.stream()
+                                    .map(group -> StudyGroupResponse.builder()
+                                        .studyGroupId(group.getId())
+                                        .status(group.getChatStatus())
+                                        .build())
+                                    .collect(Collectors.toList()))
+                            .membershipStatus(cm.getLearnerStatus())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
 
-                CourseClass cc = classRepository.findById(classId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+    public MentorClassDetailResponse getMentorClassDetail(Long classId, Long userId) {
+        // Check if user is mentor in this class
+        ClassMember currentCm = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
+                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
 
-                List<ClassMember> mentors = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
-                List<MentorResponse> mentorResponses = mentors.stream()
-                                .map(m -> MentorResponse.builder()
-                                                .id(m.getUser().getId())
-                                                .fullName(m.getUser().getFullName())
-                                                .email(m.getUser().getEmail())
-                                                .avatarUrl(m.getUser().getAvatarUrl())
-                                                .build())
-                                .collect(Collectors.toList());
+        CourseClass cc = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+
+        List<ClassMember> mentors = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
+        List<MentorResponse> mentorResponses = mentors.stream()
+                .map(m -> MentorResponse.builder()
+                        .id(m.getUser().getId())
+                        .fullName(m.getUser().getFullName())
+                        .email(m.getUser().getEmail())
+                        .avatarUrl(m.getUser().getAvatarUrl())
+                        .build())
+                .collect(Collectors.toList());
 
                 long numberOfPairs = studyGroupRepository.findByCourseClassId(classId).size();
 
@@ -230,19 +263,20 @@ public class MentorService {
                                         .build());
                 }
 
-                return MentorClassDetailResponse.builder()
-                                .id(cc.getId())
-                                .name(cc.getName())
-                                .activatedAt(cc.getActivatedAt())
-                                .status(cc.getStatus())
-                                .courseId(cc.getCourse().getId())
-                                .courseTitle(cc.getCourse().getTitle())
-                                .courseDescription(cc.getCourse().getDescription())
-                                .mentors(mentorResponses)
-                                .numberOfPairs(numberOfPairs)
-                                .modules(moduleResponses)
-                                .build();
-        }
+        return MentorClassDetailResponse.builder()
+                .id(cc.getId())
+                .name(cc.getName())
+                .activatedAt(cc.getActivatedAt())
+                .status(cc.getStatus())
+                .courseId(cc.getCourse().getId())
+                .courseTitle(cc.getCourse().getTitle())
+                .courseDescription(cc.getCourse().getDescription())
+                .mentors(mentorResponses)
+                .numberOfPairs(numberOfPairs)
+                .modules(moduleResponses)
+                .membershipStatus(currentCm.getLearnerStatus())
+                .build();
+    }
 
         public List<StudyGroupResponse> getMentorClassPairs(Long classId, Long userId) {
                 classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
@@ -285,52 +319,87 @@ public class MentorService {
                 withdrawRequestRepository.save(request);
         }
 
-        public WithdrawDetailResponse getWithdrawRequest(Long requestId, Long userId) {
-                WithdrawRequest request = withdrawRequestRepository.findById(requestId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu rút lui"));
+    public WithdrawDetailResponse getWithdrawRequest(Long requestId, Long userId) {
+        WithdrawRequest request = withdrawRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu rút lui"));
 
                 // Auth check: user must be the mentor who requested, OR the creator of the
                 // course of the class, OR admin.
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-                boolean isAuthorized = request.getMentor().getId().equals(userId)
-                                || request.getCourseClass().getCourse().getCreator().getId().equals(userId)
-                                || user.getRole() == Role.ADMIN;
+        boolean isAuthorized = request.getMentor().getId().equals(userId)
+                || request.getCourseClass().getCourse().getCreator().getId().equals(userId)
+                || user.getRole() == Role.ADMIN;
 
-                if (!isAuthorized) {
-                        throw new RuntimeException("Bạn không có quyền xem yêu cầu rút lui này");
-                }
-
-                MentorResponse mentorRes = MentorResponse.builder()
-                                .id(request.getMentor().getId())
-                                .fullName(request.getMentor().getFullName())
-                                .email(request.getMentor().getEmail())
-                                .avatarUrl(request.getMentor().getAvatarUrl())
-                                .build();
-
-                MentorResponse newMentorRes = null;
-                if (request.getNewMentor() != null) {
-                        newMentorRes = MentorResponse.builder()
-                                        .id(request.getNewMentor().getId())
-                                        .fullName(request.getNewMentor().getFullName())
-                                        .email(request.getNewMentor().getEmail())
-                                        .avatarUrl(request.getNewMentor().getAvatarUrl())
-                                        .build();
-                }
-
-                return WithdrawDetailResponse.builder()
-                                .id(request.getId())
-                                .classId(request.getCourseClass().getId())
-                                .className(request.getCourseClass().getName())
-                                .mentor(mentorRes)
-                                .reason(request.getReason())
-                                .expectedLeaveDate(request.getExpectedLeaveDate())
-                                .status(request.getStatus())
-                                .newMentor(newMentorRes)
-                                .createdAt(request.getCreatedAt())
-                                .updatedAt(request.getUpdatedAt())
-                                .build();
+        if (!isAuthorized) {
+            throw new RuntimeException("Bạn không có quyền xem yêu cầu rút lui này");
         }
 
+        MentorResponse mentorRes = MentorResponse.builder()
+                .id(request.getMentor().getId())
+                .fullName(request.getMentor().getFullName())
+                .email(request.getMentor().getEmail())
+                .avatarUrl(request.getMentor().getAvatarUrl())
+                .build();
+
+        MentorResponse newMentorRes = null;
+        if (request.getNewMentor() != null) {
+            newMentorRes = MentorResponse.builder()
+                    .id(request.getNewMentor().getId())
+                    .fullName(request.getNewMentor().getFullName())
+                    .email(request.getNewMentor().getEmail())
+                    .avatarUrl(request.getNewMentor().getAvatarUrl())
+                    .build();
+        }
+
+        return WithdrawDetailResponse.builder()
+                .id(request.getId())
+                .classId(request.getCourseClass().getId())
+                .className(request.getCourseClass().getName())
+                .mentor(mentorRes)
+                .reason(request.getReason())
+                .expectedLeaveDate(request.getExpectedLeaveDate())
+                .status(request.getStatus())
+                .newMentor(newMentorRes)
+                .createdAt(request.getCreatedAt())
+                .updatedAt(request.getUpdatedAt())
+                .build();
+    }
+
+    public List<ActiveMentorResponse> getActiveCoursesForMentor(Long userId) {
+        List<Certificate> certificates = certificateRepository.findByUserId(userId);
+        List<Course> completedCourses = certificates.stream().map(Certificate::getCourse).toList();
+
+        List<ActiveMentor> activeRegistrations = activeMentorRepository.findByUserId(userId);
+        Map<Long, ActiveMentor> regMap = activeRegistrations.stream()
+                .collect(Collectors.toMap(
+                        am -> am.getCourse().getId(),
+                        am -> am,
+                        (existing, replacement) -> existing
+                ));
+
+        Set<Course> allCourses = new LinkedHashSet<>(completedCourses);
+        for (ActiveMentor am : activeRegistrations) {
+            allCourses.add(am.getCourse());
+        }
+
+        return allCourses.stream().map(course -> {
+            ActiveMentor am = regMap.get(course.getId());
+            return ActiveMentorResponse.builder()
+                    .courseId(course.getId())
+                    .courseTitle(course.getTitle())
+                    .isRegistered(am != null)
+                    .status(am != null ? am.getMentorStatus() : null)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateActiveMentorStatus(Long userId, Long courseId, MentorStatus status) {
+        ActiveMentor am = activeMentorRepository.findByUserIdAndCourseId(userId, courseId)
+                .orElseThrow(() -> new BadRequestException("Bạn chưa đăng ký làm Mentor cho khóa học này"));
+        am.setMentorStatus(status);
+        activeMentorRepository.save(am);
+    }
 }

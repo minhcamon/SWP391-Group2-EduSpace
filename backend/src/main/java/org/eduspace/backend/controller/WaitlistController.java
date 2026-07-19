@@ -7,6 +7,7 @@ import org.eduspace.backend.dto.waitlist.request.CancelWaitlistRequest;
 import org.eduspace.backend.dto.waitlist.response.WaitlistStatsResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.WaitlistService;
+import org.eduspace.backend.dto.waitlist.response.WaitlistResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -54,34 +55,33 @@ public class WaitlistController {
                 .body(APIResponse.error(400, "Fail to enroll to waitlist. Please try again!", null));
     }
 
-    // ============= CREATOR ENDPOINTS =============
-
-    @Operation(summary = "Get Waitlist Statistics (Creator)", description = "Creator xem thống kê waitlist của khóa học")
-    @GetMapping("/creator/stats/{courseId}")
+    @Operation(summary = "Lấy danh sách hàng chờ của creator", description = "Lấy tất cả các hàng chờ thuộc các khóa học do Creator tạo ra.")
+    @GetMapping("/creator")
     @PreAuthorize("hasRole('CREATOR')")
-    public ResponseEntity<APIResponse<WaitlistStatsResponse>> getWaitlistStats(@PathVariable Long courseId) {
+    public ResponseEntity<APIResponse<List<WaitlistResponse>>> getCreatorWaitlists() {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        WaitlistStatsResponse stats = waitlistService.getWaitlistStats(courseId, creatorId);
-        return ResponseEntity.ok(APIResponse.success("Get waitlist statistics successfully!", stats));
+        List<WaitlistResponse> waitlists = waitlistService.getCreatorWaitlists(creatorId);
+        return ResponseEntity.ok(APIResponse.success("Retrieve creator waitlists successfully!", waitlists));
     }
 
-    @Operation(summary = "Manual Start Class from Waitlist (Creator)", description = "Creator chủ động start lớp học từ waitlist")
-    @PostMapping("/creator/{waitlistId}/start")
-    @PreAuthorize("hasRole('CREATOR')")
-    public ResponseEntity<APIResponse<Long>> manualStartClass(@PathVariable Long waitlistId) {
-        Long creatorId = SecurityUtil.getCurrentUserId();
-        Long classId = waitlistService.manualStartClass(waitlistId, creatorId);
-        return ResponseEntity.ok(APIResponse.success("Class started successfully!", classId));
+    @Operation(summary = "Lấy thông tin chi tiết của hàng chờ theo ID", description = "Xem chi tiết một hàng chờ cụ thể và danh sách học viên tham gia.")
+    @GetMapping("/{waitlistId}")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
+    public ResponseEntity<APIResponse<WaitlistResponse>> getWaitlistDetails(@PathVariable Long waitlistId) {
+        WaitlistResponse details = waitlistService.getWaitlistDetails(waitlistId);
+        return ResponseEntity.ok(APIResponse.success("Retrieve waitlist details successfully!", details));
     }
 
-    @Operation(summary = "Cancel Waitlist (Creator)", description = "Creator hủy waitlist và thông báo cho tất cả learners")
-    @PostMapping("/creator/{waitlistId}/cancel")
+    @Operation(summary = "Creator bắt đầu lớp học từ hàng chờ", description = "Creator bắt đầu lớp học thủ công từ hàng chờ.")
+    @PostMapping("/start-class/{waitlistId}")
     @PreAuthorize("hasRole('CREATOR')")
-    public ResponseEntity<APIResponse<String>> cancelWaitlist(
-            @PathVariable Long waitlistId,
-            @Valid @RequestBody CancelWaitlistRequest request) {
-        Long creatorId = SecurityUtil.getCurrentUserId();
-        waitlistService.cancelWaitlist(waitlistId, creatorId, request.getReason());
-        return ResponseEntity.ok(APIResponse.success("Waitlist cancelled successfully. All users have been notified.", null));
+    public ResponseEntity<APIResponse<Long>> startClassFromWaitlist(@PathVariable Long waitlistId) {
+        try {
+            Long classId = waitlistService.startClassFromWaitlist(waitlistId);
+            return ResponseEntity.ok(APIResponse.success("Start class from waitlist successfully!", classId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(APIResponse.error(400, "Thất bại: " + e.getMessage(), null));
+        }
     }
 }

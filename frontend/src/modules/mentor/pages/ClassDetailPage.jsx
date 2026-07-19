@@ -3,14 +3,18 @@ import { useParams, Link } from 'react-router'
 import { ArrowLeft, ShieldAlert, Play, MessageSquare } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import useClassDetail from '../hooks/useClassDetail'
+import mentorService from '@/services/mentorService'
+import { toast } from 'sonner'
 
 // Import extracted presenter components from subdirectories
 import ClassDetailHero from '../components/mentor-class/ClassDetailHero'
 import StudyGroupsList from '../components/mentor-class/StudyGroupsList'
 import SidebarModuleTimeline from '../components/mentor-class/SidebarModuleTimeline'
+import WithdrawRequestModal from '../components/mentor-dashboard/WithdrawRequestModal'
 
 const ClassDetailPage = () => {
   const { classId } = useParams()
+  const [isWithdrawOpen, setIsWithdrawOpen] = React.useState(false)
   const {
     classDetail,
     pairs,
@@ -24,6 +28,17 @@ const ClassDetailPage = () => {
   } = useClassDetail(classId)
 
   const selectedModuleRef = React.useRef(null)
+
+  const handleCancelWithdraw = async () => {
+    if (!window.confirm('Bạn có chắc muốn hủy yêu cầu xin rút khỏi lớp học này?')) return;
+    try {
+      await mentorService.cancelWithdrawRequest(classId);
+      toast.success('Hủy yêu cầu xin rút thành công!');
+      window.location.reload();
+    } catch (error) {
+      toast.error(error.message || 'Hủy yêu cầu thất bại!');
+    }
+  };
 
   useEffect(() => {
     if (selectedModuleRef.current) {
@@ -141,6 +156,26 @@ const ClassDetailPage = () => {
           <ArrowLeft size={16} />
           <span>Quay lại Quản lý Lớp học</span>
         </Link>
+
+        {classDetail.status !== 'INACTIVE' && (
+          classDetail.membershipStatus === 'PENDING_WITHDRAWAL' ? (
+            <button
+              onClick={handleCancelWithdraw}
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200/50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
+            >
+              <ShieldAlert size={14} />
+              <span>Hủy yêu cầu rút lui</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsWithdrawOpen(true)}
+              className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200/50 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
+            >
+              <ShieldAlert size={14} />
+              <span>Xin rút khỏi lớp</span>
+            </button>
+          )
+        )}
       </div>
 
       {/* Hero Class Banner */}
@@ -237,6 +272,15 @@ const ClassDetailPage = () => {
                     </Card> */}
         </div>
       </div>
+      <WithdrawRequestModal
+        isOpen={isWithdrawOpen}
+        onClose={() => setIsWithdrawOpen(false)}
+        classId={classId}
+        className={classDetail.name}
+        onSubmitted={() => {
+          window.location.reload();
+        }}
+      />
     </div>
   )
 }

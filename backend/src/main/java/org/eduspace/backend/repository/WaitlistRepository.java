@@ -33,16 +33,14 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
 
     Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
 
-    List<Waitlist> findByStatus(WaitlistStatus status);
-
     @Query("""
-            SELECT w FROM Waitlist w
-            WHERE w.status = :status
-            AND w.createdAt <= :thresholdDate
+                SELECT w
+                FROM Waitlist w
+                WHERE w.course.creator.id = :creatorId
+                AND w.status = org.eduspace.backend.enums.WaitlistStatus.OPENING
+                ORDER BY w.createdAt DESC
             """)
-    List<Waitlist> findByStatusAndCreatedAtBefore(
-            @Param("status") WaitlistStatus status,
-            @Param("thresholdDate") LocalDateTime thresholdDate);
+    List<Waitlist> findByCreatorId(@Param("creatorId") Long creatorId);
 
     @Modifying
     @Query("""
