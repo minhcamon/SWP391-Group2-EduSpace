@@ -33,6 +33,10 @@ public class SystemService {
         Waitlist waitlist = waitlistRepository.findById(waitlistId)
                 .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
 
+        if (waitlist.getStatus() == WaitlistStatus.FULLED || waitlist.getStatus() == WaitlistStatus.CLOSED) {
+            throw new RuntimeException("Error: Waitlist has already been turned into a class or closed.");
+        }
+
         waitlist.setStatus(WaitlistStatus.FULLED);
         waitlistRepository.save(waitlist);
 
@@ -49,16 +53,18 @@ public class SystemService {
 
         List<WaitlistEntry> allEntries = waitlistEntryRepository.findByWaitlistId(waitlistId);
 
-        if (allEntries.size() < 10) {
-            throw new RuntimeException("Error: Not enough 10 members to start the class.");
+        if (allEntries.size() < 2) {
+            throw new RuntimeException("Error: Hàng chờ phải có ít nhất 2 học viên mới có thể mở lớp.");
         }
-        List<WaitlistEntry> entries = allEntries.subList(0, 10);
 
-        entries.sort((a, b) -> {
+        // Sort all entries by EXP descending
+        allEntries.sort((a, b) -> {
             int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
             int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
             return Integer.compare(expB, expA);
         });
+
+        List<WaitlistEntry> entries = allEntries.size() > 10 ? allEntries.subList(0, 10) : allEntries;
 
         List<ClassMember> savedMembers = new ArrayList<>();
         for (WaitlistEntry entry : entries) {

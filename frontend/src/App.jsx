@@ -38,6 +38,7 @@ import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
 import MentorTeachingConfig from "@/views/mentor/TeachingConfig";
 import CreatorWithdrawRequests from "@/views/creator/WithdrawRequests";
+import CreatorWaitlists from "@/views/creator/Waitlists";
 import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
@@ -155,6 +156,10 @@ function App() {
             <Route
               path="/creator/analytics"
               element={<CreatorAnalytics />}
+            ></Route>
+            <Route
+              path="/creator/waitlist"
+              element={<CreatorWaitlists />}
             ></Route>
             <Route
               path="/creator/create-course"

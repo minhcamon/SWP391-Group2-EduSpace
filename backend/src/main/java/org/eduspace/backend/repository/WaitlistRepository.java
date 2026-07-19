@@ -32,6 +32,14 @@ public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
 
     Optional<Waitlist> findByCourseIdAndStatus(Long courseId, WaitlistStatus status);
 
+    @Query("""
+                SELECT w
+                FROM Waitlist w
+                WHERE w.course.creator.id = :creatorId
+                ORDER BY w.createdAt DESC
+            """)
+    List<Waitlist> findByCreatorId(@Param("creatorId") Long creatorId);
+
     @Modifying
     @Query("""
             DELETE FROM WaitlistEntry we

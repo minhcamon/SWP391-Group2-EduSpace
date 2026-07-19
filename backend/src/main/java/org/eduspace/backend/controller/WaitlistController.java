@@ -5,6 +5,7 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.WaitlistService;
+import org.eduspace.backend.dto.waitlist.response.WaitlistResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,35 @@ public class WaitlistController {
         }
         return ResponseEntity.badRequest()
                 .body(APIResponse.error(400, "Fail to enroll to waitlist. Please try again!", null));
+    }
+
+    @Operation(summary = "Lấy danh sách hàng chờ của creator", description = "Lấy tất cả các hàng chờ thuộc các khóa học do Creator tạo ra.")
+    @GetMapping("/creator")
+    @PreAuthorize("hasRole('CREATOR')")
+    public ResponseEntity<APIResponse<List<WaitlistResponse>>> getCreatorWaitlists() {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        List<WaitlistResponse> waitlists = waitlistService.getCreatorWaitlists(creatorId);
+        return ResponseEntity.ok(APIResponse.success("Retrieve creator waitlists successfully!", waitlists));
+    }
+
+    @Operation(summary = "Lấy thông tin chi tiết của hàng chờ theo ID", description = "Xem chi tiết một hàng chờ cụ thể và danh sách học viên tham gia.")
+    @GetMapping("/{waitlistId}")
+    @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
+    public ResponseEntity<APIResponse<WaitlistResponse>> getWaitlistDetails(@PathVariable Long waitlistId) {
+        WaitlistResponse details = waitlistService.getWaitlistDetails(waitlistId);
+        return ResponseEntity.ok(APIResponse.success("Retrieve waitlist details successfully!", details));
+    }
+
+    @Operation(summary = "Creator bắt đầu lớp học từ hàng chờ", description = "Creator bắt đầu lớp học thủ công từ hàng chờ.")
+    @PostMapping("/start-class/{waitlistId}")
+    @PreAuthorize("hasRole('CREATOR')")
+    public ResponseEntity<APIResponse<Long>> startClassFromWaitlist(@PathVariable Long waitlistId) {
+        try {
+            Long classId = waitlistService.startClassFromWaitlist(waitlistId);
+            return ResponseEntity.ok(APIResponse.success("Start class from waitlist successfully!", classId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(APIResponse.error(400, "Thất bại: " + e.getMessage(), null));
+        }
     }
 }

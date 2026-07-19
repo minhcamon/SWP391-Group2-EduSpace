@@ -200,6 +200,28 @@ const creatorService = {
             const errorMsg = error.response?.data?.message || 'Không thể từ chối đơn!';
             throw new Error(errorMsg, { cause: error });
         }
+    },
+
+    getWaitlists: async () => {
+        try {
+            const response = await api.get('/waitlist/creator');
+            return response.data.data;
+        } catch (error) {
+            console.error('getWaitlists error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi lấy danh sách hàng chờ!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    startClassFromWaitlist: async (waitlistId) => {
+        try {
+            const response = await api.post(`/waitlist/start-class/${waitlistId}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('startClassFromWaitlist error at creatorService:', error);
+            const errorMsg = error.response?.data?.message || 'Đã xảy ra lỗi khi khởi tạo lớp học từ hàng chờ!';
+            throw new Error(errorMsg);
+        }
     }
 }
 
