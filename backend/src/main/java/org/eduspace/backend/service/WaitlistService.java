@@ -105,9 +105,7 @@ public class WaitlistService {
 
         
                 if (currentCount >= waitlistCapacity) {
-                        activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         systemService.createClassFromWaitlist(activeWaitlist.getId());
-                        activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         return true;
                 }
 

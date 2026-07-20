@@ -9,6 +9,7 @@ export const EnrollmentSidebar = ({
   onEnroll,
   onLeave,
   isEnrolled = false,
+  targetClassId = null,
 }) => {
   const currentStudents = waitlistMembers.length;
   const percent = Math.min(100, Math.round((currentStudents / maxStudents) * 100));
@@ -63,16 +64,16 @@ export const EnrollmentSidebar = ({
       <hr className="border-border-light/25" />
 
       <div className="flex flex-col gap-4">
-        {isEnrolled ? (
+        {isEnrolled || targetClassId ? (
           <div className="flex flex-col gap-2.5">
-            {(currentStudents >= maxStudents || new URLSearchParams(window.location.search).get("status") === "active") ? (
+            {(targetClassId || currentStudents >= maxStudents || new URLSearchParams(window.location.search).get("status") === "active") ? (
               <>
                 <div className="w-full py-3 px-4 font-semibold rounded-xl flex items-center justify-center gap-2 text-emerald-600 border border-emerald-100 bg-emerald-50 text-xs">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                   <span>Lớp học đã bắt đầu!</span>
                 </div>
                 <Link
-                  to="/classes/1?status=active"
+                  to={`/classes/${targetClassId || 1}`}
                   className="w-full py-4 font-semibold flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary/95 rounded-xl shadow-sm transition-all text-sm text-center animate-bounce"
                 >
                   <span>Đến lớp học</span>

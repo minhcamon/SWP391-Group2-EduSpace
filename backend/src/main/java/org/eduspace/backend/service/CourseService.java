@@ -367,7 +367,7 @@ public class CourseService {
                 .build();
     }
 
-    public CourseResponse getCourseById(Long courseId) {
+    public CourseResponse getCourseById(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
 
@@ -420,6 +420,19 @@ public class CourseService {
                 })
                 .toList();
 
+        String enrollmentStatus = null;
+        Long targetClassId = null;
+
+        if (userId != null) {
+            Optional<ClassMember> activeMember = classMemberRepository
+                    .findActiveMember(userId, courseId, LearnerStatus.ACTIVE);
+
+            if (activeMember.isPresent()) {
+                enrollmentStatus = "ENROLLED";
+                targetClassId = activeMember.get().getCourseClass().getId();
+            }
+        }
+
         return CourseResponse.builder()
                 .id(course.getId())
                 .title(course.getTitle())
@@ -430,6 +443,8 @@ public class CourseService {
                 .creatorAvatarUrl(course.getCreator().getAvatarUrl())
                 .creatorEmail(course.getCreator().getEmail())
                 .modules(moduleResponses)
+                .enrollmentStatus(enrollmentStatus)
+                .targetClassId(targetClassId)
                 .build();
     }
 
