@@ -72,8 +72,8 @@ const Header = () => {
       <div className="max-w-screen mx-auto px-4">
         <div className="flex items-center justify-around h-16">
           {/* Logo Section */}
-          <div className="max-w-40">
-            <Logo />
+          <div className="max-w-40 w-28 sm:w-32 md:w-36">
+            <Logo className="w-full" />
           </div>
 
           {/* Desktop Navigation Links */}

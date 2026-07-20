@@ -20,7 +20,7 @@ const MentorHeader = () => {
                     {/* Logo & Role Badge */}
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="bg-white px-3 py-1.5 rounded-xl max-w-[120px] flex items-center justify-center shadow-sm">
-                            <Logo />
+                            <Logo className="w-full" />
                         </div>
                         <span className="bg-white/20 text-white text-[11px] font-bold tracking-wider px-2.5 py-0.5 rounded-full uppercase border border-white/10 shadow-inner">
                             Mentor Mode
