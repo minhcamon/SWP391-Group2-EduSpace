@@ -66,10 +66,12 @@ function App() {
             path="/courses"
             element={<Courses />}
           ></Route>
-          <Route
-            path="/courses/:id"
-            element={<LearnerCourseDetail />}
-          ></Route>
+          <Route element={<ProtectedRoute allowGuest={true} />}>
+            <Route
+              path="/courses/:id"
+              element={<LearnerCourseDetail />}
+            ></Route>
+          </Route>
 
           <Route element={<ProtectedRoute />}>
           {/* Authenticated user routes */}

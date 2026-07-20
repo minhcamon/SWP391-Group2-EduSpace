@@ -19,4 +19,5 @@ public class AssignmentProgressResponse {
     private boolean isCompleted;
     @JsonProperty("isLocked")
     private boolean isLocked;
+    private Long submissionId;
 }

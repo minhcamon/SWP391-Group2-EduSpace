@@ -37,23 +37,7 @@ export const ClassPage = () => {
 
   const [leaderboardMode, setLeaderboardMode] = useState('individual')
 
-  useEffect(() => {
-    if (!isLoading && classData) {
-      console.log('classData: ', classData)
-      const checkCompletion = async () => {
-        try {
-          const myCourses = await learnService.getMyLearningCourses();
-          const thisCourse = myCourses.find(c => c.classId?.toString() === classId?.toString());
-          if (thisCourse && thisCourse.isCompleted) {
-            navigate(`/classes/${classId}/certificate`, { replace: true });
-          }
-        } catch (e) {
-          console.error("Lỗi kiểm tra hoàn thành lớp học:", e);
-        }
-      };
-      checkCompletion();
-    }
-  }, [isLoading, classData, statusParam, navigate, classId])
+
 
   if (isLoading) {
     return (

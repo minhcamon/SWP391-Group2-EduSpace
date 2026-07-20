@@ -34,7 +34,7 @@ public class LearnerMentorSupportService {
 
     @Transactional
     public LearnerMentorSupportResponse createMentorSupportRequest(Long learnerUserId,
-                                                                   LearnerMentorSupportRequest request) {
+            LearnerMentorSupportRequest request) {
         if (request.getIncidentType() == IncidentType.RESCUE_SUPPORT_REQUEST) {
             return createRescueSupportRequest(learnerUserId, request);
         }
@@ -47,7 +47,7 @@ public class LearnerMentorSupportService {
     }
 
     private LearnerMentorSupportResponse createRescueSupportRequest(Long learnerUserId,
-                                                                     LearnerMentorSupportRequest request) {
+            LearnerMentorSupportRequest request) {
         if (request.getCourseId() == null) {
             throw new RuntimeException("Course ID is required for rescue support request");
         }
@@ -88,7 +88,7 @@ public class LearnerMentorSupportService {
     }
 
     private LearnerMentorSupportResponse createReportPartnerRequest(Long learnerUserId,
-                                                                    LearnerMentorSupportRequest request) {
+            LearnerMentorSupportRequest request) {
         if (request.getStudyGroupId() == null || request.getReportedUserId() == null) {
             throw new RuntimeException("Study group ID and reported user ID are required for report partner request");
         }
@@ -124,7 +124,7 @@ public class LearnerMentorSupportService {
     }
 
     private LearnerMentorSupportResponse createGeneralIncidentRequest(Long learnerUserId,
-                                                                     LearnerMentorSupportRequest request) {
+            LearnerMentorSupportRequest request) {
         if (request.getCourseId() == null) {
             throw new RuntimeException("Course ID is required for this incident type");
         }

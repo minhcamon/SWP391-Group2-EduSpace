@@ -40,11 +40,6 @@ export const useCourseEnrollment = (courseId) => {
             const enrolledInWaitlist = membersList.some(m => m.id.toString() === user.id.toString());
             const enrolledInClass = data?.enrollmentStatus === "ENROLLED";
             setIsEnrolled(enrolledInWaitlist || enrolledInClass);
-
-            if (data?.isCompleted && data?.targetClassId) {
-              navigate(`/classes/${data.targetClassId}/certificate`, { replace: true });
-              return;
-            }
           } else {
             setIsEnrolled(false);
           }

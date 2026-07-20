@@ -32,10 +32,7 @@ const useProgressDashboard = () => {
                     const classIdVal = currentCourse.classId;
                     setClassId(classIdVal);
 
-                    if (currentCourse.isCompleted) {
-                        navigate(`/classes/${classIdVal}/certificate`, { replace: true });
-                        return;
-                    }
+
 
                     // 2. Fetch the real dashboard data using classId
                     const data = await learnService.getProgressDashboard(classIdVal);

@@ -61,10 +61,6 @@ const useLearningArea = () => {
                     const classId = currentCourse.classId;
                     setResolvedClassId(classId);
 
-                    if (currentCourse.isCompleted) {
-                        navigate(`/classes/${classId}/certificate`, { replace: true });
-                        return;
-                    }
 
                     // 2. Fetch course structure details
                     const details = await courseService.getCourseById(courseId);

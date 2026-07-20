@@ -33,6 +33,7 @@ public class CertificateService {
     private final CertificateRepository certificateRepository;
     private final ActiveMentorRepository activeMentorRepository;
     private final NotificationService notificationService;
+    private final PeerReviewRepository peerReviewRepository;
 
     @Transactional
     public void checkAndIssueCertificate(ClassMember classMember) {
@@ -61,7 +62,8 @@ public class CertificateService {
         long totalUnits = totalLessons + totalAssignments;
         long completedUnits = completedLessons + completedAssignments;
 
-        boolean isCompleted = totalUnits > 0 && completedUnits >= totalUnits;
+        long pendingReviews = peerReviewRepository.countPendingReviews(classMember.getId());
+        boolean isCompleted = totalUnits > 0 && completedUnits >= totalUnits && pendingReviews == 0;
 
         if (isCompleted) {
             boolean exists = certificateRepository

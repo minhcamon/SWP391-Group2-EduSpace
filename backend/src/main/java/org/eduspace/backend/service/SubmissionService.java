@@ -214,7 +214,7 @@ public class SubmissionService {
         if (submission.getStatus() == SubmissionStatus.GRADED) {
             certificateService.checkAndIssueCertificate(submission.getMember());
         }
-
+        certificateService.checkAndIssueCertificate(reviewerMember);
 
         notificationService.sendToUser(submission.getMember().getUser(),
                 "Bài tập của bạn đã được chấm điểm bởi thành viên cùng nhóm!",
