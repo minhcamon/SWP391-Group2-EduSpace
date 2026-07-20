@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import Breadcrumbs from '@/components/common/Breadcrumbs'
 import { useAuth } from '@/contexts/AuthContext'
 import learnService from '@/services/learnService'
+import FloatingMentorSupport from '../../learning/components/FloatingMentorSupport'
 
 export const ClassPage = () => {
   const { classId } = useParams()
@@ -239,6 +240,7 @@ export const ClassPage = () => {
           {isCreator && activeTab === 'evaluation' && <MentorEvaluation />}
         </div>
       </div>
+      <FloatingMentorSupport />
     </main>
   )
 }

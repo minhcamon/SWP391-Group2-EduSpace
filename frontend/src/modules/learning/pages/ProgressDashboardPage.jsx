@@ -5,6 +5,7 @@ import useProgressDashboard from "../hooks/useProgressDashboard";
 import PartnerCard from "../components/PartnerCard";
 import SidebarModulesList from "../components/SidebarModulesList";
 import CurrentModuleFocus from "../components/CurrentModuleFocus";
+import FloatingMentorSupport from "../components/FloatingMentorSupport";
 
 const ProgressDashboardPage = () => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ const ProgressDashboardPage = () => {
           </section>
         </div>
       </div>
+      <FloatingMentorSupport />
     </div>
   );
 };
