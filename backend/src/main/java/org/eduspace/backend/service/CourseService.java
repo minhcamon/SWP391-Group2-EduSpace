@@ -35,6 +35,7 @@ import org.eduspace.backend.repository.CourseRequestRepository;
 import org.eduspace.backend.repository.LessonRepository;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.UserRepository;
+import org.eduspace.backend.repository.CertificateRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -55,6 +56,7 @@ public class CourseService {
     private final UserRepository userRepository;
     private final CourseRequestRepository courseRequestRepository;
     private final ClassMemberRepository classMemberRepository;
+    private final CertificateRepository certificateRepository;
     private final NotificationService notificationService;
 
     public List<CourseResponse> getCoursesByCreatorId(Long creatorId) {
@@ -422,14 +424,26 @@ public class CourseService {
 
         String enrollmentStatus = null;
         Long targetClassId = null;
+        boolean isCompleted = false;
 
         if (userId != null) {
-            Optional<ClassMember> activeMember = classMemberRepository
-                    .findActiveMember(userId, courseId, LearnerStatus.ACTIVE);
+            isCompleted = certificateRepository.existsByUserIdAndCourseId(userId, courseId);
+            if (isCompleted) {
+                // Find any classId they participated in
+                Optional<ClassMember> member = classMemberRepository.findByUserId(userId).stream()
+                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null && cm.getCourseClass().getCourse().getId().equals(courseId))
+                        .findFirst();
+                if (member.isPresent()) {
+                    targetClassId = member.get().getCourseClass().getId();
+                }
+            } else {
+                Optional<ClassMember> activeMember = classMemberRepository
+                        .findActiveMember(userId, courseId, LearnerStatus.ACTIVE);
 
-            if (activeMember.isPresent()) {
-                enrollmentStatus = "ENROLLED";
-                targetClassId = activeMember.get().getCourseClass().getId();
+                if (activeMember.isPresent()) {
+                    enrollmentStatus = "ENROLLED";
+                    targetClassId = activeMember.get().getCourseClass().getId();
+                }
             }
         }
 
@@ -445,6 +459,7 @@ public class CourseService {
                 .modules(moduleResponses)
                 .enrollmentStatus(enrollmentStatus)
                 .targetClassId(targetClassId)
+                .isCompleted(isCompleted)
                 .build();
     }
 

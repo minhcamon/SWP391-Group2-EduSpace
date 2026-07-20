@@ -9,6 +9,7 @@ import { Users, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import Breadcrumbs from '@/components/common/Breadcrumbs'
 import { useAuth } from '@/contexts/AuthContext'
+import learnService from '@/services/learnService'
 
 export const ClassPage = () => {
   const { classId } = useParams()
@@ -38,8 +39,20 @@ export const ClassPage = () => {
   useEffect(() => {
     if (!isLoading && classData) {
       console.log('classData: ', classData)
+      const checkCompletion = async () => {
+        try {
+          const myCourses = await learnService.getMyLearningCourses();
+          const thisCourse = myCourses.find(c => c.classId?.toString() === classId?.toString());
+          if (thisCourse && thisCourse.isCompleted) {
+            navigate(`/classes/${classId}/certificate`, { replace: true });
+          }
+        } catch (e) {
+          console.error("Lỗi kiểm tra hoàn thành lớp học:", e);
+        }
+      };
+      checkCompletion();
     }
-  }, [isLoading, classData, statusParam, navigate])
+  }, [isLoading, classData, statusParam, navigate, classId])
 
   if (isLoading) {
     return (

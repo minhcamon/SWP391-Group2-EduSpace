@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import courseService from "@/services/courseService";
 import waitlistService from "@/services/waitlistService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +7,7 @@ import { mockCourses } from "@/lib/mockData";
 import { toast } from "sonner";
 
 export const useCourseEnrollment = (courseId) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [course, setCourse] = useState(null);
   const [waitlistMembers, setWaitlistMembers] = useState([]);
@@ -38,6 +40,11 @@ export const useCourseEnrollment = (courseId) => {
             const enrolledInWaitlist = membersList.some(m => m.id.toString() === user.id.toString());
             const enrolledInClass = data?.enrollmentStatus === "ENROLLED";
             setIsEnrolled(enrolledInWaitlist || enrolledInClass);
+
+            if (data?.isCompleted && data?.targetClassId) {
+              navigate(`/classes/${data.targetClassId}/certificate`, { replace: true });
+              return;
+            }
           } else {
             setIsEnrolled(false);
           }

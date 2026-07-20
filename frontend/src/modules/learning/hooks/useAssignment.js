@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { useParams } from "react-router"
+import { useParams, useNavigate } from "react-router"
 import { toast } from "sonner"
 import learnService from "@/services/learnService"
 import { useAuth } from "@/contexts/AuthContext"
@@ -9,6 +9,7 @@ import useStudyGroupWebSocket from "@/modules/learning/hooks/useStudyGroupWebSoc
 
 const useAssignment = () => {
   const { classId, assignmentId } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState("assignment")
   const [isLoading, setIsLoading] = useState(true)
@@ -46,6 +47,17 @@ const useAssignment = () => {
   const fetchAssignmentAndStatus = useCallback(async () => {
     if (!user) return
     try {
+      // Check completed redirect
+      try {
+        const myCourses = await learnService.getMyLearningCourses();
+        const thisCourse = myCourses.find(c => c.classId?.toString() === classId?.toString());
+        if (thisCourse && thisCourse.isCompleted) {
+          navigate(`/classes/${classId}/certificate`, { replace: true });
+          return;
+        }
+      } catch (redirectErr) {
+        console.error("Lỗi chuyển hướng hoàn thành bài tập:", redirectErr);
+      }
       let details = null
 
       try {
