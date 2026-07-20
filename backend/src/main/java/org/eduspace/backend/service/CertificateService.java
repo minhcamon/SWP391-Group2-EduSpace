@@ -31,6 +31,7 @@ public class CertificateService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
     private final CertificateRepository certificateRepository;
+    private final ActiveMentorRepository activeMentorRepository;
     private final NotificationService notificationService;
 
     @Transactional
@@ -93,9 +94,11 @@ public class CertificateService {
         if (certificate != null) {
             isCompleted = !isCompleted;
         }
+        boolean isAlreadyMentor = activeMentorRepository.existsByUserIdAndCourseId(userId, course.getId());
         User creator = course.getCreator();
         return CertificateResponse.builder()
                 .isCompleted(isCompleted)
+                .isAlreadyMentor(isAlreadyMentor)
                 .userName(classMember.getUser().getFullName())
                 .courseTitle(course.getTitle())
                 .certificateId(certificate != null ? "EDU-CS-" + certificate.getId() : "")

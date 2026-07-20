@@ -37,6 +37,8 @@ import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.StudyGroupRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.eduspace.backend.repository.CertificateRepository;
+import org.eduspace.backend.entity.Certificate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,7 @@ public class ProgressService {
   private final GroupMemberRepository groupMemberRepository;
   private final StudyGroupRepository studyGroupRepository;
   private final WaitlistEntryRepository waitlistEntryRepository;
+  private final CertificateRepository certificateRepository;
 
   @Lazy
   @Autowired
@@ -72,9 +75,10 @@ public class ProgressService {
    * Lấy toàn bộ các khóa học (cả đang chờ, đang học và đã hoàn thành).
    */
   public List<CourseProgressResponse> getInProgressCourses(Long userId) {
-    List<ClassMember> memberships = classMemberRepository.findByUserId(userId);
+    List<ClassMember> memberships = classMemberRepository.findByUserIdAndContextRole(userId, "LEARNER");
 
     List<CourseProgressResponse> result = new ArrayList<>();
+    Set<Long> processedCourseIds = new HashSet<>();
 
     for (ClassMember classMember : memberships) {
       // Đã nghỉ học (DROPPED) hoặc rớt (FAILED) -> không còn "đang học"
@@ -92,6 +96,8 @@ public class ProgressService {
       if (course == null || course.isDeleted()) {
         continue;
       }
+
+      processedCourseIds.add(course.getId());
 
       // Duyệt module theo thứ tự để vừa tính tiến trình, vừa tìm bài học hiện tại
       // (bài đầu tiên chưa hoàn thành theo thứ tự module -> lesson).
@@ -153,6 +159,7 @@ public class ProgressService {
       if (course == null || course.isDeleted()) {
         continue;
       }
+      processedCourseIds.add(course.getId());
       result.add(CourseProgressResponse.builder()
           .courseId(course.getId())
           .courseName(course.getTitle())
@@ -163,6 +170,34 @@ public class ProgressService {
           .currentLessonTitle(null)
           .currentModuleTitle(null)
           .isCompleted(false)
+          .build());
+    }
+
+    // Bổ sung các khóa học đã có chứng chỉ (hoàn thành) vào danh sách, tránh bỏ sót Mentor
+    List<Certificate> certificates = certificateRepository.findByUserId(userId);
+    for (Certificate certificate : certificates) {
+      Course course = certificate.getCourse();
+      if (course == null || course.isDeleted() || processedCourseIds.contains(course.getId())) {
+        continue;
+      }
+
+      // Tìm bất kỳ lớp học nào mà user có tham gia trong khóa này (cả vai trò LEARNER hoặc MENTOR) để gán classId hợp lệ
+      Long classId = classMemberRepository.findByUserId(userId).stream()
+          .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null && cm.getCourseClass().getCourse().getId().equals(course.getId()))
+          .map(cm -> cm.getCourseClass().getId())
+          .findFirst()
+          .orElse(null);
+
+      result.add(CourseProgressResponse.builder()
+          .courseId(course.getId())
+          .courseName(course.getTitle())
+          .courseDescription(course.getDescription())
+          .progressPercentage(100.0)
+          .classId(classId)
+          .currentLessonId(null)
+          .currentLessonTitle(null)
+          .currentModuleTitle(null)
+          .isCompleted(true)
           .build());
     }
 

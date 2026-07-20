@@ -15,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CertificateResponse {
     @JsonProperty("isCompleted")
     private boolean isCompleted;
+    @JsonProperty("isAlreadyMentor")
+    private boolean isAlreadyMentor;
     private String userName;
     private String courseTitle;
     private String certificateId;
