@@ -58,9 +58,8 @@ public class IncidentService {
         boolean isMentorOfClass = false;
         if (incident.getReporter() != null && incident.getReporter().getCourseClass() != null) {
             Long classId = incident.getReporter().getCourseClass().getId();
-            isMentorOfClass = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .map(cm -> "MENTOR".equals(cm.getContextRole()))
-                .orElse(false);
+            isMentorOfClass = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "MENTOR")
+                    .isPresent();
         }
 
         boolean isReporter = incident.getReporter() != null && incident.getReporter().getUser() != null
@@ -97,7 +96,8 @@ public class IncidentService {
         return builder.build();
     }
 
-    private void enrichAssignmentDispute(IncidentDetailResponse.IncidentDetailResponseBuilder builder, Incident incident) {
+    private void enrichAssignmentDispute(IncidentDetailResponse.IncidentDetailResponseBuilder builder,
+            Incident incident) {
         Submission submission = incident.getSubmission();
         if (submission != null) {
             builder.submissionContent(submission.getSubmissionContent());
@@ -136,8 +136,8 @@ public class IncidentService {
         }
 
         Long classId = incident.getReporter().getCourseClass().getId();
-        ClassMember mentorClassMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this class"));
+        ClassMember mentorClassMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "MENTOR")
+                .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp này"));
 
         if (!"MENTOR".equals(mentorClassMember.getContextRole())) {
             throw new RuntimeException("You do not have MENTOR role in this class");
@@ -204,7 +204,7 @@ public class IncidentService {
         String existingNote = incident.getResolutionNote() != null ? incident.getResolutionNote() : "";
         String warningLog = "Đã nhắc nhở: " + request.getResolutionNote();
         incident.setResolutionNote(existingNote.isEmpty() ? warningLog : existingNote + " | " + warningLog);
-        
+
         incidentRepository.save(incident);
     }
 
@@ -251,7 +251,8 @@ public class IncidentService {
         peerReviewRepository.save(peerReview);
         submissionRepository.save(submission);
 
-        finalizeIncidentStatus(incident, IncidentStatus.RESOLVED, "Mentor chấm lại bài: " + request.getResolutionNote());
+        finalizeIncidentStatus(incident, IncidentStatus.RESOLVED,
+                "Mentor chấm lại bài: " + request.getResolutionNote());
     }
 
     private void resolveGenericInternal(Incident incident, String resolutionNote) {

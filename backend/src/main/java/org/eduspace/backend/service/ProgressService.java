@@ -203,7 +203,7 @@ public class ProgressService {
   }
 
   public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId, Long moduleId) {
-    ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+    ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
         .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
 
     Course course = classMember.getCourseClass().getCourse();
@@ -298,12 +298,12 @@ public class ProgressService {
 
       ClassMember partnerClassMember = null;
       if (studyGroup != null) {
-          List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
-          partnerClassMember = groupMembers.stream()
-              .map(GroupMember::getClassMember)
-              .filter(m -> !m.getId().equals(classMember.getId()))
-              .findFirst()
-              .orElse(null);
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
+        partnerClassMember = groupMembers.stream()
+            .map(GroupMember::getClassMember)
+            .filter(m -> !m.getId().equals(classMember.getId()))
+            .findFirst()
+            .orElse(null);
       }
       PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
           module.getId());
@@ -412,7 +412,7 @@ public class ProgressService {
 
   @Transactional
   public boolean completeLesson(Long lessonId, Long userId, Long classId) {
-    ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId).stream().findFirst()
+    ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER").stream().findFirst()
         .orElseThrow(() -> new RuntimeException("User is not a member of this class"));
 
     Lesson lesson = lessonRepository.findById(lessonId)
@@ -425,12 +425,12 @@ public class ProgressService {
 
     // Mark the lesson as completed for the user
     boolean result = progressHelper.markLessonAsCompleted(lesson, classMember);
-    
+
     // Check if the whole course is completed and issue cert & notification
     if (result) {
-        certificateService.checkAndIssueCertificate(classMember);
+      certificateService.checkAndIssueCertificate(classMember);
     }
-    
+
     return result;
   }
 
@@ -438,82 +438,83 @@ public class ProgressService {
     StudyGroup studyGroup = studyGroupRepository.findById(pairId)
         .orElseThrow(() -> new RuntimeException("Pair not found"));
 
-    ClassMember mentorMembership = classMemberRepository.findByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
+    ClassMember mentorMembership = classMemberRepository
+        .findByCourseClassIdAndUserIdAndContextRole(studyGroup.getCourseClass().getId(), mentorUserId, "MENTOR")
         .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
 
     if (!"MENTOR".equals(mentorMembership.getContextRole())) {
-        throw new RuntimeException("You are not a mentor in this class");
+      throw new RuntimeException("You are not a mentor in this class");
     }
 
     List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
-    
+
     Course course = studyGroup.getCourseClass().getCourse();
     String courseName = course != null ? course.getTitle() : null;
     String className = studyGroup.getCourseClass() != null ? studyGroup.getCourseClass().getName() : null;
 
     List<MentorPairProgressResponse.PairMemberProgress> membersProgress = new ArrayList<>();
     for (GroupMember gm : groupMembers) {
-        ClassMember cm = gm.getClassMember();
-        if (cm != null) {
-            double overall = 0.0;
-            if (course != null) {
-                overall = getLearnerProgressPercentage(cm.getId(), course.getId());
-            }
-            membersProgress.add(MentorPairProgressResponse.PairMemberProgress.builder()
-                .userId(cm.getUser() != null ? cm.getUser().getId() : null)
-                .name(cm.getUser() != null ? cm.getUser().getFullName() : null)
-                .avatarUrl(cm.getUser() != null ? cm.getUser().getAvatarUrl() : null)
-                .overallProgress(overall)
-                .build());
+      ClassMember cm = gm.getClassMember();
+      if (cm != null) {
+        double overall = 0.0;
+        if (course != null) {
+          overall = getLearnerProgressPercentage(cm.getId(), course.getId());
         }
+        membersProgress.add(MentorPairProgressResponse.PairMemberProgress.builder()
+            .userId(cm.getUser() != null ? cm.getUser().getId() : null)
+            .name(cm.getUser() != null ? cm.getUser().getFullName() : null)
+            .avatarUrl(cm.getUser() != null ? cm.getUser().getAvatarUrl() : null)
+            .overallProgress(overall)
+            .build());
+      }
     }
 
     List<MentorPairProgressResponse.ModuleProgressDetail> moduleProgressDetails = new ArrayList<>();
 
     if (course != null) {
-        List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
-        for (CourseModule module : courseModules) {
-            long totalLessons = lessonRepository.countByModuleId(module.getId());
-            List<MentorPairProgressResponse.MemberModuleProgress> memberModuleProgresses = new ArrayList<>();
+      List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
+      for (CourseModule module : courseModules) {
+        long totalLessons = lessonRepository.countByModuleId(module.getId());
+        List<MentorPairProgressResponse.MemberModuleProgress> memberModuleProgresses = new ArrayList<>();
 
-            for (GroupMember gm : groupMembers) {
-                ClassMember cm = gm.getClassMember();
-                if (cm != null) {
-                    long completedLessons = lessonProgressRepository
-                        .countCompletedLessonsByClassMemberIdAndModuleId(cm.getId(), module.getId());
+        for (GroupMember gm : groupMembers) {
+          ClassMember cm = gm.getClassMember();
+          if (cm != null) {
+            long completedLessons = lessonProgressRepository
+                .countCompletedLessonsByClassMemberIdAndModuleId(cm.getId(), module.getId());
 
-                    boolean assignmentCompleted = false;
-                    Assignment assignment = assignmentRepository.findByModuleId(module.getId()).orElse(null);
-                    if (assignment != null) {
-                        Submission submission = submissionRepository
-                            .findByMemberIdAndAssignmentId(cm.getId(), assignment.getId()).orElse(null);
-                        if (submission != null && submission.getStatus() == SubmissionStatus.GRADED) {
-                            assignmentCompleted = true;
-                        }
-                    }
-
-                    long totalUnits = totalLessons + (assignment != null ? 1 : 0);
-                    long completedUnits = completedLessons + (assignmentCompleted ? 1 : 0);
-                    double progressPercent = totalUnits > 0 ? ((double) completedUnits / totalUnits) * 100 : 0.0;
-                    progressPercent = Math.round(progressPercent * 10) / 10.0;
-
-                    memberModuleProgresses.add(MentorPairProgressResponse.MemberModuleProgress.builder()
-                        .userId(cm.getUser() != null ? cm.getUser().getId() : null)
-                        .progress(progressPercent)
-                        .completedLessons((int) completedLessons)
-                        .totalLessons((int) totalLessons)
-                        .assignmentCompleted(assignmentCompleted)
-                        .build());
-                }
+            boolean assignmentCompleted = false;
+            Assignment assignment = assignmentRepository.findByModuleId(module.getId()).orElse(null);
+            if (assignment != null) {
+              Submission submission = submissionRepository
+                  .findByMemberIdAndAssignmentId(cm.getId(), assignment.getId()).orElse(null);
+              if (submission != null && submission.getStatus() == SubmissionStatus.GRADED) {
+                assignmentCompleted = true;
+              }
             }
 
-            moduleProgressDetails.add(MentorPairProgressResponse.ModuleProgressDetail.builder()
-                .moduleId(module.getId())
-                .moduleTitle(module.getTitle())
-                .sortOrder(module.getSortOrder())
-                .memberProgresses(memberModuleProgresses)
+            long totalUnits = totalLessons + (assignment != null ? 1 : 0);
+            long completedUnits = completedLessons + (assignmentCompleted ? 1 : 0);
+            double progressPercent = totalUnits > 0 ? ((double) completedUnits / totalUnits) * 100 : 0.0;
+            progressPercent = Math.round(progressPercent * 10) / 10.0;
+
+            memberModuleProgresses.add(MentorPairProgressResponse.MemberModuleProgress.builder()
+                .userId(cm.getUser() != null ? cm.getUser().getId() : null)
+                .progress(progressPercent)
+                .completedLessons((int) completedLessons)
+                .totalLessons((int) totalLessons)
+                .assignmentCompleted(assignmentCompleted)
                 .build());
+          }
         }
+
+        moduleProgressDetails.add(MentorPairProgressResponse.ModuleProgressDetail.builder()
+            .moduleId(module.getId())
+            .moduleTitle(module.getTitle())
+            .sortOrder(module.getSortOrder())
+            .memberProgresses(memberModuleProgresses)
+            .build());
+      }
     }
 
     return MentorPairProgressResponse.builder()

@@ -51,12 +51,12 @@ public class SubmissionService {
     private double peerReviewPassRatio;
 
     @Transactional
-    public SubmissionResponseDTO submitAssignment(Long learnerId, SubmitAssignmentRequest request) {
+    public SubmissionResponseDTO submitAssignment(Long classId, Long userId, SubmitAssignmentRequest request) {
 
         Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
                 .orElseThrow(() -> new RuntimeException("Assignment not found!"));
 
-        ClassMember member = classMemberRepository.findById(learnerId)
+        ClassMember member = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = Submission.builder()
@@ -82,7 +82,7 @@ public class SubmissionService {
     }
 
     public SubmissionReviewResponse getSubmissionReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = submissionRepository
@@ -106,7 +106,7 @@ public class SubmissionService {
     }
 
     public PeerReviewAssignmentResponse getAssignedPeerReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember reviewerMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
             throw new RuntimeException("Invalid learner!");
@@ -146,7 +146,7 @@ public class SubmissionService {
     @Transactional
     public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId,
             PeerReviewGradeRequest request) {
-        ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember reviewerMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
@@ -214,7 +214,6 @@ public class SubmissionService {
         if (submission.getStatus() == SubmissionStatus.GRADED) {
             certificateService.checkAndIssueCertificate(submission.getMember());
         }
-
 
         notificationService.sendToUser(submission.getMember().getUser(),
                 "Bài tập của bạn đã được chấm điểm bởi thành viên cùng nhóm!",

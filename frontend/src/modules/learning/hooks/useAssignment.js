@@ -35,13 +35,7 @@ const useAssignment = () => {
   const [messages, setMessages] = useState([])
   const [inputText, setInputText] = useState("")
 
-  // Cache classMemberId in localStorage after first successful submit
-  const classMemberIdKey = classId ? `classMemberId_${classId}` : null
-  const getCachedClassMemberId = () => {
-    if (!classMemberIdKey) return null
-    const cached = localStorage.getItem(classMemberIdKey)
-    return cached ? Number(cached) : null
-  }
+
 
   const fetchAssignmentAndStatus = useCallback(async () => {
     if (!user) return
@@ -168,20 +162,9 @@ const useAssignment = () => {
       return
     }
 
-    // Prefer cached classMemberId; fall back to user.id-3 for test environments
-    const learnerId = getCachedClassMemberId() ?? (user ? user.id - 3 : null)
-    if (!learnerId || learnerId <= 0) {
-      toast.error("Không thể xác định mã học viên. Vui lòng thử lại sau!")
-      return
-    }
-
     await runWithLoading(setIsSubmitting, async () => {
       try {
-        const result = await learnService.submitAssignment(learnerId, assignmentId, essay)
-        // Cache the actual classMemberId returned by backend for future use
-        if (result?.data?.memberId && classMemberIdKey) {
-          localStorage.setItem(classMemberIdKey, String(result.data.memberId))
-        }
+        await learnService.submitAssignment(classId, assignmentId, essay)
         setIsSubmitted(true)
         setPeerReviewPending(true)
         toast.success("Nộp bài viết thành công!")

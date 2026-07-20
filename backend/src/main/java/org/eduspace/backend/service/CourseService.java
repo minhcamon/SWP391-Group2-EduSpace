@@ -96,7 +96,7 @@ public class CourseService {
 
                     if (userId != null) {
                         Optional<ClassMember> activeMember = classMemberRepository
-                                .findActiveMember(userId, course.getId(), LearnerStatus.ACTIVE);
+                                .findActiveEnrollment(userId, course.getId(), LearnerStatus.ACTIVE);
 
                         if (activeMember.isPresent()) {
                             enrollmentStatus = "ENROLLED";

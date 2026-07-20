@@ -94,9 +94,9 @@ const learnService = {
     }
   },
 
-  submitAssignment: async (learnerId, assignmentId, submissionContent) => {
+  submitAssignment: async (classId, assignmentId, submissionContent) => {
     try {
-      const response = await api.post(`/submission/assignment/submit/${learnerId}`, {
+      const response = await api.post(`/submission/${classId}/assignment/submit`, {
         assignmentId,
         submissionContent,
       })
