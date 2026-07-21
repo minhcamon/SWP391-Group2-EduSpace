@@ -9,6 +9,8 @@ import { Users, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import Breadcrumbs from '@/components/common/Breadcrumbs'
 import { useAuth } from '@/contexts/AuthContext'
+import learnService from '@/services/learnService'
+import FloatingMentorSupport from '../../learning/components/FloatingMentorSupport'
 
 export const ClassPage = () => {
   const { classId } = useParams()
@@ -35,11 +37,7 @@ export const ClassPage = () => {
 
   const [leaderboardMode, setLeaderboardMode] = useState('individual')
 
-  useEffect(() => {
-    if (!isLoading && classData) {
-      console.log('classData: ', classData)
-    }
-  }, [isLoading, classData, statusParam, navigate])
+
 
   if (isLoading) {
     return (
@@ -226,6 +224,7 @@ export const ClassPage = () => {
           {isCreator && activeTab === 'evaluation' && <MentorEvaluation />}
         </div>
       </div>
+      <FloatingMentorSupport />
     </main>
   )
 }

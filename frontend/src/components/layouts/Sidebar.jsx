@@ -116,7 +116,7 @@ const Sidebar = () => {
             {/* Mobile Header Bar */}
             <div className="md:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-40 w-full shadow-xs">
                 <div className="flex items-center gap-2">
-                    <Logo />
+                    <Logo className="w-24 sm:w-28" />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-primary ml-2">
                         {displayMapping[user.role]}
                     </span>
@@ -154,13 +154,13 @@ const Sidebar = () => {
                 </div>
 
                 <div className="flex flex-col grow overflow-y-auto px-4 py-6">
-                    <div className="flex items-center gap-3 px-2 mb-8">
-                        <div>
-                            <Logo />
+                    <div className="flex items-center justify-center px-2 mb-8 w-full">
+                        <div className="w-full">
+                            <Logo className="w-32 md:w-36 mx-auto" />
                             <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-center text-primary">
                                 {displayMapping[user.role]}
                             </p>
-                            <hr className="mt-4 text-secondary" />
+                            <hr className="mt-4 border-secondary" />
                         </div>
                     </div>
 

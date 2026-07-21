@@ -288,13 +288,20 @@ export const CertificatePage = () => {
 
           {/* Primary Actions */}
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
-            <button
-              onClick={() => setShowMentorModal(true)}
-              className="px-8 py-3.5 bg-secondary hover:bg-secondary/95 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <Award className="w-4 h-4" />
-              Đăng ký trở thành Mentor
-            </button>
+            {certificateData.isAlreadyMentor ? (
+              <div className="px-8 py-3.5 bg-green-50 text-green-700 border border-green-250/20 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-xs">
+                <Award className="w-4 h-4 text-green-600" />
+                Bạn đã là Mentor của khóa học này
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowMentorModal(true)}
+                className="px-8 py-3.5 bg-secondary hover:bg-secondary/95 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Award className="w-4 h-4" />
+                Đăng ký trở thành Mentor
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -38,12 +38,6 @@ public class LearnerMentorSupportService {
                 if (request.getIncidentType() == IncidentType.RESCUE_SUPPORT_REQUEST) {
                         return createRescueSupportRequest(learnerUserId, request);
                 }
-
-                if (request.getIncidentType() == IncidentType.INACTIVE_PARTNER) {
-                        return createReportPartnerRequest(learnerUserId, request);
-                }
-
-                return createGeneralIncidentRequest(learnerUserId, request);
         }
 
         private LearnerMentorSupportResponse createRescueSupportRequest(Long learnerUserId,
@@ -126,6 +120,13 @@ public class LearnerMentorSupportService {
                                 .build();
         }
 
+        private LearnerMentorSupportResponse createRescueSupportRequest(Long learnerUserId,
+                        LearnerMentorSupportRequest request) {
+                if (request.getCourseId() == null) {
+                        throw new RuntimeException("Course ID is required for rescue support request");
+                }
+        }
+
         private LearnerMentorSupportResponse createGeneralIncidentRequest(Long learnerUserId,
                         LearnerMentorSupportRequest request) {
                 if (request.getCourseId() == null) {
@@ -142,6 +143,91 @@ public class LearnerMentorSupportService {
                 ClassMember reportedMember = null;
                 if (request.getReportedUserId() != null) {
                         reportedMember = classMemberRepository.findFirstByUserIdAndCourseClassId(
+                                        request.getReportedUserId(),
+                                        learnerMember.getCourseClass().getId())
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Reported user is not a member of this class"));
+                }
+
+                Submission submission = null;
+                if (request.getSubmissionId() != null) {
+                        submission = submissionRepository.findById(request.getSubmissionId())
+                                        .orElseThrow(() -> new RuntimeException("Submission not found"));
+                }
+
+                Incident incident = Incident.builder()
+                                .incidentType(request.getIncidentType())
+                                .reporter(learnerMember)
+                                .reported(reportedMember)
+                                .submission(submission)
+                                .reason(request.getReason())
+                                .evidenceUrl(request.getEvidenceUrl())
+                                .status(IncidentStatus.PENDING)
+                                .build();
+
+                Incident savedIncident = incidentRepository.save(incident);
+
+                return LearnerMentorSupportResponse.builder()
+                                .incidentId(savedIncident.getId())
+                                .incidentType(savedIncident.getIncidentType())
+                                .incidentStatus(savedIncident.getStatus())
+                                .build();
+        }
+
+        private LearnerMentorSupportResponse createReportPartnerRequest(Long learnerUserId,
+                        LearnerMentorSupportRequest request) {
+                if (request.getStudyGroupId() == null || request.getReportedUserId() == null) {
+                        throw new RuntimeException(
+                                        "Study group ID and reported user ID are required for report partner request");
+                }
+
+                GroupMember reporterGroupMember = groupMemberRepository.findByStudyGroupIdAndClassMemberUserId(
+                                request.getStudyGroupId(), learnerUserId)
+                                .orElseThrow(() -> new RuntimeException("You are not a member of this study group"));
+
+                if (request.getReportedUserId().equals(learnerUserId)) {
+                        throw new RuntimeException("You cannot report yourself");
+                }
+
+                GroupMember reportedGroupMember = groupMemberRepository.findByStudyGroupIdAndClassMemberUserId(
+                                request.getStudyGroupId(), request.getReportedUserId())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Reported user is not a member of this study group"));
+
+                Incident incident = Incident.builder()
+                                .incidentType(IncidentType.INACTIVE_PARTNER)
+                                .reporter(reporterGroupMember.getClassMember())
+                                .reported(reportedGroupMember.getClassMember())
+                                .reason(request.getReason())
+                                .evidenceUrl(request.getEvidenceUrl())
+                                .status(IncidentStatus.PENDING)
+                                .build();
+
+                Incident savedIncident = incidentRepository.save(incident);
+
+                return LearnerMentorSupportResponse.builder()
+                                .incidentId(savedIncident.getId())
+                                .incidentType(savedIncident.getIncidentType())
+                                .incidentStatus(savedIncident.getStatus())
+                                .build();
+        }
+
+        private LearnerMentorSupportResponse createGeneralIncidentRequest(Long learnerUserId,
+                        LearnerMentorSupportRequest request) {
+                if (request.getCourseId() == null) {
+                        throw new RuntimeException("Course ID is required for this incident type");
+                }
+
+                ClassMember learnerMember = classMemberRepository.findActiveEnrollment(
+                                learnerUserId,
+                                request.getCourseId(),
+                                LearnerStatus.ACTIVE)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "You are not an active learner in this course"));
+
+                ClassMember reportedMember = null;
+                if (request.getReportedUserId() != null) {
+                        reportedMember = classMemberRepository.findByUserIdAndCourseClassId(
                                         request.getReportedUserId(),
                                         learnerMember.getCourseClass().getId())
                                         .orElseThrow(() -> new RuntimeException(

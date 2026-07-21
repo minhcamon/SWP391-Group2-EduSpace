@@ -184,7 +184,8 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<APIResponse<CourseResponse>> getCourseById(
             @PathVariable Long id) {
-        CourseResponse course = courseService.getCourseById(id);
+        Long userId = SecurityUtil.getCurrentUserIdAndAllowNull();
+        CourseResponse course = courseService.getCourseById(id, userId);
         return ResponseEntity.ok(
                 APIResponse.success("Course retrieved successfully", course));
     }

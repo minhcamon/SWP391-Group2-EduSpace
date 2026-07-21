@@ -35,6 +35,7 @@ import org.eduspace.backend.repository.CourseRequestRepository;
 import org.eduspace.backend.repository.LessonRepository;
 import org.eduspace.backend.repository.ModuleRepository;
 import org.eduspace.backend.repository.UserRepository;
+import org.eduspace.backend.repository.CertificateRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -55,6 +56,7 @@ public class CourseService {
     private final UserRepository userRepository;
     private final CourseRequestRepository courseRequestRepository;
     private final ClassMemberRepository classMemberRepository;
+    private final CertificateRepository certificateRepository;
     private final NotificationService notificationService;
 
     public List<CourseResponse> getCoursesByCreatorId(Long creatorId) {
@@ -367,7 +369,7 @@ public class CourseService {
                 .build();
     }
 
-    public CourseResponse getCourseById(Long courseId) {
+    public CourseResponse getCourseById(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
 
@@ -420,6 +422,31 @@ public class CourseService {
                 })
                 .toList();
 
+        String enrollmentStatus = null;
+        Long targetClassId = null;
+        boolean isCompleted = false;
+
+        if (userId != null) {
+            isCompleted = certificateRepository.existsByUserIdAndCourseId(userId, courseId);
+            if (isCompleted) {
+                // Find any classId they participated in
+                Optional<ClassMember> member = classMemberRepository.findByUserId(userId).stream()
+                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null && cm.getCourseClass().getCourse().getId().equals(courseId))
+                        .findFirst();
+                if (member.isPresent()) {
+                    targetClassId = member.get().getCourseClass().getId();
+                }
+            } else {
+                Optional<ClassMember> activeMember = classMemberRepository
+                        .findActiveMember(userId, courseId, LearnerStatus.ACTIVE);
+
+                if (activeMember.isPresent()) {
+                    enrollmentStatus = "ENROLLED";
+                    targetClassId = activeMember.get().getCourseClass().getId();
+                }
+            }
+        }
+
         return CourseResponse.builder()
                 .id(course.getId())
                 .title(course.getTitle())
@@ -430,6 +457,9 @@ public class CourseService {
                 .creatorAvatarUrl(course.getCreator().getAvatarUrl())
                 .creatorEmail(course.getCreator().getEmail())
                 .modules(moduleResponses)
+                .enrollmentStatus(enrollmentStatus)
+                .targetClassId(targetClassId)
+                .isCompleted(isCompleted)
                 .build();
     }
 

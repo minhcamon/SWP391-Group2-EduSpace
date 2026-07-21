@@ -9,7 +9,7 @@ const RegisterPage = () => {
                 <div className="w-full max-w-lg mx-auto">
                     {/* Brand Anchor */}
                     <div className="flex items-center gap-2.5 mb-6 w-72">
-                        <Logo />
+                        <Logo className="w-full" />
                     </div>
 
                     {/* Page Header */}
