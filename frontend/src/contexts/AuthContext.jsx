@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const userData = await authService.getUserProfile();
-            const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+            const enriched = { ...userData };
             setUser(enriched);
             localStorage.setItem("user", JSON.stringify(enriched));
         } catch (error) {
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         const { token, user: userData } = await authService.login(username, password);
         console.log(token, userData);
         setTokens(token);
-        const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+        const enriched = { ...userData };
         setUser(enriched);
         localStorage.setItem("user", JSON.stringify(enriched));
         // Reset to Learner mode upon new login

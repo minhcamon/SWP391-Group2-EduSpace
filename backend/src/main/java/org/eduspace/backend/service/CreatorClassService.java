@@ -5,7 +5,6 @@ import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
 import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.entity.*;
-import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
@@ -42,7 +41,9 @@ public class CreatorClassService {
     public List<MentorResponse> getClassMentors(Long classId, Long creatorId) {
         checkCreatorOwnershipAndGetClass(classId, creatorId);
 
-        List<ClassMember> classMembers = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
+        // Get all mentors in class, including Creator acting as mentor (contextRole =
+        // "CREATOR" or "MENTOR")
+        List<ClassMember> classMembers = classMemberRepository.findAllMentorsInClass(classId);
         return classMembers.stream()
                 .map(cm -> MentorResponse.builder()
                         .id(cm.getUser().getId())
@@ -103,8 +104,6 @@ public class CreatorClassService {
 
         classMemberRepository.delete(member);
     }
-
-
 
     public CreatorAnalyticsResponse getCreatorAnalytics(Long creatorId, String courseId, String timeRange) {
         // 1. Get courses created by this creator
@@ -230,7 +229,7 @@ public class CreatorClassService {
         }
 
         List<CourseClass> classes = classRepository.findByCourseId(courseId).stream()
-                .filter(cc -> cc.getStatus() == org.eduspace.backend.enums.ClassStatus.RUNNING 
+                .filter(cc -> cc.getStatus() == org.eduspace.backend.enums.ClassStatus.RUNNING
                         || cc.getStatus() == org.eduspace.backend.enums.ClassStatus.COMPLETED)
                 .collect(Collectors.toList());
         List<ClassTimelineResponse> response = new ArrayList<>();
@@ -240,7 +239,8 @@ public class CreatorClassService {
             List<ClassTimelineResponse.ModuleTimelineItem> items = new ArrayList<>();
 
             for (ClassTimeline ct : timelines) {
-                List<StudyGroup> groups = studyGroupRepository.findByCourseClassIdAndModuleId(cc.getId(), ct.getModule().getId());
+                List<StudyGroup> groups = studyGroupRepository.findByCourseClassIdAndModuleId(cc.getId(),
+                        ct.getModule().getId());
                 boolean isStarted = !groups.isEmpty();
 
                 items.add(ClassTimelineResponse.ModuleTimelineItem.builder()

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,7 +34,9 @@ public class IncidentService {
     private final PeerReviewRepository peerReviewRepository;
 
     public List<IncidentListResponse> getIncidents(Long userId) {
-        List<ClassMember> managedClasses = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
+        // Find classes where user is MENTOR or CREATOR (acting as mentor)
+        List<ClassMember> managedClasses = classMemberRepository.findByUserIdAndContextRoleIn(userId,
+                Arrays.asList("MENTOR", "CREATOR"));
         if (managedClasses.isEmpty()) {
             return List.of();
         }
@@ -58,7 +61,9 @@ public class IncidentService {
         boolean isMentorOfClass = false;
         if (incident.getReporter() != null && incident.getReporter().getCourseClass() != null) {
             Long classId = incident.getReporter().getCourseClass().getId();
-            isMentorOfClass = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "MENTOR")
+            // Check if user is MENTOR or CREATOR (acting as mentor) in this class
+            isMentorOfClass = classMemberRepository.findByUserIdAndCourseClassIdAndContextRoleIn(
+                    userId, classId, Arrays.asList("MENTOR", "CREATOR"))
                     .isPresent();
         }
 
@@ -136,11 +141,14 @@ public class IncidentService {
         }
 
         Long classId = incident.getReporter().getCourseClass().getId();
-        ClassMember mentorClassMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "MENTOR")
+        // Allow both MENTOR and CREATOR to accept incidents
+        ClassMember mentorClassMember = classMemberRepository.findByUserIdAndCourseClassIdAndContextRoleIn(
+                userId, classId, Arrays.asList("MENTOR", "CREATOR"))
                 .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp này"));
 
-        if (!"MENTOR".equals(mentorClassMember.getContextRole())) {
-            throw new RuntimeException("You do not have MENTOR role in this class");
+        if (!"MENTOR".equals(mentorClassMember.getContextRole())
+                && !"CREATOR".equals(mentorClassMember.getContextRole())) {
+            throw new RuntimeException("You do not have MENTOR or CREATOR role in this class");
         }
 
         incident.setResolvedBy(mentorClassMember);

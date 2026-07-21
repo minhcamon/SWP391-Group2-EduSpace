@@ -7,7 +7,6 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
 import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.dto.mentor.request.AssignMentorRequestDto;
-import org.eduspace.backend.dto.mentor.request.HandoverRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CreatorClassService;
@@ -63,7 +62,8 @@ public class CreatorController {
     @Operation(summary = "Get Creator Withdraw Requests", description = "Xem danh sách các đơn rút lui gửi tới Creator")
     public ResponseEntity<APIResponse<List<org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse>>> getWithdrawRequestsForCreator() {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        List<org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse> response = withdrawService.getWithdrawRequestsForCreator(creatorId);
+        List<org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse> response = withdrawService
+                .getWithdrawRequestsForCreator(creatorId);
         return ResponseEntity.ok(APIResponse.success("Get withdraw requests successfully", response));
     }
 

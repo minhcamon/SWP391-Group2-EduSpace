@@ -109,9 +109,6 @@ public class WaitlistService {
                 }
 
                 return true;
-
-                return true;
-
         }
 
         @Transactional

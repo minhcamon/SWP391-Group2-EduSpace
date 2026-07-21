@@ -207,12 +207,8 @@ public class StudyGroupService {
                                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
                 ClassMember mentorMembership = classMemberRepository
-                                .findByCourseClassIdAndUserIdAndContextRole(studyGroup.getCourseClass().getId(), mentorUserId, "MENTOR")
+                                .findMentorOrCreatorInClass(studyGroup.getCourseClass().getId(), mentorUserId)
                                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
-
-                if (!"MENTOR".equals(mentorMembership.getContextRole())) {
-                        throw new RuntimeException("You are not a mentor in this class");
-                }
 
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
                 Long courseId = (studyGroup.getCourseClass() != null && studyGroup.getCourseClass().getCourse() != null)
@@ -273,12 +269,8 @@ public class StudyGroupService {
                                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
                 ClassMember mentorMembership = classMemberRepository
-                                .findByCourseClassIdAndUserIdAndContextRole(studyGroup.getCourseClass().getId(), mentorUserId, "MENTOR")
+                                .findMentorOrCreatorInClass(studyGroup.getCourseClass().getId(), mentorUserId)
                                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
-
-                if (!"MENTOR".equals(mentorMembership.getContextRole())) {
-                        throw new RuntimeException("You are not a mentor in this class");
-                }
 
                 List<GroupMessage> messages = groupMessageRepository.findByStudyGroupIdOrderBySendAtAsc(pairId);
 
@@ -298,13 +290,10 @@ public class StudyGroupService {
                 StudyGroup studyGroup = studyGroupRepository.findById(pairId)
                                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
-                ClassMember mentorMembership = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(
-                                studyGroup.getCourseClass().getId(), mentorUserId, "MENTOR")
+                // Accept both MENTOR and CREATOR contextRole
+                ClassMember mentorMembership = classMemberRepository
+                                .findMentorOrCreatorInClass(studyGroup.getCourseClass().getId(), mentorUserId)
                                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
-
-                if (!"MENTOR".equals(mentorMembership.getContextRole())) {
-                        throw new RuntimeException("You are not a mentor in this class");
-                }
 
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(pairId);
 
@@ -368,13 +357,10 @@ public class StudyGroupService {
                 StudyGroup studyGroup = studyGroupRepository.findById(pairId)
                                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
-                ClassMember mentorMembership = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(
-                                studyGroup.getCourseClass().getId(), mentorUserId, "MENTOR")
+                // Accept both MENTOR and CREATOR contextRole
+                ClassMember mentorMembership = classMemberRepository
+                                .findMentorOrCreatorInClass(studyGroup.getCourseClass().getId(), mentorUserId)
                                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
-
-                if (!"MENTOR".equals(mentorMembership.getContextRole())) {
-                        throw new RuntimeException("You are not a mentor in this class");
-                }
 
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(pairId);
 

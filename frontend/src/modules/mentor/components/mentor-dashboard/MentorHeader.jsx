@@ -83,17 +83,29 @@ const MentorHeader = () => {
 
                     {/* Right Action Section */}
                     <div className="flex items-center gap-4">
-                        {/* Switch to Learner Mode Button (Desktop) */}
-                        <button
-                            onClick={() => {
-                                setMode("LEARNER");
-                                navigate("/my-learning");
-                            }}
-                            className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-                        >
-                            <ArrowLeftRight size={13} />
-                            <span>Vào trang học viên</span>
-                        </button>
+                        {user?.role === 'CREATOR' ? (
+                            <button
+                                onClick={() => {
+                                    setMode("CREATOR");
+                                    navigate("/creator/analytics");
+                                }}
+                                className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+                            >
+                                <ArrowLeftRight size={13} />
+                                <span>Vào trang Creator</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setMode("LEARNER");
+                                    navigate("/my-learning");
+                                }}
+                                className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+                            >
+                                <ArrowLeftRight size={13} />
+                                <span>Vào trang học viên</span>
+                            </button>
+                        )}
 
                         {/* Notification Bell */}
                         {user && (
@@ -195,18 +207,31 @@ const MentorHeader = () => {
                             Cấu hình giảng dạy
                         </NavLink>
 
-                        {/* Switch to Learner Mode Button (Mobile) */}
-                        <button
-                            onClick={() => {
-                                setShowMobileMenu(false);
-                                setMode("LEARNER");
-                                navigate("/my-learning");
-                            }}
-                            className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
-                        >
-                            <ArrowLeftRight size={14} />
-                            <span>Vào trang học viên</span>
-                        </button>
+                        {user?.role === 'CREATOR' ? (
+                            <button
+                                onClick={() => {
+                                    setShowMobileMenu(false);
+                                    setMode("CREATOR");
+                                    navigate("/creator/analytics");
+                                }}
+                                className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                            >
+                                <ArrowLeftRight size={14} />
+                                <span>Vào trang Creator</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setShowMobileMenu(false);
+                                    setMode("LEARNER");
+                                    navigate("/my-learning");
+                                }}
+                                className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                            >
+                                <ArrowLeftRight size={14} />
+                                <span>Vào trang học viên</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

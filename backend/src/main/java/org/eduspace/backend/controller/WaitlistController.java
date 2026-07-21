@@ -3,8 +3,6 @@ package org.eduspace.backend.controller;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.user.response.UserResponse;
-import org.eduspace.backend.dto.waitlist.request.CancelWaitlistRequest;
-import org.eduspace.backend.dto.waitlist.response.WaitlistStatsResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.WaitlistService;
 import org.eduspace.backend.dto.waitlist.response.WaitlistResponse;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 import java.util.List;
 

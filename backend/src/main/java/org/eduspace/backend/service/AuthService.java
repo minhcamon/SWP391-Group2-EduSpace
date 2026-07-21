@@ -15,6 +15,7 @@ import org.eduspace.backend.dto.user.response.UserResponse;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.UserStatus;
 import org.eduspace.backend.repository.UserRepository;
+import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.security.JwtUtil;
 import org.eduspace.backend.security.SecurityUtil;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final ClassMemberRepository classMemberRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -100,7 +102,7 @@ public class AuthService {
         if (email == null || email.isBlank()) {
             throw new RuntimeException("Email không được để trống");
         }
-        
+
         if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new RuntimeException("Email không hợp lệ");
         }
@@ -157,6 +159,9 @@ public class AuthService {
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole().name())
+                .isMentor("MENTOR".equals(user.getRole().name())
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "MENTOR")
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "CREATOR"))
                 .build();
 
         return AuthResponse.builder()
@@ -180,6 +185,9 @@ public class AuthService {
                 .avatarUrl(user.getAvatarUrl())
                 .bio(user.getBio())
                 .role(user.getRole().name())
+                .isMentor("MENTOR".equals(user.getRole().name())
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "MENTOR")
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "CREATOR"))
                 .build();
 
         return userResponse;
@@ -229,6 +237,9 @@ public class AuthService {
                 .avatarUrl(user.getAvatarUrl())
                 .bio(user.getBio())
                 .role(user.getRole().name())
+                .isMentor("MENTOR".equals(user.getRole().name())
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "MENTOR")
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "CREATOR"))
                 .build();
     }
 
@@ -270,6 +281,9 @@ public class AuthService {
                 .avatarUrl(user.getAvatarUrl())
                 .bio(user.getBio())
                 .role(user.getRole().name())
+                .isMentor("MENTOR".equals(user.getRole().name())
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "MENTOR")
+                        || classMemberRepository.existsByUserIdAndContextRole(user.getId(), "CREATOR"))
                 .build();
     }
 
@@ -284,8 +298,13 @@ public class AuthService {
             this.expiry = expiry;
         }
 
-        public String getOtp() { return otp; }
-        public LocalDateTime getExpiry() { return expiry; }
+        public String getOtp() {
+            return otp;
+        }
+
+        public LocalDateTime getExpiry() {
+            return expiry;
+        }
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
@@ -294,7 +313,7 @@ public class AuthService {
 
         // Generate 6-digit random OTP
         String otp = String.valueOf(100000 + new java.util.Random().nextInt(900000));
-        
+
         // Store in RAM cache
         otpCache.put(request.getEmail(), new OtpData(otp, LocalDateTime.now().plusMinutes(5)));
 

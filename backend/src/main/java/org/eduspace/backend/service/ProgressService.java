@@ -245,7 +245,7 @@ public class ProgressService {
     }
 
     public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId, Long moduleId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository.findFirstByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
 
         Course course = classMember.getCourseClass().getCourse();
@@ -369,9 +369,9 @@ public class ProgressService {
             Long studyGroupId = null;
 
             if (!isLocked && partnerClassMember != null) {
-                studyGroupId = groupMemberRepository
-                        .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId())
-                        .orElse(null);
+                List<Long> studyGroupIdList = groupMemberRepository
+                        .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId());
+                studyGroupId = studyGroupIdList.isEmpty() ? null : studyGroupIdList.get(0);
             }
 
             List<LessonProgressResponse> finalLessonResponses = lessonResponses;
@@ -452,7 +452,7 @@ public class ProgressService {
 
     @Transactional
     public boolean completeLesson(Long lessonId, Long userId, Long classId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId).stream()
+        ClassMember classMember = classMemberRepository.findFirstByUserIdAndCourseClassId(userId, classId).stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("User is not a member of this class"));
 
@@ -480,7 +480,7 @@ public class ProgressService {
                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
         ClassMember mentorMembership = classMemberRepository
-                .findByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
+                .findFirstByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
 
         if (!"MENTOR".equals(mentorMembership.getContextRole())) {
