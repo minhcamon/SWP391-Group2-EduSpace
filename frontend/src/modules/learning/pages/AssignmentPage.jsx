@@ -9,6 +9,7 @@ import CourseSidebar from "../components/CourseSidebar"
 import StudyGroup from "../components/StudyGroup"
 import Avatar from "@/components/common/Avatar"
 import ReloadButton from "@/components/ui/ReloadButton"
+import FloatingMentorSupport from "../components/FloatingMentorSupport"
 
 export const AssignmentPage = () => {
   const navigate = useNavigate()
@@ -366,6 +367,7 @@ export const AssignmentPage = () => {
           </div>
         )}
       </main>
+      <FloatingMentorSupport shiftLeft={isChatSidebarOpen} />
     </div>
   )
 }

@@ -17,7 +17,7 @@ const LoginPage = () => {
             <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-12 lg:px-[8%] py-12 bg-white">
                 <div className="w-full max-w-md mx-auto">
                     <div className="w-72 mb-6">
-                        <Logo />
+                        <Logo className="w-full" />
                     </div>
 
                     {/* Header */}

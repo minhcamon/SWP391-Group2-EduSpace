@@ -58,9 +58,9 @@ const useLearningArea = () => {
                     if (!currentCourse) {
                         throw new Error("Bạn chưa tham gia lớp học nào cho khóa học này.");
                     }
-                    
                     const classId = currentCourse.classId;
                     setResolvedClassId(classId);
+
 
                     // 2. Fetch course structure details
                     const details = await courseService.getCourseById(courseId);

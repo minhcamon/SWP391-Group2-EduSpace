@@ -4,9 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.NotificationResponse;
 import org.eduspace.backend.entity.Notification;
 import org.eduspace.backend.entity.User;
+import org.eduspace.backend.entity.CourseClass;
+import org.eduspace.backend.entity.ClassMember;
+import org.eduspace.backend.entity.WithdrawRequest;
 import org.eduspace.backend.enums.NotificationType;
 import org.eduspace.backend.enums.Role;
+import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.repository.NotificationRepository;
+import org.eduspace.backend.repository.ClassMemberRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +24,7 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final ClassMemberRepository classMemberRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
@@ -54,6 +60,28 @@ public class NotificationService {
             messagingTemplate.convertAndSend("/topic/admin/notifications", response);
         } else {
             messagingTemplate.convertAndSend("/topic/role/" + role.name().toLowerCase() + "/notifications", response);
+        }
+    }
+
+    @Transactional
+    public void sendUrgentCreatorAlert(WithdrawRequest request) {
+        User creator = request.getClassMember().getCourseClass().getCourse().getCreator();
+        String msg = String.format("CẢNH BÁO KHẨN CẤP: Lớp %s hiện không còn mentor hoạt động sau khi Mentor %s xin rút lui. Bạn cần chỉ định mentor mới hoặc tự tiếp quản.",
+                request.getClassMember().getCourseClass().getName(),
+                request.getClassMember().getUser().getFullName());
+        sendToUser(creator, msg, NotificationType.SYSTEM, request.getId());
+    }
+
+    @Transactional
+    public void notifyRemainingMentors(CourseClass courseClass, Long withdrawingMentorId, String withdrawingMentorName) {
+        List<ClassMember> classMembers = classMemberRepository.findByCourseClassIdAndContextRole(courseClass.getId(), "MENTOR");
+        for (ClassMember cm : classMembers) {
+            if (cm.getLearnerStatus() == LearnerStatus.ACTIVE && !cm.getUser().getId().equals(withdrawingMentorId)) {
+                String msg = String.format("Thông báo: Mentor %s đã gửi yêu cầu xin rút lui khỏi lớp %s.",
+                        withdrawingMentorName,
+                        courseClass.getName());
+                sendToUser(cm.getUser(), msg, NotificationType.SYSTEM, courseClass.getId());
+            }
         }
     }
 

@@ -34,7 +34,7 @@ public class RescueService {
         Long classId = learnerClassMember.getCourseClass().getId();
 
         // 2. Validate Mentor has access to this class
-        ClassMember mentorClassMember = classMemberRepository.findByUserIdAndCourseClassId(mentorUserId, classId)
+        ClassMember mentorClassMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, mentorUserId, "MENTOR")
                 .orElseThrow(() -> new RuntimeException("You are not a member of this class"));
 
         if (!"MENTOR".equals(mentorClassMember.getContextRole())) {
@@ -49,7 +49,7 @@ public class RescueService {
                 .status(IncidentStatus.IN_PROGRESS)
                 .resolvedBy(mentorClassMember) // Proactively assigned to this Mentor
                 .build();
-        
+
         Incident savedIncident = incidentRepository.save(incident);
 
         // 4. Create RescueRequest
@@ -61,12 +61,13 @@ public class RescueService {
                 .rescueDeadline(now.plusHours(48))
                 .status(RescueStatus.ON_GOING)
                 .build();
-        
+
         rescueRequestRepository.save(rescueRequest);
     }
 
     @Transactional
-    public void closeRescue(Long rescueId, Long mentorUserId, org.eduspace.backend.dto.rescue.request.CloseRescueRequest request) {
+    public void closeRescue(Long rescueId, Long mentorUserId,
+            org.eduspace.backend.dto.rescue.request.CloseRescueRequest request) {
         RescueRequest rescueRequest = rescueRequestRepository.findById(rescueId)
                 .orElseThrow(() -> new RuntimeException("Rescue Request not found"));
 
@@ -95,15 +96,17 @@ public class RescueService {
     public List<org.eduspace.backend.dto.rescue.response.RescueListResponse> getMentorRescues(Long mentorUserId) {
         return rescueRequestRepository.findByMentorUserId(mentorUserId).stream().map(r -> {
             return org.eduspace.backend.dto.rescue.response.RescueListResponse.builder()
-                .id(r.getId())
-                .incidentId(r.getIncident() != null ? r.getIncident().getId() : null)
-                .learnerClassMemberId(r.getLearner() != null ? r.getLearner().getId() : null)
-                .learnerName(r.getLearner() != null && r.getLearner().getUser() != null ? r.getLearner().getUser().getFullName() : null)
-                .reason(r.getIncident() != null ? r.getIncident().getReason() : null)
-                .rescueStartedAt(r.getRescueStartedAt())
-                .rescueDeadline(r.getRescueDeadline())
-                .status(r.getStatus())
-                .build();
+                    .id(r.getId())
+                    .incidentId(r.getIncident() != null ? r.getIncident().getId() : null)
+                    .learnerClassMemberId(r.getLearner() != null ? r.getLearner().getId() : null)
+                    .learnerName(r.getLearner() != null && r.getLearner().getUser() != null
+                            ? r.getLearner().getUser().getFullName()
+                            : null)
+                    .reason(r.getIncident() != null ? r.getIncident().getReason() : null)
+                    .rescueStartedAt(r.getRescueStartedAt())
+                    .rescueDeadline(r.getRescueDeadline())
+                    .status(r.getStatus())
+                    .build();
         }).toList();
     }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import courseService from "@/services/courseService";
 import waitlistService from "@/services/waitlistService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,12 +7,14 @@ import { mockCourses } from "@/lib/mockData";
 import { toast } from "sonner";
 
 export const useCourseEnrollment = (courseId) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [course, setCourse] = useState(null);
   const [waitlistMembers, setWaitlistMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [targetClassId, setTargetClassId] = useState(null);
 
   useEffect(() => {
     const fetchCourseDetail = async () => {
@@ -22,6 +25,7 @@ export const useCourseEnrollment = (courseId) => {
         const data = await courseService.getCourseById(courseId);
         if (data) {
           setCourse(data);
+          setTargetClassId(data.targetClassId || null);
         } else {
           throw new Error("No course found in backend response");
         }
@@ -33,8 +37,9 @@ export const useCourseEnrollment = (courseId) => {
           setWaitlistMembers(membersList);
           
           if (user && user.id) {
-            const enrolled = membersList.some(m => m.id.toString() === user.id.toString());
-            setIsEnrolled(enrolled);
+            const enrolledInWaitlist = membersList.some(m => m.id.toString() === user.id.toString());
+            const enrolledInClass = data?.enrollmentStatus === "ENROLLED";
+            setIsEnrolled(enrolledInWaitlist || enrolledInClass);
           } else {
             setIsEnrolled(false);
           }
@@ -62,6 +67,7 @@ export const useCourseEnrollment = (courseId) => {
             { id: 102, fullName: "Trần Thị B", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop" }
           ]);
           setIsEnrolled(false);
+          setTargetClassId(null);
         } else {
           setError("Không tìm thấy thông tin khóa học.");
         }
@@ -79,14 +85,26 @@ export const useCourseEnrollment = (courseId) => {
     try {
       await waitlistService.enrollWaitlist(courseId);
       toast.success("Đăng ký tham gia hàng chờ thành công!");
-      setIsEnrolled(true);
       
-      // Refresh waitlist members
+      // Refresh course detail and waitlist members
       try {
+        const data = await courseService.getCourseById(courseId);
+        if (data) {
+          setCourse(data);
+          setTargetClassId(data.targetClassId || null);
+        }
+        
         const members = await waitlistService.getMembersInWaitlist(courseId);
-        setWaitlistMembers(members || []);
+        const membersList = members || [];
+        setWaitlistMembers(membersList);
+        
+        if (user && user.id) {
+          const enrolledInWaitlist = membersList.some(m => m.id.toString() === user.id.toString());
+          const enrolledInClass = data?.enrollmentStatus === "ENROLLED";
+          setIsEnrolled(enrolledInWaitlist || enrolledInClass);
+        }
       } catch (err) {
-        console.error("Failed to refresh waitlist members:", err);
+        console.error("Failed to refresh course details after join:", err);
       }
     } catch (err) {
       toast.error(err.message || "Đăng ký hàng chờ thất bại. Vui lòng thử lại!");
@@ -98,6 +116,7 @@ export const useCourseEnrollment = (courseId) => {
       await waitlistService.leaveWaitlist(courseId);
       toast.success("Rời hàng chờ thành công!");
       setIsEnrolled(false);
+      setTargetClassId(null);
       
       // Refresh waitlist members
       try {
@@ -117,6 +136,7 @@ export const useCourseEnrollment = (courseId) => {
     isLoading,
     error,
     isEnrolled,
+    targetClassId,
     joinCourse,
     leaveCourse,
   };

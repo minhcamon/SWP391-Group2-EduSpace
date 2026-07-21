@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from 'react-router'
 import { AuthProvider } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import { Toaster } from 'sonner'
-import RouteProgressBar from '@/components/common/RouteProgressBar'
 
 // Import page anchors
 import Home from "@/views/Home";
@@ -27,6 +26,7 @@ import Error from "@/views/Error";
 import LearningArea from "@/views/learning/LearningArea";
 import ProgressDashboard from "@/views/learning/ProgressDashboard";
 import MyLearning from "@/views/learning/MyLearning";
+import MyIncidents from "@/views/learning/MyIncidents";
 import LearnerCourseDetail from "@/views/LearnerCourseDetail";
 import ClassView from "@/views/learning/ClassView";
 import Assignment from "@/views/learning/Assignment";
@@ -34,17 +34,18 @@ import MentorDashboard from "@/views/mentor/Dashboard";
 import MentorIncidents from "@/views/mentor/Incidents";
 import MentorIncidentDetail from "@/views/mentor/IncidentDetailView";
 import MentorPairDetail from "@/views/mentor/PairDetailView";
-import MentorArbitrations from "@/views/mentor/Arbitrations";
-import MentorArbitrationDetail from "@/views/mentor/ArbitrationDetailView";
 import MentorClasses from "@/views/mentor/Classes";
 import MentorClassDetail from "@/views/mentor/ClassDetailView";
+import MentorTeachingConfig from "@/views/mentor/TeachingConfig";
+import CreatorWithdrawRequests from "@/views/creator/WithdrawRequests";
+import CreatorWaitlists from "@/views/creator/Waitlists";
 import CertificateView from "@/views/learning/CertificateView";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <RouteProgressBar />
+
         <Toaster
           position="bottom-right"
           richColors
@@ -65,29 +66,34 @@ function App() {
             path="/courses"
             element={<Courses />}
           ></Route>
-          <Route
-            path="/courses/:id"
-            element={<LearnerCourseDetail />}
-          ></Route>
+          <Route element={<ProtectedRoute allowGuest={true} />}>
+            <Route
+              path="/courses/:id"
+              element={<LearnerCourseDetail />}
+            ></Route>
+          </Route>
 
-          {/* Authenticated user routes */}
-          <Route
-            path="/courses/:courseId/learn"
-            element={<LearningArea />}
-          ></Route>
-          <Route
-            path="/courses/:courseId/dashboard"
-            element={<ProgressDashboard />}
-          ></Route>
-          <Route
-            path="/my-learning"
-            element={<MyLearning />}
-          ></Route>
-          {/* Authenticated user routes */}
           <Route element={<ProtectedRoute />}>
+          {/* Authenticated user routes */}
+            <Route
+              path="/courses/:courseId/learn"
+              element={<LearningArea />}
+            ></Route>
+            <Route
+              path="/courses/:courseId/dashboard"
+              element={<ProgressDashboard />}
+            ></Route>
             <Route
               path="/profile"
               element={<Profile />}
+            ></Route>
+            <Route
+            path="/my-learning"
+            element={<MyLearning />}
+          ></Route>
+            <Route
+              path="/my-incidents"
+              element={<MyIncidents />}
             ></Route>
             <Route
               path="/classes/:classId"
@@ -133,6 +139,10 @@ function App() {
               path="/creator/mentor-applications"
               element={<CreatorMentorApplications />}
             ></Route>
+            <Route
+              path="/creator/withdraw-requests"
+              element={<CreatorWithdrawRequests />}
+            ></Route>
             {/* <Route
               path="/creator/courses/:id"
               element={<CreatorCourseDetail />}
@@ -148,6 +158,10 @@ function App() {
             <Route
               path="/creator/analytics"
               element={<CreatorAnalytics />}
+            ></Route>
+            <Route
+              path="/creator/waitlist"
+              element={<CreatorWaitlists />}
             ></Route>
             <Route
               path="/creator/create-course"
@@ -173,14 +187,7 @@ function App() {
               path="/mentor/pairs/:id"
               element={<MentorPairDetail />}
             ></Route>
-            <Route
-              path="/mentor/arbitrations"
-              element={<MentorArbitrations />}
-            ></Route>
-            <Route
-              path="/mentor/arbitrations/:id"
-              element={<MentorArbitrationDetail />}
-            ></Route>
+
             <Route
               path="/mentor/classes"
               element={<MentorClasses />}
@@ -188,6 +195,10 @@ function App() {
             <Route
               path="/mentor/classes/:classId"
               element={<MentorClassDetail />}
+            ></Route>
+            <Route
+              path="/mentor/teaching-config"
+              element={<MentorTeachingConfig />}
             ></Route>
           </Route>
 

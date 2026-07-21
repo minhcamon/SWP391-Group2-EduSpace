@@ -1,15 +1,15 @@
 import React from "react";
-import { ArbitrationDetailPage, MentorHeader } from "@/modules/mentor";
+import { TeachingConfigPage, MentorHeader } from "@/modules/mentor";
 
-const ArbitrationDetailView = () => {
+const TeachingConfig = () => {
   return (
     <div className="min-h-screen w-full bg-bg-base flex flex-col font-sans">
       <MentorHeader />
       <main className="grow flex flex-col">
-        <ArbitrationDetailPage />
+        <TeachingConfigPage />
       </main>
     </div>
   );
 };
 
-export default ArbitrationDetailView;
+export default TeachingConfig;

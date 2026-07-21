@@ -18,5 +18,8 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
            "pr.submission.member.id IN :memberIds OR " +
            "pr.reviewer.classMember.id IN :memberIds")
     List<PeerReview> findByGroupMemberIds(@Param("memberIds") List<Long> memberIds);
+
+    @Query("SELECT COUNT(pr) FROM PeerReview pr WHERE pr.reviewer.classMember.id = :classMemberId AND pr.reviewAt IS NULL")
+    long countPendingReviews(@Param("classMemberId") Long classMemberId);
 }
 

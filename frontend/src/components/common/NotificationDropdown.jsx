@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Bell, Info, Award, UserPlus, BookOpen } from "lucide-react";
 import useNotifications from "@/modules/shared-features/hooks/useNotifications";
@@ -9,6 +9,19 @@ export const NotificationDropdown = ({ triggerClass = "text-neutral-medium hover
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -82,7 +95,7 @@ export const NotificationDropdown = ({ triggerClass = "text-neutral-medium hover
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setShowNotifications(!showNotifications)}
         className={`relative p-1.5 rounded-full transition-all duration-200 cursor-pointer focus:outline-none ${triggerClass}`}
@@ -96,12 +109,7 @@ export const NotificationDropdown = ({ triggerClass = "text-neutral-medium hover
       </button>
 
       {showNotifications && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowNotifications(false)}
-          ></div>
-          <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white border border-border-light/45 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white border border-border-light/45 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
             {/* Dropdown Header */}
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <span className="text-sm font-bold text-neutral-dark">Thông báo</span>
@@ -167,7 +175,6 @@ export const NotificationDropdown = ({ triggerClass = "text-neutral-medium hover
               )}
             </div>
           </div>
-        </>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eduspace.backend.enums.WithdrawStatus;
+import org.eduspace.backend.enums.WithdrawScenario;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +22,8 @@ public class WithdrawDetailResponse {
     private String reason;
     private LocalDate expectedLeaveDate;
     private WithdrawStatus status;
+    private WithdrawScenario scenario;
     private MentorResponse newMentor;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime resolvedAt;
 }

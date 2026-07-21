@@ -34,14 +34,14 @@ public class SubmissionController {
                         @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ"),
                         @ApiResponse(responseCode = "403", description = "Không có quyền truy cập (yêu cầu role LEARNER)")
         })
-        @PostMapping("/assignment/submit/{learnerId}")
+        @PostMapping("/{classId}/assignment/submit")
         @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
-        public ResponseEntity<SubmissionResponseDTO> submitAssignment(
-                        @PathVariable Long learnerId,
+        public ResponseEntity<APIResponse<SubmissionResponseDTO>> submitAssignment(
+                        @PathVariable Long classId,
                         @RequestBody SubmitAssignmentRequest request) {
-
-                SubmissionResponseDTO response = submissionService.submitAssignment(learnerId, request);
-                return new ResponseEntity<>(response, HttpStatus.CREATED);
+                Long userId = SecurityUtil.getCurrentUserId();
+                SubmissionResponseDTO response = submissionService.submitAssignment(classId, userId, request);
+                return new ResponseEntity<>(APIResponse.success("Nộp bài thành công", response), HttpStatus.CREATED);
         }
 
         @Operation(summary = "Lấy bài làm đã nộp / kết quả đánh giá bài nộp(nếu có) (LEARNER)", description = "Trả về bài làm đã nộp và chi tiết điểm số (rubrics) và nhận xét ẩn danh cho bài nộp của chính học viên đang đăng nhập.")

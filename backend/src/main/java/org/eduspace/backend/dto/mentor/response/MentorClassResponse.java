@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
 import org.eduspace.backend.enums.ClassStatus;
+import org.eduspace.backend.enums.LearnerStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,4 +24,5 @@ public class MentorClassResponse {
     private String courseTitle;
     private long numberOfPairs;
     private List<StudyGroupResponse> studyGroups;
+    private LearnerStatus membershipStatus;
 }

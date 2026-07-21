@@ -20,7 +20,7 @@ const MentorHeader = () => {
                     {/* Logo & Role Badge */}
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="bg-white px-3 py-1.5 rounded-xl max-w-[120px] flex items-center justify-center shadow-sm">
-                            <Logo />
+                            <Logo className="w-full" />
                         </div>
                         <span className="bg-white/20 text-white text-[11px] font-bold tracking-wider px-2.5 py-0.5 rounded-full uppercase border border-white/10 shadow-inner">
                             Mentor Mode
@@ -54,17 +54,7 @@ const MentorHeader = () => {
                             Trung tâm Sự cố
                         </NavLink>
 
-                        <NavLink
-                            to="/mentor/arbitrations"
-                            className={({ isActive }) =>
-                                `text-sm font-semibold transition-all duration-200 py-1.5 border-b-2 ${isActive
-                                    ? "text-white border-white"
-                                    : "text-white/75 border-transparent hover:text-white hover:border-white/50"
-                                }`
-                            }
-                        >
-                            Phân xử Điểm
-                        </NavLink>
+
 
                         <NavLink
                             to="/mentor/classes"
@@ -77,21 +67,45 @@ const MentorHeader = () => {
                         >
                             Quản lý Lớp học
                         </NavLink>
+
+                        <NavLink
+                            to="/mentor/teaching-config"
+                            className={({ isActive }) =>
+                                `text-sm font-semibold transition-all duration-200 py-1.5 border-b-2 ${isActive
+                                    ? "text-white border-white"
+                                    : "text-white/75 border-transparent hover:text-white hover:border-white/50"
+                                }`
+                            }
+                        >
+                            Cấu hình giảng dạy
+                        </NavLink>
                     </nav>
 
                     {/* Right Action Section */}
                     <div className="flex items-center gap-4">
-                        {/* Switch to Learner Mode Button (Desktop) */}
-                        <button
-                            onClick={() => {
-                                setMode("LEARNER");
-                                navigate("/my-learning");
-                            }}
-                            className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-                        >
-                            <ArrowLeftRight size={13} />
-                            <span>Vào trang học viên</span>
-                        </button>
+                        {user?.role === 'CREATOR' ? (
+                            <button
+                                onClick={() => {
+                                    setMode("CREATOR");
+                                    navigate("/creator/analytics");
+                                }}
+                                className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+                            >
+                                <ArrowLeftRight size={13} />
+                                <span>Vào trang Creator</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setMode("LEARNER");
+                                    navigate("/my-learning");
+                                }}
+                                className="hidden lg:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+                            >
+                                <ArrowLeftRight size={13} />
+                                <span>Vào trang học viên</span>
+                            </button>
+                        )}
 
                         {/* Notification Bell */}
                         {user && (
@@ -166,18 +180,7 @@ const MentorHeader = () => {
                         >
                             Trung tâm Sự cố
                         </NavLink>
-                        <NavLink
-                            to="/mentor/arbitrations"
-                            onClick={() => setShowMobileMenu(false)}
-                            className={({ isActive }) =>
-                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
-                                    ? "bg-white/25 text-white"
-                                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                                }`
-                            }
-                        >
-                            Phân xử Điểm
-                        </NavLink>
+
                         <NavLink
                             to="/mentor/classes"
                             onClick={() => setShowMobileMenu(false)}
@@ -191,18 +194,44 @@ const MentorHeader = () => {
                             Quản lý Lớp học
                         </NavLink>
 
-                        {/* Switch to Learner Mode Button (Mobile) */}
-                        <button
-                            onClick={() => {
-                                setShowMobileMenu(false);
-                                setMode("LEARNER");
-                                navigate("/my-learning");
-                            }}
-                            className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                        <NavLink
+                            to="/mentor/teaching-config"
+                            onClick={() => setShowMobileMenu(false)}
+                            className={({ isActive }) =>
+                                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${isActive
+                                    ? "bg-white/25 text-white"
+                                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                                }`
+                            }
                         >
-                            <ArrowLeftRight size={14} />
-                            <span>Vào trang học viên</span>
-                        </button>
+                            Cấu hình giảng dạy
+                        </NavLink>
+
+                        {user?.role === 'CREATOR' ? (
+                            <button
+                                onClick={() => {
+                                    setShowMobileMenu(false);
+                                    setMode("CREATOR");
+                                    navigate("/creator/analytics");
+                                }}
+                                className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                            >
+                                <ArrowLeftRight size={14} />
+                                <span>Vào trang Creator</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setShowMobileMenu(false);
+                                    setMode("LEARNER");
+                                    navigate("/my-learning");
+                                }}
+                                className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-xl border border-white/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+                            >
+                                <ArrowLeftRight size={14} />
+                                <span>Vào trang học viên</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

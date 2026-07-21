@@ -94,9 +94,9 @@ const learnService = {
     }
   },
 
-  submitAssignment: async (learnerId, assignmentId, submissionContent) => {
+  submitAssignment: async (classId, assignmentId, submissionContent) => {
     try {
-      const response = await api.post(`/submission/assignment/submit/${learnerId}`, {
+      const response = await api.post(`/submission/${classId}/assignment/submit`, {
         assignmentId,
         submissionContent,
       })
@@ -172,6 +172,18 @@ const learnService = {
       throw new Error(error.response?.data?.message || "Không thể gửi yêu cầu hỗ trợ đến Mentor", {
         cause: error,
       })
+    }
+  },
+
+  getMyIncidents: async () => {
+    try {
+      const response = await api.get('/incidents/my');
+      return response.data.data;
+    } catch (error) {
+      console.error('Lỗi lấy danh sách khiếu nại tại learnService:', error);
+      throw new Error(error.response?.data?.message || 'Không thể tải danh sách khiếu nại!', {
+        cause: error,
+      });
     }
   }
 }

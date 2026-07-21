@@ -7,7 +7,7 @@ import Breadcrumbs from "@/components/common/Breadcrumbs";
 
 export const CourseDetailPage = () => {
   const { id } = useParams();
-  const { course, isLoading, error, isEnrolled, joinCourse, leaveCourse, waitlistMembers } = useCourseEnrollment(id);
+  const { course, isLoading, error, isEnrolled, joinCourse, leaveCourse, waitlistMembers, targetClassId } = useCourseEnrollment(id);
 
   if (isLoading) {
     return (
@@ -104,6 +104,7 @@ export const CourseDetailPage = () => {
             onEnroll={joinCourse}
             onLeave={leaveCourse}
             isEnrolled={isEnrolled}
+            targetClassId={targetClassId}
           />
         </div>
       </div>

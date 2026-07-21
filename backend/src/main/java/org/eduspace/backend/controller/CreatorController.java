@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
+import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.dto.mentor.request.AssignMentorRequestDto;
-import org.eduspace.backend.dto.mentor.request.HandoverRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.CreatorClassService;
@@ -24,6 +24,7 @@ import java.util.List;
 public class CreatorController {
 
     private final CreatorClassService creatorClassService;
+    private final org.eduspace.backend.service.WithdrawService withdrawService;
 
     @GetMapping("/classes/{classId}/mentors")
     @PreAuthorize("hasRole('CREATOR')")
@@ -56,24 +57,61 @@ public class CreatorController {
         return ResponseEntity.ok(APIResponse.success("Xóa mentor khỏi lớp học thành công!", null));
     }
 
-    @PostMapping("/handover/{requestId}")
+    @GetMapping("/withdraw-requests")
     @PreAuthorize("hasRole('CREATOR')")
-    @Operation(summary = "Initiate Handover", description = "Chỉ định mentor mới để bàn giao (chỉ cho Creator sở hữu khóa học)")
-    public ResponseEntity<APIResponse<String>> initiateHandover(
-            @PathVariable Long requestId,
-            @Valid @RequestBody HandoverRequestDto request) {
+    @Operation(summary = "Get Creator Withdraw Requests", description = "Xem danh sách các đơn rút lui gửi tới Creator")
+    public ResponseEntity<APIResponse<List<org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse>>> getWithdrawRequestsForCreator() {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        creatorClassService.initiateHandover(requestId, request.getNewMentorId(), creatorId);
+        List<org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse> response = withdrawService
+                .getWithdrawRequestsForCreator(creatorId);
+        return ResponseEntity.ok(APIResponse.success("Get withdraw requests successfully", response));
+    }
+
+    @GetMapping("/classes/{classId}/active-mentors")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Get Active Mentors for Class Handover", description = "Lấy danh sách các mentor khả dụng để bàn giao cho lớp học này")
+    public ResponseEntity<APIResponse<List<MentorResponse>>> getActiveMentorsForClass(@PathVariable Long classId) {
+        List<MentorResponse> response = withdrawService.getActiveMentorsForClass(classId);
+        return ResponseEntity.ok(APIResponse.success("Get active mentors successfully", response));
+    }
+
+    @PostMapping("/withdraw-requests/{id}/reject")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Reject Withdraw Request", description = "Từ chối yêu cầu rút lui của mentor")
+    public ResponseEntity<APIResponse<String>> rejectWithdrawRequest(@PathVariable Long id) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        withdrawService.rejectWithdrawRequest(id, creatorId);
+        return ResponseEntity.ok(APIResponse.success("Từ chối đơn rút lui thành công!", null));
+    }
+
+    @PostMapping("/withdraw-requests/{id}/initiate-handover")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Initiate Handover", description = "Chỉ định mentor mới để bàn giao lớp học")
+    public ResponseEntity<APIResponse<String>> initiateHandover(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Long> payload) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        Long newMentorUserId = payload.get("newMentorUserId");
+        withdrawService.initiateHandover(id, newMentorUserId, creatorId);
         return ResponseEntity.ok(APIResponse.success("Thiết lập bàn giao lớp học thành công!", null));
     }
 
-    @PostMapping("/handover/{requestId}/approve")
+    @PostMapping("/withdraw-requests/{id}/approve-handover")
     @PreAuthorize("hasRole('CREATOR')")
-    @Operation(summary = "Approve Handover", description = "Phê duyệt bàn giao lớp học, đổi mentor trong lớp (chỉ cho Creator sở hữu khóa học)")
-    public ResponseEntity<APIResponse<String>> approveHandover(@PathVariable Long requestId) {
+    @Operation(summary = "Approve Handover", description = "Phê duyệt bàn giao lớp học cho mentor mới")
+    public ResponseEntity<APIResponse<String>> approveHandover(@PathVariable Long id) {
         Long creatorId = SecurityUtil.getCurrentUserId();
-        creatorClassService.approveHandover(requestId, creatorId);
+        withdrawService.approveHandover(id, creatorId);
         return ResponseEntity.ok(APIResponse.success("Phê duyệt và hoàn tất bàn giao lớp học thành công!", null));
+    }
+
+    @PostMapping("/withdraw-requests/{id}/take-over")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Creator Take Over Class", description = "Creator tự mình tiếp quản lớp học")
+    public ResponseEntity<APIResponse<String>> creatorTakeOver(@PathVariable Long id) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        withdrawService.creatorTakeOver(id, creatorId);
+        return ResponseEntity.ok(APIResponse.success("Creator tiếp quản lớp học thành công!", null));
     }
 
     @GetMapping("/analytics")
@@ -85,5 +123,14 @@ public class CreatorController {
         Long creatorId = SecurityUtil.getCurrentUserId();
         CreatorAnalyticsResponse response = creatorClassService.getCreatorAnalytics(creatorId, courseId, timeRange);
         return ResponseEntity.ok(APIResponse.success("Get analytics successfully", response));
+    }
+
+    @GetMapping("/courses/{courseId}/classes-timeline")
+    @PreAuthorize("hasRole('CREATOR')")
+    @Operation(summary = "Get Classes Timeline", description = "Lấy dòng thời gian các module của các lớp học thuộc khóa học (chỉ cho Creator sở hữu)")
+    public ResponseEntity<APIResponse<List<ClassTimelineResponse>>> getClassesTimeline(@PathVariable Long courseId) {
+        Long creatorId = SecurityUtil.getCurrentUserId();
+        List<ClassTimelineResponse> response = creatorClassService.getClassesTimeline(courseId, creatorId);
+        return ResponseEntity.ok(APIResponse.success("Get classes timeline successfully", response));
     }
 }

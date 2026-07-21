@@ -18,6 +18,35 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState(currentSearch)
   const [prevSearch, setPrevSearch] = useState(currentSearch)
   const inputRef = useRef(null)
+  const avatarRef = useRef(null)
+  const getManagementConfig = () => {
+    if (!user) return null
+    if (user.role === 'ADMIN') {
+      return { path: '/admin', label: 'Trang quản trị viên', mode: 'ADMIN' }
+    }
+    if (user.role === 'CREATOR') {
+      return { path: '/creator', label: 'Trang quản lý bài học', mode: 'CREATOR' }
+    }
+    if (user.isMentor || user.role === 'MENTOR' || user.username?.startsWith('mentor')) {
+      return { path: '/mentor', label: 'Trang quản lý Mentor', mode: 'MENTOR' }
+    }
+    return null
+  }
+
+  const mgmtConfig = getManagementConfig()
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (avatarRef.current && !avatarRef.current.contains(event.target)) {
+        setShowDropDown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   if (currentSearch !== prevSearch) {
     setPrevSearch(currentSearch)
@@ -43,12 +72,25 @@ const Header = () => {
       <div className="max-w-screen mx-auto px-4">
         <div className="flex items-center justify-around h-16">
           {/* Logo Section */}
-          <div className="max-w-40">
-            <Logo />
+          <div className="max-w-40 w-28 sm:w-32 md:w-36">
+            <Logo className="w-full" />
           </div>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                  isActive
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-neutral-medium hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
             <NavLink
               to="/courses"
               className={({ isActive }) =>
@@ -62,18 +104,35 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            <NavLink
-              to="/my-learning"
-              className={({ isActive }) =>
-                `text-sm font-semibold transition-all duration-200 py-1.5 ${
-                  isActive
-                    ? 'text-primary border-b-2 border-primary'
-                    : 'text-neutral-medium hover:text-primary'
-                }`
-              }
-            >
-              Học tập của tôi
-            </NavLink>
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
+              <>
+                <NavLink
+                  to="/my-learning"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  className={({ isActive }) =>
+                    `text-sm font-semibold transition-all duration-200 py-1.5 ${
+                      isActive
+                        ? 'text-primary border-b-2 border-primary'
+                        : 'text-neutral-medium hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
+            )}
           </nav>
 
           {/* Search Bar (Desktop) */}
@@ -93,29 +152,26 @@ const Header = () => {
 
           {/* Right Action Section */}
           <div className="flex items-center gap-3">
-            {/* Switch to Mentor Mode Button (Desktop) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN') && (
-                <button
-                  onClick={() => {
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-                >
-                  <ArrowLeftRight size={13} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Desktop) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="hidden lg:flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold px-3.5 py-2 rounded-full border border-primary/10 transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+              >
+                <ArrowLeftRight size={13} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
 
             {/* Notification Bell */}
             <NotificationDropdown />
 
-            {/* User Profile Dropdown or Authentication Buttons */}
+             {/* User Profile Dropdown or Authentication Buttons */}
             {user ? (
-              <div className="relative inline-block text-left">
+              <div ref={avatarRef} className="relative inline-block text-left">
                 <button
                   onClick={() => setShowDropDown(!showDropDown)}
                   className="hover:cursor-pointer flex items-center justify-center rounded-full p-0.5 border border-slate-200 hover:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all duration-200"
@@ -126,15 +182,7 @@ const Header = () => {
                     className="w-8 h-8"
                   />
                 </button>
-                {showDropDown && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowDropDown(false)}
-                    ></div>
-                    <AvatarDropDown />
-                  </>
-                )}
+                {showDropDown && <AvatarDropDown />}
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-3">
@@ -146,7 +194,7 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-primary hover:bg-[#3f38c9] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-[0_4px_12px_rgba(79,70,229,0.2)] transition-all duration-200 active:scale-[0.98]"
+                  className="bg-primary hover:bg-primary/40 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:shadow-[0_4px_12px_rgba(79,70,229,0.2)] transition-all duration-200 active:scale-[0.98]"
                 >
                   Đăng ký
                 </Link>
@@ -195,6 +243,20 @@ const Header = () => {
                             Lộ trình
                         </NavLink> */}
             <NavLink
+              to="/"
+              onClick={() => setShowMobileMenu(false)}
+              className={({ isActive }) =>
+                `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                }`
+              }
+            >
+              Trang chủ
+            </NavLink>
+
+            <NavLink
               to="/courses"
               onClick={() => setShowMobileMenu(false)}
               className={({ isActive }) =>
@@ -208,40 +270,52 @@ const Header = () => {
               Khóa học
             </NavLink>
 
-            {user && (
-              <NavLink
-                to="/my-learning"
-                onClick={() => setShowMobileMenu(false)}
-                className={({ isActive }) =>
-                  `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
-                  }`
-                }
-              >
-                Học tập của tôi
-              </NavLink>
+            {user && user.role !== 'ADMIN' && user.role !== 'CREATOR' && (
+              <>
+                <NavLink
+                  to="/my-learning"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Học tập của tôi
+                </NavLink>
+
+                <NavLink
+                  to="/my-incidents"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-neutral-medium hover:bg-slate-50 hover:text-primary'
+                    }`
+                  }
+                >
+                  Khiếu nại của tôi
+                </NavLink>
+              </>
             )}
 
-            {/* Switch to Mentor Mode Button (Mobile) */}
-            {user &&
-              (user.isMentor ||
-                user.role === 'CREATOR' ||
-                user.role === 'ADMIN' ||
-                user.username?.startsWith('mentor')) && (
-                <button
-                  onClick={() => {
-                    setShowMobileMenu(false)
-                    setMode('MENTOR')
-                    navigate('/mentor')
-                  }}
-                  className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
-                >
-                  <ArrowLeftRight size={14} />
-                  <span>Trang quản lý Mentor</span>
-                </button>
-              )}
+            {/* Switch to Management Mode Button (Mobile) */}
+            {mgmtConfig && (
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false)
+                  setMode(mgmtConfig.mode)
+                  navigate(mgmtConfig.path)
+                }}
+                className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-semibold py-2.5 rounded-xl border border-primary/10 transition-all duration-200 mt-2 cursor-pointer w-full"
+              >
+                <ArrowLeftRight size={14} />
+                <span>{mgmtConfig.label}</span>
+              </button>
+            )}
             {/* {user && (
                             <NavLink
                                 to="/my-learning"

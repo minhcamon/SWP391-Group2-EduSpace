@@ -7,21 +7,17 @@ import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
-import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
-import org.eduspace.backend.dto.mentor.request.RejectArbitrationRequest;
-import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
 import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
-import org.eduspace.backend.dto.mentor.response.MentorArbitrationResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
-import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.eduspace.backend.service.ProgressService;
 import org.eduspace.backend.service.StudyGroupService;
+import org.eduspace.backend.service.WithdrawService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,9 +38,10 @@ public class MentorController {
     private final MentorService mentorService;
     private final StudyGroupService studyGroupService;
     private final ProgressService progressService;
+    private final WithdrawService withdrawService;
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get Mentor Dashboard Data", description = "Lấy số liệu tổng quan trên dashboard của mentor")
     public ResponseEntity<APIResponse<MentorDashboardResponse>> getDashboardData() {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -53,7 +50,7 @@ public class MentorController {
     }
 
     @GetMapping("/pairs/{pairId}")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get pair details", description = "Mentor xem thông tin một cặp học viên trong lớp")
     public ResponseEntity<APIResponse<MentorPairDetailResponse>> getPairDetail(@PathVariable Long pairId) {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
@@ -62,7 +59,7 @@ public class MentorController {
     }
 
     @GetMapping("/pairs/{pairId}/chat")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get pair chat history", description = "Mentor xem lịch sử trò chuyện của một cặp học viên trong lớp")
     public ResponseEntity<APIResponse<List<GroupMessageResponse>>> getPairChat(@PathVariable Long pairId) {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
@@ -71,7 +68,7 @@ public class MentorController {
     }
 
     @GetMapping("/pairs/{pairId}/progress")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get pair progress detail", description = "Mentor xem chi tiết tiến độ học tập của một cặp học viên trong lớp")
     public ResponseEntity<APIResponse<MentorPairProgressResponse>> getPairProgress(@PathVariable Long pairId) {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
@@ -80,7 +77,7 @@ public class MentorController {
     }
 
     @GetMapping("/pairs/{pairId}/submissions")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get pair submissions", description = "Mentor xem tất cả bài nộp của các học viên trong một cặp")
     public ResponseEntity<APIResponse<MentorPairSubmissionsResponse>> getPairSubmissions(@PathVariable Long pairId) {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
@@ -89,7 +86,7 @@ public class MentorController {
     }
 
     @GetMapping("/pairs/{pairId}/peer-reviews")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get pair peer reviews", description = "Mentor xem tất cả peer review liên quan đến các thành viên trong một cặp")
     public ResponseEntity<APIResponse<MentorPairPeerReviewsResponse>> getPairPeerReviews(@PathVariable Long pairId) {
         Long mentorUserId = SecurityUtil.getCurrentUserId();
@@ -97,57 +94,18 @@ public class MentorController {
         return ResponseEntity.ok(APIResponse.success("Get pair peer reviews successfully", response));
     }
 
-    @GetMapping("/arbitrations")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Get list of arbitration requests", description = "Lấy danh sách các yêu cầu phân xử cho lớp mentor quản lý")
-    public ResponseEntity<APIResponse<List<MentorArbitrationResponse>>> getArbitrations() {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        List<MentorArbitrationResponse> response = mentorService.getArbitrationsForMentor(mentorUserId);
-        return ResponseEntity.ok(APIResponse.success("Get arbitration requests successfully", response));
-    }
-
-    @GetMapping("/arbitrations/{id}")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Get arbitration request detail", description = "Xem chi tiết yêu cầu phân xử cho mentor trong lớp")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> getArbitrationDetail(@PathVariable("id") Long incidentId) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.getArbitrationDetailForMentor(incidentId, mentorUserId);
-        return ResponseEntity.ok(APIResponse.success("Get arbitration request detail successfully", response));
-    }
-
-    @PostMapping("/arbitrations/{id}/grade")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Regrade peer review in arbitration", description = "Mentor chấm điểm lại cho bài nộp trong yêu cầu phân xử")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> gradeArbitration(
-            @PathVariable("id") Long incidentId,
-            @Valid @RequestBody PeerReviewGradeRequest request) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.gradeArbitrationSubmission(incidentId, mentorUserId, request);
-        return ResponseEntity.ok(APIResponse.success("Regraded and resolved arbitration request successfully", response));
-    }
-
-    @PostMapping("/arbitrations/{id}/reject")
-    @PreAuthorize("hasRole('MENTOR')")
-    @Operation(summary = "Reject arbitration request", description = "Từ chối phân xử cho yêu cầu phân xử trong lớp mentor quản lý")
-    public ResponseEntity<APIResponse<MentorArbitrationResponse>> rejectArbitration(
-            @PathVariable("id") Long incidentId,
-            @Valid @RequestBody RejectArbitrationRequest request) {
-        Long mentorUserId = SecurityUtil.getCurrentUserId();
-        MentorArbitrationResponse response = mentorService.rejectArbitrationRequest(incidentId, mentorUserId, request);
-        return ResponseEntity.ok(APIResponse.success("Rejected arbitration request successfully", response));
-    }
-
     @GetMapping("/classes")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get Mentor Classes", description = "Lấy danh sách các lớp học do mentor hiện tại phụ trách")
-    public ResponseEntity<APIResponse<List<MentorClassResponse>>> getMentorClasses() {
+    public ResponseEntity<APIResponse<List<org.eduspace.backend.dto.mentor.response.MentorClassResponse>>> getMentorClasses() {
         Long userId = SecurityUtil.getCurrentUserId();
-        List<MentorClassResponse> response = mentorService.getMentorClasses(userId);
+        List<org.eduspace.backend.dto.mentor.response.MentorClassResponse> response = mentorService
+                .getMentorClasses(userId);
         return ResponseEntity.ok(APIResponse.success("Get classes successfully", response));
     }
 
     @GetMapping("/classes/{classId}")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get Mentor Class Detail", description = "Lấy chi tiết lớp học do mentor phụ trách")
     public ResponseEntity<APIResponse<MentorClassDetailResponse>> getMentorClassDetail(@PathVariable Long classId) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -156,7 +114,7 @@ public class MentorController {
     }
 
     @GetMapping("/classes/{classId}/pairs")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get Mentor Class Pairs", description = "Lấy danh sách các cặp/nhóm học tập trong lớp")
     public ResponseEntity<APIResponse<List<StudyGroupResponse>>> getMentorClassPairs(@PathVariable Long classId) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -164,21 +122,76 @@ public class MentorController {
         return ResponseEntity.ok(APIResponse.success("Get class pairs successfully", response));
     }
 
-    @PostMapping("/withdraw-request")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PostMapping("/classes/{classId}/withdraw-requests")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Request Withdrawal", description = "Gửi yêu cầu xin rút lui khỏi lớp học")
-    public ResponseEntity<APIResponse<String>> createWithdrawRequest(@Valid @RequestBody WithdrawRequestDto dto) {
+    public ResponseEntity<APIResponse<WithdrawDetailResponse>> submitWithdrawRequest(
+            @PathVariable Long classId,
+            @Valid @RequestBody org.eduspace.backend.dto.mentor.request.SubmitWithdrawRequestDto dto) {
         Long userId = SecurityUtil.getCurrentUserId();
-        mentorService.createWithdrawRequest(userId, dto);
-        return ResponseEntity.ok(APIResponse.success("Gửi yêu cầu rút lui thành công!", null));
+        org.eduspace.backend.entity.WithdrawRequest request = withdrawService.submitWithdrawRequest(userId, classId,
+                dto);
+        return ResponseEntity
+                .ok(APIResponse.success("Gửi yêu cầu rút lui thành công!", withdrawService.convertToDto(request)));
     }
 
-    @GetMapping("/withdraw-request/{id}")
+    @PostMapping("/classes/{classId}/withdraw-requests/cancel")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Cancel Withdrawal Request", description = "Hủy yêu cầu rút lui khỏi lớp học đang chờ duyệt")
+    public ResponseEntity<APIResponse<String>> cancelWithdrawRequest(@PathVariable Long classId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        withdrawService.cancelWithdrawRequest(userId, classId);
+        return ResponseEntity.ok(APIResponse.success("Hủy yêu cầu rút lui thành công!", null));
+    }
+
+    @GetMapping("/withdraw-requests")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Get My Withdraw Requests", description = "Xem lịch sử yêu cầu rút lui của bản thân")
+    public ResponseEntity<APIResponse<List<WithdrawDetailResponse>>> getMyWithdrawRequests() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<WithdrawDetailResponse> response = withdrawService.getMyWithdrawRequests(userId);
+        return ResponseEntity.ok(APIResponse.success("Get my withdraw requests successfully", response));
+    }
+
+    @GetMapping("/withdraw-requests/{id}")
     @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get Withdraw Request Detail", description = "Xem chi tiết yêu cầu rút lui của mentor")
     public ResponseEntity<APIResponse<WithdrawDetailResponse>> getWithdrawRequest(@PathVariable Long id) {
         Long userId = SecurityUtil.getCurrentUserId();
-        WithdrawDetailResponse response = mentorService.getWithdrawRequest(id, userId);
+        WithdrawDetailResponse response = withdrawService.getWithdrawRequest(id, userId);
         return ResponseEntity.ok(APIResponse.success("Get withdraw request detail successfully", response));
+    }
+
+    @GetMapping("/active-courses")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Get Active Courses", description = "Lấy danh sách cấu hình nhận lớp giảng dạy của mentor")
+    public ResponseEntity<APIResponse<List<org.eduspace.backend.dto.mentor.response.ActiveMentorResponse>>> getActiveCourses() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<org.eduspace.backend.dto.mentor.response.ActiveMentorResponse> response = mentorService
+                .getActiveCoursesForMentor(userId);
+        return ResponseEntity.ok(APIResponse.success("Get active courses config successfully", response));
+    }
+
+    @PostMapping("/active-courses")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Register Active Course", description = "Đăng ký giảng dạy khóa học mới")
+    public ResponseEntity<APIResponse<String>> registerActiveCourse(@RequestBody java.util.Map<String, Long> payload) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        Long courseId = payload.get("courseId");
+        mentorService.assignMentorToCourse(userId, courseId);
+        return ResponseEntity.ok(APIResponse.success("Đăng ký nhận lớp thành công!", null));
+    }
+
+    @PutMapping("/active-courses/{courseId}/status")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
+    @Operation(summary = "Update Active Course Status", description = "Cập nhật trạng thái hoạt động của mentor cho khóa học")
+    public ResponseEntity<APIResponse<String>> updateActiveCourseStatus(
+            @PathVariable Long courseId,
+            @RequestBody java.util.Map<String, String> payload) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        org.eduspace.backend.enums.MentorStatus status = org.eduspace.backend.enums.MentorStatus
+                .valueOf(payload.get("status"));
+        mentorService.updateActiveMentorStatus(userId, courseId, status);
+        return ResponseEntity.ok(APIResponse.success("Cập nhật trạng thái thành công!", null));
     }
 }

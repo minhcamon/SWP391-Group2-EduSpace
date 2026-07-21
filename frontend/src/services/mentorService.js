@@ -56,13 +56,41 @@ export const mentorService = {
     /**
      * Submits a withdraw request.
      */
-    submitWithdrawRequest: async (data) => {
+    submitWithdrawRequest: async (classId, data) => {
         try {
-            const response = await api.post('/mentor/withdraw-request', data);
-            return response.data.message || 'Gửi yêu cầu rút lui thành công!';
+            const response = await api.post(`/mentor/classes/${classId}/withdraw-requests`, data);
+            return response.data.data;
         } catch (error) {
             console.error('submitWithdrawRequest error at mentorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể gửi yêu cầu rút lui!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Cancels a pending withdraw request for a class.
+     */
+    cancelWithdrawRequest: async (classId) => {
+        try {
+            const response = await api.post(`/mentor/classes/${classId}/withdraw-requests/cancel`);
+            return response.data.message;
+        } catch (error) {
+            console.error('cancelWithdrawRequest error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể hủy yêu cầu rút khỏi lớp!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Fetches all withdraw requests of current mentor.
+     */
+    getMyWithdrawRequests: async () => {
+        try {
+            const response = await api.get('/mentor/withdraw-requests');
+            return response.data.data;
+        } catch (error) {
+            console.error('getMyWithdrawRequests error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải lịch sử đơn xin rút lui!';
             throw new Error(errorMsg);
         }
     },
@@ -72,11 +100,53 @@ export const mentorService = {
      */
     getWithdrawRequest: async (id) => {
         try {
-            const response = await api.get(`/mentor/withdraw-request/${id}`);
+            const response = await api.get(`/mentor/withdraw-requests/${id}`);
             return response.data.data;
         } catch (error) {
             console.error('getWithdrawRequest error at mentorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết yêu cầu rút lui!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Fetches teaching configuration (active courses) of mentor.
+     */
+    getActiveCourses: async () => {
+        try {
+            const response = await api.get('/mentor/active-courses');
+            return response.data.data;
+        } catch (error) {
+            console.error('getActiveCourses error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải cấu hình giảng dạy!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Registers teaching for a course (ActiveMentor pool).
+     */
+    registerActiveCourse: async (courseId) => {
+        try {
+            const response = await api.post('/mentor/active-courses', { courseId });
+            return response.data.message;
+        } catch (error) {
+            console.error('registerActiveCourse error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể đăng ký giảng dạy khóa học!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Updates status for registered active course.
+     */
+    updateActiveCourseStatus: async (courseId, status) => {
+        try {
+            const response = await api.put(`/mentor/active-courses/${courseId}/status`, { status });
+            return response.data.message;
+        } catch (error) {
+            console.error('updateActiveCourseStatus error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể cập nhật trạng thái giảng dạy!';
             throw new Error(errorMsg);
         }
     },
@@ -126,13 +196,41 @@ export const mentorService = {
     /**
      * Resolves an incident.
      */
-    resolveIncident: async (id, resolutionNote) => {
+    resolveIncident: async (id, payload) => {
         try {
-            const response = await api.put(`/incidents/${id}/resolve`, { resolutionNote });
+            const response = await api.put(`/incidents/${id}/resolve`, payload);
             return response.data.message;
         } catch (error) {
             console.error('resolveIncident error at mentorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể giải quyết sự cố!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Rejects an incident.
+     */
+    rejectIncident: async (id, payload) => {
+        try {
+            const response = await api.put(`/incidents/${id}/reject`, payload);
+            return response.data.message;
+        } catch (error) {
+            console.error('rejectIncident error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể từ chối sự cố!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Warns learner in incident.
+     */
+    warnIncident: async (id, payload) => {
+        try {
+            const response = await api.put(`/incidents/${id}/warn`, payload);
+            return response.data.message;
+        } catch (error) {
+            console.error('warnIncident error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể cảnh cáo học viên!';
             throw new Error(errorMsg);
         }
     },

@@ -6,15 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CertificateResponse {
-    @JsonProperty("isCompleted")
-    private boolean isCompleted;
+    private Boolean isCompleted;
+    private Boolean isAlreadyMentor;
     private String userName;
     private String courseTitle;
     private String certificateId;

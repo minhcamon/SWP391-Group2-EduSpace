@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import learnService from "@/services/learnService";
 import { runWithLoading } from "@/utils/utils";
 
 const useProgressDashboard = () => {
     const { courseId } = useParams();
+    const navigate = useNavigate();
 
     // UI States
     const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +31,8 @@ const useProgressDashboard = () => {
                     
                     const classIdVal = currentCourse.classId;
                     setClassId(classIdVal);
+
+
 
                     // 2. Fetch the real dashboard data using classId
                     const data = await learnService.getProgressDashboard(classIdVal);

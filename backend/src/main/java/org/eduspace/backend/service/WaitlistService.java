@@ -11,6 +11,8 @@ import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.UserRepository;
 import org.eduspace.backend.repository.WaitlistRepository;
 import org.eduspace.backend.repository.WaitlistEntryRepository;
+import org.eduspace.backend.dto.waitlist.response.WaitlistResponse;
+import org.eduspace.backend.dto.waitlist.response.WaitlistEntryResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +31,11 @@ public class WaitlistService {
         private final UserRepository userRepository;
         private final SystemService systemService;
 
-        // Sĩ số tối đa của waitlist trước khi tự động tạo lớp, cấu hình ở application.properties
+        // Sĩ số tối đa của waitlist trước khi tự động tạo lớp, cấu hình ở
+        // application.properties
         @Value("${app.waitlist.capacity:10}")
         private int waitlistCapacity;
 
-        
         public List<UserResponse> getMembersInWaitlist(Long userId, Long courseId) {
                 Long waitlistId = waitlistRepository.findWaitlistByUserAndCourse(userId, courseId)
                                 .orElseThrow(() -> new RuntimeException("Error at finding your waitlist"));
@@ -101,11 +103,8 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
-        
                 if (currentCount >= waitlistCapacity) {
-                        activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         systemService.createClassFromWaitlist(activeWaitlist.getId());
-                        activeWaitlist.setStatus(WaitlistStatus.FULLED);
                         return true;
                 }
 
@@ -125,5 +124,82 @@ public class WaitlistService {
                 }
 
                 waitlistRepository.deleteEntryByUserAndWaitlist(userId, waitlistId);
+        }
+
+        public List<WaitlistResponse> getCreatorWaitlists(Long creatorId) {
+                List<Waitlist> waitlists = waitlistRepository.findByCreatorId(creatorId);
+                return waitlists.stream()
+                                .map(w -> {
+                                        List<WaitlistEntry> entries = waitlistEntryRepository
+                                                        .findByWaitlistId(w.getId());
+                                        return mapToWaitlistResponse(w, entries);
+                                })
+                                .toList();
+        }
+
+        public WaitlistResponse getWaitlistDetails(Long waitlistId) {
+                Waitlist waitlist = waitlistRepository.findById(waitlistId)
+                                .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + waitlistId));
+
+                if (waitlist.getStatus() != WaitlistStatus.OPENING) {
+                        throw new RuntimeException("Hàng chờ này đã đóng hoặc đã được mở thành lớp học.");
+                }
+
+                List<WaitlistEntry> entries = waitlistEntryRepository.findByWaitlistId(waitlistId);
+                return mapToWaitlistResponse(waitlist, entries);
+        }
+
+        private WaitlistResponse mapToWaitlistResponse(Waitlist waitlist, List<WaitlistEntry> entries) {
+                List<WaitlistEntryResponse> students = entries.stream()
+                                .map(this::mapToWaitlistEntryResponse)
+                                .toList();
+
+                return WaitlistResponse.builder()
+                                .id(waitlist.getId())
+                                .status(waitlist.getStatus())
+                                .createdAt(waitlist.getCreatedAt())
+                                .course(WaitlistResponse.CourseSummaryResponse.builder()
+                                                .id(waitlist.getCourse().getId())
+                                                .title(waitlist.getCourse().getTitle())
+                                                .description(waitlist.getCourse().getDescription())
+                                                .build())
+                                .students(students)
+                                .build();
+        }
+
+        @Transactional
+        public Long startClassFromWaitlist(Long waitlistId) {
+                Waitlist waitlist = waitlistRepository.findById(waitlistId)
+                                .orElseThrow(() -> new RuntimeException("Waitlist not found"));
+                if (waitlist.getStatus() == WaitlistStatus.FULLED || waitlist.getStatus() == WaitlistStatus.CLOSED) {
+                        throw new RuntimeException("Hàng chờ này đã được mở lớp hoặc đã đóng");
+                }
+
+                int studentCount = waitlistEntryRepository.countByWaitlistId(waitlistId);
+                if (studentCount < 2) {
+                        throw new RuntimeException("Hàng chờ phải có ít nhất 2 học viên mới có thể mở lớp.");
+                }
+
+                return systemService.createClassFromWaitlist(waitlistId);
+        }
+
+        private WaitlistEntryResponse mapToWaitlistEntryResponse(WaitlistEntry entry) {
+                User user = entry.getUser();
+                UserResponse userResponse = UserResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .fullName(user.getFullName())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .avatarUrl(user.getAvatarUrl())
+                                .bio(user.getBio())
+                                .role(user.getRole().name())
+                                .build();
+
+                return WaitlistEntryResponse.builder()
+                                .id(entry.getId())
+                                .enrolledAt(entry.getEnrolledAt())
+                                .user(userResponse)
+                                .build();
         }
 }

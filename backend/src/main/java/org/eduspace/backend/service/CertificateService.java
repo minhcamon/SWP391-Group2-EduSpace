@@ -31,7 +31,9 @@ public class CertificateService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
     private final CertificateRepository certificateRepository;
+    private final ActiveMentorRepository activeMentorRepository;
     private final NotificationService notificationService;
+    private final PeerReviewRepository peerReviewRepository;
 
     @Transactional
     public void checkAndIssueCertificate(ClassMember classMember) {
@@ -60,7 +62,8 @@ public class CertificateService {
         long totalUnits = totalLessons + totalAssignments;
         long completedUnits = completedLessons + completedAssignments;
 
-        boolean isCompleted = totalUnits > 0 && completedUnits >= totalUnits;
+        long pendingReviews = peerReviewRepository.countPendingReviews(classMember.getId());
+        boolean isCompleted = totalUnits > 0 && completedUnits >= totalUnits && pendingReviews == 0;
 
         if (isCompleted) {
             boolean exists = certificateRepository
@@ -83,7 +86,7 @@ public class CertificateService {
 
     @Transactional
     public CertificateResponse getCertificateDetails(Long classId, Long userId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Thành viên không thuộc lớp học này"));
 
         Course course = classMember.getCourseClass().getCourse();
@@ -93,9 +96,11 @@ public class CertificateService {
         if (certificate != null) {
             isCompleted = !isCompleted;
         }
+        boolean isAlreadyMentor = activeMentorRepository.existsByUserIdAndCourseId(userId, course.getId());
         User creator = course.getCreator();
         return CertificateResponse.builder()
                 .isCompleted(isCompleted)
+                .isAlreadyMentor(isAlreadyMentor)
                 .userName(classMember.getUser().getFullName())
                 .courseTitle(course.getTitle())
                 .certificateId(certificate != null ? "EDU-CS-" + certificate.getId() : "")

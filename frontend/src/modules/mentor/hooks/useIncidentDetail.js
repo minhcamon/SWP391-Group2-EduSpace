@@ -6,7 +6,6 @@ import { toast } from "sonner";
 export const useIncidentDetail = (incidentId) => {
   const [incident, setIncident] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [resolutionText, setResolutionText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchIncidentDetail = async () => {
@@ -14,9 +13,6 @@ export const useIncidentDetail = (incidentId) => {
       await runWithLoading(setIsLoading, async () => {
         const data = await mentorService.getIncidentById(incidentId);
         setIncident(data);
-        if (data && data.status === "RESOLVED") {
-          setResolutionText(data.resolutionNote || "");
-        }
       });
     } catch (err) {
       toast.error(err.message || "Không thể tải thông tin sự cố!");
@@ -41,32 +37,50 @@ export const useIncidentDetail = (incidentId) => {
     }
   };
 
-  const handleResolve = async (e) => {
-    if (e) e.preventDefault();
-    if (!resolutionText.trim()) {
-      toast.error("Vui lòng nhập phương án giải quyết!");
-      return;
-    }
-
+  const handleResolve = async (payload) => {
     try {
       await runWithLoading(setIsSubmitting, async () => {
-        await mentorService.resolveIncident(incidentId, resolutionText);
-        toast.success("Đã đóng sự cố thành công!");
+        await mentorService.resolveIncident(incidentId, payload);
+        toast.success("Đã giải quyết sự cố thành công!");
         fetchIncidentDetail();
       });
     } catch (err) {
-      toast.error(err.message || "Lỗi đóng sự cố!");
+      toast.error(err.message || "Lỗi giải quyết sự cố!");
+    }
+  };
+
+  const handleReject = async (payload) => {
+    try {
+      await runWithLoading(setIsSubmitting, async () => {
+        await mentorService.rejectIncident(incidentId, payload);
+        toast.success("Đã từ chối xử lý sự cố!");
+        fetchIncidentDetail();
+      });
+    } catch (err) {
+      toast.error(err.message || "Lỗi từ chối sự cố!");
+    }
+  };
+
+  const handleWarn = async (payload) => {
+    try {
+      await runWithLoading(setIsSubmitting, async () => {
+        await mentorService.warnIncident(incidentId, payload);
+        toast.success("Đã gửi nhắc nhở thành công!");
+        fetchIncidentDetail();
+      });
+    } catch (err) {
+      toast.error(err.message || "Lỗi gửi nhắc nhở!");
     }
   };
 
   return {
     incident,
     isLoading,
-    resolutionText,
-    setResolutionText,
     isSubmitting,
     handleClaim,
     handleResolve,
+    handleReject,
+    handleWarn,
     refreshIncident: fetchIncidentDetail
   };
 };

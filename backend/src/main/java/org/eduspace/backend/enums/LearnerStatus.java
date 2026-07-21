@@ -4,5 +4,7 @@ public enum LearnerStatus {
     ACTIVE,
     NEED_REVIEW,
     DROPPED,
-    FAILED
+    FAILED,
+    PENDING_WITHDRAWAL,
+    INACTIVE
 }

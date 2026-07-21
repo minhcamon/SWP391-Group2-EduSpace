@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
     LayoutDashboard,
     BookOpen,
@@ -10,6 +10,8 @@ import {
     Form,
     Menu,
     X,
+    ArrowLeftRight,
+    ShieldCheck,
 } from "lucide-react";
 import Logo from "../common/Logo";
 import Avatar from "../common/Avatar";
@@ -17,12 +19,27 @@ import LogoutButton from "../ui/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
 import Badge from "../ui/Badge";
+import api from "@/lib/axios";
 
 const Sidebar = () => {
-    const { user } = useAuth();
+    const { user, setMode } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [isCreatorMentor, setIsCreatorMentor] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const currentPath = location.pathname;
+
+    // Real-time check: does this Creator have any mentor classes?
+    useEffect(() => {
+        if (user?.role === 'CREATOR') {
+            api.get('/mentor/classes')
+                .then(res => {
+                    const classes = res.data?.data;
+                    setIsCreatorMentor(Array.isArray(classes) && classes.length > 0);
+                })
+                .catch(() => setIsCreatorMentor(false));
+        }
+    }, [user?.role, user?.id]);
 
     // Close the sidebar when navigation occurs
     useEffect(() => {
@@ -86,9 +103,19 @@ const Sidebar = () => {
                     path: "/creator/courses",
                 },
                 {
+                    text: "Quản lý hàng chờ (Waitlist)",
+                    icon: GraduationCap,
+                    path: "/creator/waitlist",
+                },
+                {
                     text: "Quản lý đơn mentor",
                     icon: Users,
                     path: "/creator/mentor-applications",
+                },
+                {
+                    text: "Yêu cầu rút lui",
+                    icon: Form,
+                    path: "/creator/withdraw-requests",
                 },
             ],
         },
@@ -106,7 +133,7 @@ const Sidebar = () => {
             {/* Mobile Header Bar */}
             <div className="md:hidden flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-40 w-full shadow-xs">
                 <div className="flex items-center gap-2">
-                    <Logo />
+                    <Logo className="w-24 sm:w-28" />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-primary ml-2">
                         {displayMapping[user.role]}
                     </span>
@@ -144,13 +171,13 @@ const Sidebar = () => {
                 </div>
 
                 <div className="flex flex-col grow overflow-y-auto px-4 py-6">
-                    <div className="flex items-center gap-3 px-2 mb-8">
-                        <div>
-                            <Logo />
+                    <div className="flex items-center justify-center px-2 mb-8 w-full">
+                        <div className="w-full">
+                            <Logo className="w-32 md:w-36 mx-auto" />
                             <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-center text-primary">
                                 {displayMapping[user.role]}
                             </p>
-                            <hr className="mt-4 text-secondary" />
+                            <hr className="mt-4 border-secondary" />
                         </div>
                     </div>
 
@@ -193,6 +220,22 @@ const Sidebar = () => {
                 </div>
 
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                    {/* Creator: Switch to Mentor mode button */}
+                    {user.role === 'CREATOR' && isCreatorMentor && (
+                        <button
+                            onClick={() => {
+                                setMode('MENTOR');
+                                navigate('/mentor');
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer group mb-3"
+                        >
+                            <ShieldCheck
+                                size={18}
+                                className="text-indigo-400 group-hover:text-indigo-600 transition-colors"
+                            />
+                            Trang quản lý Mentor
+                        </button>
+                    )}
                     <div className="flex items-center gap-3 p-2 mb-3 rounded-xl">
                         <Link to="/profile">
                             <Avatar

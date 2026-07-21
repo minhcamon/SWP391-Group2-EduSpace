@@ -26,4 +26,5 @@ public class CourseResponse {
     private List<ModuleResponse> modules;
     private String enrollmentStatus;
     private Long targetClassId;
+    private Boolean isCompleted;
 }

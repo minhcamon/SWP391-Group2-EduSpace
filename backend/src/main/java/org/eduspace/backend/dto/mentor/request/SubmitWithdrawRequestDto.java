@@ -6,11 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class RejectArbitrationRequest {
-    @NotBlank(message = "Lý do từ chối không được để trống")
+@AllArgsConstructor
+public class SubmitWithdrawRequestDto {
+
+    @NotBlank(message = "Lý do rút lui không được để trống")
     private String reason;
+
+    private LocalDate expectedLeaveDate;
 }

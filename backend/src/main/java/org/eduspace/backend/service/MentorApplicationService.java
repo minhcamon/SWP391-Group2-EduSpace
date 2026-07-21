@@ -50,12 +50,14 @@ public class MentorApplicationService {
         }
 
         // 2. Kiểm tra đơn ứng tuyển trùng lặp
-        boolean alreadyPending = mentorApplicationRepository.existsByUserIdAndCourseIdAndStatus(userId, course.getId(), RequestStatus.PENDING);
+        boolean alreadyPending = mentorApplicationRepository.existsByUserIdAndCourseIdAndStatus(userId, course.getId(),
+                RequestStatus.PENDING);
         if (alreadyPending) {
             throw new RuntimeException("Bạn đã có đơn ứng tuyển đang chờ duyệt cho khóa học này!");
         }
 
-        boolean alreadyApproved = mentorApplicationRepository.existsByUserIdAndCourseIdAndStatus(userId, course.getId(), RequestStatus.APPROVED);
+        boolean alreadyApproved = mentorApplicationRepository.existsByUserIdAndCourseIdAndStatus(userId, course.getId(),
+                RequestStatus.APPROVED);
         if (alreadyApproved) {
             throw new RuntimeException("Bạn đã là Mentor của khóa học này!");
         }
@@ -76,16 +78,17 @@ public class MentorApplicationService {
         if (creator != null) {
             notificationService.sendToUser(
                     creator,
-                    "Học viên " + user.getFullName() + " đã nộp đơn xin làm Mentor cho khóa học " + course.getTitle() + ".",
+                    "Học viên " + user.getFullName() + " đã nộp đơn xin làm Mentor cho khóa học " + course.getTitle()
+                            + ".",
                     NotificationType.MENTOR_APPLICATION,
-                    application.getId()
-            );
+                    application.getId());
         }
     }
 
     @Transactional(readOnly = true)
     public List<MentorApplicationResponse> getMentorApplicationsForCreator(Long creatorId) {
-        List<MentorApplication> applications = mentorApplicationRepository.findByCourseCreatorIdOrderByIdDesc(creatorId);
+        List<MentorApplication> applications = mentorApplicationRepository
+                .findByCourseCreatorIdOrderByIdDesc(creatorId);
 
         return applications.stream()
                 .map(app -> MentorApplicationResponse.builder()
@@ -112,7 +115,8 @@ public class MentorApplicationService {
         }
 
         // Lấy ClassMember tương ứng của học viên trong lớp
-        ClassMember member = classMemberRepository.findByUserIdAndCourseClassId(app.getUser().getId(), app.getCourseClass().getId())
+        ClassMember member = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(app.getCourseClass().getId(), app.getUser().getId(), "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin tham gia lớp học của ứng viên!"));
 
         // Lấy danh sách bài nộp của học viên trong lớp đó
@@ -121,7 +125,8 @@ public class MentorApplicationService {
         List<MentorApplicationDetailResponse.SubmissionDetail> submissionDetails = new ArrayList<>();
         for (Submission sub : submissions) {
             PeerReview review = sub.getPeerReview();
-            MentorApplicationDetailResponse.SubmissionDetail detail = MentorApplicationDetailResponse.SubmissionDetail.builder()
+            MentorApplicationDetailResponse.SubmissionDetail detail = MentorApplicationDetailResponse.SubmissionDetail
+                    .builder()
                     .assignmentTitle(sub.getAssignment().getTitle())
                     .assignmentDescription(sub.getAssignment().getDescription())
                     .submissionContent(sub.getSubmissionContent())
@@ -186,8 +191,7 @@ public class MentorApplicationService {
                 applicant,
                 "Đơn ứng tuyển làm Mentor khóa học " + app.getCourse().getTitle() + " của bạn đã được phê duyệt!",
                 NotificationType.MENTOR_APPLICATION,
-                app.getId()
-        );
+                app.getId());
     }
 
     @Transactional
@@ -213,9 +217,9 @@ public class MentorApplicationService {
         User applicant = app.getUser();
         notificationService.sendToUser(
                 applicant,
-                "Đơn ứng tuyển làm Mentor khóa học " + app.getCourse().getTitle() + " của bạn đã bị từ chối. Lý do: " + reason,
+                "Đơn ứng tuyển làm Mentor khóa học " + app.getCourse().getTitle() + " của bạn đã bị từ chối. Lý do: "
+                        + reason,
                 NotificationType.MENTOR_APPLICATION,
-                app.getId()
-        );
+                app.getId());
     }
 }

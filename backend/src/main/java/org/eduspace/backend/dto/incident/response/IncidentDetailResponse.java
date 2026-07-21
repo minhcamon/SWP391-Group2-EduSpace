@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eduspace.backend.enums.IncidentStatus;
 import org.eduspace.backend.enums.IncidentType;
+import org.eduspace.backend.dto.course.RubricCriteriaDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -25,4 +27,10 @@ public class IncidentDetailResponse {
     private String resolutionNote;
     private LocalDateTime createdAt;
     private LocalDateTime solvedAt;
+
+    private String submissionTitle;
+    private String submissionContent;
+    private Integer scoreGiven;
+    private String reviewerComment;
+    private List<RubricCriteriaDto> rubricCriteria;
 }

@@ -8,7 +8,9 @@ import org.eduspace.backend.enums.WaitlistStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.eduspace.backend.enums.NotificationType;
+import org.eduspace.backend.enums.MentorStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +28,17 @@ public class SystemService {
     private final StudyGroupRepository studyGroupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
+    private final ActiveMentorRepository activeMentorRepository;
 
     @Transactional
     public Long createClassFromWaitlist(Long waitlistId) {
 
         Waitlist waitlist = waitlistRepository.findById(waitlistId)
                 .orElseThrow(() -> new RuntimeException("Error: Waitlist not found."));
+
+        if (waitlist.getStatus() == WaitlistStatus.FULLED || waitlist.getStatus() == WaitlistStatus.CLOSED) {
+            throw new RuntimeException("Error: Waitlist has already been turned into a class or closed.");
+        }
 
         waitlist.setStatus(WaitlistStatus.FULLED);
         waitlistRepository.save(waitlist);
@@ -47,18 +54,61 @@ public class SystemService {
                 .build();
         CourseClass savedClass = classRepository.save(newClass);
 
+        // Create creator class member with role "CREATOR"
+        ClassMember creatorMember = ClassMember.builder()
+                .courseClass(savedClass)
+                .user(waitlist.getCourse().getCreator())
+                .contextRole("CREATOR")
+                .joinedAt(LocalDateTime.now())
+                .build();
+        classMemberRepository.save(creatorMember);
+
+        // Find and assign up to 2 mentors using Round-Robin with limit
+        List<ActiveMentor> availableCourseMentors = activeMentorRepository
+                .findByCourseIdAndMentorStatusOrderByUpdatedAtAsc(waitlist.getCourse().getId(), MentorStatus.AVAILABLE);
+
+        List<ActiveMentor> selectedMentors = new ArrayList<>();
+        for (ActiveMentor am : availableCourseMentors) {
+            long activeClasses = classMemberRepository.countActiveClassesByMentor(
+                    am.getUser().getId(),
+                    "MENTOR",
+                    ClassStatus.RUNNING);
+            if (activeClasses < 2) {
+                selectedMentors.add(am);
+                if (selectedMentors.size() == 2) {
+                    break;
+                }
+            }
+        }
+
+        for (ActiveMentor am : selectedMentors) {
+            ClassMember mentorMember = ClassMember.builder()
+                    .courseClass(savedClass)
+                    .user(am.getUser())
+                    .contextRole("MENTOR")
+                    .joinedAt(LocalDateTime.now())
+                    .build();
+            classMemberRepository.save(mentorMember);
+
+            // Update updatedAt to rotate the queue
+            am.setUpdatedAt(LocalDateTime.now());
+            activeMentorRepository.save(am);
+        }
+
         List<WaitlistEntry> allEntries = waitlistEntryRepository.findByWaitlistId(waitlistId);
 
-        if (allEntries.size() < 10) {
-            throw new RuntimeException("Error: Not enough 10 members to start the class.");
+        if (allEntries.size() < 2) {
+            throw new RuntimeException("Error: Hàng chờ phải có ít nhất 2 học viên mới có thể mở lớp.");
         }
-        List<WaitlistEntry> entries = allEntries.subList(0, 10);
 
-        entries.sort((a, b) -> {
+        // Sort all entries by EXP descending
+        allEntries.sort((a, b) -> {
             int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;
             int expB = b.getUser().getTotalExp() != null ? b.getUser().getTotalExp() : 0;
             return Integer.compare(expB, expA);
         });
+
+        List<WaitlistEntry> entries = allEntries.size() > 10 ? allEntries.subList(0, 10) : allEntries;
 
         List<ClassMember> savedMembers = new ArrayList<>();
         for (WaitlistEntry entry : entries) {
@@ -87,6 +137,7 @@ public class SystemService {
         int left = 0;
         int right = savedMembers.size() - 1;
         int groupIndex = 1;
+        StudyGroup savedGroup = null;
 
         while (left < right) {
             ClassMember proStudent = savedMembers.get(left);
@@ -98,7 +149,7 @@ public class SystemService {
                     .chatChannelId("chat_room_g" + groupIndex + "_" + savedClass.getId())
                     .chatStatus("ACTIVE")
                     .build();
-            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+            savedGroup = studyGroupRepository.save(studyGroup);
 
             GroupMember memberLeft = GroupMember.builder()
                     .studyGroup(savedGroup)
@@ -115,6 +166,14 @@ public class SystemService {
             left++;
             right--;
             groupIndex++;
+        }
+
+        if (left == right && savedGroup != null) {
+            GroupMember memberOdd = GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(savedMembers.get(left))
+                    .build();
+            groupMemberRepository.save(memberOdd);
         }
 
         this.createTimelineForClass(savedClass.getId());
@@ -169,6 +228,7 @@ public class SystemService {
         int left = 0;
         int right = members.size() - 1;
         int groupIndex = 1;
+        StudyGroup savedGroup = null;
 
         while (left < right) {
             StudyGroup studyGroup = StudyGroup.builder()
@@ -177,7 +237,7 @@ public class SystemService {
                     .chatChannelId("manual_chat_g" + groupIndex + "_" + classId)
                     .chatStatus("ACTIVE")
                     .build();
-            StudyGroup savedGroup = studyGroupRepository.save(studyGroup);
+            savedGroup = studyGroupRepository.save(studyGroup);
 
             groupMemberRepository.save(GroupMember.builder().studyGroup(savedGroup)
                     .classMember(members.get(left)).build());
@@ -187,6 +247,13 @@ public class SystemService {
             left++;
             right--;
             groupIndex++;
+        }
+
+        if (left == right && savedGroup != null) {
+            groupMemberRepository.save(GroupMember.builder()
+                    .studyGroup(savedGroup)
+                    .classMember(members.get(left))
+                    .build());
         }
     }
 
@@ -261,6 +328,60 @@ public class SystemService {
                     .classMember(cm)
                     .build();
             groupMemberRepository.save(gm);
+        }
+    }
+
+    /**
+     * Auto-scan running classes hourly to assign mentors if they have fewer than 2 mentors.
+     */
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void scanAndAssignMentorsToClasses() {
+        List<CourseClass> runningClasses = classRepository.findByStatus(ClassStatus.RUNNING);
+        for (CourseClass cc : runningClasses) {
+            int currentMentorsCount = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "MENTOR").size();
+            if (currentMentorsCount < 2) {
+                int mentorsNeeded = 2 - currentMentorsCount;
+
+                List<ActiveMentor> availableCourseMentors = activeMentorRepository
+                        .findByCourseIdAndMentorStatusOrderByUpdatedAtAsc(cc.getCourse().getId(), MentorStatus.AVAILABLE);
+
+                List<ActiveMentor> selectedMentors = new ArrayList<>();
+                for (ActiveMentor am : availableCourseMentors) {
+                    // Check if already assigned to this class
+                    boolean alreadyAssigned = classMemberRepository
+                            .findByUserIdAndCourseClassIdAndContextRole(am.getUser().getId(), cc.getId(), "MENTOR")
+                            .isPresent();
+                    if (alreadyAssigned) {
+                        continue;
+                    }
+
+                    long activeClasses = classMemberRepository.countActiveClassesByMentor(
+                            am.getUser().getId(),
+                            "MENTOR",
+                            ClassStatus.RUNNING);
+                    if (activeClasses < 2) {
+                        selectedMentors.add(am);
+                        if (selectedMentors.size() == mentorsNeeded) {
+                            break;
+                        }
+                    }
+                }
+
+                for (ActiveMentor am : selectedMentors) {
+                    ClassMember mentorMember = ClassMember.builder()
+                            .courseClass(cc)
+                            .user(am.getUser())
+                            .contextRole("MENTOR")
+                            .joinedAt(LocalDateTime.now())
+                            .build();
+                    classMemberRepository.save(mentorMember);
+
+                    // Update updatedAt to rotate the queue
+                    am.setUpdatedAt(LocalDateTime.now());
+                    activeMentorRepository.save(am);
+                }
+            }
         }
     }
 }

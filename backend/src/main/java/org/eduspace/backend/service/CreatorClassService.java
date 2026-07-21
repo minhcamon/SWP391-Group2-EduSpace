@@ -3,8 +3,8 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
+import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.entity.*;
-import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,8 @@ public class CreatorClassService {
     private final UserRepository userRepository;
     private final WithdrawRequestRepository withdrawRequestRepository;
     private final CourseRepository courseRepository;
+    private final ClassTimelineRepository classTimelineRepository;
+    private final StudyGroupRepository studyGroupRepository;
 
     private CourseClass checkCreatorOwnershipAndGetClass(Long classId, Long creatorId) {
         CourseClass cc = classRepository.findById(classId)
@@ -39,7 +41,9 @@ public class CreatorClassService {
     public List<MentorResponse> getClassMentors(Long classId, Long creatorId) {
         checkCreatorOwnershipAndGetClass(classId, creatorId);
 
-        List<ClassMember> classMembers = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
+        // Get all mentors in class, including Creator acting as mentor (contextRole =
+        // "CREATOR" or "MENTOR")
+        List<ClassMember> classMembers = classMemberRepository.findAllMentorsInClass(classId);
         return classMembers.stream()
                 .map(cm -> MentorResponse.builder()
                         .id(cm.getUser().getId())
@@ -71,6 +75,15 @@ public class CreatorClassService {
             throw new RuntimeException("Mentor này đã được gán vào lớp học rồi!");
         }
 
+        // Check if mentor has reached class limit of 2
+        long activeClasses = classMemberRepository.countActiveClassesByMentor(
+                mentorId,
+                "MENTOR",
+                org.eduspace.backend.enums.ClassStatus.RUNNING);
+        if (activeClasses >= 2) {
+            throw new RuntimeException("Mentor này đã đạt giới hạn quản lý tối đa 2 lớp học!");
+        }
+
         ClassMember newMember = ClassMember.builder()
                 .courseClass(cc)
                 .user(mentor)
@@ -90,81 +103,6 @@ public class CreatorClassService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Mentor này trong lớp học"));
 
         classMemberRepository.delete(member);
-    }
-
-    @Transactional
-    public void initiateHandover(Long requestId, Long newMentorId, Long creatorId) {
-        WithdrawRequest request = withdrawRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu rút lui"));
-
-        // Check ownership
-        if (!request.getCourseClass().getCourse().getCreator().getId().equals(creatorId)) {
-            throw new RuntimeException("Bạn không có quyền quản lý đơn này");
-        }
-
-        if (request.getStatus() != WithdrawStatus.PENDING) {
-            throw new RuntimeException("Yêu cầu rút lui này đã được xử lý hoặc đang trong quy trình bàn giao");
-        }
-
-        // Check if new mentor is active for course
-        boolean isCourseMentor = activeMentorRepository
-                .existsByUserIdAndCourseId(newMentorId, request.getCourseClass().getCourse().getId());
-        if (!isCourseMentor) {
-            throw new RuntimeException("Người dùng này không phải là Mentor hoạt động của khóa học này!");
-        }
-
-        if (request.getMentor().getId().equals(newMentorId)) {
-            throw new RuntimeException("Không thể bàn giao lớp học cho chính mentor đang yêu cầu xin nghỉ!");
-        }
-
-        User newMentor = userRepository.findById(newMentorId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Mentor mới"));
-
-        request.setNewMentor(newMentor);
-        request.setStatus(WithdrawStatus.HANDOVER_PENDING);
-        withdrawRequestRepository.save(request);
-    }
-
-    @Transactional
-    public void approveHandover(Long requestId, Long creatorId) {
-        WithdrawRequest request = withdrawRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu rút lui"));
-
-        // Check ownership
-        if (!request.getCourseClass().getCourse().getCreator().getId().equals(creatorId)) {
-            throw new RuntimeException("Bạn không có quyền quản lý đơn này");
-        }
-
-        if (request.getStatus() != WithdrawStatus.HANDOVER_PENDING || request.getNewMentor() == null) {
-            throw new RuntimeException("Yêu cầu bàn giao chưa được thiết lập hoặc đã hoàn tất!");
-        }
-
-        CourseClass cc = request.getCourseClass();
-        User oldMentor = request.getMentor();
-        User newMentor = request.getNewMentor();
-
-        // 1. Delete old mentor's membership
-        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(oldMentor.getId(), cc.getId(), "MENTOR")
-                .ifPresent(classMemberRepository::delete);
-
-        // 2. Add new mentor's membership (if not already there)
-        boolean isNewMentorAssigned = classMemberRepository
-                .findByUserIdAndCourseClassIdAndContextRole(newMentor.getId(), cc.getId(), "MENTOR")
-                .isPresent();
-
-        if (!isNewMentorAssigned) {
-            ClassMember newMember = ClassMember.builder()
-                    .courseClass(cc)
-                    .user(newMentor)
-                    .contextRole("MENTOR")
-                    .joinedAt(LocalDateTime.now())
-                    .build();
-            classMemberRepository.save(newMember);
-        }
-
-        // 3. Mark request as completed
-        request.setStatus(WithdrawStatus.COMPLETED);
-        withdrawRequestRepository.save(request);
     }
 
     public CreatorAnalyticsResponse getCreatorAnalytics(Long creatorId, String courseId, String timeRange) {
@@ -281,5 +219,51 @@ public class CreatorClassService {
                 .stats(stats)
                 .monthlyTrends(trends)
                 .build();
+    }
+
+    public List<ClassTimelineResponse> getClassesTimeline(Long courseId, Long creatorId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        if (!course.getCreator().getId().equals(creatorId)) {
+            throw new RuntimeException("Bạn không có quyền quản lý khóa học này");
+        }
+
+        List<CourseClass> classes = classRepository.findByCourseId(courseId).stream()
+                .filter(cc -> cc.getStatus() == org.eduspace.backend.enums.ClassStatus.RUNNING
+                        || cc.getStatus() == org.eduspace.backend.enums.ClassStatus.COMPLETED)
+                .collect(Collectors.toList());
+        List<ClassTimelineResponse> response = new ArrayList<>();
+
+        for (CourseClass cc : classes) {
+            List<ClassTimeline> timelines = classTimelineRepository.findByCourseClassId(cc.getId());
+            List<ClassTimelineResponse.ModuleTimelineItem> items = new ArrayList<>();
+
+            for (ClassTimeline ct : timelines) {
+                List<StudyGroup> groups = studyGroupRepository.findByCourseClassIdAndModuleId(cc.getId(),
+                        ct.getModule().getId());
+                boolean isStarted = !groups.isEmpty();
+
+                items.add(ClassTimelineResponse.ModuleTimelineItem.builder()
+                        .moduleId(ct.getModule().getId())
+                        .moduleTitle(ct.getModule().getTitle())
+                        .sortOrder(ct.getModule().getSortOrder())
+                        .dueDate(ct.getDueDate())
+                        .isStarted(isStarted)
+                        .groupCount(groups.size())
+                        .build());
+            }
+
+            // Sắp xếp các module theo thứ tự sortOrder
+            items.sort((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()));
+
+            response.add(ClassTimelineResponse.builder()
+                    .classId(cc.getId())
+                    .className(cc.getName())
+                    .classStatus(cc.getStatus().name())
+                    .timeline(items)
+                    .build());
+        }
+
+        return response;
     }
 }

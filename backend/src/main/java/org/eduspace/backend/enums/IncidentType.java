@@ -1,8 +1,7 @@
 package org.eduspace.backend.enums;
 
 public enum IncidentType {
-    PEER_REVIEW_DISPUTE, // Khiếu nại điểm do bạn học chấm sai, hoặc nhầm
-    GRADE_OVERRIDE_REQUEST, // Yêu cầu Mentor nhảy vào chấm lại bài (hoặc ghi đè điểm)
+    ASSIGNMENT_DISPUTE, // Tranh chấp điểm số bài tập (bao gồm chấm chéo) hoặc yêu cầu chấm lại
     MEMBER_CONFLICT, // Xung đột trong quá trình học
     SYSTEM_ERROR, // Lỗi hệ thống
     INACTIVE_PARTNER, // Partner không hoạt động

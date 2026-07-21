@@ -414,8 +414,48 @@ public class DataInitializer implements CommandLineRunner {
         // ── 12. INCIDENTS (sample data) ───────────────────────────────────────────
         log.info("Seeding incident data...");
 
+        // Create a study group for Module 1 to allow peer review between extraMembers.get(0) and extraMembers.get(1)
+        StudyGroup pairGroupMod1 = studyGroupRepository.save(StudyGroup.builder()
+                .courseClass(javaClass)
+                .module(mod1)
+                .chatChannelId("channel_java_pair_learner3_learner4")
+                .chatStatus("ACTIVE")
+                .build());
+
+        GroupMember gmMod1_1 = groupMemberRepository.save(GroupMember.builder()
+                .studyGroup(pairGroupMod1).classMember(extraMembers.get(0)).build());
+
+        GroupMember gmMod1_2 = groupMemberRepository.save(GroupMember.builder()
+                .studyGroup(pairGroupMod1).classMember(extraMembers.get(1)).build());
+
+        // Create a submission for extraMembers.get(0)
+        Submission subDispute = submissionRepository.save(Submission.builder()
+                .assignment(assign1)
+                .member(extraMembers.get(0))
+                .submissionContent("Bài nộp cần chấm lại: public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hello World\"); } }")
+                .status(SubmissionStatus.GRADED)
+                .submittedAt(LocalDateTime.now().minusDays(3))
+                .build());
+
+        // Create a PeerReview for the submission, reviewed by extraMembers.get(1) (gmMod1_2)
+        List<RubricCriteriaDto> rubricScores = List.of(
+                new RubricCriteriaDto("Chạy đúng", "Chương trình biên dịch và chạy không lỗi", 5, 2),
+                new RubricCriteriaDto("Cú pháp chuẩn", "Đặt tên biến và cấu trúc code đúng quy chuẩn", 3, 1),
+                new RubricCriteriaDto("Hiệu năng", "Sử dụng bộ nhớ tối ưu", 2, 0)
+        );
+        peerReviewRepository.save(PeerReview.builder()
+                .submission(subDispute)
+                .reviewer(gmMod1_2)
+                .criteriaScores(rubricScores)
+                .finalScore(3)
+                .comments("Bài làm quá sơ sài, copy từ mạng.")
+                .reviewAt(LocalDateTime.now().minusDays(2))
+                .isOverridden(false)
+                .build());
+
         Incident inc1 = incidentRepository.save(Incident.builder()
-                .incidentType(IncidentType.PEER_REVIEW_DISPUTE)
+                .incidentType(IncidentType.ASSIGNMENT_DISPUTE)
+                .submission(subDispute)
                 .reporter(extraMembers.get(0))
                 .reported(extraMembers.get(1))
                 .reason("Học viên chấm điểm chéo không khách quan, đánh giá sai lệch bài tập Java.")
@@ -430,7 +470,7 @@ public class DataInitializer implements CommandLineRunner {
                 .status(RescueStatus.ON_GOING).build());
 
         log.info("=== Demo database initialized successfully ===");
-        log.info("Accounts: learner1/123456, learner2/123456, mentor1/123456, creator1/123456, admin/123456");
+        log.info("Accounts: learner1/password123, learner2/password123, mentor1/password123, creator1/password123, admin/password123");
         log.info(
                 "Trạng thái learner1 & learner2: Module 1 & 2 hoàn thành, Module 3 đang học (lesson3_1 done, lesson3_2 + assign3 còn lại)");
         seedWaitlist();
@@ -452,7 +492,8 @@ public class DataInitializer implements CommandLineRunner {
                     int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
                     if (currentCount < 9) {
                         log.info("React course waitlist has {} members. Seeding up to 9...", currentCount);
-                        for (int i = currentCount + 1; i <= 9; i++) {
+                        int neededCount = 9 - currentCount;
+                        for (int i = 1; i <= neededCount; i++) {
                             final int index = i;
                             String username = "waitlist_user" + index;
                             User waitlistUser = userRepository.findByUsername(username)
