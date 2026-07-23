@@ -35,7 +35,9 @@ abstract class SystemTestSupport extends SystemTestFixtures {
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1000");
-        // options.addArguments("--headless=new");
+        if (Boolean.parseBoolean(setting("headless", "HEADLESS", "false"))) {
+            options.addArguments("--headless=new");
+        }
 
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));

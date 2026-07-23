@@ -322,7 +322,7 @@ abstract class SystemTestFixtures {
                     c.course_id,
                     c.title AS course_title,
                     m.module_id,
-                    l.lesson_id,
+                    l.id AS lesson_id,
                     l.title AS lesson_title,
                     a.assignment_id,
                     a.title AS assignment_title
