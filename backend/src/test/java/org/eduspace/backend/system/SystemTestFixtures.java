@@ -317,6 +317,8 @@ abstract class SystemTestFixtures {
                     cls.class_id,
                     c.course_id,
                     c.title AS course_title,
+                    m.module_id,
+                    l.lesson_id,
                     l.title AS lesson_title,
                     a.assignment_id,
                     a.title AS assignment_title
@@ -345,6 +347,8 @@ abstract class SystemTestFixtures {
                         resultSet.getLong("class_id"),
                         resultSet.getLong("course_id"),
                         resultSet.getString("course_title"),
+                        resultSet.getLong("module_id"),
+                        resultSet.getLong("lesson_id"),
                         resultSet.getString("lesson_title"),
                         resultSet.getLong("assignment_id"),
                         resultSet.getString("assignment_title"));
@@ -364,6 +368,71 @@ abstract class SystemTestFixtures {
         resetAssignmentSubmissions(learner.assignmentId(), learner.memberId(), reviewer.memberId());
 
         return new LearningWorkflowFixture(learner, reviewer);
+    }
+
+    protected void resetSingleAssignmentSubmission(Long assignmentId, Long memberId) throws Exception {
+        resetAssignmentSubmissions(assignmentId, memberId, memberId);
+    }
+
+    protected int countSubmissions(Long assignmentId, Long memberId) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM submissions
+                WHERE assignment_id = ?
+                  AND learner_id = ?
+                """;
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, assignmentId);
+            statement.setLong(2, memberId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected submission count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    protected int countLessonProgress(Long memberId, Long lessonId) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM lesson_progresses
+                WHERE class_member_id = ?
+                  AND lesson_id = ?
+                  AND is_completed = true
+                """;
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, memberId);
+            statement.setLong(2, lessonId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected lesson progress count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    protected Long findClassIdNotBelongingToLearner(String username) throws Exception {
+        String sql = """
+                SELECT cls.class_id
+                FROM classes cls
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM class_members cm
+                    JOIN users u ON u.user_id = cm.user_id
+                    WHERE cm.class_id = cls.class_id
+                      AND cm.context_role = 'LEARNER'
+                      AND u.username = ?
+                )
+                LIMIT 1
+                """;
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected a class fixture that learner does not belong to");
+                return resultSet.getLong("class_id");
+            }
+        }
     }
 
     private void resetAssignmentSubmissions(Long assignmentId, Long firstMemberId, Long secondMemberId)
@@ -809,6 +878,8 @@ abstract class SystemTestFixtures {
             Long classId,
             Long courseId,
             String courseTitle,
+            Long moduleId,
+            Long lessonId,
             String lessonTitle,
             Long assignmentId,
             String assignmentTitle) {}
