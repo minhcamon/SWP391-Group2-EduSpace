@@ -23,6 +23,7 @@ abstract class SystemTestSupport extends SystemTestFixtures {
     protected WebDriver driver;
     protected WebDriverWait wait;
     protected String baseUrl;
+    protected String backendApiUrl;
 
     protected static final String PASSWORD = "Test@1234";
     protected static final String SEEDED_PASSWORD = "password123";
@@ -30,10 +31,11 @@ abstract class SystemTestSupport extends SystemTestFixtures {
     @BeforeEach
     void setUp() {
         baseUrl = setting("system.test.base-url", "SYSTEM_TEST_BASE_URL", "http://localhost:5173");
+        backendApiUrl = setting("system.test.api-url", "SYSTEM_TEST_API_URL", "http://localhost:8080/api");
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1000");
-        options.addArguments("--headless=new");
+        // options.addArguments("--headless=new");
 
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -55,7 +57,18 @@ abstract class SystemTestSupport extends SystemTestFixtures {
         driver.findElement(By.id("terms")).click();
         driver.findElement(By.cssSelector("form button[type='submit']")).click();
 
-        wait.until(ExpectedConditions.urlContains("/login"));
+        wait.until(driver -> {
+            try {
+                return userExists(username);
+            } catch (Exception e) {
+                return false;
+            }
+        });
+        try {
+            activateUser(username);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not activate registered user " + username, e);
+        }
 
         return new TestUser(username, email);
     }
@@ -65,16 +78,38 @@ abstract class SystemTestSupport extends SystemTestFixtures {
     }
 
     protected String login(String username, String password) {
-        driver.get(baseUrl + "/login");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username"))).sendKeys(username);
-        driver.findElement(By.id("password")).sendKeys(password);
-        driver.findElement(By.cssSelector("form button[type='submit']")).click();
+        driver.get(baseUrl + "/");
+        Object response = ((JavascriptExecutor) driver).executeAsyncScript("""
+                const apiUrl = arguments[0];
+                const username = arguments[1];
+                const password = arguments[2];
+                const done = arguments[arguments.length - 1];
+                fetch(apiUrl + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernameOrEmail: username, password })
+                })
+                    .then(async (res) => {
+                        const body = await res.json().catch(() => null);
+                        if (!res.ok || !body?.data?.token) {
+                            done({ ok: false, status: res.status, body });
+                            return;
+                        }
+                        window.localStorage.setItem('access_token', body.data.token);
+                        window.localStorage.setItem('user', JSON.stringify(body.data.user));
+                        window.localStorage.setItem('currentMode', 'LEARNER');
+                        done({ ok: true, status: res.status, token: body.data.token });
+                    })
+                    .catch((error) => done({ ok: false, status: 0, error: String(error) }));
+                """, backendApiUrl, username, password);
 
-        wait.until(ExpectedConditions.not(ExpectedConditions.urlContains("/login")));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> loginResponse = (Map<String, Object>) response;
+        if (!Boolean.TRUE.equals(loginResponse.get("ok"))) {
+            throw new AssertionError("Login failed for " + username + ": " + loginResponse);
+        }
 
-        Object token = ((JavascriptExecutor) driver)
-                .executeScript("return window.localStorage.getItem('access_token');");
-
+        Object token = loginResponse.get("token");
         return token != null ? token.toString() : "";
     }
 
@@ -86,11 +121,12 @@ abstract class SystemTestSupport extends SystemTestFixtures {
     protected Map<String, Object> apiRequest(String method, String path, Object body) {
         Object response = ((JavascriptExecutor) driver).executeAsyncScript("""
                 const method = arguments[0];
-                const path = arguments[1];
-                const body = arguments[2];
+                const apiUrl = arguments[1];
+                const path = arguments[2];
+                const body = arguments[3];
                 const done = arguments[arguments.length - 1];
                 const token = window.localStorage.getItem('access_token');
-                fetch('/api' + path, {
+                fetch(apiUrl + path, {
                     method,
                     headers: {
                         'Content-Type': 'application/json',
@@ -109,7 +145,7 @@ abstract class SystemTestSupport extends SystemTestFixtures {
                         done({ ok: res.ok, status: res.status, body: parsed });
                     })
                     .catch((error) => done({ ok: false, status: 0, error: String(error) }));
-                """, method, path, body);
+                """, method, backendApiUrl, path, body);
 
         return (Map<String, Object>) response;
     }

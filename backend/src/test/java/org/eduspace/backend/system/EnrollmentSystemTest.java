@@ -48,6 +48,46 @@ class EnrollmentSystemTest extends SystemTestSupport {
                 "Class creation must consume the fulfilled waitlist entries");
     }
 
+    @Test
+    void scenarioB_duplicateWaitlistEnrollmentIsRejected() throws Exception {
+        WaitlistMembershipFixture fixture = createOpenWaitlistWithLearnerFixture("learner1");
+
+        String token = login("learner1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded learner login must store access_token in localStorage");
+
+        Map<String, Object> duplicateResponse = apiRequest(
+                "POST",
+                "/waitlist/enroll/" + fixture.courseId(),
+                null);
+
+        assertStatus(400, duplicateResponse,
+                "Learner must not be able to join the same opening waitlist twice");
+        assertEquals(fixture.entriesBefore(), countOpenWaitlistEntries(fixture.waitlistId()),
+                "Rejected duplicate enrollment must not create another waitlist entry");
+        assertEquals("OPENING", waitlistStatus(fixture.waitlistId()),
+                "Rejected duplicate enrollment must keep the waitlist open");
+    }
+
+    @Test
+    void scenarioC_learnerCanLeaveOpeningWaitlist() throws Exception {
+        WaitlistMembershipFixture fixture = createOpenWaitlistWithLearnerFixture("learner1");
+
+        String token = login("learner1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded learner login must store access_token in localStorage");
+
+        Map<String, Object> leaveResponse = apiRequest(
+                "DELETE",
+                "/waitlist/leave/" + fixture.courseId(),
+                null);
+
+        assertStatus(200, leaveResponse,
+                "Learner must be able to leave an opening waitlist");
+        assertEquals(fixture.entriesBefore() - 1, countOpenWaitlistEntries(fixture.waitlistId()),
+                "Leaving an opening waitlist must remove the learner entry");
+        assertEquals("OPENING", waitlistStatus(fixture.waitlistId()),
+                "Leaving an opening waitlist must not fulfill or close it");
+    }
+
     private void assertStatus(int expectedStatus, Map<String, Object> response, String message) {
         assertEquals(expectedStatus, ((Number) response.get("status")).intValue(), message);
     }

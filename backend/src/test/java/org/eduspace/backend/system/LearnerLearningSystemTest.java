@@ -62,7 +62,7 @@ class LearnerLearningSystemTest extends SystemTestSupport {
                 "Assignment workspace must render the learner essay textarea");
 
         Map<String, Object> learnerSubmit = submitAssignment(
-                learner.memberId(),
+                learner.classId(),
                 learner.assignmentId(),
                 "Learner 1 system workflow submission " + shortId());
         assertStatus(201, learnerSubmit, "Learner submission must be accepted");
@@ -79,7 +79,7 @@ class LearnerLearningSystemTest extends SystemTestSupport {
                 "Reviewer must not access peer review before submitting their own assignment");
 
         Map<String, Object> reviewerSubmit = submitAssignment(
-                reviewer.memberId(),
+                reviewer.classId(),
                 reviewer.assignmentId(),
                 "Learner 2 unlocks peer review with their own submission " + shortId());
         assertStatus(201, reviewerSubmit, "Reviewer submission must unlock peer review access");
@@ -146,10 +146,10 @@ class LearnerLearningSystemTest extends SystemTestSupport {
         assertEquals("/", getCurrentPath(), "Guest access to a protected assignment route must redirect to home");
     }
 
-    private Map<String, Object> submitAssignment(Long memberId, Long assignmentId, String content) {
+    private Map<String, Object> submitAssignment(Long classId, Long assignmentId, String content) {
         return apiRequest(
                 "POST",
-                "/submission/assignment/submit/" + memberId,
+                "/submission/" + classId + "/assignment/submit",
                 Map.of(
                         "assignmentId", assignmentId,
                         "submissionContent", content));

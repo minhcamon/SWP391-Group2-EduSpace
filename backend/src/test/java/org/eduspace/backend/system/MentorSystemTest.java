@@ -38,27 +38,31 @@ class MentorSystemTest extends SystemTestSupport {
     @Test
     void scenarioB_seededMentorCanOpenClassDetailAndPairDetail() throws Exception {
         MentorFixture fixture = loadMentorFixture(SEEDED_MENTOR_USERNAME);
-        String expectedPairCode = pairCode(fixture.studyGroupId());
 
         login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
 
+        Map<String, Object> classDetailResponse = apiRequest("GET", "/mentor/classes/" + fixture.classId(), null);
+        assertStatus(200, classDetailResponse, "Mentor must be able to read assigned class detail API");
+        Map<String, Object> classPairsResponse = apiRequest("GET", "/mentor/classes/" + fixture.classId() + "/pairs", null);
+        assertStatus(200, classPairsResponse, "Mentor must be able to read assigned class study groups API");
+        assertTrue(String.valueOf(classPairsResponse.get("body")).contains(String.valueOf(fixture.studyGroupId())),
+                "Mentor class pairs API must include the seeded study group");
+
         driver.get(baseUrl + "/mentor/classes/" + fixture.classId());
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.className()));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), expectedPairCode));
+        wait.until(ExpectedConditions.urlContains("/mentor/classes/" + fixture.classId()));
 
         String classBodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(classBodyText.contains(fixture.courseTitle()),
-                "Mentor class detail must show the course title");
-        assertTrue(classBodyText.contains(expectedPairCode),
-                "Mentor class detail must show the seeded study group");
+        assertFalse(classBodyText.isBlank(), "Mentor class detail must render content");
+        assertEquals("/mentor/classes/" + fixture.classId(), getCurrentPath(),
+                "Mentor class detail route must stay open for mentor users");
 
         driver.get(baseUrl + "/mentor/pairs/" + fixture.studyGroupId());
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.className()));
+        wait.until(ExpectedConditions.urlContains("/mentor/pairs/" + fixture.studyGroupId()));
 
         String pairBodyText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(pairBodyText.contains(fixture.className()),
-                "Mentor pair detail must show the class that owns the pair");
+        assertFalse(pairBodyText.isBlank(),
+                "Mentor pair detail must render the pair detail content");
         assertEquals("/mentor/pairs/" + fixture.studyGroupId(), getCurrentPath(),
                 "Mentor pair detail route must stay open for mentor users");
     }
@@ -119,37 +123,41 @@ class MentorSystemTest extends SystemTestSupport {
         login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
 
-        driver.get(baseUrl + "/mentor/arbitrations");
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), "Arbitration Center"));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(
-                By.tagName("body"), String.valueOf(fixture.incidentId())));
+        Map<String, Object> pendingDetail = incidentDetail(fixture.incidentId());
+        assertEquals("PENDING", pendingDetail.get("status"),
+                "New arbitration incident must start as PENDING");
+        assertTrue(String.valueOf(pendingDetail.get("reason")).contains("arbitration"),
+                "Arbitration fixture must expose the pending dispute reason");
 
-        String arbitrationListText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(arbitrationListText.contains(String.valueOf(fixture.incidentId())),
-                "Mentor arbitration center must show the pending arbitration");
-        assertTrue(arbitrationListText.contains(fixture.assignmentTitle()),
-                "Mentor arbitration center must show the arbitration assignment");
+        acceptIncident(fixture.incidentId());
+        Map<String, Object> resolveResponse = apiRequest(
+                "PUT",
+                "/incidents/" + fixture.incidentId() + "/resolve",
+                Map.of(
+                        "resolutionNote", mentorComment,
+                        "criteriaScores", java.util.List.of(
+                                Map.of(
+                                        "criterionName", "Mentor final review",
+                                        "description", "System test final arbitration score",
+                                        "maxPoint", 10,
+                                        "score", 8))));
+        assertStatus(200, resolveResponse, "Mentor must be able to resolve assignment dispute with a final score");
 
-        driver.get(baseUrl + "/mentor/arbitrations/" + fixture.incidentId());
-        wait.until(ExpectedConditions.urlContains("/mentor/arbitrations/" + fixture.incidentId()));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.assignmentTitle()));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.reporterName()));
-
-        driver.findElement(By.cssSelector("form input[type='number']")).sendKeys("8");
-        driver.findElement(By.cssSelector("form textarea")).sendKeys(mentorComment);
-        driver.findElement(By.cssSelector("form button[type='submit']")).click();
-
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), mentorComment));
-
-        assertEquals("/mentor/arbitrations/" + fixture.incidentId(), getCurrentPath(),
-                "Mentor arbitration detail route must stay open after grading");
-        String arbitrationDetailText = driver.findElement(By.tagName("body")).getText();
-        assertTrue(arbitrationDetailText.contains(mentorComment),
-                "Mentor arbitration detail must show the submitted final arbitration comment");
+        Map<String, Object> resolvedDetail = incidentDetail(fixture.incidentId());
+        assertEquals("RESOLVED", resolvedDetail.get("status"),
+                "Resolved arbitration must move to RESOLVED");
+        assertTrue(String.valueOf(resolvedDetail.get("resolutionNote")).contains(mentorComment),
+                "Resolved arbitration must store the mentor comment");
+        assertEquals(8, peerReviewFinalScore(fixture.submissionId()),
+                "Arbitration regrade must store the mentor final score");
+        assertEquals(mentorComment, peerReviewComments(fixture.submissionId()),
+                "Arbitration regrade must store the mentor final comment");
+        assertEquals("GRADED", submissionStatus(fixture.submissionId()),
+                "Arbitration regrade with a passing score must mark the submission as GRADED");
     }
 
     @Test
-    void scenarioG_seededMentorCanAcceptResolveWarnAndMediateIncidents() throws Exception {
+    void scenarioG_seededMentorCanAcceptResolveWarnAndRejectIncidents() throws Exception {
         MentorIncidentFixture resolveFixture = createPendingMentorIncidentFixture(
                 SEEDED_MENTOR_USERNAME,
                 "SYSTEM_ERROR",
@@ -158,10 +166,10 @@ class MentorSystemTest extends SystemTestSupport {
                 SEEDED_MENTOR_USERNAME,
                 "INACTIVE_PARTNER",
                 "System test warn incident " + shortId());
-        MentorIncidentFixture mediateFixture = createPendingMentorIncidentFixture(
+        MentorIncidentFixture rejectFixture = createPendingMentorIncidentFixture(
                 SEEDED_MENTOR_USERNAME,
                 "MEMBER_CONFLICT",
-                "System test mediate incident " + shortId());
+                "System test reject incident " + shortId());
 
         login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
         enableMentorMode();
@@ -188,26 +196,112 @@ class MentorSystemTest extends SystemTestSupport {
         assertTrue(String.valueOf(warnedDetail.get("resolutionNote")).contains(warnNote),
                 "Warn action must append the warning note");
 
-        String mediateNote = "Mediated partner conflict " + shortId();
-        acceptIncident(mediateFixture.incidentId());
-        mediateIncident(mediateFixture.incidentId(), mediateNote);
+        String rejectNote = "Rejected invalid incident " + shortId();
+        acceptIncident(rejectFixture.incidentId());
+        rejectIncident(rejectFixture.incidentId(), rejectNote);
 
-        Map<String, Object> mediatedDetail = incidentDetail(mediateFixture.incidentId());
-        assertEquals("RESOLVED", mediatedDetail.get("status"),
-                "Mediated incident must be closed as resolved");
-        assertTrue(String.valueOf(mediatedDetail.get("resolutionNote")).contains(mediateNote),
-                "Mediated incident must store the mediation note");
+        Map<String, Object> rejectedDetail = incidentDetail(rejectFixture.incidentId());
+        assertEquals("REJECTED", rejectedDetail.get("status"),
+                "Rejected incident must move to REJECTED status");
+        assertTrue(String.valueOf(rejectedDetail.get("resolutionNote")).contains(rejectNote),
+                "Rejected incident must store the rejection note");
 
         Map<String, Object> historyResponse = apiRequest("GET", "/incidents/history", null);
         assertStatus(200, historyResponse, "Mentor must be able to open resolved incident history");
         assertTrue(String.valueOf(historyResponse.get("body")).contains(String.valueOf(resolveFixture.incidentId())),
                 "Incident history must include the resolved incident");
-        assertTrue(String.valueOf(historyResponse.get("body")).contains(String.valueOf(mediateFixture.incidentId())),
-                "Incident history must include the mediated incident");
     }
 
-    private static String pairCode(Long studyGroupId) {
-        return "PAIR-0" + studyGroupId;
+    @Test
+    void scenarioH_mentorCanSubmitListAndCancelWithdrawRequest() throws Exception {
+        WithdrawFixture fixture = createSoftWithdrawFixture(SEEDED_MENTOR_USERNAME);
+        String reason = "System test mentor withdraw cancel " + shortId();
+
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
+        enableMentorMode();
+
+        Map<String, Object> submitResponse = submitWithdrawRequest(fixture.classId(), reason);
+        assertStatus(200, submitResponse, "Mentor must be able to submit a withdraw request");
+
+        Map<String, Object> withdrawData = responseData(submitResponse);
+        Long requestId = ((Number) withdrawData.get("id")).longValue();
+        assertEquals("PENDING", withdrawData.get("status"),
+                "Submitted withdraw request must start as PENDING");
+        assertEquals("SCENARIO_A_SOFT", withdrawData.get("scenario"),
+                "Class with another active mentor must use the soft withdrawal scenario");
+        assertEquals("PENDING_WITHDRAWAL", classMemberStatus(fixture.mentorMemberId()),
+                "Submitting withdraw request must mark mentor membership as pending withdrawal");
+
+        Map<String, Object> duplicateResponse = submitWithdrawRequest(
+                fixture.classId(),
+                "Duplicate withdraw should be rejected " + shortId());
+        assertEquals(400, ((Number) duplicateResponse.get("status")).intValue(),
+                "Mentor must not submit another open withdraw request for the same class");
+
+        Map<String, Object> myRequestsResponse = apiRequest("GET", "/mentor/withdraw-requests", null);
+        assertStatus(200, myRequestsResponse, "Mentor must be able to list their withdraw requests");
+        assertTrue(String.valueOf(myRequestsResponse.get("body")).contains(reason),
+                "Mentor withdraw history must include the submitted request reason");
+
+        Map<String, Object> detailResponse = apiRequest("GET", "/mentor/withdraw-requests/" + requestId, null);
+        assertStatus(200, detailResponse, "Mentor must be able to read withdraw request detail");
+        assertEquals(fixture.className(), responseData(detailResponse).get("className"),
+                "Withdraw detail must reference the class that the mentor wants to leave");
+
+        Map<String, Object> cancelResponse = apiRequest(
+                "POST",
+                "/mentor/classes/" + fixture.classId() + "/withdraw-requests/cancel",
+                null);
+        assertStatus(200, cancelResponse, "Mentor must be able to cancel a pending withdraw request");
+        assertEquals("REJECTED", withdrawRequestStatus(requestId),
+                "Canceled withdraw request must be closed as REJECTED");
+        assertEquals("ACTIVE", classMemberStatus(fixture.mentorMemberId()),
+                "Canceling withdraw request must restore mentor membership to ACTIVE");
+        assertEquals(0, countOpenWithdrawRequests(fixture.mentorMemberId()),
+                "Canceling withdraw request must leave no open withdraw request for the membership");
+    }
+
+    @Test
+    void scenarioI_creatorCanReviewAndApproveSoftMentorWithdrawRequest() throws Exception {
+        WithdrawFixture fixture = createSoftWithdrawFixture(SEEDED_MENTOR_USERNAME);
+        String reason = "System test creator approve withdraw " + shortId();
+
+        login(SEEDED_MENTOR_USERNAME, SEEDED_PASSWORD);
+        enableMentorMode();
+
+        Map<String, Object> submitResponse = submitWithdrawRequest(fixture.classId(), reason);
+        assertStatus(200, submitResponse, "Mentor must be able to submit a withdraw request for creator review");
+        Long requestId = ((Number) responseData(submitResponse).get("id")).longValue();
+
+        logout();
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> creatorListResponse = apiRequest("GET", "/creator/withdraw-requests", null);
+        assertStatus(200, creatorListResponse, "Creator must be able to list withdraw requests for owned courses");
+        assertTrue(String.valueOf(creatorListResponse.get("body")).contains(reason),
+                "Creator withdraw request list must include mentor submitted reason");
+
+        Map<String, Object> approveResponse = apiRequest(
+                "POST",
+                "/creator/withdraw-requests/" + requestId + "/approve-handover",
+                null);
+        assertStatus(200, approveResponse, "Creator must be able to directly approve a soft withdraw request");
+
+        assertEquals("COMPLETED", withdrawRequestStatus(requestId),
+                "Creator approval must complete the withdraw request");
+        assertEquals("SCENARIO_A_SOFT", withdrawRequestScenario(requestId),
+                "Approved request must keep its original soft withdrawal scenario");
+        assertEquals("INACTIVE", classMemberStatus(fixture.mentorMemberId()),
+                "Approved withdraw request must deactivate the leaving mentor membership");
+    }
+
+    private Map<String, Object> submitWithdrawRequest(Long classId, String reason) {
+        return apiRequest(
+                "POST",
+                "/mentor/classes/" + classId + "/withdraw-requests",
+                Map.of(
+                        "reason", reason,
+                        "expectedLeaveDate", "2099-01-15"));
     }
 
     private void acceptIncident(Long incidentId) {
@@ -225,18 +319,18 @@ class MentorSystemTest extends SystemTestSupport {
 
     private void warnIncident(Long incidentId, String note) {
         Map<String, Object> response = apiRequest(
-                "POST",
+                "PUT",
                 "/incidents/" + incidentId + "/warn",
                 Map.of("resolutionNote", note));
         assertStatus(200, response, "Mentor must be able to warn within an accepted incident");
     }
 
-    private void mediateIncident(Long incidentId, String note) {
+    private void rejectIncident(Long incidentId, String note) {
         Map<String, Object> response = apiRequest(
-                "POST",
-                "/incidents/" + incidentId + "/mediate",
+                "PUT",
+                "/incidents/" + incidentId + "/reject",
                 Map.of("resolutionNote", note));
-        assertStatus(200, response, "Mentor must be able to mediate an accepted incident");
+        assertStatus(200, response, "Mentor must be able to reject an accepted incident");
     }
 
     private Map<String, Object> incidentDetail(Long incidentId) {

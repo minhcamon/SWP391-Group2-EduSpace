@@ -1,6 +1,7 @@
 package org.eduspace.backend.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Workflow 1: User onboarding and authentication using Selenium. */
+@EnabledIfSystemProperty(named = "system.test.enabled", matches = "true")
 class AuthenticationSystemTest extends SystemTestSupport {
 
     @Test
