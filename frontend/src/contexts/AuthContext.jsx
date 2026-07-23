@@ -30,8 +30,9 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const userData = await authService.getUserProfile();
-            setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
+            const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+            setUser(enriched);
+            localStorage.setItem("user", JSON.stringify(enriched));
         } catch (error) {
             console.error("Auto login failed:", error);
             clearTokens();
@@ -42,6 +43,15 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const [currentMode, setCurrentMode] = useState(() => {
+        return localStorage.getItem("currentMode") || "LEARNER";
+    });
+
+    const setMode = (mode) => {
+        setCurrentMode(mode);
+        localStorage.setItem("currentMode", mode);
+    };
+
     useEffect(() => {
         checkAuth();
     }, []);
@@ -50,14 +60,19 @@ export const AuthProvider = ({ children }) => {
         const { token, user: userData } = await authService.login(username, password);
         console.log(token, userData);
         setTokens(token);
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+        const enriched = { ...userData, isMentor: userData.role === "MENTOR" };
+        setUser(enriched);
+        localStorage.setItem("user", JSON.stringify(enriched));
+        // Reset to Learner mode upon new login
+        setMode("LEARNER");
     };
 
     const logout = () => {
         clearTokens();
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("currentMode");
+        setCurrentMode("LEARNER");
     };
 
 
@@ -67,6 +82,8 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         checkAuth,
+        currentMode,
+        setMode
     };
 
     return (

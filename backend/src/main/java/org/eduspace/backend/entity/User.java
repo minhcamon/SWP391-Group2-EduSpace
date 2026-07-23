@@ -53,14 +53,24 @@ public class User {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private UserStatus status = UserStatus.ACTIVE;
+    private UserStatus status = UserStatus.PENDING;
 
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private AuthProvider authProvider = AuthProvider.LOCAL;
 
+    @Column(name = "verification_token", columnDefinition = "TEXT")
+    private String verificationToken;
+
+    @Column(name = "verification_token_expiry")
+    private LocalDateTime verificationTokenExpiry;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "total_exp")
+    @Builder.Default
+    private Integer totalExp = 0;
+    
 }

@@ -21,7 +21,10 @@ public class CourseResponse {
     private String creatorFullName;
     private String creatorAvatarUrl;
     private String creatorEmail;
-    private Long approvedBy; 
+    private Long approvedBy;
     private String reason;
     private List<ModuleResponse> modules;
+    private String enrollmentStatus;
+    private Long targetClassId;
+    private Boolean isCompleted;
 }

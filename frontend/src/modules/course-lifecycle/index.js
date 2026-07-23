@@ -4,3 +4,5 @@ export { default as CourseDetailPage } from "./pages/CourseDetailPage";
 export { default as CourseManagementPage } from "./pages/CourseManagementPage";
 export { default as CreatorAnalyticsPage } from "./pages/CreatorAnalyticsPage";
 export { default as CreatorHomePage } from "./pages/CreatorHomePage";
+export { default as MentorApplicationsPage } from "./pages/MentorApplicationsPage";
+

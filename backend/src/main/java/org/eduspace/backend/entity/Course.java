@@ -38,6 +38,7 @@ public class Course {
     private User creator;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    @Builder.Default
+    private boolean isDeleted = false;
 
 }

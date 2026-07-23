@@ -1,13 +1,12 @@
-import React from "react";
 import Sidebar from "@/components/layouts/Sidebar";
+import DashboardPage from "@/modules/admin/pages/DashboardPage";
 
 const Dashboard = () => {
     return (
-        <div className="flex w-full min-h-screen bg-gray-50 text-gray-800">
+        <div className="flex flex-col md:flex-row w-full min-h-screen bg-gray-50 text-gray-800">
             <Sidebar />
-            <main className="grow p-8 min-w-0 space-y-8">
-                <h1 className="text-2xl font-bold text-neutral-dark">Admin Dashboard</h1>
-                <p className="text-sm text-neutral-medium">Chào mừng đến với hệ thống quản trị EduSpace.</p>
+            <main className="grow p-4 md:p-8 min-w-0 space-y-8">
+                <DashboardPage />
             </main>
         </div>
     );

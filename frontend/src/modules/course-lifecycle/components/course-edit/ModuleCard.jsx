@@ -21,7 +21,7 @@ export default function ModuleCard({
   handleDeleteLesson
 }) {
   return (
-    <Draggable key={mod.id} draggableId={mod.id} index={index} isDragDisabled={mode === 'VIEW'}>
+    <Draggable key={mod.id} draggableId={`module-${mod.id}`} index={index} isDragDisabled={mode === 'VIEW'}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
@@ -93,7 +93,7 @@ export default function ModuleCard({
             </div>
 
             {/* DRAGGABLE TẦNG 2: VÙNG CHỨA DANH SÁCH BÀI GIẢNG PHẲNG */}
-            <Droppable droppableId={mod.id} type="LESSON">
+            <Droppable droppableId={mod.id.toString()} type="LESSON">
               {(provided) => (
                 <div
                   {...provided.droppableProps}

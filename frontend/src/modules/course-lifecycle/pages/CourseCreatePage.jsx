@@ -6,6 +6,7 @@ import CourseCurriculum from '../components/course-edit/CourseCurriculum';
 import CourseSubmitModal from '../components/course-edit/CourseSubmitModal';
 import useCourseCreate from '../hooks/useCourseCreate';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import Breadcrumbs from '@/components/common/Breadcrumbs';
 
 export default function CreateCourse({ mode: propMode }) {
   const {
@@ -38,11 +39,13 @@ export default function CreateCourse({ mode: propMode }) {
     <div className="w-full space-y-6 animate-in fade-in duration-300">
 
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-        <Link to="/creator/courses" className="hover:text-primary transition-colors">Quản lý khóa học</Link>
-        <span>/</span>
-        <span className="text-primary font-bold">{breadcrumbText}</span>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: "Quản lý khóa học", to: "/creator/courses" },
+          { label: breadcrumbText }
+        ]}
+        className="text-gray-500"
+      />
 
       {/* Header Action Section */}
       <Card className="p-6 bg-white border border-gray-200 shadow-sm">

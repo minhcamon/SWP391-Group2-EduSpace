@@ -12,7 +12,7 @@ export default function LessonItem({
   handleDeleteLesson
 }) {
   return (
-    <Draggable key={lesson.id} draggableId={lesson.id} index={index} isDragDisabled={mode === 'VIEW'}>
+    <Draggable key={lesson.id} draggableId={`lesson-${lesson.id}`} index={index} isDragDisabled={mode === 'VIEW'}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
