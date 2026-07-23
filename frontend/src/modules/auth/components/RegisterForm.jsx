@@ -44,8 +44,9 @@ const RegisterForm = () => {
         await runWithLoading(setIsSubmitting, async () => {
             try {
                 const successMessage = await AuthService.register(formData);
-                toast.success(successMessage || "Đăng ký tài khoản thành công!");
-                navigate("/login");
+                toast.success(successMessage || "Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác thực tài khoản.", {
+                    duration: 6000,
+                });
             } catch (error) {
                 console.error("Registration failed: ", error);
                 toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại!");

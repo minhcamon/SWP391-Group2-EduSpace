@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router'
 import {
   Plus,
   BookOpen,
@@ -14,14 +14,20 @@ import {
   RotateCcw,
   FileText,
   Sparkles
-} from 'lucide-react';
-import useCourseManagement from '../hooks/useCourseManagement';
-import CourseDeleteModal from '../components/CourseDeleteModal';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import EmptyState from '@/components/ui/EmptyState';
-import Button from '@/components/ui/Button';
+} from 'lucide-react'
+import useCourseManagement from '../hooks/useCourseManagement'
+import CourseDeleteModal from '../components/CourseDeleteModal'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
+import Button from '@/components/ui/Button'
 
 export default function CourseManagement() {
   const {
@@ -46,13 +52,11 @@ export default function CourseManagement() {
     setIsDeleteModalOpen,
     deleteCourseTitle,
     handleArchive,
-    handleRestore,
-    handleManageClass
-  } = useCourseManagement();
+    handleRestore
+  } = useCourseManagement()
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-300">
-
       {/* Header section */}
       <Card className="p-6 bg-white border border-gray-200 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
@@ -61,7 +65,8 @@ export default function CourseManagement() {
               Quản lý Khóa học
             </CardTitle>
             <CardDescription className="text-sm text-neutral-medium mt-1">
-              Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa học.
+              Hệ thống quản lý học liệu, trạng thái phê duyệt và tiến độ khóa
+              học.
             </CardDescription>
           </CardHeader>
           <Link
@@ -81,8 +86,12 @@ export default function CourseManagement() {
               <BookOpen className="text-xl" />
             </div>
             <div>
-              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">Tổng số khóa học</span>
-              <span className="text-2xl font-black text-neutral-dark">{statsTotal}</span>
+              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
+                Tổng số khóa học
+              </span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {statsTotal}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -93,8 +102,12 @@ export default function CourseManagement() {
               <Users className="text-xl" />
             </div>
             <div>
-              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">Học viên đang học</span>
-              <span className="text-2xl font-black text-neutral-dark">{statsActiveStudents}</span>
+              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
+                Học viên đang học
+              </span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {statsActiveStudents}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -105,36 +118,82 @@ export default function CourseManagement() {
               <Sparkles className="text-xl" />
             </div>
             <div>
-              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">Bản nháp lưu trữ</span>
-              <span className="text-2xl font-black text-neutral-dark">{statsDrafts}</span>
+              <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
+                Bản nháp lưu trữ
+              </span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {statsDrafts}
+              </span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filter Tabs & Search Bar Row */}
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-border-light/30 shadow-sm">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full lg:w-auto">
-          <TabsList className="flex-wrap h-auto gap-1 bg-transparent p-0">
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white p-4 rounded-2xl border border-border-light/30 shadow-sm w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full lg:w-auto"
+        >
+          <TabsList className="flex flex-row flex-wrap h-auto !h-auto gap-2 bg-transparent p-0 w-full justify-start py-1">
             {[
               { label: 'Tất cả', value: 'ALL', count: courses.length },
-              { label: 'Cần xử lý', value: 'REJECTED', count: courses.filter(c => c.status?.toUpperCase() === 'REJECTED').length },
-              { label: 'Chờ duyệt', value: 'PENDING', count: courses.filter(c => c.status?.toUpperCase() === 'PENDING').length },
-              { label: 'Hoạt động', value: 'ACTIVE', count: courses.filter(c => c.status?.toUpperCase() === 'ACTIVE' || c.status?.toUpperCase() === 'PUBLISHED').length },
-              { label: 'Bản nháp', value: 'DRAFT', count: courses.filter(c => c.status?.toUpperCase() === 'DRAFT').length },
-              { label: 'Đã lưu trữ', value: 'ARCHIVED', count: courses.filter(c => c.status?.toUpperCase() === 'ARCHIVED').length }
-            ].map(tab => (
+              {
+                label: 'Cần xử lý',
+                value: 'REJECTED',
+                count: courses.filter(
+                  (c) => c.status?.toUpperCase() === 'REJECTED'
+                ).length
+              },
+              {
+                label: 'Chờ duyệt',
+                value: 'PENDING',
+                count: courses.filter(
+                  (c) => c.status?.toUpperCase() === 'PENDING'
+                ).length
+              },
+              {
+                label: 'Hoạt động',
+                value: 'ACTIVE',
+                count: courses.filter(
+                  (c) =>
+                    c.status?.toUpperCase() === 'ACTIVE' ||
+                    c.status?.toUpperCase() === 'PUBLISHED'
+                ).length
+              },
+              {
+                label: 'Bản nháp',
+                value: 'DRAFT',
+                count: courses.filter(
+                  (c) => c.status?.toUpperCase() === 'DRAFT'
+                ).length
+              },
+              {
+                label: 'Đã lưu trữ',
+                value: 'ARCHIVED',
+                count: courses.filter(
+                  (c) => c.status?.toUpperCase() === 'ARCHIVED'
+                ).length
+              }
+            ].map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border border-transparent ${activeTab === tab.value
-                  ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                  : 'text-neutral-medium hover:bg-slate-50'
-                  }`}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-transparent shrink-0 ${
+                  activeTab === tab.value
+                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                    : 'text-neutral-medium hover:bg-slate-50'
+                }`}
               >
-                <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold ${activeTab === tab.value ? 'bg-white/20 text-primary' : 'bg-primary/10 text-mute'
-                  }`}>
+                <span className="whitespace-nowrap">{tab.label}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold transition-colors ${
+                    activeTab === tab.value
+                      ? 'bg-primary text-white'
+                      : 'bg-neutral-dark/10 text-neutral-dark'
+                  }`}
+                >
                   {tab.count}
                 </span>
               </TabsTrigger>
@@ -142,8 +201,9 @@ export default function CourseManagement() {
           </TabsList>
         </Tabs>
 
-        <div className="relative w-full lg:w-80">
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-neutral-light z-10">
+        {/* Search Bar Container */}
+        <div className="relative w-full lg:w-80 flex items-center shrink-0">
+          <span className="absolute left-3.5 flex items-center text-neutral-light z-10 pointer-events-none">
             <Search size={16} />
           </span>
           <input
@@ -158,7 +218,6 @@ export default function CourseManagement() {
 
       {/* MAIN WORKFLOW AREA */}
       <div className="space-y-10">
-
         {/* Section 1: CRITICAL ALERTS */}
         {rejectedCourses.length > 0 && (
           <section className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
@@ -166,7 +225,7 @@ export default function CourseManagement() {
               <AlertTriangle size={16} /> Cần xử lý ngay (Critical Alerts)
             </h2>
             <div className="space-y-4">
-              {rejectedCourses.map(course => (
+              {rejectedCourses.map((course) => (
                 <Alert
                   key={course.id}
                   variant="destructive"
@@ -181,7 +240,10 @@ export default function CourseManagement() {
                         {course.title}
                       </AlertTitle>
                       <AlertDescription className="text-xs text-red-600 mt-1.5 font-medium leading-relaxed">
-                        <span className="font-bold text-red-700">Lý do từ chối:</span> {course.reason}
+                        <span className="font-bold text-red-700">
+                          Lý do từ chối:
+                        </span>{' '}
+                        {course.reason}
                       </AlertDescription>
                       <span className="text-[10px] text-red-500 block mt-2 font-semibold">
                         Cập nhật: {formatDate(course.createdAt)}
@@ -210,7 +272,7 @@ export default function CourseManagement() {
               <Clock size={16} /> Đang chờ phê duyệt (Pending)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pendingCourses.map(course => (
+              {pendingCourses.map((course) => (
                 <Card
                   key={course.id}
                   className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0px_10px_30px_rgba(242,128,32,0.04)] transition-all duration-300 flex flex-col justify-between"
@@ -218,7 +280,9 @@ export default function CourseManagement() {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 text-secondary mb-3">
                       <Clock size={16} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Đang chờ duyệt</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider">
+                        Đang chờ duyệt
+                      </span>
                     </div>
                     <h3 className="font-bold text-neutral-dark text-sm line-clamp-2 min-h-[40px] mb-2 leading-relaxed">
                       {course.title}
@@ -228,7 +292,9 @@ export default function CourseManagement() {
                     </span>
                   </CardContent>
                   <div className="px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center text-xs">
-                    <span className="text-[10px] text-neutral-medium font-medium">{formatDate(course.createdAt)}</span>
+                    <span className="text-[10px] text-neutral-medium font-medium">
+                      {formatDate(course.createdAt)}
+                    </span>
                     <Link
                       to={`/creator/courses/${course.id}/view`}
                       className="text-primary hover:text-[#0785b1] font-bold cursor-pointer"
@@ -246,10 +312,11 @@ export default function CourseManagement() {
         {activeCourses.length > 0 && (
           <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <h2 className="text-xs font-bold text-tertiary tracking-wider uppercase mb-4 flex items-center gap-2">
-              <CheckCircle2 size={16} /> Khóa học đang hoạt động (Active Courses)
+              <CheckCircle2 size={16} /> Khóa học đang hoạt động (Active
+              Courses)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeCourses.map(course => (
+              {activeCourses.map((course) => (
                 <Card
                   key={course.id}
                   className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(117,187,71,0.06)] transition-all duration-300 group flex flex-col justify-between"
@@ -258,7 +325,9 @@ export default function CourseManagement() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-1.5 text-tertiary">
                         <span className="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Active</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                          Active
+                        </span>
                       </div>
                       <span className="text-[9px] text-neutral-light font-bold bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
                         {course.subject || 'Chưa phân loại'}
@@ -271,29 +340,54 @@ export default function CourseManagement() {
 
                     <div className="grid grid-cols-2 gap-4 py-3 px-4 bg-bg-base border border-slate-100/60 rounded-xl mb-4 text-xs font-semibold">
                       <div className="flex items-center gap-2">
-                        <Users className="text-primary" size={16} />
+                        <Users
+                          className="text-primary"
+                          size={16}
+                        />
                         <div>
-                          <span className="text-[9px] text-neutral-light block uppercase">Học viên</span>
-                          <span className="text-xs font-bold text-neutral-dark">{course.enrolledCount || 0} HV</span>
+                          <span className="text-[9px] text-neutral-light block uppercase">
+                            Học viên
+                          </span>
+                          <span className="text-xs font-bold text-neutral-dark">
+                            {course.enrolledCount || 0} HV
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Star className="text-secondary" size={16} />
+                        <Star
+                          className="text-secondary"
+                          size={16}
+                        />
                         <div>
-                          <span className="text-[9px] text-neutral-light block uppercase">Đánh giá</span>
-                          <span className="text-xs font-bold text-neutral-dark">{course.rating || '0.0'} / 5.0</span>
+                          <span className="text-[9px] text-neutral-light block uppercase">
+                            Đánh giá
+                          </span>
+                          <span className="text-xs font-bold text-neutral-dark">
+                            {course.rating || '0.0'} / 5.0
+                          </span>
                         </div>
                       </div>
                     </div>
                   </CardContent>
 
-                  <div className="p-5 pt-0">
+                  <div className="px-5 pb-5 pt-0 flex gap-3">
                     <Button
-                      onClick={() => handleManageClass(course.title)}
-                      className="w-full border border-primary/20 hover:border-primary text-primary hover:bg-primary hover:text-white font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      variant="outline"
+                      asChild
+                      className="flex-1 border border-primary/20 hover:border-primary text-primary hover:bg-primary/5 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
-                      Quản lý lớp học
+                      <Link to={`/creator/courses/${course.id}/view`}>
+                        Xem chi tiết
+                      </Link>
                     </Button>
+                    {/* <Button
+                      asChild
+                      className="flex-1 bg-primary text-white hover:bg-primary/90 font-bold py-2.5 h-auto rounded-xl transition-all duration-200 text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <Link to={`/creator/courses/${course.id}`}>
+                        Quản lý lớp học
+                      </Link>
+                    </Button> */}
                   </div>
                 </Card>
               ))}
@@ -309,7 +403,7 @@ export default function CourseManagement() {
             </h2>
             <Card className="bg-white border border-border-light/30 shadow-xs overflow-hidden">
               <CardContent className="divide-y divide-slate-100 p-0">
-                {draftCourses.map(course => (
+                {draftCourses.map((course) => (
                   <div
                     key={course.id}
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
@@ -323,7 +417,8 @@ export default function CourseManagement() {
                           [📝 Draft] {course.title}
                         </h4>
                         <p className="text-[10px] text-neutral-light mt-1 font-semibold">
-                          {course.subject || 'Chưa phân loại'} • {formatDate(course.createdAt)}
+                          {course.subject || 'Chưa phân loại'} •{' '}
+                          {formatDate(course.createdAt)}
                         </p>
                       </div>
                     </div>
@@ -364,7 +459,7 @@ export default function CourseManagement() {
               <Archive size={16} /> Khóa học đã lưu trữ (Archived Box)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {archivedCourses.map(course => (
+              {archivedCourses.map((course) => (
                 <Card
                   key={course.id}
                   className="bg-[#fcfbfb] border border-dashed border-border-light/70 rounded-2xl p-5 flex flex-col justify-between opacity-75 hover:opacity-100 hover:border-border-light transition-all duration-200 hover:shadow-sm"
@@ -374,12 +469,16 @@ export default function CourseManagement() {
                       <span className="flex items-center gap-1.5 bg-slate-200/50 text-neutral-medium px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider">
                         <Archive size={11} /> Archived
                       </span>
-                      <span className="text-[9px] font-bold">{formatDate(course.createdAt)}</span>
+                      <span className="text-[9px] font-bold">
+                        {formatDate(course.createdAt)}
+                      </span>
                     </div>
                     <h3 className="font-bold text-neutral-medium text-xs mb-1 line-clamp-2 min-h-[32px] leading-relaxed">
                       {course.title}
                     </h3>
-                    <p className="text-[10px] text-neutral-light font-semibold mb-4">{course.subject || 'Chưa phân loại'}</p>
+                    <p className="text-[10px] text-neutral-light font-semibold mb-4">
+                      {course.subject || 'Chưa phân loại'}
+                    </p>
                   </CardContent>
 
                   <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
@@ -407,22 +506,40 @@ export default function CourseManagement() {
         {filteredCourses.length === 0 && (
           <EmptyState
             icon={BookOpen}
-            title={searchTerm ? "Không tìm thấy khóa học nào" : (
-              activeTab === 'ALL' ? 'Chưa có khóa học nào được tạo' :
-                activeTab === 'REJECTED' ? 'Chưa có khóa học nào cần xử lý' :
-                  activeTab === 'PENDING' ? 'Chưa có khóa học nào chờ duyệt' :
-                    activeTab === 'ACTIVE' ? 'Chưa có khóa học nào đang hoạt động' :
-                      activeTab === 'DRAFT' ? 'Chưa có bản nháp nào' :
-                        activeTab === 'ARCHIVED' ? 'Chưa có khóa học nào được lưu trữ' : 'Chưa có khóa học thuộc trạng thái này'
-            )}
-            description={searchTerm ? "Không tìm thấy khóa học nào khớp với từ khóa tìm kiếm của bạn." : (
-              activeTab === 'ALL' ? 'Bạn chưa tạo khóa học nào trên hệ thống. Hãy bắt đầu bằng cách tạo khóa học mới.' :
-                activeTab === 'REJECTED' ? 'Hiện tại không có khóa học nào bị từ chối hoặc cần chỉnh sửa lại.' :
-                  activeTab === 'PENDING' ? 'Hiện tại không có khóa học nào đang chờ phê duyệt.' :
-                    activeTab === 'ACTIVE' ? 'Hiện tại không có khóa học nào đang hoạt động hoặc được xuất bản.' :
-                      activeTab === 'DRAFT' ? 'Hiện tại không có bản nháp khóa học nào.' :
-                        activeTab === 'ARCHIVED' ? 'Hiện tại không có khóa học nào trong kho lưu trữ.' : 'Không có khóa học nào thuộc bộ lọc này.'
-            )}
+            title={
+              searchTerm
+                ? 'Không tìm thấy khóa học nào'
+                : activeTab === 'ALL'
+                  ? 'Chưa có khóa học nào được tạo'
+                  : activeTab === 'REJECTED'
+                    ? 'Chưa có khóa học nào cần xử lý'
+                    : activeTab === 'PENDING'
+                      ? 'Chưa có khóa học nào chờ duyệt'
+                      : activeTab === 'ACTIVE'
+                        ? 'Chưa có khóa học nào đang hoạt động'
+                        : activeTab === 'DRAFT'
+                          ? 'Chưa có bản nháp nào'
+                          : activeTab === 'ARCHIVED'
+                            ? 'Chưa có khóa học nào được lưu trữ'
+                            : 'Chưa có khóa học thuộc trạng thái này'
+            }
+            description={
+              searchTerm
+                ? 'Không tìm thấy khóa học nào khớp với từ khóa tìm kiếm của bạn.'
+                : activeTab === 'ALL'
+                  ? 'Bạn chưa tạo khóa học nào trên hệ thống. Hãy bắt đầu bằng cách tạo khóa học mới.'
+                  : activeTab === 'REJECTED'
+                    ? 'Hiện tại không có khóa học nào bị từ chối hoặc cần chỉnh sửa lại.'
+                    : activeTab === 'PENDING'
+                      ? 'Hiện tại không có khóa học nào đang chờ phê duyệt.'
+                      : activeTab === 'ACTIVE'
+                        ? 'Hiện tại không có khóa học nào đang hoạt động hoặc được xuất bản.'
+                        : activeTab === 'DRAFT'
+                          ? 'Hiện tại không có bản nháp khóa học nào.'
+                          : activeTab === 'ARCHIVED'
+                            ? 'Hiện tại không có khóa học nào trong kho lưu trữ.'
+                            : 'Không có khóa học nào thuộc bộ lọc này.'
+            }
           />
         )}
 
@@ -434,5 +551,5 @@ export default function CourseManagement() {
         />
       </div>
     </div>
-  );
+  )
 }

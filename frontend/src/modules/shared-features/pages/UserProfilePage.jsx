@@ -158,15 +158,33 @@ const UserProfile = () => {
     });
   };
 
+  const handleAvatarUpdated = (updatedUser) => {
+    // Update profile form with new avatar URL
+    setProfileForm((prev) => ({
+      ...prev,
+      avatarUrl: updatedUser.avatarUrl,
+    }));
+    
+    // Refresh auth context to update user data everywhere
+    checkAuth();
+  };
+
   return (
     <div className="flex-1 max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8 animate-in fade-in duration-300 pb-12">
       {/* Bento Grid Header */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: User Bio Card */}
-        <UserBioCard user={user} profileForm={profileForm} />
+        <UserBioCard 
+          user={user} 
+          profileForm={profileForm} 
+          onAvatarUpdated={handleAvatarUpdated}
+        />
 
         {/* Right: Quick Stats Column */}
-        <UserStats coursesCount={coursesCount} />
+        <div className="flex flex-col gap-4">
+          <UserStats coursesCount={coursesCount} />
+          <StudyMotivationCard />
+        </div>
       </div>
 
       {/* Form Sections */}
@@ -194,9 +212,6 @@ const UserProfile = () => {
         <div className="space-y-6">
           {/* Content Creator Upgrade card */}
           <CreatorUpgradeCard user={user} />
-
-          {/* Studying motivation card */}
-          <StudyMotivationCard />
         </div>
       </div>
     </div>

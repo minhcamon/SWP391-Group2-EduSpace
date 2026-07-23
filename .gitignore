@@ -1,3 +1,4 @@
 .idea/
 .vscode/
 package.json
+backend/src/main/resources/data.sql

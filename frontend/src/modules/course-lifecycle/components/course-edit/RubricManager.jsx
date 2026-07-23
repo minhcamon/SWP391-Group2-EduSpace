@@ -21,16 +21,16 @@ export default function RubricManager({
           type="text"
           className="col-span-4 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs font-bold outline-none focus:border-primary disabled:opacity-75 disabled:cursor-not-allowed"
           placeholder="Tên bài tập..."
-          value={mod.assignments.title}
-          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignments: { ...m.assignments, title: e.target.value } } : m))}
+          value={mod.assignment.title}
+          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, title: e.target.value } } : m))}
           disabled={mode === 'VIEW'}
         />
         <input
           type="text"
           className="col-span-8 p-2.5 bg-white border border-border-light/50 rounded-lg text-xs outline-none focus:border-primary disabled:opacity-75 disabled:cursor-not-allowed"
           placeholder="Yêu cầu hoặc link tài liệu bài tập..."
-          value={mod.assignments.description}
-          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignments: { ...m.assignments, description: e.target.value } } : m))}
+          value={mod.assignment.description}
+          onChange={(e) => setModules(modules.map(m => m.id === mod.id ? { ...m, assignment: { ...m.assignment, description: e.target.value } } : m))}
           disabled={mode === 'VIEW'}
         />
       </div>
@@ -38,21 +38,21 @@ export default function RubricManager({
       <div className="bg-white/85 p-3 rounded-lg border border-tertiary/10 space-y-3">
         <span className="text-[10px] font-bold text-gray-400 block">Tiêu chí chấm điểm chéo (Rubric):</span>
         <div className="flex flex-col gap-2">
-          {mod.assignments.rubricCriteria.map((rub, rIdx) => (
+          {mod.assignment.rubricCriteria.map((rub, rIdx) => (
             <div key={rIdx} className="flex items-center gap-3 p-2 bg-gray-50 border border-gray-200 rounded-lg text-[11px] text-gray-600 font-bold w-full">
               <input
                 type="text"
                 className="bg-transparent border-none focus:ring-0 p-0 text-xs font-semibold text-gray-600 outline-none flex-1 placeholder:text-gray-300 disabled:cursor-not-allowed"
                 placeholder="Tên tiêu chí chấm bài..."
-                value={rub.criterion}
+                value={rub.criterionName}
                 onChange={(e) => {
                   setModules(modules.map(m => {
                     if (m.id === mod.id) {
-                      const updatedRubrics = [...m.assignments.rubricCriteria];
-                      updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], criterion: e.target.value };
+                      const updatedRubrics = [...m.assignment.rubricCriteria];
+                      updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], criterionName: e.target.value };
                       return {
                         ...m,
-                        assignments: { ...m.assignments, rubricCriteria: updatedRubrics }
+                        assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
                       };
                     }
                     return m;
@@ -70,11 +70,11 @@ export default function RubricManager({
                   onChange={(e) => {
                     setModules(modules.map(m => {
                       if (m.id === mod.id) {
-                        const updatedRubrics = [...m.assignments.rubricCriteria];
+                        const updatedRubrics = [...m.assignment.rubricCriteria];
                         updatedRubrics[rIdx] = { ...updatedRubrics[rIdx], maxPoint: parseInt(e.target.value) || 5 };
                         return {
                           ...m,
-                          assignments: { ...m.assignments, rubricCriteria: updatedRubrics }
+                          assignment: { ...m.assignment, rubricCriteria: updatedRubrics }
                         };
                       }
                       return m;
@@ -88,7 +88,7 @@ export default function RubricManager({
                 <button
                   onClick={() => {
                     setModules(modules.map(m => m.id === mod.id ? {
-                      ...m, assignments: { ...m.assignments, rubricCriteria: m.assignments.rubricCriteria.filter((_, i) => i !== rIdx) }
+                      ...m, assignment: { ...m.assignment, rubricCriteria: m.assignment.rubricCriteria.filter((_, i) => i !== rIdx) }
                     } : m));
                   }}
                   className="text-gray-400 hover:text-red-500 shrink-0 cursor-pointer p-1"
@@ -103,9 +103,9 @@ export default function RubricManager({
               onClick={() => {
                 setModules(modules.map(m => m.id === mod.id ? {
                   ...m,
-                  assignments: {
-                    ...m.assignments,
-                    rubricCriteria: [...m.assignments.rubricCriteria, { criterion: '', maxPoint: 5 }]
+                  assignment: {
+                    ...m.assignment,
+                    rubricCriteria: [...m.assignment.rubricCriteria, { criterionName: '', maxPoint: 5 }]
                   }
                 } : m));
               }}

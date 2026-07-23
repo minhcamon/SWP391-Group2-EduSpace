@@ -3,6 +3,7 @@ package org.eduspace.backend.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.eduspace.backend.entity.User;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,6 @@ import java.util.Map;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-
     private final long EXPIRATION_TIME = 3600000;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
@@ -62,6 +62,19 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateEmailVerificationToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("purpose", "EMAIL_VERIFICATION");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 60 * 1000)) // 1 minute
+                .signWith(secretKey)
+                .compact();
+    }
+
     public String extractEmail(String token) {
 
         return Jwts.parserBuilder()
@@ -81,6 +94,36 @@ public class JwtUtil {
                 .get("purpose", String.class);
 
         return "RESET_PASSWORD".equals(purpose);
+    }
+
+    public boolean isEmailVerificationToken(String token) {
+        try {
+            String purpose = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("purpose", String.class);
+
+            return "EMAIL_VERIFICATION".equals(purpose);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Date expiration = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+
+            return expiration.before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
 }

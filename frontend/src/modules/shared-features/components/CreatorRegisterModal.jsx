@@ -14,21 +14,53 @@ import Input from '@/components/ui/Input';
 import Label from '@/components/ui/Label';
 
 const CreatorRegisterModal = ({ isOpen, onClose, onSuccess }) => {
-    const [portfolioUrl, setPortfolioUrl] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file size (e.g. max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            toast.error("Kích thước file không được vượt quá 10MB!");
+            return;
+        }
+
+        // Validate file type (docs, pdf, image)
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ];
+        
+        // Basic type validation or extension check
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
+
+        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+            toast.error("Chỉ chấp nhận tài liệu định dạng PDF, Word (DOC/DOCX) hoặc Ảnh (JPG/PNG/WEBP)!");
+            return;
+        }
+
+        setSelectedFile(file);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!portfolioUrl.trim()) {
-            return toast.error("Vui lòng cung cấp link tài liệu đăng ký!");
+        if (!selectedFile) {
+            return toast.error("Vui lòng tải lên tài liệu minh chứng!");
         }
 
         await runWithLoading(setIsSubmitting, async () => {
             try {
-                // Only send portfolioUrl since database structure only needs this link
-                await AuthService.registerCreator({ portfolioUrl: portfolioUrl.trim() });
+                await AuthService.registerCreator(selectedFile);
                 toast.success("Hồ sơ đăng ký của bạn đã được gửi thành công!");
-                setPortfolioUrl("");
+                setSelectedFile(null);
                 if (onSuccess) onSuccess();
                 onClose();
             } catch (error) {
@@ -56,20 +88,40 @@ const CreatorRegisterModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Modal Body / Form */}
                 <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-4">
-                    {/* Portfolio / CV Link */}
+                    {/* Upload File tài liệu */}
                     <div className="space-y-2">
-                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="modal_portfolioUrl">
-                            Đường dẫn tài liệu đăng ký (CV / Chứng chỉ) *
+                        <Label className="text-xs font-bold text-neutral-medium uppercase tracking-wider" htmlFor="modal_documentFile">
+                            Tài liệu minh chứng (CV / Bằng cấp / Chứng chỉ) *
                         </Label>
-                        <Input
-                            id="modal_portfolioUrl"
-                            type="url"
-                            placeholder="https://example.com/tai-lieu-cua-ban"
-                            value={portfolioUrl}
-                            onChange={(e) => setPortfolioUrl(e.target.value)}
-                            className="px-4 py-3 h-auto bg-bg-card border-border-light/40 rounded-xl"
-                            required
-                        />
+                        <div className="border-2 border-dashed border-border-light/60 rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors relative bg-bg-card flex flex-col items-center justify-center min-h-[140px]">
+                            <input
+                                id="modal_documentFile"
+                                type="file"
+                                accept=".pdf,.doc,.docx,image/*"
+                                onChange={handleFileChange}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            {selectedFile ? (
+                                <div className="space-y-1">
+                                    <p className="text-sm font-semibold text-primary break-all px-4">
+                                        {selectedFile.name}
+                                    </p>
+                                    <p className="text-xs text-neutral-medium">
+                                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <div className="text-neutral-medium text-3xl">📁</div>
+                                    <p className="text-sm font-semibold text-neutral-dark">
+                                        Nhấp để chọn hoặc kéo thả tài liệu vào đây
+                                    </p>
+                                    <p className="text-xs text-neutral-medium">
+                                        Chấp nhận PDF, Word, hoặc Ảnh (tối đa 10MB)
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Buttons */}

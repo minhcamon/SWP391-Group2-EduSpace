@@ -23,6 +23,6 @@ public class CreateModuleRequest {
 
     private List<CreateLessonRequest> lessons;
 
-    private CreateAssignmentRequest assignments;
+    private CreateAssignmentRequest assignment;
 
 }

@@ -24,4 +24,28 @@ public class SecurityUtil {
 
         throw new RuntimeException("Authentication principal is not a JWT");
     }
+
+    public static Long getCurrentUserIdAndAllowNull() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        if (authentication.getPrincipal() instanceof Jwt jwt) {
+            Object userIdObj = jwt.getClaim("userId");
+            if (userIdObj instanceof Number number) {
+                return number.longValue();
+            } else if (userIdObj instanceof String str) {
+                try {
+                    return Long.parseLong(str);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+
+        return null;
+    }
 }

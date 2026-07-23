@@ -32,7 +32,7 @@ public class Assignment {
     @Column(name = "rubric_criteria", columnDefinition = "json")
     private List<RubricCriteriaDto> rubricCriteria;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "module_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "module_id", unique = true)
     private CourseModule module;
 }
