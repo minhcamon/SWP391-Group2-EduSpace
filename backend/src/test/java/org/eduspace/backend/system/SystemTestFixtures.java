@@ -74,6 +74,14 @@ abstract class SystemTestFixtures {
         return queryString("SELECT status FROM courses WHERE course_id = ?", courseId);
     }
 
+    protected String courseTitle(Long courseId) throws Exception {
+        return queryString("SELECT title FROM courses WHERE course_id = ?", courseId);
+    }
+
+    protected boolean courseIsDeleted(Long courseId) throws Exception {
+        return queryBoolean("SELECT is_deleted FROM courses WHERE course_id = ?", courseId);
+    }
+
     protected int countCourseRequests(Long courseId, String status) throws Exception {
         String sql = "SELECT COUNT(*) FROM course_requests WHERE course_id = ? AND status = ?";
         try (Connection connection = connection();
@@ -658,6 +666,17 @@ abstract class SystemTestFixtures {
             try (ResultSet resultSet = statement.executeQuery()) {
                 assertTrue(resultSet.next(), "Expected query result");
                 return resultSet.getString(1);
+            }
+        }
+    }
+
+    private boolean queryBoolean(String sql, Long parameter) throws Exception {
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, parameter);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected query result");
+                return resultSet.getBoolean(1);
             }
         }
     }

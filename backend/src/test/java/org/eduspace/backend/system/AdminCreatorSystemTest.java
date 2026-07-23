@@ -120,8 +120,208 @@ class AdminCreatorSystemTest extends SystemTestSupport {
                 "Admin must not create courses through creator-only API");
     }
 
+    @Test
+    void scenarioE_adminCannotApproveAlreadyRejectedCourse() throws Exception {
+        CourseReviewFixture fixture = createPendingCourseFixture("System Already Rejected Course");
+
+        login("admin", SEEDED_PASSWORD);
+        Map<String, Object> rejectResponse = apiRequest(
+                "PUT",
+                "/course/" + fixture.courseId() + "/reject",
+                Map.of("reason", "Rejected before approve attempt " + shortId()));
+        assertStatus(200, rejectResponse, "Admin must be able to prepare a rejected course");
+
+        Map<String, Object> approveResponse = apiRequest("PUT", "/course/" + fixture.courseId() + "/approve", null);
+
+        assertStatus(400, approveResponse, "Admin must not approve an already rejected course");
+        assertEquals("REJECTED", courseStatus(fixture.courseId()),
+                "Rejected course status must not change after an invalid approve attempt");
+    }
+
+    @Test
+    void scenarioF_adminCannotRejectAlreadyApprovedCourse() throws Exception {
+        CourseReviewFixture fixture = createPendingCourseFixture("System Already Approved Course");
+
+        login("admin", SEEDED_PASSWORD);
+        Map<String, Object> approveResponse = apiRequest("PUT", "/course/" + fixture.courseId() + "/approve", null);
+        assertStatus(200, approveResponse, "Admin must be able to prepare an approved course");
+
+        Map<String, Object> rejectResponse = apiRequest(
+                "PUT",
+                "/course/" + fixture.courseId() + "/reject",
+                Map.of("reason", "Reject after approval should fail " + shortId()));
+
+        assertStatus(400, rejectResponse, "Admin must not reject an already approved course");
+        assertEquals("PUBLISHED", courseStatus(fixture.courseId()),
+                "Approved course status must not change after an invalid reject attempt");
+    }
+
+    @Test
+    void scenarioG_creatorCanSeeOwnCoursesAfterCreatingCourse() {
+        login("creator1", SEEDED_PASSWORD);
+
+        String title = "System Creator Own Course " + shortId();
+        Map<String, Object> createResponse = createCourse(title, "Course should appear in creator list", "PENDING");
+        assertStatus(200, createResponse, "Creator must be able to create a course");
+
+        Map<String, Object> myCoursesResponse = apiRequest("GET", "/course/my-courses", null);
+
+        assertStatus(200, myCoursesResponse, "Creator must be able to read own course list");
+        assertTrue(String.valueOf(myCoursesResponse.get("body")).contains(title),
+                "Creator course list must include the newly created course");
+    }
+
+    @Test
+    void scenarioH_courseRequestHistoryIncludesApprovedAndRejectedActions() throws Exception {
+        CourseReviewFixture approved = createPendingCourseFixture("System History Approved Course");
+        CourseReviewFixture rejected = createPendingCourseFixture("System History Rejected Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest("PUT", "/course/" + approved.courseId() + "/approve", null),
+                "Admin must be able to approve history fixture");
+        assertStatus(200, apiRequest(
+                        "PUT",
+                        "/course/" + rejected.courseId() + "/reject",
+                        Map.of("reason", "History rejection reason " + shortId())),
+                "Admin must be able to reject history fixture");
+
+        Map<String, Object> historyResponse = apiRequest("GET", "/course-requests/history", null);
+        String historyBody = String.valueOf(historyResponse.get("body"));
+
+        assertStatus(200, historyResponse, "Admin must be able to read course request history");
+        assertTrue(historyBody.contains(approved.title()), "History must include the approved course");
+        assertTrue(historyBody.contains("APPROVED"), "History must include approved actions");
+        assertTrue(historyBody.contains(rejected.title()), "History must include the rejected course");
+        assertTrue(historyBody.contains("REJECTED"), "History must include rejected actions");
+    }
+
+    @Test
+    void scenarioI_creatorCanUpdateRejectedCourseBeforeResubmission() throws Exception {
+        CourseReviewFixture fixture = createPendingCourseFixture("System Rejected Update Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest(
+                        "PUT",
+                        "/course/" + fixture.courseId() + "/reject",
+                        Map.of("reason", "Needs edits before resubmission " + shortId())),
+                "Admin must be able to prepare a rejected course");
+
+        logout();
+        login("creator1", SEEDED_PASSWORD);
+
+        String updatedTitle = "System Resubmitted Course " + shortId();
+        Map<String, Object> updateResponse = apiRequest(
+                "PUT",
+                "/course/" + fixture.courseId() + "/update",
+                Map.of(
+                        "title", updatedTitle,
+                        "description", "Updated after admin rejection",
+                        "status", "PENDING"));
+
+        assertStatus(200, updateResponse, "Creator must be able to edit and resubmit a rejected course");
+        assertEquals(updatedTitle, courseTitle(fixture.courseId()), "Rejected course title must be updated");
+        assertEquals("PENDING", courseStatus(fixture.courseId()),
+                "Rejected course must be moved back to PENDING for admin review");
+    }
+
+    @Test
+    void scenarioJ_creatorCannotUpdatePublishedCourse() throws Exception {
+        CourseReviewFixture fixture = createPendingCourseFixture("System Published Update Block Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest("PUT", "/course/" + fixture.courseId() + "/approve", null),
+                "Admin must be able to publish the fixture course");
+
+        logout();
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> updateResponse = apiRequest(
+                "PUT",
+                "/course/" + fixture.courseId() + "/update",
+                Map.of(
+                        "title", "Invalid Published Update " + shortId(),
+                        "description", "Published courses should not be edited",
+                        "status", "PENDING"));
+
+        assertStatus(400, updateResponse, "Creator must not update a published course");
+        assertEquals("PUBLISHED", courseStatus(fixture.courseId()),
+                "Published course status must not change after invalid update");
+    }
+
+    @Test
+    void scenarioK_adminCanSeeOnlyPendingCoursesInPendingList() throws Exception {
+        CourseReviewFixture pending = createPendingCourseFixture("System Pending Visible Course");
+        CourseReviewFixture approved = createPendingCourseFixture("System Pending Hidden Approved Course");
+        CourseReviewFixture rejected = createPendingCourseFixture("System Pending Hidden Rejected Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest("PUT", "/course/" + approved.courseId() + "/approve", null),
+                "Admin must be able to publish hidden fixture");
+        assertStatus(200, apiRequest(
+                        "PUT",
+                        "/course/" + rejected.courseId() + "/reject",
+                        Map.of("reason", "Hidden from pending list " + shortId())),
+                "Admin must be able to reject hidden fixture");
+
+        Map<String, Object> pendingResponse = apiRequest("GET", "/course/pending", null);
+        String body = String.valueOf(pendingResponse.get("body"));
+
+        assertStatus(200, pendingResponse, "Admin must be able to read pending courses");
+        assertTrue(body.contains(pending.title()), "Pending list must include pending courses");
+        assertFalse(body.contains(approved.title()), "Pending list must not include published courses");
+        assertFalse(body.contains(rejected.title()), "Pending list must not include rejected courses");
+    }
+
+    @Test
+    void scenarioL_publicCatalogOnlyShowsPublishedCourses() throws Exception {
+        CourseReviewFixture pending = createPendingCourseFixture("System Catalog Hidden Pending Course");
+        CourseReviewFixture published = createPendingCourseFixture("System Catalog Visible Published Course");
+        CourseReviewFixture rejected = createPendingCourseFixture("System Catalog Hidden Rejected Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest("PUT", "/course/" + published.courseId() + "/approve", null),
+                "Admin must be able to publish catalog fixture");
+        assertStatus(200, apiRequest(
+                        "PUT",
+                        "/course/" + rejected.courseId() + "/reject",
+                        Map.of("reason", "Hidden from public catalog " + shortId())),
+                "Admin must be able to reject catalog fixture");
+
+        Map<String, Object> publicResponse = apiRequest("GET", "/course/all?page=0&size=200", null);
+        String body = String.valueOf(publicResponse.get("body"));
+
+        assertStatus(200, publicResponse, "Public catalog endpoint must be readable");
+        assertTrue(body.contains(published.title()), "Public catalog must include published courses");
+        assertFalse(body.contains(pending.title()), "Public catalog must not include pending courses");
+        assertFalse(body.contains(rejected.title()), "Public catalog must not include rejected courses");
+    }
+
+    @Test
+    void scenarioM_creatorCannotDeleteCourseOwnedByAnotherCreator() throws Exception {
+        CourseReviewFixture fixture = createPendingCourseFixture("System Other Creator Delete Block Course");
+        TestUser otherCreator = register("othercreator");
+        setRole(otherCreator.username(), "CREATOR");
+
+        login(otherCreator.username());
+        Map<String, Object> deleteResponse = apiRequest("DELETE", "/course/" + fixture.courseId() + "/delete", null);
+
+        assertStatus(400, deleteResponse, "Creator must not delete a course owned by another creator");
+        assertFalse(courseIsDeleted(fixture.courseId()),
+                "Course must remain undeleted after another creator's delete attempt");
+    }
+
     private void assertStatus(int expectedStatus, Map<String, Object> response, String message) {
         assertEquals(expectedStatus, ((Number) response.get("status")).intValue(), message);
+    }
+
+    private Map<String, Object> createCourse(String title, String description, String status) {
+        return apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", title,
+                        "description", description,
+                        "status", status));
     }
 
     @SuppressWarnings("unchecked")
