@@ -165,6 +165,30 @@ abstract class SystemTestFixtures {
         return queryString("SELECT status FROM waitlists WHERE wait_list_id = ?", waitlistId);
     }
 
+    protected OpenWaitlistFixture createOpenWaitlistFixture(String titlePrefix, int learnerCount)
+            throws Exception {
+        String suffix = shortId();
+
+        try (Connection connection = connection()) {
+            Long creatorId = findUserId("creator1");
+            Long courseId = insertCourse(connection, titlePrefix + " " + suffix, creatorId, "PUBLISHED");
+            insertSystemEnrollmentModule(connection, courseId);
+            Long waitlistId = insertSystemEnrollmentWaitlist(connection, courseId);
+
+            for (int i = 0; i < learnerCount; i++) {
+                Long userId = insertSystemEnrollmentUser(connection, suffix, i);
+                insertSystemEnrollmentWaitlistEntry(connection, waitlistId, userId, i);
+            }
+
+            return new OpenWaitlistFixture(
+                    courseId,
+                    waitlistId,
+                    countClassesForCourse(courseId),
+                    countOpenWaitlistEntries(waitlistId),
+                    queryString("SELECT title FROM courses WHERE course_id = ?", courseId));
+        }
+    }
+
     protected int countClassesForCourse(Long courseId) throws Exception {
         return queryInt("SELECT COUNT(*) FROM classes WHERE course_id = ?", courseId);
     }
@@ -191,6 +215,28 @@ abstract class SystemTestFixtures {
                 return resultSet.getInt(1);
             }
         }
+    }
+
+    protected int countLearnerClassMembers(Long classId) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM class_members
+                WHERE class_id = ?
+                  AND context_role = 'LEARNER'
+                """;
+        return queryInt(sql, classId);
+    }
+
+    protected int countStudyGroupsForClass(Long classId) throws Exception {
+        return queryInt("SELECT COUNT(*) FROM study_groups WHERE class_id = ?", classId);
+    }
+
+    protected int countTimelineRowsForClass(Long classId) throws Exception {
+        return queryInt("SELECT COUNT(*) FROM class_timeline WHERE class_id = ?", classId);
+    }
+
+    protected int countModulesForCourse(Long courseId) throws Exception {
+        return queryInt("SELECT COUNT(*) FROM modules WHERE course_id = ?", courseId);
     }
 
     private Long insertSystemEnrollmentCourse(Connection connection, String suffix) throws Exception {
@@ -749,6 +795,13 @@ abstract class SystemTestFixtures {
             Long waitlistId,
             Long learnerId,
             int entriesBefore) {}
+
+    protected record OpenWaitlistFixture(
+            Long courseId,
+            Long waitlistId,
+            int classCountBefore,
+            int entriesBefore,
+            String courseTitle) {}
 
     protected record LearningFixture(
             Long userId,

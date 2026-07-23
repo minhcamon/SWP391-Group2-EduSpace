@@ -88,6 +88,167 @@ class EnrollmentSystemTest extends SystemTestSupport {
                 "Leaving an opening waitlist must not fulfill or close it");
     }
 
+    @Test
+    void scenarioD_creatorCanViewOwnWaitlistsAndDetails() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Creator Waitlist View Course", 2);
+
+        String token = login("creator1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded creator login must store access_token in localStorage");
+
+        Map<String, Object> waitlistsResponse = apiRequest("GET", "/waitlist/creator", null);
+        assertStatus(200, waitlistsResponse, "Creator must be able to view own opening waitlists");
+        assertTrue(String.valueOf(waitlistsResponse.get("body")).contains(fixture.courseTitle()),
+                "Creator waitlist list must include their own course waitlist");
+
+        Map<String, Object> detailsResponse = apiRequest("GET", "/waitlist/" + fixture.waitlistId(), null);
+        assertStatus(200, detailsResponse, "Creator must be able to view waitlist details");
+        assertTrue(String.valueOf(detailsResponse.get("body")).contains(fixture.courseTitle()),
+                "Waitlist details must include the waitlist course");
+    }
+
+    @Test
+    void scenarioE_creatorCanManuallyStartClassFromOpenWaitlist() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Manual Start Course", 2);
+
+        String token = login("creator1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded creator login must store access_token in localStorage");
+
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+        assertStatus(200, startResponse, "Creator must be able to manually start an eligible waitlist");
+
+        Long classId = ((Number) responseDataObject(startResponse)).longValue();
+        assertEquals("FULLED", waitlistStatus(fixture.waitlistId()),
+                "Starting a class must fulfill the waitlist");
+        assertTrue(countClassesForCourse(fixture.courseId()) > fixture.classCountBefore(),
+                "Starting a class must create a running class");
+        assertEquals(2, countLearnerClassMembers(classId),
+                "Manual class start must enroll all eligible waitlist learners");
+    }
+
+    @Test
+    void scenarioF_nonCreatorCannotStartClassFromWaitlist() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Non Creator Start Block Course", 2);
+
+        String token = login("learner1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded learner login must store access_token in localStorage");
+
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+
+        assertStatus(403, startResponse, "Learner must not be able to start a class from a waitlist");
+        assertEquals("OPENING", waitlistStatus(fixture.waitlistId()),
+                "Forbidden start attempt must keep waitlist opening");
+        assertEquals(fixture.classCountBefore(), countClassesForCourse(fixture.courseId()),
+                "Forbidden start attempt must not create a class");
+    }
+
+    @Test
+    void scenarioG_learnerCannotLeaveFulfilledWaitlist() throws Exception {
+        WaitlistMembershipFixture fixture = createOpenWaitlistWithLearnerFixture("learner1");
+
+        login("learner2", SEEDED_PASSWORD);
+        Map<String, Object> enrollResponse = apiRequest("POST", "/waitlist/enroll/" + fixture.courseId(), null);
+        assertStatus(200, enrollResponse, "Second learner must be able to make waitlist eligible");
+
+        logout();
+        login("creator1", SEEDED_PASSWORD);
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+        assertStatus(200, startResponse, "Creator must be able to fulfill the waitlist");
+
+        logout();
+        login("learner1", SEEDED_PASSWORD);
+        Map<String, Object> leaveResponse = apiRequest("DELETE", "/waitlist/leave/" + fixture.courseId(), null);
+
+        assertStatus(400, leaveResponse, "Learner must not leave a fulfilled waitlist");
+        assertEquals("FULLED", waitlistStatus(fixture.waitlistId()),
+                "Failed leave attempt must keep fulfilled waitlist status");
+    }
+
+    @Test
+    void scenarioH_learnerCanViewWaitlistMembersAfterJoining() throws Exception {
+        WaitlistMembershipFixture fixture = createOpenWaitlistWithLearnerFixture("learner1");
+
+        String token = login("learner1", SEEDED_PASSWORD);
+        assertFalse(token.isBlank(), "Seeded learner login must store access_token in localStorage");
+
+        Map<String, Object> membersResponse = apiRequest("GET", "/waitlist/members/" + fixture.courseId(), null);
+
+        assertStatus(200, membersResponse, "Learner must be able to view waitlist members after joining");
+        assertTrue(String.valueOf(membersResponse.get("body")).contains(String.valueOf(fixture.learnerId())),
+                "Waitlist members must include the joined learner");
+    }
+
+    @Test
+    void scenarioI_learnerCannotEnrollInRejectedOrPendingCourse() throws Exception {
+        CourseReviewFixture pending = createPendingCourseFixture("System Pending Enrollment Block Course");
+        CourseReviewFixture rejected = createPendingCourseFixture("System Rejected Enrollment Block Course");
+
+        login("admin", SEEDED_PASSWORD);
+        assertStatus(200, apiRequest(
+                        "PUT",
+                        "/course/" + rejected.courseId() + "/reject",
+                        Map.of("reason", "Enrollment should be blocked " + shortId())),
+                "Admin must be able to prepare rejected enrollment fixture");
+
+        logout();
+        login("learner1", SEEDED_PASSWORD);
+
+        Map<String, Object> pendingEnrollResponse = apiRequest(
+                "POST",
+                "/waitlist/enroll/" + pending.courseId(),
+                null);
+        Map<String, Object> rejectedEnrollResponse = apiRequest(
+                "POST",
+                "/waitlist/enroll/" + rejected.courseId(),
+                null);
+
+        assertStatus(400, pendingEnrollResponse, "Learner must not enroll in a pending course");
+        assertStatus(400, rejectedEnrollResponse, "Learner must not enroll in a rejected course");
+    }
+
+    @Test
+    void scenarioJ_creatorCannotStartClassWithLessThanTwoLearners() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Too Small Waitlist Course", 1);
+
+        login("creator1", SEEDED_PASSWORD);
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+
+        assertStatus(400, startResponse, "Creator must not start a class with fewer than two learners");
+        assertEquals("OPENING", waitlistStatus(fixture.waitlistId()),
+                "Too-small waitlist must remain opening");
+        assertEquals(fixture.classCountBefore(), countClassesForCourse(fixture.courseId()),
+                "Too-small waitlist must not create a class");
+    }
+
+    @Test
+    void scenarioK_waitlistCapacityUsesTopTenLearnersOnly() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Top Ten Capacity Course", 11);
+
+        login("creator1", SEEDED_PASSWORD);
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+        assertStatus(200, startResponse, "Creator must be able to start an oversized waitlist");
+
+        Long classId = ((Number) responseDataObject(startResponse)).longValue();
+        assertEquals(10, countLearnerClassMembers(classId),
+                "Class creation must enroll only the top ten waitlist learners");
+        assertEquals(1, countOpenWaitlistEntries(fixture.waitlistId()),
+                "Learners outside the top ten must remain outside the created class");
+    }
+
+    @Test
+    void scenarioL_startClassCreatesStudyGroupsAndTimeline() throws Exception {
+        OpenWaitlistFixture fixture = createOpenWaitlistFixture("System Class Structure Course", 4);
+
+        login("creator1", SEEDED_PASSWORD);
+        Map<String, Object> startResponse = apiRequest("POST", "/waitlist/start-class/" + fixture.waitlistId(), null);
+        assertStatus(200, startResponse, "Creator must be able to start class structure fixture");
+
+        Long classId = ((Number) responseDataObject(startResponse)).longValue();
+        assertEquals(2, countStudyGroupsForClass(classId),
+                "Starting a class with four learners must create paired study groups");
+        assertEquals(countModulesForCourse(fixture.courseId()), countTimelineRowsForClass(classId),
+                "Starting a class must create one timeline row per course module");
+    }
+
     private void assertStatus(int expectedStatus, Map<String, Object> response, String message) {
         assertEquals(expectedStatus, ((Number) response.get("status")).intValue(), message);
     }
@@ -96,5 +257,11 @@ class EnrollmentSystemTest extends SystemTestSupport {
     private Map<String, Object> responseData(Map<String, Object> response) {
         Map<String, Object> body = (Map<String, Object>) response.get("body");
         return (Map<String, Object>) body.get("data");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object responseDataObject(Map<String, Object> response) {
+        Map<String, Object> body = (Map<String, Object>) response.get("body");
+        return body.get("data");
     }
 }
