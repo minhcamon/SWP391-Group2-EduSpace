@@ -217,6 +217,10 @@ abstract class SystemTestFixtures {
         }
     }
 
+    protected Long userIdByUsername(String username) throws Exception {
+        return findUserId(username);
+    }
+
     protected int countLearnerClassMembers(Long classId) throws Exception {
         String sql = """
                 SELECT COUNT(*)
@@ -617,6 +621,87 @@ abstract class SystemTestFixtures {
         }
     }
 
+    protected UnassignedMentorFixture createUnassignedMentorFixture(String mentorUsername) throws Exception {
+        String suffix = shortId();
+        Long creatorId = findUserId("creator1");
+
+        try (Connection connection = connection()) {
+            Long courseId = insertCourse(connection, "System Unassigned Mentor Course " + suffix, creatorId, "PUBLISHED");
+            insertSystemEnrollmentModule(connection, courseId);
+            Long classId = insertSystemWithdrawClass(connection, courseId, suffix);
+            Long learnerA = insertSystemEnrollmentUser(connection, "unassigned_" + suffix, 1);
+            Long learnerB = insertSystemEnrollmentUser(connection, "unassigned_" + suffix, 2);
+            Long reporterMemberId = insertSystemWithdrawClassMember(connection, classId, learnerA, "LEARNER");
+            Long reportedMemberId = insertSystemWithdrawClassMember(connection, classId, learnerB, "LEARNER");
+            Long studyGroupId = insertSystemStudyGroup(connection, classId, courseId, suffix);
+            insertSystemGroupMember(connection, studyGroupId, reporterMemberId);
+            insertSystemGroupMember(connection, studyGroupId, reportedMemberId);
+            Long incidentId = insertSystemIncident(
+                    connection,
+                    reporterMemberId,
+                    reportedMemberId,
+                    "System unassigned incident for " + mentorUsername + " " + suffix);
+
+            return new UnassignedMentorFixture(
+                    classId,
+                    studyGroupId,
+                    incidentId,
+                    "System Withdraw Class " + suffix);
+        }
+    }
+
+    protected WithdrawFixture createUrgentWithdrawFixture(String mentorUsername) throws Exception {
+        String suffix = shortId();
+        Long creatorId = findUserId("creator1");
+        Long mentorId = findUserId(mentorUsername);
+
+        try (Connection connection = connection()) {
+            Long courseId = insertCourse(connection, "System Urgent Withdraw Course " + suffix, creatorId, "PUBLISHED");
+            Long classId = insertSystemWithdrawClass(connection, courseId, suffix);
+            Long mentorMemberId = insertSystemWithdrawClassMember(connection, classId, mentorId, "MENTOR");
+
+            return new WithdrawFixture(
+                    courseId,
+                    classId,
+                    mentorMemberId,
+                    "System Withdraw Class " + suffix);
+        }
+    }
+
+    protected Long withdrawReplacementMemberId(Long requestId) throws Exception {
+        String sql = "SELECT replacement_member_id FROM withdraw_requests WHERE id = ?";
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, requestId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected withdraw replacement member result");
+                Long value = resultSet.getObject(1, Long.class);
+                assertNotNull(value, "Expected replacement member to be assigned");
+                return value;
+            }
+        }
+    }
+
+    protected int countMentorMembershipsInClassForUser(Long classId, String username) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM class_members cm
+                JOIN users u ON u.user_id = cm.user_id
+                WHERE cm.class_id = ?
+                  AND u.username = ?
+                  AND cm.context_role = 'MENTOR'
+                """;
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, classId);
+            statement.setString(2, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected mentor membership count result");
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
     protected void activateUser(String username) throws Exception {
         try (Connection connection = connection();
              PreparedStatement statement = connection.prepareStatement(
@@ -700,6 +785,53 @@ abstract class SystemTestFixtures {
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, "System Withdraw Class " + suffix);
             statement.setLong(2, courseId);
+            statement.executeUpdate();
+            return generatedId(statement);
+        }
+    }
+
+    private Long insertSystemStudyGroup(Connection connection, Long classId, Long courseId, String suffix) throws Exception {
+        Long moduleId = queryFirstLong(connection, "SELECT module_id FROM modules WHERE course_id = ? LIMIT 1", courseId);
+        String sql = """
+                INSERT INTO study_groups (class_id, module_id, chat_channel_id, chat_status)
+                VALUES (?, ?, ?, 'ACTIVE')
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, classId);
+            statement.setLong(2, moduleId);
+            statement.setString(3, "system_unassigned_" + suffix);
+            statement.executeUpdate();
+            return generatedId(statement);
+        }
+    }
+
+    private void insertSystemGroupMember(Connection connection, Long studyGroupId, Long memberId) throws Exception {
+        String sql = """
+                INSERT INTO group_members (study_group_id, member_id)
+                VALUES (?, ?)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, studyGroupId);
+            statement.setLong(2, memberId);
+            statement.executeUpdate();
+        }
+    }
+
+    private Long insertSystemIncident(
+            Connection connection,
+            Long reporterMemberId,
+            Long reportedMemberId,
+            String reason) throws Exception {
+        String sql = """
+                INSERT INTO incidents
+                    (incident_type, reporter_id, reported_id, reason, evidence_url, status, created_at)
+                VALUES
+                    ('SYSTEM_ERROR', ?, ?, ?, NULL, 'PENDING', NOW())
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, reporterMemberId);
+            statement.setLong(2, reportedMemberId);
+            statement.setString(3, reason);
             statement.executeUpdate();
             return generatedId(statement);
         }
@@ -825,6 +957,16 @@ abstract class SystemTestFixtures {
         }
     }
 
+    private Long queryFirstLong(Connection connection, String sql, Long parameter) throws Exception {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, parameter);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected query result");
+                return resultSet.getLong(1);
+            }
+        }
+    }
+
     private Connection connection() throws Exception {
         return DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
     }
@@ -906,6 +1048,12 @@ abstract class SystemTestFixtures {
     protected record MentorIncidentFixture(
             Long incidentId,
             String reason) {}
+
+    protected record UnassignedMentorFixture(
+            Long classId,
+            Long studyGroupId,
+            Long incidentId,
+            String className) {}
 
     protected record WithdrawFixture(
             Long courseId,
