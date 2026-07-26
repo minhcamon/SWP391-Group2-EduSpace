@@ -5,6 +5,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -430,7 +431,8 @@ class MentorSystemTest extends SystemTestSupport {
         Map<String, Object> historyResponse = apiRequest("GET", "/incidents/history", null);
 
         assertStatus(200, historyResponse, "Mentor must be able to read incident history");
-        assertFalse(String.valueOf(historyResponse.get("body")).contains(String.valueOf(pending.incidentId())),
+        assertFalse(responseDataList(historyResponse).stream()
+                        .anyMatch(incident -> pending.incidentId().equals(((Number) incident.get("id")).longValue())),
                 "Incident history must not include pending incidents");
     }
 
@@ -612,5 +614,11 @@ class MentorSystemTest extends SystemTestSupport {
     private Map<String, Object> responseData(Map<String, Object> response) {
         Map<String, Object> body = (Map<String, Object>) response.get("body");
         return (Map<String, Object>) body.get("data");
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> responseDataList(Map<String, Object> response) {
+        Map<String, Object> body = (Map<String, Object>) response.get("body");
+        return (List<Map<String, Object>>) body.get("data");
     }
 }

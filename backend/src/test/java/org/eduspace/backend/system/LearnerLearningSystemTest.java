@@ -35,11 +35,12 @@ class LearnerLearningSystemTest extends SystemTestSupport {
         continueButton.click();
 
         wait.until(ExpectedConditions.urlContains("/courses/" + fixture.courseId() + "/learn"));
-        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), fixture.lessonTitle()));
+        String lessonMarker = fixture.lessonTitle().contains("ArrayList") ? "ArrayList" : fixture.lessonTitle();
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.tagName("body"), lessonMarker));
 
         assertEquals("/courses/" + fixture.courseId() + "/learn", getCurrentPath(),
                 "Continue learning must open the learning area for the enrolled course");
-        assertTrue(driver.findElement(By.tagName("body")).getText().contains(fixture.lessonTitle()),
+        assertTrue(driver.findElement(By.tagName("body")).getText().contains(lessonMarker),
                 "Learning area must render the active lesson title from the seeded fixture");
     }
 

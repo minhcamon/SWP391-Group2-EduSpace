@@ -36,7 +36,15 @@ abstract class SystemTestSupport extends SystemTestFixtures {
         backendApiUrl = setting("system.test.api-url", "SYSTEM_TEST_API_URL", "http://localhost:8080/api");
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1000");
+        options.addArguments(
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-crash-reporter",
+                "--disable-crashpad",
+                "--disable-gpu",
+                "--disable-extensions",
+                "--remote-debugging-port=0",
+                "--window-size=1440,1000");
         try {
             Path profileRoot = Path.of("target", "chrome-profiles");
             Files.createDirectories(profileRoot);

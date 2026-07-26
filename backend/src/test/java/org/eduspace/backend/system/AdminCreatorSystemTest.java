@@ -3,6 +3,7 @@ package org.eduspace.backend.system;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,13 +20,10 @@ class AdminCreatorSystemTest extends SystemTestSupport {
         assertFalse(token.isBlank(), "Seeded creator login must store access_token in localStorage");
 
         String title = "System Creator Pending Course " + shortId();
-        Map<String, Object> createResponse = apiRequest(
-                "POST",
-                "/course/create-course",
-                Map.of(
-                        "title", title,
-                        "description", "Course created by a system workflow test",
-                        "status", "PENDING"));
+        Map<String, Object> createResponse = createCourse(
+                title,
+                "Course created by a system workflow test",
+                "PENDING");
         assertStatus(200, createResponse, "Creator must be able to create a pending course");
 
         Long courseId = ((Number) responseData(createResponse)).longValue();
@@ -172,6 +170,144 @@ class AdminCreatorSystemTest extends SystemTestSupport {
     }
 
     @Test
+    void scenarioG1_creatorCannotCreateCourseWithoutModules() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Missing Module Course " + shortId(),
+                        "description", "Course creation must require at least one module",
+                        "status", "PENDING"));
+
+        assertStatus(400, createResponse, "Creator must not create a course without modules");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("module"),
+                "Validation response should explain that at least one module is required");
+    }
+
+    @Test
+    void scenarioG2_creatorCannotCreateAssignmentWithoutRubricCriteria() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Missing Rubric Course " + shortId(),
+                        "description", "Assignment creation must require rubric criteria",
+                        "status", "PENDING",
+                        "modules", List.of(validModulePayload("Module 1: Rubric missing", Map.of(
+                                "title", "Assignment without rubric",
+                                "description", "This assignment should be rejected",
+                                "rubricCriteria", List.of())))));
+
+        assertStatus(400, createResponse, "Creator must not create an assignment without rubric criteria");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("tiêu chí")
+                        || String.valueOf(createResponse.get("body")).contains("criteria"),
+                "Validation response should explain that rubric criteria are required");
+    }
+
+    @Test
+    void scenarioG3_creatorCannotCreateAssignmentWithInvalidRubricCriteria() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Invalid Rubric Course " + shortId(),
+                        "description", "Assignment creation must require valid rubric criteria",
+                        "status", "PENDING",
+                        "modules", List.of(validModulePayload("Module 1: Invalid rubric", Map.of(
+                                "title", "Assignment with invalid rubric",
+                                "description", "This assignment should be rejected",
+                                "rubricCriteria", List.of(Map.of(
+                                        "criterionName", "Completeness",
+                                        "maxPoint", 0)))))));
+
+        assertStatus(400, createResponse, "Creator must not create an assignment with invalid rubric criteria");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("điểm")
+                        || String.valueOf(createResponse.get("body")).contains("point"),
+                "Validation response should explain that rubric max point must be greater than zero");
+    }
+
+    @Test
+    void scenarioG4_creatorCannotCreateModuleWithoutLessons() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Missing Lesson Course " + shortId(),
+                        "description", "Course creation must require lessons in every module",
+                        "status", "PENDING",
+                        "modules", List.of(Map.of(
+                                "title", "Module 1: Missing lesson",
+                                "priority", "LOW",
+                                "days", 7,
+                                "baseExp", 50,
+                                "speedBonusExp", 10,
+                                "sortOrder", 1,
+                                "assignment", validAssignmentPayload(),
+                                "lessons", List.of()))));
+
+        assertStatus(400, createResponse, "Creator must not create a module without lessons");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("bÃ i há»c")
+                        || String.valueOf(createResponse.get("body")).contains("lesson"),
+                "Validation response should explain that lessons are required");
+    }
+
+    @Test
+    void scenarioG5_creatorCannotCreateAssignmentWithoutTitle() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Missing Assignment Title Course " + shortId(),
+                        "description", "Assignment creation must require a title",
+                        "status", "PENDING",
+                        "modules", List.of(validModulePayload("Module 1: Assignment title missing", Map.of(
+                                "title", " ",
+                                "description", "This assignment should be rejected",
+                                "rubricCriteria", List.of(Map.of(
+                                        "criterionName", "Completeness",
+                                        "maxPoint", 10)))))));
+
+        assertStatus(400, createResponse, "Creator must not create an assignment without title");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("tiÃªu Ä‘á»")
+                        || String.valueOf(createResponse.get("body")).contains("title"),
+                "Validation response should explain that assignment title is required");
+    }
+
+    @Test
+    void scenarioG6_creatorCannotCreateAssignmentWithoutDescription() {
+        login("creator1", SEEDED_PASSWORD);
+
+        Map<String, Object> createResponse = apiRequest(
+                "POST",
+                "/course/create-course",
+                Map.of(
+                        "title", "System Missing Assignment Description Course " + shortId(),
+                        "description", "Assignment creation must require a description",
+                        "status", "PENDING",
+                        "modules", List.of(validModulePayload("Module 1: Assignment description missing", Map.of(
+                                "title", "Assignment without description",
+                                "description", " ",
+                                "rubricCriteria", List.of(Map.of(
+                                        "criterionName", "Completeness",
+                                        "maxPoint", 10)))))));
+
+        assertStatus(400, createResponse, "Creator must not create an assignment without description");
+        assertTrue(String.valueOf(createResponse.get("body")).contains("mÃ´ táº£")
+                        || String.valueOf(createResponse.get("body")).contains("description"),
+                "Validation response should explain that assignment description is required");
+    }
+
+    @Test
     void scenarioH_courseRequestHistoryIncludesApprovedAndRejectedActions() throws Exception {
         CourseReviewFixture approved = createPendingCourseFixture("System History Approved Course");
         CourseReviewFixture rejected = createPendingCourseFixture("System History Rejected Course");
@@ -311,17 +447,48 @@ class AdminCreatorSystemTest extends SystemTestSupport {
     }
 
     private void assertStatus(int expectedStatus, Map<String, Object> response, String message) {
-        assertEquals(expectedStatus, ((Number) response.get("status")).intValue(), message);
+        assertEquals(expectedStatus, ((Number) response.get("status")).intValue(),
+                message + " Response body: " + response.get("body"));
     }
 
     private Map<String, Object> createCourse(String title, String description, String status) {
         return apiRequest(
                 "POST",
                 "/course/create-course",
-                Map.of(
-                        "title", title,
-                        "description", description,
-                        "status", status));
+                validCoursePayload(title, description, status));
+    }
+
+    private Map<String, Object> validCoursePayload(String title, String description, String status) {
+        return Map.of(
+                "title", title,
+                "description", description,
+                "status", status,
+                "modules", List.of(validModulePayload("Module 1: System Test Basics", validAssignmentPayload())));
+    }
+
+    private Map<String, Object> validModulePayload(String title, Map<String, Object> assignment) {
+        return Map.of(
+                "title", title,
+                "priority", "LOW",
+                "days", 7,
+                "baseExp", 50,
+                "speedBonusExp", 10,
+                "sortOrder", 1,
+                "assignment", assignment,
+                "lessons", List.of(Map.of(
+                        "title", "System test lesson",
+                        "contentType", "TEXT",
+                        "contentUrl", "N/A",
+                        "sortOrder", 1)));
+    }
+
+    private Map<String, Object> validAssignmentPayload() {
+        return Map.of(
+                "title", "System test assignment",
+                "description", "Complete the system test assignment",
+                "rubricCriteria", List.of(Map.of(
+                        "criterionName", "Completeness",
+                        "maxPoint", 10)));
     }
 
     @SuppressWarnings("unchecked")
