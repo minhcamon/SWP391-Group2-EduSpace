@@ -56,7 +56,8 @@ public class SubmissionService {
         Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
                 .orElseThrow(() -> new RuntimeException("Assignment not found!"));
 
-        ClassMember member = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+        ClassMember member = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = Submission.builder()
@@ -82,7 +83,8 @@ public class SubmissionService {
     }
 
     public SubmissionReviewResponse getSubmissionReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+        ClassMember classMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = submissionRepository
@@ -106,7 +108,8 @@ public class SubmissionService {
     }
 
     public PeerReviewAssignmentResponse getAssignedPeerReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember reviewerMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+        ClassMember reviewerMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
             throw new RuntimeException("Invalid learner!");
@@ -146,7 +149,8 @@ public class SubmissionService {
     @Transactional
     public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId,
             PeerReviewGradeRequest request) {
-        ClassMember reviewerMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+        ClassMember reviewerMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
@@ -189,7 +193,6 @@ public class SubmissionService {
                     .sum();
         }
 
-        double passThreshold = maxPossibleScore > 0 ? maxPossibleScore : 0.0;
         double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
         Submission submission = peerReview.getSubmission();
         submission.setStatus(
@@ -250,7 +253,6 @@ public class SubmissionService {
         if (members == null || members.isEmpty())
             return;
 
-        // stable order
         members.sort(Comparator.comparing(GroupMember::getId));
 
         int ownerIndex = -1;

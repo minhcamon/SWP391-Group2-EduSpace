@@ -8,7 +8,6 @@ import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
 import org.eduspace.backend.dto.study_group.response.GroupMessageResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
-import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairPeerReviewsResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairProgressResponse;
 import org.eduspace.backend.dto.study_group.response.MentorPairSubmissionsResponse;
@@ -17,7 +16,6 @@ import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.MentorService;
 import org.eduspace.backend.service.ProgressService;
 import org.eduspace.backend.service.StudyGroupService;
-import org.eduspace.backend.service.WithdrawService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.List;
 

@@ -24,7 +24,6 @@ public class CreatorClassService {
     private final ClassMemberRepository classMemberRepository;
     private final ActiveMentorRepository activeMentorRepository;
     private final UserRepository userRepository;
-    private final WithdrawRequestRepository withdrawRequestRepository;
     private final CourseRepository courseRepository;
     private final ClassTimelineRepository classTimelineRepository;
     private final StudyGroupRepository studyGroupRepository;
@@ -41,8 +40,6 @@ public class CreatorClassService {
     public List<MentorResponse> getClassMentors(Long classId, Long creatorId) {
         checkCreatorOwnershipAndGetClass(classId, creatorId);
 
-        // Get all mentors in class, including Creator acting as mentor (contextRole =
-        // "CREATOR" or "MENTOR")
         List<ClassMember> classMembers = classMemberRepository.findAllMentorsInClass(classId);
         return classMembers.stream()
                 .map(cm -> MentorResponse.builder()
@@ -137,7 +134,6 @@ public class CreatorClassService {
             limitDate = LocalDateTime.now().minusDays(30);
         }
 
-        // 2. Fetch all class members (learners) in selected courses
         List<ClassMember> allLearners = new ArrayList<>();
         for (Course c : targetCourses) {
             List<CourseClass> classes = classRepository.findByCourseId(c.getId());
@@ -193,7 +189,6 @@ public class CreatorClassService {
                 .avgScore(total > 0 ? 8.2 : 0.0)
                 .build();
 
-        // Build monthly trends dynamically from actual joinedAt dates
         List<CreatorAnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
         LocalDate now = LocalDate.now();
         for (int i = 4; i >= 0; i--) {
@@ -253,7 +248,6 @@ public class CreatorClassService {
                         .build());
             }
 
-            // Sắp xếp các module theo thứ tự sortOrder
             items.sort((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()));
 
             response.add(ClassTimelineResponse.builder()

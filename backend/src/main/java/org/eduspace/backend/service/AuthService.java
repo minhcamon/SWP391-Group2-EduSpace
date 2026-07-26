@@ -224,10 +224,8 @@ public class AuthService {
             user.setAvatarUrl(request.getAvatarUrl());
         }
 
-        // Save updated user
         user = userRepository.save(user);
 
-        // Return updated profile
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -339,7 +337,6 @@ public class AuthService {
         // Clear OTP from RAM cache
         otpCache.remove(request.getEmail());
 
-        // Generate and return reset token
         return jwtUtil.generateResetPasswordToken(request.getEmail());
     }
 }

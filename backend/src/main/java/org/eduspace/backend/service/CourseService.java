@@ -124,7 +124,6 @@ public class CourseService {
                 })
                 .collect(Collectors.toList());
 
-        // Build paged response
         return PagedResponse.<CourseResponse>builder()
                 .content(courseResponses)
                 .currentPage(page)
@@ -440,7 +439,8 @@ public class CourseService {
             if (isCompleted) {
                 // Find any classId they participated in
                 Optional<ClassMember> member = classMemberRepository.findByUserId(userId).stream()
-                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null && cm.getCourseClass().getCourse().getId().equals(courseId))
+                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null
+                                && cm.getCourseClass().getCourse().getId().equals(courseId))
                         .findFirst();
                 if (member.isPresent()) {
                     targetClassId = member.get().getCourseClass().getId();
@@ -666,7 +666,7 @@ public class CourseService {
     }
 
     private void validateModuleFields(String title, Object priority, Integer days, Integer baseExp,
-                                      Integer speedBonusExp, String moduleLabel) {
+            Integer speedBonusExp, String moduleLabel) {
         if (isBlank(title)) {
             throw new BadRequestException("Tên " + moduleLabel + " không được để trống.");
         }
@@ -721,7 +721,7 @@ public class CourseService {
     }
 
     private void validateLessonFields(String title, LessonContentType contentType, String contentUrl,
-                                      String moduleLabel, int lessonIndex) {
+            String moduleLabel, int lessonIndex) {
         String lessonLabel = "Bài học " + lessonIndex + " của " + moduleLabel;
 
         if (isBlank(title)) {
@@ -756,7 +756,7 @@ public class CourseService {
     }
 
     private void validateAssignmentFields(String title, String description, List<RubricCriteriaDto> rubricCriteria,
-                                          String moduleLabel) {
+            String moduleLabel) {
         if (isBlank(title)) {
             throw new BadRequestException("Bài tập của " + moduleLabel + " phải có tiêu đề.");
         }
