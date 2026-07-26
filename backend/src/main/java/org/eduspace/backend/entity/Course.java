@@ -41,16 +41,4 @@ public class Course {
     @Builder.Default
     private boolean isDeleted = false;
 
-    @Column(name = "min_students_to_start")
-    @Builder.Default
-    private Integer minStudentsToStart = 6;
-
-    @Column(name = "auto_start_after_days")
-    @Builder.Default
-    private Integer autoStartAfterDays = 2;
-
-    @Column(name = "grace_period_hours")
-    @Builder.Default
-    private Integer gracePeriodHours = 12;
-
 }

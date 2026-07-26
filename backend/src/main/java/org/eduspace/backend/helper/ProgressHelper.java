@@ -100,6 +100,13 @@ public class ProgressHelper {
       }
     }
 
+    String lessonName = null;
+    if (partnerCurrentLessonId != null) {
+      lessonName = findLessonTitle(lessons, partnerCurrentLessonId);
+    } else if (lessons != null && partnerCompletedSet.size() == lessons.size() && !lessons.isEmpty()) {
+      lessonName = "Làm bài tập / Hoàn thành";
+    }
+
     User partnerUser = partnerClassMember.getUser();
 
     return PartnerResponse.builder()
@@ -108,10 +115,10 @@ public class ProgressHelper {
         .email(partnerUser.getEmail())
         .avatarUrl(partnerUser.getAvatarUrl())
         .description(partnerUser.getBio())
-        .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()
+        .location((partnerCurrentLessonId != null || lessonName != null) ? PartnerLocationDTO.builder()
             .moduleId(moduleId)
             .lessonId(partnerCurrentLessonId)
-            .lessonName(findLessonTitle(lessons, partnerCurrentLessonId))
+            .lessonName(lessonName)
             .build() : null)
         .completedLessons(partnerCompletedLessonIds)
         .build();

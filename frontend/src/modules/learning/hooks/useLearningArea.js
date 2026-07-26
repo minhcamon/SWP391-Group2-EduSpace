@@ -53,7 +53,7 @@ const useLearningArea = () => {
                     const currentCourse = inProgressCourses.find(
                         (c) => c.courseId.toString() === courseId.toString()
                     );
-                    
+
                     if (!currentCourse) {
                         throw new Error("Bạn chưa tham gia lớp học nào cho khóa học này.");
                     }
@@ -73,7 +73,7 @@ const useLearningArea = () => {
                     if (dashboard.focusLessonId) {
                         setActiveLessonId(dashboard.focusLessonId);
                         // Find module containing the focused lesson
-                        const matchedMod = dashboard.modules?.find(m => 
+                        const matchedMod = dashboard.modules?.find(m =>
                             m.lessons?.some(l => l.id.toString() === dashboard.focusLessonId.toString())
                         );
                         if (matchedMod) {
@@ -106,7 +106,7 @@ const useLearningArea = () => {
     // Handle selecting a lesson from the sidebar
     const handleSelectLesson = async (lessonId, moduleId) => {
         setActiveLessonId(lessonId);
-        
+
         // If changing module, fetch its progress data from backend
         if (moduleId !== activeModuleId && resolvedClassId) {
             setActiveModuleId(moduleId);
@@ -115,7 +115,7 @@ const useLearningArea = () => {
                 setProgressDashboard(prev => {
                     if (!prev) return subDashboard;
                     // Merge or update the module list
-                    const updatedModules = prev.modules.map(mod => 
+                    const updatedModules = prev.modules.map(mod =>
                         mod.id === moduleId ? subDashboard.modules.find(m => m.id === moduleId) || mod : mod
                     );
                     return {
@@ -145,7 +145,7 @@ const useLearningArea = () => {
 
     // Computed properties
     const activeModule = progressDashboard?.modules?.find(m => m.id === activeModuleId);
-    
+
     // Callback to handle incoming WebSocket messages
     const handleIncomingWebSocketMessage = useCallback((msg) => {
         const formattedMsg = {
@@ -257,7 +257,7 @@ const useLearningArea = () => {
     const activeStaticLesson = findStaticLesson(activeLessonId);
 
     const isCompleted = activeLessonId ? (!!completedLessonsLocal[activeLessonId] || !!activeLessonProgress?.completed || !!activeLessonProgress?.isCompleted) : false;
-    
+
     const lesson = activeStaticLesson ? {
         id: activeStaticLesson.id,
         module: activeModule?.title || "Module",
@@ -344,14 +344,14 @@ const useLearningArea = () => {
         try {
             await learnService.completeLesson(activeLessonId, resolvedClassId);
             setCompletedLessonsLocal(prev => ({ ...prev, [activeLessonId]: true }));
-            
+
             // Refresh progress dashboard data from backend
             const updatedDashboard = await learnService.getProgressDashboard(resolvedClassId);
             setProgressDashboard(updatedDashboard);
 
             // Automatically switch to the next focus lesson if available
             let nextLessonId = updatedDashboard.focusLessonId;
-            
+
             // Fallback: If backend didn't return focusLessonId, find the next lesson in sequence manually
             if (!nextLessonId) {
                 const allLessons = updatedDashboard.modules
@@ -375,9 +375,9 @@ const useLearningArea = () => {
 
             if (nextLessonId && nextLessonId.toString() !== activeLessonId.toString()) {
                 setActiveLessonId(nextLessonId);
-                
+
                 // Find and update active module if the next lesson belongs to a different module
-                const matchedMod = updatedDashboard.modules?.find(m => 
+                const matchedMod = updatedDashboard.modules?.find(m =>
                     m.lessons?.some(l => l.id.toString() === nextLessonId.toString())
                 );
                 if (matchedMod) {
@@ -410,8 +410,8 @@ const useLearningArea = () => {
             completedLessonsCount += mod.completedLessons || 0;
         });
     }
-    const progressPercent = totalLessonsCount > 0 
-        ? Math.round((completedLessonsCount / totalLessonsCount) * 100) 
+    const progressPercent = totalLessonsCount > 0
+        ? Math.round((completedLessonsCount / totalLessonsCount) * 100)
         : 0;
 
     return {
