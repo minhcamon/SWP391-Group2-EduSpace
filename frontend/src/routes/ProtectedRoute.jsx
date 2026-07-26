@@ -1,8 +1,16 @@
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useParams, useLocation } from "react-router";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import learnService from "@/services/learnService";
 
 const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false }) => {
     const { user, isLoading, currentMode } = useAuth();
+    const { pathname } = useLocation();
+    const { courseId, classId, id: courseIdFromDetail } = useParams();
+    const activeCourseId = courseId || courseIdFromDetail;
+
+    const [checkingCompletion, setCheckingCompletion] = useState(false);
+    const [redirectUrl, setRedirectUrl] = useState(null);
 
     const isMentorUser = user?.isMentor || user?.role === "CREATOR" || user?.role === "MENTOR";
 
