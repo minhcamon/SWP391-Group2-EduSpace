@@ -105,6 +105,7 @@ public class ProgressHelper {
     return PartnerResponse.builder()
         .partnerId(partnerUser.getId())
         .name(partnerUser.getFullName())
+        .email(partnerUser.getEmail())
         .avatarUrl(partnerUser.getAvatarUrl())
         .description(partnerUser.getBio())
         .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()

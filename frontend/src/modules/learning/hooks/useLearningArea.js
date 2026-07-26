@@ -305,7 +305,7 @@ const useLearningArea = () => {
             avatar: p.avatarUrl,
             initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
             status: "online",
-            email: p.email || `${p.name.toLowerCase().replace(/\s+/g, '')}@eduspace.com`,
+            email: p.email || "Chưa cập nhật email",
             goal: p.description || "Chưa đặt mục tiêu",
             bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
             currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
