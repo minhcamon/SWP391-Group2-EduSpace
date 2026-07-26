@@ -293,6 +293,24 @@ export default function useCourseCreate(propMode) {
         }]);
     };
 
+    const handleDeleteModule = (moduleId) => {
+        const updatedModules = modules
+            .filter(mod => mod.id.toString() !== moduleId.toString())
+            .map((mod, index) => ({
+                ...mod,
+                sortOrder: index + 1
+            }));
+
+        setModules(updatedModules);
+
+        if (activeConfig?.moduleId?.toString() === moduleId.toString()) {
+            setActiveConfig(null);
+            setInlineData({ title: '', url: '' });
+        }
+
+        toast.success("Đã xóa module khỏi chương trình học.");
+    };
+
     const handleSaveInlineLesson = (moduleId) => {
         if (!inlineData.title || !inlineData.title.trim()) {
             toast.error("Vui lòng nhập tiêu đề bài học!");
@@ -457,6 +475,7 @@ export default function useCourseCreate(propMode) {
         setIsConfirmModalOpen,
         handlePriorityChange,
         handleAddModule,
+        handleDeleteModule,
         handleSaveInlineLesson,
         handleDeleteLesson,
         handleDragEnd,

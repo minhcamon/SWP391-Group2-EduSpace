@@ -13,6 +13,7 @@ export default function CourseCurriculum({
   setInlineData,
   handlePriorityChange,
   handleAddModule,
+  handleDeleteModule,
   handleSaveInlineLesson,
   handleDeleteLesson,
   handleDragEnd
@@ -54,6 +55,7 @@ export default function CourseCurriculum({
                     inlineData={inlineData}
                     setInlineData={setInlineData}
                     handlePriorityChange={handlePriorityChange}
+                    handleDeleteModule={handleDeleteModule}
                     handleSaveInlineLesson={handleSaveInlineLesson}
                     handleDeleteLesson={handleDeleteLesson}
                   />

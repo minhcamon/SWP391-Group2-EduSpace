@@ -30,6 +30,7 @@ export default function CreateCourse({ mode: propMode }) {
     setIsConfirmModalOpen,
     handlePriorityChange,
     handleAddModule,
+    handleDeleteModule,
     handleSaveInlineLesson,
     handleDeleteLesson,
     handleDragEnd,
@@ -283,6 +284,7 @@ export default function CreateCourse({ mode: propMode }) {
                 setInlineData={setInlineData}
                 handlePriorityChange={handlePriorityChange}
                 handleAddModule={handleAddModule}
+                handleDeleteModule={handleDeleteModule}
                 handleSaveInlineLesson={handleSaveInlineLesson}
                 handleDeleteLesson={handleDeleteLesson}
                 handleDragEnd={handleDragEnd}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Draggable, Droppable } from '@hello-pangea/dnd';
-import { GripVertical, Sparkles, PlayCircle, FileText, FolderPlus } from 'lucide-react';
+import { GripVertical, Sparkles, PlayCircle, FileText, FolderPlus, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import LessonItem from './LessonItem';
 import InlineLessonForm from './InlineLessonForm';
@@ -17,6 +17,7 @@ export default function ModuleCard({
   inlineData,
   setInlineData,
   handlePriorityChange,
+  handleDeleteModule,
   handleSaveInlineLesson,
   handleDeleteLesson
 }) {
@@ -52,6 +53,20 @@ export default function ModuleCard({
                     disabled={mode === 'VIEW'}
                   />
                 </div>
+                {mode !== 'VIEW' && (
+                  <button
+                    type="button"
+                    title="Xóa module"
+                    aria-label="Xóa module"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteModule(mod.id);
+                    }}
+                    className="h-8 w-8 shrink-0 inline-flex items-center justify-center rounded-lg border border-red-100 bg-white text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
               </div>
 
               <div className={`flex flex-wrap items-center gap-3 ${mode === 'VIEW' ? 'pl-0' : 'pl-8'}`}>
