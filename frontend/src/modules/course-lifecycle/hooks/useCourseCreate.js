@@ -44,6 +44,43 @@ const buildCoursePayload = (formData, modules, status) => {
     };
 };
 
+const validateCourseContent = (formData, modules) => {
+    if (!formData.title.trim()) {
+        return "Vui lòng nhập tên khóa học!";
+    }
+
+    if (modules.length === 0) {
+        return "Khóa học phải có ít nhất một module.";
+    }
+
+    const invalidAssignmentModule = modules.find((mod) => {
+        const assignment = mod.assignment;
+        if (!assignment?.title?.trim()) return false;
+
+        const validRubrics = (assignment.rubricCriteria || []).filter((rub) =>
+            rub?.criterionName?.trim() && Number(rub.maxPoint) > 0
+        );
+
+        return validRubrics.length === 0;
+    });
+
+    if (invalidAssignmentModule) {
+        return `Bài tập của ${invalidAssignmentModule.title || "module này"} phải có ít nhất một tiêu chí chấm điểm.`;
+    }
+
+    const invalidRubricModule = modules.find((mod) =>
+        (mod.assignment?.rubricCriteria || []).some((rub) =>
+            !rub?.criterionName?.trim() || Number(rub.maxPoint) <= 0
+        )
+    );
+
+    if (invalidRubricModule) {
+        return `Tiêu chí chấm điểm của ${invalidRubricModule.title || "module này"} phải có tên và điểm tối đa lớn hơn 0.`;
+    }
+
+    return null;
+};
+
 export default function useCourseCreate(propMode) {
     const { id } = useParams();
     const location = useLocation();
@@ -124,8 +161,9 @@ export default function useCourseCreate(propMode) {
     }, [id, resolvedMode]);
 
     const handleCreateCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
 
@@ -143,8 +181,9 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleSaveCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
         try {
@@ -166,8 +205,9 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleUpdateCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
 
@@ -185,14 +225,21 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleOpenConfirmModal = () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
         setIsConfirmModalOpen(true);
     };
 
     const handleConfirmSubmit = async (status) => {
+        const validationMessage = validateCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
+            return;
+        }
+
         try {
             const payload = buildCoursePayload(formData, modules, status);
             console.log(`${resolvedMode} Course Payload (${status}):`, JSON.stringify(payload, null, 2));
