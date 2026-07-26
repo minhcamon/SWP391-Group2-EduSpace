@@ -8,6 +8,8 @@ export const TeachingConfigPage = () => {
     const {
         activeCourses,
         isLoading,
+        submittingCourseId,
+        updatingCourseId,
         handleRegisterActiveCourse,
         handleUpdateActiveCourseStatus,
         refresh
@@ -145,7 +147,8 @@ export const TeachingConfigPage = () => {
                                                 <div className="bg-neutral-lightest p-1 rounded-xl flex border border-border-light/30 shadow-inner">
                                                     <button
                                                         onClick={() => handleUpdateActiveCourseStatus(course.courseId, 'AVAILABLE')}
-                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                                        disabled={updatingCourseId === course.courseId}
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                                                             isAvailable
                                                                 ? 'bg-emerald-600 text-white shadow-sm'
                                                                 : 'text-neutral-medium hover:text-neutral-dark'
@@ -155,7 +158,8 @@ export const TeachingConfigPage = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => handleUpdateActiveCourseStatus(course.courseId, 'BUSY')}
-                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                                        disabled={updatingCourseId === course.courseId}
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                                                             isBusy
                                                                 ? 'bg-amber-500 text-white shadow-sm'
                                                                 : 'text-neutral-medium hover:text-neutral-dark'
@@ -172,10 +176,20 @@ export const TeachingConfigPage = () => {
                                                 </span>
                                                 <button
                                                     onClick={() => handleRegisterActiveCourse(course.courseId)}
-                                                    className="w-full bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600/95 hover:to-emerald-500/95 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+                                                    disabled={submittingCourseId === course.courseId}
+                                                    className="w-full bg-linear-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600/95 hover:to-emerald-500/95 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    <UserCheck size={14} />
-                                                    <span>Đăng ký nhận lớp giảng dạy</span>
+                                                    {submittingCourseId === course.courseId ? (
+                                                        <>
+                                                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                            <span>Đang xử lý...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <UserCheck size={14} />
+                                                            <span>Đăng ký nhận lớp giảng dạy</span>
+                                                        </>
+                                                    )}
                                                 </button>
                                             </div>
                                         )}

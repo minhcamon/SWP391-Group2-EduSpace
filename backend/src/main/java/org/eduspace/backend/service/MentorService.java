@@ -47,25 +47,50 @@ public class MentorService {
 
     @Transactional
     public void assignMentorToCourse(Long userId, Long courseId) {
-        // Enforce the business rule: only users who completed the course can be mentors
+        // 1. Kiểm tra điều kiện: Chỉ những người đã hoàn thành khóa học (có chứng chỉ) mới được làm Mentor
         boolean hasCompleted = certificateRepository.existsByUserIdAndCourseId(userId, courseId);
         if (!hasCompleted) {
-            throw new RuntimeException("Người dùng chưa hoàn thành khóa học này, không thể làm Mentor!");
+            throw new BadRequestException("Bạn chưa hoàn thành khóa học này, không thể đăng ký làm Mentor!");
         }
 
-        // Fetch User and Course
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        // 2. Kiểm tra giới hạn 2 lớp đang hoạt động của Mentor
+        long activeClassesCount = classMemberRepository.countActiveClassesForMentor(userId);
+        if (activeClassesCount >= 2) {
+            throw new BadRequestException("Bạn đã đạt giới hạn tối đa 2 lớp học hoạt động đồng thời!");
+        }
 
-        // Save ActiveMentor
-        ActiveMentor activeMentor = ActiveMentor.builder()
-                .user(user)
-                .course(course)
-                .mentorStatus(org.eduspace.backend.enums.MentorStatus.AVAILABLE)
-                .build();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin người dùng"));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy khóa học"));
+
+        // 3. Đăng ký / Cập nhật cấu hình ActiveMentor
+        ActiveMentor activeMentor = activeMentorRepository.findByUserIdAndCourseId(userId, courseId)
+                .orElse(ActiveMentor.builder().user(user).course(course).build());
+        activeMentor.setMentorStatus(MentorStatus.AVAILABLE);
         activeMentorRepository.save(activeMentor);
+
+        // 4. Tự động sắp xếp Mentor vào 1 lớp học phù hợp thuộc khóa học này
+        List<CourseClass> candidateClasses = classRepository.findByCourseId(courseId).stream()
+                .filter(cc -> cc.getStatus() != org.eduspace.backend.enums.ClassStatus.COMPLETED)
+                .filter(cc -> classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(cc.getId(), userId, "MENTOR").isEmpty())
+                .sorted((c1, c2) -> {
+                    long count1 = classMemberRepository.countActiveMentorsInClass(c1.getId());
+                    long count2 = classMemberRepository.countActiveMentorsInClass(c2.getId());
+                    return Long.compare(count1, count2);
+                })
+                .toList();
+
+        if (!candidateClasses.isEmpty()) {
+            CourseClass targetClass = candidateClasses.get(0);
+            classMemberRepository.save(ClassMember.builder()
+                    .courseClass(targetClass)
+                    .user(user)
+                    .contextRole("MENTOR")
+                    .learnerStatus(org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                    .joinedAt(LocalDateTime.now())
+                    .build());
+        }
     }
 
     public MentorDashboardResponse getDashboardData(Long userId) {

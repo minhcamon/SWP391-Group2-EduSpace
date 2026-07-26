@@ -323,6 +323,39 @@ export const mentorService = {
             const errorMsg = error.response?.data?.message || 'Không thể gửi đơn đăng ký làm Mentor!';
             throw new Error(errorMsg, { cause: error });
         }
+    },
+
+    getActiveCourses: async () => {
+        try {
+            const response = await api.get('/mentor/active-courses');
+            return response.data.data;
+        } catch (error) {
+            console.error('getActiveCourses error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải cấu hình giảng dạy!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    registerActiveCourse: async (courseId) => {
+        try {
+            const response = await api.post('/mentor/active-courses', { courseId });
+            return response.data.message;
+        } catch (error) {
+            console.error('registerActiveCourse error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Đăng ký làm mentor cho khóa học thất bại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    updateActiveCourseStatus: async (courseId, status) => {
+        try {
+            const response = await api.put(`/mentor/active-courses/${courseId}/status`, { status });
+            return response.data.message;
+        } catch (error) {
+            console.error('updateActiveCourseStatus error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Cập nhật trạng thái nhận lớp thất bại!';
+            throw new Error(errorMsg);
+        }
     }
 };
 
