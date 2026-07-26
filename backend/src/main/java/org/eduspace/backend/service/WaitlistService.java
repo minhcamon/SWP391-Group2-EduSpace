@@ -6,6 +6,7 @@ import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.entity.Waitlist;
 import org.eduspace.backend.entity.WaitlistEntry;
+import org.eduspace.backend.enums.CourseStatus;
 import org.eduspace.backend.enums.WaitlistStatus;
 import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.UserRepository;
@@ -75,6 +76,10 @@ public class WaitlistService {
         public boolean enrollToWaitlist(Long courseId, Long userId) {
                 Course course = courseRepository.findByIdForUpdate(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
+
+                if (course.getStatus() != CourseStatus.PUBLISHED) {
+                        throw new RuntimeException("Only published courses can be enrolled.");
+                }
 
                 boolean isAlreadyWaiting = waitlistEntryRepository.isUserAlreadyWaiting(courseId, userId);
                 if (isAlreadyWaiting) {

@@ -11,6 +11,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 
@@ -35,6 +37,13 @@ abstract class SystemTestSupport extends SystemTestFixtures {
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1440,1000");
+        try {
+            Path profileRoot = Path.of("target", "chrome-profiles");
+            Files.createDirectories(profileRoot);
+            options.addArguments("--user-data-dir=" + Files.createTempDirectory(profileRoot, "chrome-").toAbsolutePath());
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not create an isolated Chrome profile for system tests", e);
+        }
         if (Boolean.parseBoolean(setting("headless", "HEADLESS", "false"))) {
             options.addArguments("--headless=new");
         }

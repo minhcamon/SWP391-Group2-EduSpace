@@ -236,7 +236,7 @@ abstract class SystemTestFixtures {
     }
 
     protected int countTimelineRowsForClass(Long classId) throws Exception {
-        return queryInt("SELECT COUNT(*) FROM class_timeline WHERE class_id = ?", classId);
+        return queryInt("SELECT COUNT(*) FROM timelines WHERE class_id = ?", classId);
     }
 
     protected int countModulesForCourse(Long courseId) throws Exception {
@@ -448,6 +448,13 @@ abstract class SystemTestFixtures {
                 WHERE s.assignment_id = ?
                   AND s.learner_id IN (?, ?)
                 """;
+        String deleteIncidentsSql = """
+                DELETE i
+                FROM incidents i
+                JOIN submissions s ON s.submission_id = i.submission_id
+                WHERE s.assignment_id = ?
+                  AND s.learner_id IN (?, ?)
+                """;
         String deleteSubmissionsSql = """
                 DELETE FROM submissions
                 WHERE assignment_id = ?
@@ -456,6 +463,7 @@ abstract class SystemTestFixtures {
 
         try (Connection connection = connection()) {
             executeDelete(connection, deletePeerReviewsSql, assignmentId, firstMemberId, secondMemberId);
+            executeDelete(connection, deleteIncidentsSql, assignmentId, firstMemberId, secondMemberId);
             executeDelete(connection, deleteSubmissionsSql, assignmentId, firstMemberId, secondMemberId);
         }
     }
@@ -777,6 +785,89 @@ abstract class SystemTestFixtures {
         return queryString("SELECT status FROM submissions WHERE submission_id = ?", submissionId);
     }
 
+    // ---------------------------------------------------------------------
+    // CERTIFICATE FIXTURES
+    // Used by CertificateSystemTest.
+    // ---------------------------------------------------------------------
+
+    protected CertificateFixture createCertificateFixture(String learnerUsername) throws Exception {
+        LearningFixture learning = loadLearningFixture(learnerUsername);
+        deleteCertificate(learning.userId(), learning.courseId());
+
+        try (Connection connection = connection()) {
+            Long certificateId = insertCertificate(connection, learning.userId(), learning.courseId());
+            return new CertificateFixture(
+                    certificateId,
+                    learning.userId(),
+                    learning.classId(),
+                    learning.courseId(),
+                    learning.courseTitle(),
+                    queryString("SELECT fullname FROM users WHERE user_id = ?", learning.userId()),
+                    queryString("""
+                            SELECT u.fullname
+                            FROM courses c
+                            JOIN users u ON u.user_id = c.creator_id
+                            WHERE c.course_id = ?
+                            """, learning.courseId()));
+        }
+    }
+
+    protected CertificateFixture createIncompleteCertificateFixture(String learnerUsername) throws Exception {
+        LearningFixture learning = loadLearningFixture(learnerUsername);
+        deleteCertificate(learning.userId(), learning.courseId());
+
+        return new CertificateFixture(
+                null,
+                learning.userId(),
+                learning.classId(),
+                learning.courseId(),
+                learning.courseTitle(),
+                queryString("SELECT fullname FROM users WHERE user_id = ?", learning.userId()),
+                queryString("""
+                        SELECT u.fullname
+                        FROM courses c
+                        JOIN users u ON u.user_id = c.creator_id
+                        WHERE c.course_id = ?
+                        """, learning.courseId()));
+    }
+
+    protected int countCertificatesForUserAndCourse(Long userId, Long courseId) throws Exception {
+        String sql = """
+                SELECT COUNT(*)
+                FROM certificates
+                WHERE user_id = ?
+                  AND course_id = ?
+                """;
+        return queryInt(sql, userId, courseId);
+    }
+
+    private Long insertCertificate(Connection connection, Long userId, Long courseId) throws Exception {
+        String sql = """
+                INSERT INTO certificates (user_id, course_id, issued_at)
+                VALUES (?, ?, NOW())
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, userId);
+            statement.setLong(2, courseId);
+            statement.executeUpdate();
+            return generatedId(statement);
+        }
+    }
+
+    private void deleteCertificate(Long userId, Long courseId) throws Exception {
+        String sql = """
+                DELETE FROM certificates
+                WHERE user_id = ?
+                  AND course_id = ?
+                """;
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, userId);
+            statement.setLong(2, courseId);
+            statement.executeUpdate();
+        }
+    }
+
     private Long insertSystemWithdrawClass(Connection connection, Long courseId, String suffix) throws Exception {
         String sql = """
                 INSERT INTO classes (name, activated_at, status, course_id)
@@ -913,6 +1004,18 @@ abstract class SystemTestFixtures {
             try (ResultSet resultSet = statement.executeQuery()) {
                 assertTrue(resultSet.next(), "Expected query result");
                 return resultSet.getString(1);
+            }
+        }
+    }
+
+    private int queryInt(String sql, Long first, Long second) throws Exception {
+        try (Connection connection = connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, first);
+            statement.setLong(2, second);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                assertTrue(resultSet.next(), "Expected query result");
+                return resultSet.getInt(1);
             }
         }
     }
@@ -1060,4 +1163,13 @@ abstract class SystemTestFixtures {
             Long classId,
             Long mentorMemberId,
             String className) {}
+
+    protected record CertificateFixture(
+            Long certificateId,
+            Long userId,
+            Long classId,
+            Long courseId,
+            String courseTitle,
+            String learnerName,
+            String authorName) {}
 }
