@@ -40,7 +40,6 @@ const useLearningArea = () => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const [sharedNotes, setSharedNotes] = useState("");
-    const [materials] = useState([]); // Empty since backend doesn't support yet
 
     // Fetch initial details
     useEffect(() => {
@@ -263,15 +262,25 @@ const useLearningArea = () => {
         id: activeStaticLesson.id,
         module: activeModule?.title || "Module",
         title: activeStaticLesson.title,
+        contentType: activeStaticLesson.contentType || "VIDEO",
+        contentUrl: activeStaticLesson.contentUrl,
+        videoUrl: activeStaticLesson.contentType === "VIDEO" ? activeStaticLesson.contentUrl : null,
+        pdfUrl: activeStaticLesson.contentType === "DOCUMENT" ? activeStaticLesson.contentUrl : null,
         duration: "15 phút",
         description: `Nội dung chi tiết của bài học ${activeStaticLesson.title}.`,
-        videoUrl: activeStaticLesson.contentUrl,
-        videoDuration: "15:00",
-        videoProgressPercent: isCompleted ? 100 : 0,
-        videoCurrentTime: isCompleted ? "15:00" : "00:00",
         isCompleted: isCompleted,
         partnerName: activeModule?.partner?.name || "Bạn đồng hành"
     } : null;
+
+    const materials = (lesson && lesson.contentType === "DOCUMENT") ? [
+        {
+            id: 1,
+            name: `${lesson.title}.pdf`,
+            url: lesson.contentUrl,
+            type: "pdf",
+            size: "Tài liệu học tập"
+        }
+    ] : [];
 
     // Construct studyGroup members
     const studyGroup = [];

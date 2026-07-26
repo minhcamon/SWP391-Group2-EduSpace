@@ -247,19 +247,28 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleSaveInlineLesson = (moduleId) => {
-        if (!inlineData.title.trim()) return;
+        if (!inlineData.title || !inlineData.title.trim()) {
+            toast.error("Vui lòng nhập tiêu đề bài học!");
+            return;
+        }
+
+        const isText = activeConfig?.type === 'TEXT';
+        if (!isText && (!inlineData.url || !inlineData.url.trim())) {
+            toast.error("Vui lòng dán URL video/tài liệu hoặc tải tệp lên!");
+            return;
+        }
 
         setModules(modules.map(mod => {
-            if (mod.id === moduleId) {
+            if (mod.id.toString() === moduleId.toString()) {
                 return {
                     ...mod,
                     lessons: [
                         ...mod.lessons,
                         {
                             id: `les-${Date.now()}`,
-                            title: inlineData.title,
+                            title: inlineData.title.trim(),
                             content_type: activeConfig.type,
-                            content_url: activeConfig.type === 'TOPIC_HEADER' ? 'N/A' : inlineData.url,
+                            content_url: isText ? 'N/A' : inlineData.url.trim(),
                             sortOrder: mod.lessons.length + 1
                         }
                     ]
@@ -268,14 +277,15 @@ export default function useCourseCreate(propMode) {
             return mod;
         }));
 
+        toast.success("Thêm bài học mới thành công!");
         setInlineData({ title: '', url: '' });
         setActiveConfig(null);
     };
 
     const handleDeleteLesson = (moduleId, lessonId) => {
         const updated = modules.map(mod => {
-            if (mod.id === moduleId) {
-                const filteredLessons = mod.lessons.filter(l => l.id !== lessonId);
+            if (mod.id.toString() === moduleId.toString()) {
+                const filteredLessons = mod.lessons.filter(l => l.id.toString() !== lessonId.toString());
                 const updatedLessons = filteredLessons.map((l, index) => ({
                     ...l,
                     sortOrder: index + 1

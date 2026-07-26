@@ -116,7 +116,7 @@ export default function ModuleCard({
 
                   {/* inline lesson configurations */}
                   {mode !== 'VIEW' && (
-                    activeConfig?.moduleId === mod.id ? (
+                    activeConfig?.moduleId?.toString() === mod.id?.toString() ? (
                       <InlineLessonForm
                         modId={mod.id}
                         activeConfig={activeConfig}

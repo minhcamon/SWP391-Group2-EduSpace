@@ -1,12 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import mediaService from "@/services/mediaService";
 
-export function useInputFile({ accept = "*", maxSize = 10 * 1024 * 1024, onChange }) {
-    const [value, setValue] = useState("");
+export function useInputFile({ value: propValue, accept = "*", maxSize = 10 * 1024 * 1024, onChange }) {
+    const [value, setValue] = useState(propValue || "");
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState("");
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (propValue !== undefined) {
+            setValue(propValue);
+        }
+    }, [propValue]);
 
     // Validate a selected/pasted file
     const validateFile = (file) => {

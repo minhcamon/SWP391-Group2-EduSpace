@@ -11,6 +11,7 @@ import {
 import { useState } from 'react'
 import { toast } from 'sonner'
 import VideoPlayer from '../components/VideoPlayer'
+import PdfViewer from '../components/PdfViewer'
 import PairChat from '../components/PairChat'
 import CourseSidebar from '../components/CourseSidebar'
 import StudyGroup from '../components/StudyGroup'
@@ -151,13 +152,21 @@ const LearningAreaPage = () => {
         {/* Main Content Area (Video & Tabs) */}
         <div className="grow flex flex-col overflow-y-auto min-w-0 bg-white z-10">
           <div className="py-6 px-4 md:px-8 w-full flex flex-col gap-6">
-            <VideoPlayer
-              isPlaying={isPlaying}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              isSynced={isSynced}
-              onToggleSync={() => setIsSynced(!isSynced)}
-              lesson={lesson}
-            />
+            {/* Media or Document Display Area */}
+            {lesson?.contentType === 'DOCUMENT' ? (
+              <PdfViewer
+                pdfUrl={lesson.pdfUrl || lesson.contentUrl}
+                title={`${lesson.title} - Tài liệu PDF`}
+              />
+            ) : (
+              <VideoPlayer
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                isSynced={isSynced}
+                onToggleSync={() => setIsSynced(!isSynced)}
+                lesson={lesson}
+              />
+            )}
 
             {/* Lesson Title & Desc */}
             {lesson && (
@@ -179,7 +188,8 @@ const LearningAreaPage = () => {
               </div>
             )}
 
-            {/* <PairChat
+            {/* Interactive Notes & Materials Section */}
+            <PairChat
               activeTab={activeTab}
               onTabChange={setActiveTab}
               sharedNotes={sharedNotes}
@@ -188,7 +198,7 @@ const LearningAreaPage = () => {
               onDownloadMaterial={(file) =>
                 toast.success(`Đang tải file ${file.name}`)
               }
-            /> */}
+            />
 
             {/* Mark completed block */}
             <div className="mt-6 py-6 border-t border-border-light flex flex-col items-center gap-4 text-center">
