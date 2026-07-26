@@ -304,9 +304,11 @@ public class ProgressService {
             boolean isLocked = true;
             boolean isOverdue = timeline != null && now.isAfter(timeline);
             boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
-            boolean isStartedByCreator = (timeline != null);
+            
+            // Kiểm tra xem Creator/Mentor đã thực sự ấn Bắt đầu / mở nhóm học cho Module này chưa
+            boolean isModuleStartedByCreator = !studyGroupRepository.findByCourseClassIdAndModuleId(classId, module.getId()).isEmpty();
 
-            if (previousModuleAllowsNext || isStartedByCreator) {
+            if (previousModuleAllowsNext || isModuleStartedByCreator) {
                 isLocked = false;
                 status = progressHelper.determineModuleStatus(isCompletedModule);
 

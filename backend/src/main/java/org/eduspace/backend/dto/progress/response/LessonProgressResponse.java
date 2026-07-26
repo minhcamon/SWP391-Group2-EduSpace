@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 public class LessonProgressResponse {
     private Long id;
     private String title;
+    private String contentType;
+    private String contentUrl;
     @JsonProperty("isCompleted")
     private boolean isCompleted;
     @JsonProperty("isLocked")

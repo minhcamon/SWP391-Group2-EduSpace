@@ -65,6 +65,8 @@ public class ProgressHelper {
       return LessonProgressResponse.builder()
           .id(lesson.getId())
           .title(lesson.getTitle())
+          .contentType(lesson.getContentType() != null ? lesson.getContentType().name() : "VIDEO")
+          .contentUrl(lesson.getContentUrl())
           .isCompleted(isCompleted)
           .isLocked(isLessonLocked)
           .completedByPartner(completedByPartner)

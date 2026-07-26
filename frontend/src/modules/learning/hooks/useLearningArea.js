@@ -105,6 +105,14 @@ const useLearningArea = () => {
 
     // Handle selecting a lesson from the sidebar
     const handleSelectLesson = async (lessonId, moduleId) => {
+        const targetModule = progressDashboard?.modules?.find(m => m.id?.toString() === moduleId?.toString());
+        const targetLesson = targetModule?.lessons?.find(l => l.id?.toString() === lessonId?.toString());
+        
+        if (targetModule?.isLocked || targetLesson?.isLocked || targetLesson?.locked) {
+            toast.error("Bài học này đang bị khóa. Vui lòng hoàn thành bài học trước hoặc đợi Creator/Mentor kích hoạt!");
+            return;
+        }
+
         setActiveLessonId(lessonId);
 
         // If changing module, fetch its progress data from backend
@@ -224,10 +232,13 @@ const useLearningArea = () => {
                     }
                 ] : [];
 
+                const lesType = lesProgress.contentType || "VIDEO";
                 return {
                     id: lesProgress.id,
                     title: lesProgress.title,
-                    duration: "15 phút",
+                    contentType: lesType,
+                    contentUrl: lesProgress.contentUrl || "",
+                    duration: lesType === "TEXT" ? null : "15 phút",
                     isCompleted: completedLessonsLocal[lesProgress.id] || lesProgress.completed || lesProgress.isCompleted,
                     isLocked: lesProgress.locked || lesProgress.isLocked,
                     isActive: isThisLessonActive,
@@ -258,16 +269,20 @@ const useLearningArea = () => {
 
     const isCompleted = activeLessonId ? (!!completedLessonsLocal[activeLessonId] || !!activeLessonProgress?.completed || !!activeLessonProgress?.isCompleted) : false;
 
-    const lesson = activeStaticLesson ? {
-        id: activeStaticLesson.id,
+    const activeItem = activeStaticLesson || activeLessonProgress;
+    const lessonType = activeItem?.contentType || "VIDEO";
+    const lessonUrl = activeItem?.contentUrl || null;
+
+    const lesson = activeItem ? {
+        id: activeLessonId,
         module: activeModule?.title || "Module",
-        title: activeStaticLesson.title,
-        contentType: activeStaticLesson.contentType || "VIDEO",
-        contentUrl: activeStaticLesson.contentUrl,
-        videoUrl: activeStaticLesson.contentType === "VIDEO" ? activeStaticLesson.contentUrl : null,
-        pdfUrl: activeStaticLesson.contentType === "DOCUMENT" ? activeStaticLesson.contentUrl : null,
-        duration: "15 phút",
-        description: `Nội dung chi tiết của bài học ${activeStaticLesson.title}.`,
+        title: activeItem.title || "Bài học",
+        contentType: lessonType,
+        contentUrl: lessonUrl,
+        videoUrl: lessonType === "VIDEO" ? lessonUrl : null,
+        pdfUrl: lessonType === "DOCUMENT" ? lessonUrl : null,
+        duration: lessonType === "TEXT" ? null : "15 phút",
+        description: `Nội dung chi tiết của phần học ${activeItem.title || ""}.`,
         isCompleted: isCompleted,
         partnerName: activeModule?.partner?.name || "Bạn đồng hành"
     } : null;
