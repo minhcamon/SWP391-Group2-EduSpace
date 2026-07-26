@@ -251,14 +251,13 @@ public class ProgressService {
         Course course = classMember.getCourseClass().getCourse();
 
         List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
+        int firstUncompletedIndex = -1;
+        boolean previousModuleIsOverdue = false;
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime timeline = null;
 
         List<ModuleProgressResponse> modulesProgress = new ArrayList<>();
-
-        int firstUncompletedIndex = -1;
-        boolean previousModuleAllowsNext = true;
 
         for (int i = 0; i < courseModules.size(); i++) {
             CourseModule module = courseModules.get(i);
@@ -283,6 +282,8 @@ public class ProgressService {
                     if (submission.getStatus() == SubmissionStatus.GRADED) {
                         assignCompleted = true;
                         completedAssignments = 1;
+                    } else if (submission.getStatus() == SubmissionStatus.SUBMITTED) {
+                        assignCompleted = true;
                     }
                 }
                 assignmentResponse = AssignmentProgressResponse.builder()
@@ -302,13 +303,15 @@ public class ProgressService {
 
             String status = "NOT_STARTED";
             boolean isLocked = true;
-            boolean isOverdue = timeline != null && now.isAfter(timeline);
             boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
-            
-            // Kiểm tra xem Creator/Mentor đã thực sự ấn Bắt đầu / mở nhóm học cho Module này chưa
-            boolean isModuleStartedByCreator = !studyGroupRepository.findByCourseClassIdAndModuleId(classId, module.getId()).isEmpty();
 
-            if (previousModuleAllowsNext || isModuleStartedByCreator) {
+            // Kiểm tra xem Creator/Mentor đã thực sự ấn Bắt đầu / mở nhóm học cho Module
+            // này chưa
+            boolean isModuleStartedByCreator = !studyGroupRepository
+                    .findByCourseClassIdAndModuleId(classId, module.getId()).isEmpty();
+
+            // Module mở khóa nếu Creator đã Start HOẶC module trước đó đã quá hạn (Overdue)
+            if (isModuleStartedByCreator || previousModuleIsOverdue) {
                 isLocked = false;
                 status = progressHelper.determineModuleStatus(isCompletedModule);
 
@@ -319,7 +322,9 @@ public class ProgressService {
                 status = "NOT_STARTED";
                 isLocked = true;
             }
-            previousModuleAllowsNext = isCompletedModule || isOverdue;
+
+            boolean isOverdue = timeline != null && now.isAfter(timeline);
+            previousModuleIsOverdue = isOverdue;
 
             boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
             if (assignmentResponse != null) {
@@ -361,7 +366,6 @@ public class ProgressService {
                 }
             }
 
-            // Build lesson responses with partner progress info
             List<LessonProgressResponse> lessonResponses = progressHelper.buildLessonProgressResponses(
                     lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
 
@@ -462,7 +466,6 @@ public class ProgressService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new RuntimeException("Lesson not found"));
 
-        // Check if the lesson belongs to the same course as the class member
         if (!lesson.getModule().getCourse().getId().equals(classMember.getCourseClass().getCourse().getId())) {
             throw new RuntimeException("Lesson does not belong to the same course as the class member");
         }
@@ -470,7 +473,6 @@ public class ProgressService {
         // Mark the lesson as completed for the user
         boolean result = progressHelper.markLessonAsCompleted(lesson, classMember);
 
-        // Check if the whole course is completed and issue cert & notification
         if (result) {
             certificateService.checkAndIssueCertificate(classMember);
         }
