@@ -6,7 +6,49 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
 
     const isMentorUser = user?.isMentor || user?.role === "CREATOR" || user?.role === "MENTOR";
 
-    if (isLoading) {
+    const isStaffUser = user?.role === "CREATOR" || user?.role === "ADMIN";
+    const isAlreadyOnCertificate = pathname.endsWith("/certificate");
+    const isLearnerRoute = pathname.startsWith("/courses") || pathname.startsWith("/classes");
+
+    useEffect(() => {
+        if (!user || isStaffUser || isAlreadyOnCertificate || !isLearnerRoute) {
+            setRedirectUrl(null);
+            return;
+        }
+
+        const checkCompletion = async () => {
+            try {
+                setCheckingCompletion(true);
+                const myCourses = await learnService.getMyLearningCourses();
+
+                let targetCourse = null;
+                if (activeCourseId) {
+                    targetCourse = myCourses.find(c => c.courseId?.toString() === activeCourseId.toString());
+                } else if (classId) {
+                    targetCourse = myCourses.find(c => c.classId?.toString() === classId.toString());
+                }
+
+                if (targetCourse && targetCourse.isCompleted && targetCourse.classId) {
+                    setRedirectUrl(`/classes/${targetCourse.classId}/certificate`);
+                } else {
+                    setRedirectUrl(null);
+                }
+            } catch (e) {
+                console.error("Lỗi kiểm tra hoàn thành trong ProtectedRoute:", e);
+                setRedirectUrl(null);
+            } finally {
+                setCheckingCompletion(false);
+            }
+        };
+
+        if (activeCourseId || classId) {
+            checkCompletion();
+        } else {
+            setRedirectUrl(null);
+        }
+    }, [user, activeCourseId, classId, isMentorUser, isStaffUser, isAlreadyOnCertificate, isLearnerRoute]);
+
+    if (isLoading || checkingCompletion) {
         return (
             <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
                 <div className="text-sm font-medium text-slate-500 animate-pulse">
@@ -14,6 +56,10 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
                 </div>
             </div>
         );
+    }
+
+    if (redirectUrl && pathname !== redirectUrl) {
+        return <Navigate to={redirectUrl} replace />;
     }
 
     if (!user) {
