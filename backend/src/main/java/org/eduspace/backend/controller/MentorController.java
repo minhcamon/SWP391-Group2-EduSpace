@@ -38,7 +38,6 @@ public class MentorController {
     private final MentorService mentorService;
     private final StudyGroupService studyGroupService;
     private final ProgressService progressService;
-    private final WithdrawService withdrawService;
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
@@ -120,46 +119,6 @@ public class MentorController {
         Long userId = SecurityUtil.getCurrentUserId();
         List<StudyGroupResponse> response = mentorService.getMentorClassPairs(classId, userId);
         return ResponseEntity.ok(APIResponse.success("Get class pairs successfully", response));
-    }
-
-    @PostMapping("/classes/{classId}/withdraw-requests")
-    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
-    @Operation(summary = "Request Withdrawal", description = "Gửi yêu cầu xin rút lui khỏi lớp học")
-    public ResponseEntity<APIResponse<WithdrawDetailResponse>> submitWithdrawRequest(
-            @PathVariable Long classId,
-            @Valid @RequestBody org.eduspace.backend.dto.mentor.request.SubmitWithdrawRequestDto dto) {
-        Long userId = SecurityUtil.getCurrentUserId();
-        org.eduspace.backend.entity.WithdrawRequest request = withdrawService.submitWithdrawRequest(userId, classId,
-                dto);
-        return ResponseEntity
-                .ok(APIResponse.success("Gửi yêu cầu rút lui thành công!", withdrawService.convertToDto(request)));
-    }
-
-    @PostMapping("/classes/{classId}/withdraw-requests/cancel")
-    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
-    @Operation(summary = "Cancel Withdrawal Request", description = "Hủy yêu cầu rút lui khỏi lớp học đang chờ duyệt")
-    public ResponseEntity<APIResponse<String>> cancelWithdrawRequest(@PathVariable Long classId) {
-        Long userId = SecurityUtil.getCurrentUserId();
-        withdrawService.cancelWithdrawRequest(userId, classId);
-        return ResponseEntity.ok(APIResponse.success("Hủy yêu cầu rút lui thành công!", null));
-    }
-
-    @GetMapping("/withdraw-requests")
-    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
-    @Operation(summary = "Get My Withdraw Requests", description = "Xem lịch sử yêu cầu rút lui của bản thân")
-    public ResponseEntity<APIResponse<List<WithdrawDetailResponse>>> getMyWithdrawRequests() {
-        Long userId = SecurityUtil.getCurrentUserId();
-        List<WithdrawDetailResponse> response = withdrawService.getMyWithdrawRequests(userId);
-        return ResponseEntity.ok(APIResponse.success("Get my withdraw requests successfully", response));
-    }
-
-    @GetMapping("/withdraw-requests/{id}")
-    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
-    @Operation(summary = "Get Withdraw Request Detail", description = "Xem chi tiết yêu cầu rút lui của mentor")
-    public ResponseEntity<APIResponse<WithdrawDetailResponse>> getWithdrawRequest(@PathVariable Long id) {
-        Long userId = SecurityUtil.getCurrentUserId();
-        WithdrawDetailResponse response = withdrawService.getWithdrawRequest(id, userId);
-        return ResponseEntity.ok(APIResponse.success("Get withdraw request detail successfully", response));
     }
 
     @GetMapping("/active-courses")
