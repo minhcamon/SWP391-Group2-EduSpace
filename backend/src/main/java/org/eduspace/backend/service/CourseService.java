@@ -159,6 +159,10 @@ public class CourseService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
+        if (course.getStatus() != CourseStatus.PENDING) {
+            throw new RuntimeException("Only pending courses can be approved");
+        }
+
         course.setStatus(CourseStatus.PUBLISHED);
         courseRepository.save(course);
 
@@ -195,6 +199,10 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
+
+        if (course.getStatus() != CourseStatus.PENDING) {
+            throw new RuntimeException("Only pending courses can be rejected");
+        }
 
         course.setStatus(CourseStatus.REJECTED);
         courseRepository.save(course);
@@ -508,9 +516,18 @@ public class CourseService {
                 .build();
     }
 
-    public void deleteCourse(Long courseId) {
+    public void deleteCourse(Long courseId, Long currentUserId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isOwner = course.getCreator().getId().equals(currentUserId);
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("Only course creator or admin can delete this course");
+        }
 
         course.setDeleted(true);
         courseRepository.save(course);

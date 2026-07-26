@@ -156,7 +156,8 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<APIResponse<Object>> deleteCourse(@PathVariable("id") Long courseId) {
-        courseService.deleteCourse(courseId);
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        courseService.deleteCourse(courseId, currentUserId);
         return ResponseEntity.ok(APIResponse.success("Deleted successfully", null));
     }
 
