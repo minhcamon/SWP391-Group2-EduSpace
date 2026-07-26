@@ -37,10 +37,25 @@ const useAssignment = () => {
 
 
 
+  const [courseInfo, setCourseInfo] = useState({ courseId: null, courseTitle: "" })
+
   const fetchAssignmentAndStatus = useCallback(async () => {
     if (!user) return
     try {
       let details = null
+
+      try {
+        const myCourses = await learnService.getMyLearningCourses()
+        const matched = (myCourses || []).find(c => c.classId?.toString() === classId?.toString())
+        if (matched) {
+          setCourseInfo({
+            courseId: matched.courseId,
+            courseTitle: matched.courseName
+          })
+        }
+      } catch (err) {
+        console.error("Lỗi lấy thông tin khóa học từ my-learning:", err)
+      }
 
       try {
         const review = await learnService.getSubmissionReview(classId, assignmentId)
@@ -242,10 +257,9 @@ const useAssignment = () => {
     }
   };
 
-  // Resolve Course Title and ID
-  const classInfo = mockClasses[classId] || mockClasses["1"];
-  const courseTitle = classInfo?.courseTitle || "";
-  const courseId = classInfo?.courseId || null;
+  // Resolve Course Title and ID dynamically
+  const courseTitle = courseInfo.courseTitle || assignmentDetails?.title || "Bài tập"
+  const courseId = courseInfo.courseId || null
 
   // Sidebar Sections
   const sidebarSections = progressDashboard?.modules?.map(modProgress => {

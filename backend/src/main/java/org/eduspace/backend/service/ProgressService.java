@@ -304,8 +304,9 @@ public class ProgressService {
             boolean isLocked = true;
             boolean isOverdue = timeline != null && now.isAfter(timeline);
             boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
+            boolean isStartedByCreator = (timeline != null);
 
-            if (previousModuleAllowsNext) {
+            if (previousModuleAllowsNext || isStartedByCreator) {
                 isLocked = false;
                 status = progressHelper.determineModuleStatus(isCompletedModule);
 
@@ -316,7 +317,7 @@ public class ProgressService {
                 status = "NOT_STARTED";
                 isLocked = true;
             }
-            previousModuleAllowsNext = isOverdue;
+            previousModuleAllowsNext = isCompletedModule || isOverdue;
 
             boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
             if (assignmentResponse != null) {
