@@ -26,6 +26,7 @@ import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.CourseStatus;
 import org.eduspace.backend.enums.LearnerStatus;
+import org.eduspace.backend.enums.LessonContentType;
 import org.eduspace.backend.enums.NotificationType;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.enums.Role;
@@ -245,7 +246,7 @@ public class CourseService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .creator(creator)
-                .status(CourseStatus.valueOf(request.getStatus()))
+                .status(CourseStatus.valueOf(request.getStatus().toUpperCase()))
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
                 .build();
@@ -583,16 +584,36 @@ public class CourseService {
     }
 
     private void validateCreateCourseContent(CreateCourseRequest request) {
+        if (isBlank(request.getTitle())) {
+            throw new BadRequestException("Tên khóa học không được để trống.");
+        }
+
+        if (isBlank(request.getDescription())) {
+            throw new BadRequestException("Mô tả khóa học không được để trống.");
+        }
+
+        validateCourseStatus(request.getStatus());
         if (request.getModules() == null || request.getModules().isEmpty()) {
             throw new BadRequestException("Khóa học phải có ít nhất một module.");
         }
 
-        for (CreateModuleRequest moduleRequest : request.getModules()) {
-            validateAssignmentRubrics(moduleRequest.getTitle(), moduleRequest.getAssignment());
+        for (int i = 0; i < request.getModules().size(); i++) {
+            validateCreateModule(request.getModules().get(i), i + 1);
         }
     }
 
     private void validateUpdateCourseContent(UpdateCourseRequest request) {
+        if (request.getTitle() != null && isBlank(request.getTitle())) {
+            throw new BadRequestException("Tên khóa học không được để trống.");
+        }
+
+        if (request.getDescription() != null && isBlank(request.getDescription())) {
+            throw new BadRequestException("Mô tả khóa học không được để trống.");
+        }
+
+        if (request.getStatus() != null) {
+            validateCourseStatus(request.getStatus());
+        }
         if (request.getModules() != null && request.getModules().isEmpty()) {
             throw new BadRequestException("Khóa học phải có ít nhất một module.");
         }
@@ -601,30 +622,159 @@ public class CourseService {
             return;
         }
 
-        for (UpdateModuleRequest moduleRequest : request.getModules()) {
-            validateAssignmentRubrics(moduleRequest.getTitle(), moduleRequest.getAssignment());
+        for (int i = 0; i < request.getModules().size(); i++) {
+            validateUpdateModule(request.getModules().get(i), i + 1);
         }
     }
 
-    private void validateAssignmentRubrics(String moduleTitle, CreateAssignmentRequest assignmentRequest) {
-        if (assignmentRequest == null || isBlank(assignmentRequest.getTitle())) {
-            return;
+    private void validateCourseStatus(String status) {
+        if (isBlank(status)) {
+            throw new BadRequestException("Trạng thái khóa học không được để trống.");
         }
 
-        validateRubricCriteria(moduleTitle, assignmentRequest.getRubricCriteria());
+        try {
+            CourseStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Trạng thái khóa học không hợp lệ.");
+        }
     }
 
-    private void validateAssignmentRubrics(String moduleTitle, UpdateAssignmentRequest assignmentRequest) {
-        if (assignmentRequest == null || isBlank(assignmentRequest.getTitle())) {
-            return;
+    private void validateCreateModule(CreateModuleRequest moduleRequest, int moduleIndex) {
+        String moduleLabel = formatModuleLabel(moduleRequest != null ? moduleRequest.getTitle() : null, moduleIndex);
+
+        if (moduleRequest == null) {
+            throw new BadRequestException("Module " + moduleIndex + " không hợp lệ.");
         }
 
-        validateRubricCriteria(moduleTitle, assignmentRequest.getRubricCriteria());
+        validateModuleFields(moduleRequest.getTitle(), moduleRequest.getPriority(), moduleRequest.getDays(),
+                moduleRequest.getBaseExp(), moduleRequest.getSpeedBonusExp(), moduleLabel);
+        validateCreateLessons(moduleRequest.getLessons(), moduleLabel);
+        validateCreateAssignment(moduleRequest.getAssignment(), moduleLabel);
     }
 
-    private void validateRubricCriteria(String moduleTitle, List<RubricCriteriaDto> rubricCriteria) {
+    private void validateUpdateModule(UpdateModuleRequest moduleRequest, int moduleIndex) {
+        String moduleLabel = formatModuleLabel(moduleRequest != null ? moduleRequest.getTitle() : null, moduleIndex);
+
+        if (moduleRequest == null) {
+            throw new BadRequestException("Module " + moduleIndex + " không hợp lệ.");
+        }
+
+        validateModuleFields(moduleRequest.getTitle(), moduleRequest.getPriority(), moduleRequest.getDays(),
+                moduleRequest.getBaseExp(), moduleRequest.getSpeedBonusExp(), moduleLabel);
+        validateUpdateLessons(moduleRequest.getLessons(), moduleLabel);
+        validateUpdateAssignment(moduleRequest.getAssignment(), moduleLabel);
+    }
+
+    private void validateModuleFields(String title, Object priority, Integer days, Integer baseExp,
+                                      Integer speedBonusExp, String moduleLabel) {
+        if (isBlank(title)) {
+            throw new BadRequestException("Tên " + moduleLabel + " không được để trống.");
+        }
+
+        if (priority == null) {
+            throw new BadRequestException("Độ khó của " + moduleLabel + " không được để trống.");
+        }
+
+        if (days == null || days <= 0) {
+            throw new BadRequestException("Thời lượng của " + moduleLabel + " phải lớn hơn 0 ngày.");
+        }
+
+        if (baseExp == null || baseExp <= 0) {
+            throw new BadRequestException("Base EXP của " + moduleLabel + " phải lớn hơn 0.");
+        }
+
+        if (speedBonusExp == null || speedBonusExp < 0) {
+            throw new BadRequestException("Bonus EXP của " + moduleLabel + " không được âm.");
+        }
+    }
+
+    private void validateCreateLessons(List<CreateLessonRequest> lessons, String moduleLabel) {
+        if (lessons == null || lessons.isEmpty()) {
+            throw new BadRequestException(moduleLabel + " phải có ít nhất một bài học.");
+        }
+
+        for (int i = 0; i < lessons.size(); i++) {
+            CreateLessonRequest lesson = lessons.get(i);
+            validateLessonFields(
+                    lesson != null ? lesson.getTitle() : null,
+                    lesson != null ? lesson.getContentType() : null,
+                    lesson != null ? lesson.getContentUrl() : null,
+                    moduleLabel,
+                    i + 1);
+        }
+    }
+
+    private void validateUpdateLessons(List<UpdateLessonRequest> lessons, String moduleLabel) {
+        if (lessons == null || lessons.isEmpty()) {
+            throw new BadRequestException(moduleLabel + " phải có ít nhất một bài học.");
+        }
+
+        for (int i = 0; i < lessons.size(); i++) {
+            UpdateLessonRequest lesson = lessons.get(i);
+            validateLessonFields(
+                    lesson != null ? lesson.getTitle() : null,
+                    lesson != null ? lesson.getContentType() : null,
+                    lesson != null ? lesson.getContentUrl() : null,
+                    moduleLabel,
+                    i + 1);
+        }
+    }
+
+    private void validateLessonFields(String title, LessonContentType contentType, String contentUrl,
+                                      String moduleLabel, int lessonIndex) {
+        String lessonLabel = "Bài học " + lessonIndex + " của " + moduleLabel;
+
+        if (isBlank(title)) {
+            throw new BadRequestException(lessonLabel + " phải có tiêu đề.");
+        }
+
+        if (contentType == null) {
+            throw new BadRequestException(lessonLabel + " phải có loại nội dung.");
+        }
+
+        if (contentType != LessonContentType.TEXT && isBlank(contentUrl)) {
+            throw new BadRequestException(lessonLabel + " phải có URL hoặc tài liệu đính kèm.");
+        }
+    }
+
+    private void validateCreateAssignment(CreateAssignmentRequest assignmentRequest, String moduleLabel) {
+        if (assignmentRequest == null) {
+            throw new BadRequestException(moduleLabel + " phải có bài tập cuối module.");
+        }
+
+        validateAssignmentFields(assignmentRequest.getTitle(), assignmentRequest.getDescription(),
+                assignmentRequest.getRubricCriteria(), moduleLabel);
+    }
+
+    private void validateUpdateAssignment(UpdateAssignmentRequest assignmentRequest, String moduleLabel) {
+        if (assignmentRequest == null) {
+            throw new BadRequestException(moduleLabel + " phải có bài tập cuối module.");
+        }
+
+        validateAssignmentFields(assignmentRequest.getTitle(), assignmentRequest.getDescription(),
+                assignmentRequest.getRubricCriteria(), moduleLabel);
+    }
+
+    private void validateAssignmentFields(String title, String description, List<RubricCriteriaDto> rubricCriteria,
+                                          String moduleLabel) {
+        if (isBlank(title)) {
+            throw new BadRequestException("Bài tập của " + moduleLabel + " phải có tiêu đề.");
+        }
+
+        if (isBlank(description)) {
+            throw new BadRequestException("Bài tập của " + moduleLabel + " phải có yêu cầu hoặc mô tả.");
+        }
+
+        validateRubricCriteria(moduleLabel, rubricCriteria);
+    }
+
+    private String formatModuleLabel(String moduleTitle, int moduleIndex) {
+        return isBlank(moduleTitle) ? "module " + moduleIndex : "module '" + moduleTitle.trim() + "'";
+    }
+
+    private void validateRubricCriteria(String moduleLabel, List<RubricCriteriaDto> rubricCriteria) {
         if (rubricCriteria == null || rubricCriteria.isEmpty()) {
-            throw new BadRequestException("Bài tập của module " + formatModuleTitle(moduleTitle)
+            throw new BadRequestException("Bài tập của " + moduleLabel
                     + " phải có ít nhất một tiêu chí chấm điểm.");
         }
 
@@ -635,13 +785,9 @@ public class CourseService {
                         || criteria.getMaxPoint() <= 0);
 
         if (hasInvalidCriterion) {
-            throw new BadRequestException("Tiêu chí chấm điểm của module " + formatModuleTitle(moduleTitle)
+            throw new BadRequestException("Tiêu chí chấm điểm của " + moduleLabel
                     + " phải có tên tiêu chí và điểm tối đa lớn hơn 0.");
         }
-    }
-
-    private String formatModuleTitle(String moduleTitle) {
-        return isBlank(moduleTitle) ? "chưa đặt tên" : "'" + moduleTitle.trim() + "'";
     }
 
     private boolean isBlank(String value) {
