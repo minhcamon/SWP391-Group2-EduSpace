@@ -284,7 +284,9 @@ const useLearningArea = () => {
         duration: lessonType === "TEXT" ? null : "15 phút",
         description: `Nội dung chi tiết của phần học ${activeItem.title || ""}.`,
         isCompleted: isCompleted,
-        partnerName: activeModule?.partner?.name || "Bạn đồng hành"
+        partnerName: (activeModule?.partners && activeModule.partners.length > 0) 
+            ? activeModule.partners.map(p => p.name).join(" và ") 
+            : "Bạn đồng hành"
     } : null;
 
     const materials = (lesson && lesson.contentType === "DOCUMENT") ? [
@@ -312,18 +314,19 @@ const useLearningArea = () => {
             currentLesson: activeStaticLesson ? activeStaticLesson.title : ""
         });
     }
-    if (activeModule?.partner) {
-        const p = activeModule.partner;
-        studyGroup.push({
-            id: p.partnerId,
-            name: p.name,
-            avatar: p.avatarUrl,
-            initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-            status: "online",
-            email: p.email || "Chưa cập nhật email",
-            goal: p.description || "Chưa đặt mục tiêu",
-            bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
-            currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+    if (activeModule?.partners && activeModule.partners.length > 0) {
+        activeModule.partners.forEach(p => {
+            studyGroup.push({
+                id: p.partnerId,
+                name: p.name,
+                avatar: p.avatarUrl,
+                initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+                status: "online",
+                email: p.email || "Chưa cập nhật email",
+                goal: p.description || "Chưa đặt mục tiêu",
+                bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
+                currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+            });
         });
     }
 

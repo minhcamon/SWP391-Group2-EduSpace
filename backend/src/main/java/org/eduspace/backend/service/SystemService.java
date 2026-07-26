@@ -217,7 +217,9 @@ public class SystemService {
         CourseModule module = moduleRepository.findById(moduleId)
                 .orElseThrow(() -> new RuntimeException("Error: Module not found."));
 
-        List<ClassMember> members = classMemberRepository.findByCourseClassId(classId);
+        List<ClassMember> members = classMemberRepository.findByCourseClassIdAndContextRole(classId, "LEARNER").stream()
+                .filter(m -> m.getLearnerStatus() == org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                .collect(java.util.stream.Collectors.toList());
 
         members.sort((a, b) -> {
             int expA = a.getUser().getTotalExp() != null ? a.getUser().getTotalExp() : 0;

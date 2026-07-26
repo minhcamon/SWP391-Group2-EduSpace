@@ -344,45 +344,28 @@ public class ProgressService {
                     .findFirst()
                     .orElse(null);
 
-            ClassMember partnerClassMember = null;
+            List<ClassMember> partnerClassMembers = new java.util.ArrayList<>();
             if (studyGroup != null) {
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
-                partnerClassMember = groupMembers.stream()
+                partnerClassMembers = groupMembers.stream()
                         .map(GroupMember::getClassMember)
                         .filter(m -> !m.getId().equals(classMember.getId()))
-                        .findFirst()
-                        .orElse(null);
+                        .toList();
             }
-            PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
+            List<PartnerResponse> partnerResponses = progressHelper.buildPartnerResponses(partnerClassMembers, lessons,
                     module.getId());
 
-            Set<Long> partnerCompletedSet = new HashSet<>();
-            Long partnerCurrentLessonId = null;
-
-            if (partnerResponse != null) {
-                partnerCompletedSet = new HashSet<>(partnerResponse.getCompletedLessons());
-                if (partnerResponse.getLocation() != null) {
-                    partnerCurrentLessonId = partnerResponse.getLocation().getLessonId();
-                }
-            }
-
             List<LessonProgressResponse> lessonResponses = progressHelper.buildLessonProgressResponses(
-                    lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
+                    lessons, completedSet, partnerResponses);
 
             if (isLocked) {
                 lessonResponses.forEach(l -> l.setLocked(true));
             }
 
             Long studyGroupId = null;
-
-            if (!isLocked && partnerClassMember != null) {
-                List<Long> studyGroupIdList = groupMemberRepository
-                        .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId());
-                studyGroupId = studyGroupIdList.isEmpty() ? null : studyGroupIdList.get(0);
+            if (studyGroup != null) {
+                studyGroupId = studyGroup.getId();
             }
-
-            List<LessonProgressResponse> finalLessonResponses = lessonResponses;
-            PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
 
             modulesProgress.add(ModuleProgressResponse.builder()
                     .id(module.getId())
@@ -393,9 +376,9 @@ public class ProgressService {
                     .sortOrder(module.getSortOrder())
                     .completedLessons((int) completedLessons)
                     .totalLessons((int) totalLessons)
-                    .lessons(finalLessonResponses)
+                    .lessons(lessonResponses)
                     .assignment(assignmentResponse)
-                    .partner(finalPartnerResponse)
+                    .partners(partnerResponses)
                     .studyGroupId(studyGroupId)
                     .build());
         }
