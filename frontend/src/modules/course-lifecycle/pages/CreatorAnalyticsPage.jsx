@@ -145,8 +145,8 @@ export default function CreatorAnalytics() {
         </div>
       </Card>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPI Cards Grid (3 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Total Enrolled */}
         <Card className="bg-white hover:shadow-[0px_10px_30px_rgba(79,70,229,0.05)] border border-border-light/30 transition-all duration-300">
           <CardContent className="p-5 flex items-center gap-4 relative overflow-hidden group">
@@ -158,13 +158,10 @@ export default function CreatorAnalytics() {
               <span className="text-xs text-neutral-medium font-semibold block">
                 Lượng người tham gia
               </span>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-2xl font-bold text-neutral-dark">
                   {stats.totalEnrolled}
                 </span>
-                {/* <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                  <LuTrendingUp className="text-[11px]" /> +12% tuần này
-                </span> */}
               </div>
             </div>
           </CardContent>
@@ -181,7 +178,7 @@ export default function CreatorAnalytics() {
               <span className="text-xs text-neutral-medium font-semibold block">
                 Lượng người qua môn
               </span>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-2xl font-bold text-neutral-dark">
                   {stats.passedCount}
                 </span>
@@ -204,35 +201,12 @@ export default function CreatorAnalytics() {
               <span className="text-xs text-neutral-medium font-semibold block">
                 Lượng người trượt môn
               </span>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-2xl font-bold text-neutral-dark">
                   {stats.failedCount}
                 </span>
                 <span className="text-xs font-bold text-danger bg-danger/10 px-2 py-0.5 rounded-md">
                   {stats.failRate}%
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Avg Score */}
-        <Card className="bg-white hover:shadow-[0px_10px_30px_rgba(249,115,22,0.05)] border border-border-light/30 transition-all duration-300">
-          <CardContent className="p-5 flex items-center gap-4 relative overflow-hidden group">
-            <div className="absolute -right-6 -bottom-6 w-16 h-16 bg-secondary/5 rounded-full group-hover:scale-150 transition-all duration-500" />
-            <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary shrink-0 z-10">
-              <LuBookOpen className="text-2xl" />
-            </div>
-            <div className="z-10">
-              <span className="text-xs text-neutral-medium font-semibold block">
-                Điểm số trung bình
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-neutral-dark">
-                  {stats.avgScore}
-                </span>
-                <span className="text-[10px] text-gray-400 font-bold">
-                  Thang 10
                 </span>
               </div>
             </div>
@@ -499,117 +473,6 @@ export default function CreatorAnalytics() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Score Distribution & Students at Risk Row */}
-      {/* <div className="grid grid-cols-1 lg:grid-cols-12 gap-6"> */}
-      {/* Score Distribution (5 cols) */}
-      {/* <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.01)] lg:col-span-5">
-          <CardContent className="p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-neutral-dark">
-                Phân bổ điểm học viên
-              </h3>
-              <p className="text-[11px] text-neutral-medium">
-                Phân chia lượng học viên theo phổ điểm chữ
-              </p>
-            </div> */}
-
-      {/* Custom bar list */}
-      {/* <div className="space-y-3.5 pt-2">
-              {scoreDistribution.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="space-y-1"
-                >
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-gray-600">{item.label}</span>
-                    <span className="text-neutral-dark">
-                      {item.count} HV ({item.percentage}%)
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${item.color} rounded-full transition-all duration-1000`}
-                      style={{ width: `${item.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card> */}
-
-      {/* Students at Risk List (7 cols) */}
-      {/* <Card className="bg-white border border-border-light/30 shadow-[0px_4px_20px_rgba(0,0,0,0.01)] lg:col-span-7">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-dark">Học viên cần lưu ý bổ trợ</h3>
-                <p className="text-[11px] text-neutral-medium">Danh sách người học có điểm số hoặc tiến trình cảnh báo đỏ</p>
-              </div>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 z-10">
-                  <LuSearch className="text-xs" />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Tìm tên học viên..."
-                  value={searchStudent}
-                  onChange={(e) => setSearchStudent(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 bg-bg-card border border-border-light/20 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary/40 w-44 placeholder:text-gray-400 font-semibold"
-                />
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <Table className="w-full text-left border-collapse">
-                <TableHeader>
-                  <TableRow className="border-b border-border-light/30 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                    <TableHead className="pb-3 pl-2">Học viên</TableHead>
-                    <TableHead className="pb-3">Khóa học</TableHead>
-                    <TableHead className="pb-3">Điểm TB</TableHead>
-                    <TableHead className="pb-3">Tiến độ</TableHead>
-                    <TableHead className="pb-3 pr-2 text-right">Trạng thái</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-slate-100 text-xs">
-                  {studentsAtRisk
-                    .filter(s => s.name.toLowerCase().includes(searchStudent.toLowerCase()))
-                    .map((std) => (
-                      <TableRow key={std.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="py-3 pl-2 flex items-center gap-3">
-                          <Avatar
-                            src={std.avatar}
-                            alt={std.name}
-                            className="w-8 h-8 border border-slate-100 shrink-0"
-                          />
-                          <span className="font-bold text-neutral-dark">{std.name}</span>
-                        </TableCell>
-                        <TableCell className="py-3 text-neutral-medium max-w-37.5 truncate">{std.course}</TableCell>
-                        <TableCell className="py-3 font-extrabold text-red-500">{std.avgScore}</TableCell>
-                        <TableCell className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0">
-                              <div className="h-full bg-amber-500" style={{ width: `${std.progress}%` }} />
-                            </div>
-                            <span className="text-[10px] font-bold text-neutral-medium">{std.progress}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-3 pr-2 text-right">
-                          <Badge
-                            className="h-auto px-2 py-0.5 rounded-md text-[9px] font-bold bg-red-50 text-red-600 border border-red-100"
-                          >
-                            {std.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card> */}
-      {/* </div> */}
     </div>
   )
 }
