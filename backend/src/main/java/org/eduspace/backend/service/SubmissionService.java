@@ -11,6 +11,7 @@ import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
 import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
 import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.submission.response.PeerReviewAssignmentResponse;
+import org.eduspace.backend.dto.submission.response.PartnerSubmissionStatusResponse;
 import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.ClassMember;
@@ -143,6 +144,51 @@ public class SubmissionService {
                 .rubricCriterias(peerReview.getCriteriaScores() != null && !peerReview.getCriteriaScores().isEmpty()
                         ? peerReview.getCriteriaScores()
                         : assignment.getRubricCriteria())
+                .build();
+    }
+
+    public PartnerSubmissionStatusResponse getPartnerSubmissionStatus(Long classId, Long userId, Long assignmentId) {
+        ClassMember currentMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
+
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found!"));
+        if (assignment.getModule() == null) {
+            throw new RuntimeException("Assignment module not found!");
+        }
+
+        List<org.eduspace.backend.entity.StudyGroup> studyGroups = groupMemberRepository
+                .findStudyGroupsByMemberAndClassAndModuleOrderByNewest(
+                        currentMember.getId(), classId, assignment.getModule().getId());
+        if (studyGroups.isEmpty()) {
+            return PartnerSubmissionStatusResponse.builder()
+                    .submitted(false)
+                    .build();
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroups.get(0).getId());
+        Optional<ClassMember> partnerMember = groupMembers.stream()
+                .map(GroupMember::getClassMember)
+                .filter(member -> member != null && !member.getId().equals(currentMember.getId()))
+                .findFirst();
+
+        if (partnerMember.isEmpty()) {
+            return PartnerSubmissionStatusResponse.builder()
+                    .submitted(false)
+                    .build();
+        }
+
+        ClassMember partner = partnerMember.get();
+        Optional<Submission> partnerSubmission = submissionRepository
+                .findByMemberIdAndAssignmentId(partner.getId(), assignmentId);
+
+        return PartnerSubmissionStatusResponse.builder()
+                .partnerId(partner.getUser() != null ? partner.getUser().getId() : null)
+                .partnerName(partner.getUser() != null ? partner.getUser().getFullName() : null)
+                .partnerAvatarUrl(partner.getUser() != null ? partner.getUser().getAvatarUrl() : null)
+                .submitted(partnerSubmission.isPresent())
+                .submittedAt(partnerSubmission.map(Submission::getSubmittedAt).orElse(null))
                 .build();
     }
 

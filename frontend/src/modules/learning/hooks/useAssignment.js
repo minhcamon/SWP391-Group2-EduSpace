@@ -24,6 +24,7 @@ const useAssignment = () => {
 
   const [peerReviewTask, setPeerReviewTask] = useState(null)
   const [peerReviewGraded, setPeerReviewGraded] = useState(false)
+  const [partnerSubmissionStatus, setPartnerSubmissionStatus] = useState(null)
   const [partnerAvatar, setPartnerAvatar] = useState("")
 
   // Layout States
@@ -95,6 +96,16 @@ const useAssignment = () => {
         } else {
           console.error("Lỗi getSubmissionReview:", err)
         }
+      }
+
+      try {
+        const partnerStatus = await learnService.getPartnerSubmissionStatus(classId, assignmentId)
+        setPartnerSubmissionStatus(partnerStatus)
+        if (partnerStatus?.partnerAvatarUrl) {
+          setPartnerAvatar(partnerStatus.partnerAvatarUrl)
+        }
+      } catch {
+        setPartnerSubmissionStatus(null)
       }
 
       try {
@@ -375,6 +386,7 @@ const useAssignment = () => {
     myReviewResult,
     peerReviewTask,
     peerReviewGraded,
+    partnerSubmissionStatus,
     handleEssayChange,
     handleSubmitDraft,
     submitPeerReview,

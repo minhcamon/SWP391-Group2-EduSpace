@@ -5,6 +5,7 @@ import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
 import org.eduspace.backend.dto.common.APIResponse;
 import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.submission.response.PeerReviewAssignmentResponse;
+import org.eduspace.backend.dto.submission.response.PartnerSubmissionStatusResponse;
 import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.security.SecurityUtil;
 import org.eduspace.backend.service.SubmissionService;
@@ -100,5 +101,17 @@ public class SubmissionController {
                 SubmissionReviewResponse response = submissionService.gradePeerReview(classId, userId, reviewId,
                                 request);
                 return ResponseEntity.ok(APIResponse.success("Chấm bài peer review thành công", response));
+        }
+
+        @GetMapping("/{classId}/assignment/{assignmentId}/partner-submission-status")
+        @PreAuthorize("hasAnyRole('LEARNER','MENTOR','CREATOR')")
+        public ResponseEntity<APIResponse<PartnerSubmissionStatusResponse>> getPartnerSubmissionStatus(
+                        @PathVariable Long classId,
+                        @PathVariable Long assignmentId) {
+
+                Long userId = SecurityUtil.getCurrentUserId();
+                PartnerSubmissionStatusResponse response = submissionService.getPartnerSubmissionStatus(classId,
+                                userId, assignmentId);
+                return ResponseEntity.ok(APIResponse.success("Partner submission status fetched successfully", response));
         }
 }

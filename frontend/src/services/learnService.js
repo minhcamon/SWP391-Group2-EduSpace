@@ -135,6 +135,20 @@ const learnService = {
     }
   },
 
+  getPartnerSubmissionStatus: async (classId, assignmentId) => {
+    try {
+      const response = await api.get(
+        `/submission/${classId}/assignment/${assignmentId}/partner-submission-status`,
+      )
+      return response.data.data
+    } catch (error) {
+      console.error("Lá»—i láº¥y tráº¡ng thÃ¡i ná»™p bÃ i cá»§a báº¡n cÃ¹ng tiáº¿n táº¡i learnService:", error)
+      throw new Error(error.response?.data?.message || "KhÃ´ng thá»ƒ láº¥y tráº¡ng thÃ¡i ná»™p bÃ i cá»§a báº¡n cÃ¹ng tiáº¿n", {
+        cause: error,
+      })
+    }
+  },
+
   gradePeerReview: async (classId, reviewId, criteriaScores, finalScore, comments) => {
     try {
       const response = await api.post(`/submission/${classId}/peer-review/${reviewId}/grade`, {
