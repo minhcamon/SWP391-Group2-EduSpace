@@ -66,13 +66,24 @@ public class CourseService {
         List<Course> courses = courseRepository.getCoursesByCreatorId(creatorId);
 
         return courses.stream()
-                .map(course -> CourseResponse.builder()
-                        .id(course.getId())
-                        .title(course.getTitle())
-                        .description(course.getDescription())
-                        .status(course.getStatus().name())
-                        .createdAt(course.getCreatedAt())
-                        .build())
+                .map(course -> {
+                    String reason = null;
+                    if (course.getStatus() == CourseStatus.REJECTED) {
+                        List<CourseRequest> rejectedRequests = courseRequestRepository
+                                .findByCourseIdAndStatusOrderByCreatedAtDesc(course.getId(), RequestStatus.REJECTED);
+                        if (!rejectedRequests.isEmpty()) {
+                            reason = rejectedRequests.get(0).getReason();
+                        }
+                    }
+                    return CourseResponse.builder()
+                            .id(course.getId())
+                            .title(course.getTitle())
+                            .description(course.getDescription())
+                            .status(course.getStatus().name())
+                            .createdAt(course.getCreatedAt())
+                            .reason(reason)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

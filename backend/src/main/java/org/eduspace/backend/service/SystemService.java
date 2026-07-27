@@ -334,19 +334,22 @@ public class SystemService {
     }
 
     /**
-     * Auto-scan running classes hourly to assign mentors if they have fewer than 2 mentors.
+     * Auto-scan running classes hourly to assign mentors if they have fewer than 2
+     * mentors.
      */
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void scanAndAssignMentorsToClasses() {
         List<CourseClass> runningClasses = classRepository.findByStatus(ClassStatus.RUNNING);
         for (CourseClass cc : runningClasses) {
-            int currentMentorsCount = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "MENTOR").size();
+            int currentMentorsCount = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "MENTOR")
+                    .size();
             if (currentMentorsCount < 2) {
                 int mentorsNeeded = 2 - currentMentorsCount;
 
                 List<ActiveMentor> availableCourseMentors = activeMentorRepository
-                        .findByCourseIdAndMentorStatusOrderByUpdatedAtAsc(cc.getCourse().getId(), MentorStatus.AVAILABLE);
+                        .findByCourseIdAndMentorStatusOrderByUpdatedAtAsc(cc.getCourse().getId(),
+                                MentorStatus.AVAILABLE);
 
                 List<ActiveMentor> selectedMentors = new ArrayList<>();
                 for (ActiveMentor am : availableCourseMentors) {

@@ -2,6 +2,7 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.entity.Submission;
+import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
 
@@ -23,6 +24,8 @@ import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.PeerReviewRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.eduspace.backend.repository.UserRepository;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +46,7 @@ public class SubmissionService {
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Lazy
     @Autowired
@@ -269,6 +273,18 @@ public class SubmissionService {
                 "Bài tập của bạn đã được chấm điểm bởi thành viên cùng nhóm!",
                 NotificationType.PEER_REVIEW,
                 savedReview.getId());
+
+        // 1. Cộng EXP cho người nộp bài dựa trên finalScore
+        User submitterUser = submission.getMember().getUser();
+        int currentSubmitterExp = submitterUser.getTotalExp() != null ? submitterUser.getTotalExp() : 0;
+        submitterUser.setTotalExp(currentSubmitterExp + totalScore);
+        userRepository.save(submitterUser);
+
+        // 2. Thưởng EXP cho người đi chấm bài (reviewer)
+        User reviewerUser = reviewerMember.getUser();
+        int currentReviewerExp = reviewerUser.getTotalExp() != null ? reviewerUser.getTotalExp() : 0;
+        reviewerUser.setTotalExp(currentReviewerExp + 20);
+        userRepository.save(reviewerUser);
 
         return response;
     }

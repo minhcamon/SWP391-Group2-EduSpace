@@ -139,9 +139,9 @@ const useAssignment = () => {
         const dashboard = await learnService.getProgressDashboard(classId)
         setProgressDashboard(dashboard)
 
-        const firstModuleWithPartner = dashboard?.modules?.find((m) => m.partner)
-        if (firstModuleWithPartner?.partner?.avatarUrl) {
-          setPartnerAvatar(firstModuleWithPartner.partner.avatarUrl)
+        const firstModuleWithPartner = dashboard?.modules?.find((m) => m.partners && m.partners.length > 0)
+        if (firstModuleWithPartner?.partners?.[0]?.avatarUrl) {
+          setPartnerAvatar(firstModuleWithPartner.partners[0].avatarUrl)
         }
 
         // Fetch group messages for the active module's study group
@@ -291,18 +291,21 @@ const useAssignment = () => {
       status: modProgress.status,
       statusText,
       lessons: (modProgress.lessons || []).map(lesProgress => {
-        const partner = modProgress.partner;
-        const isPartnerAtThis = partner && partner.location && partner.location.lessonId?.toString() === lesProgress.id.toString();
-        const currentPartners = isPartnerAtThis ? [
-          {
-            name: partner.name,
-            avatar: partner.avatarUrl,
-            initials: partner.name ? partner.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-            status: "online",
-            bgColor: "bg-sky-100",
-            textColor: "text-primary"
-          }
-        ] : [];
+        const currentPartners = [];
+        if (modProgress.partners && modProgress.partners.length > 0) {
+            modProgress.partners.forEach(partner => {
+                if (partner.location && partner.location.lessonId?.toString() === lesProgress.id.toString()) {
+                    currentPartners.push({
+                        name: partner.name,
+                        avatar: partner.avatarUrl,
+                        initials: partner.name ? partner.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+                        status: "online",
+                        bgColor: "bg-sky-100",
+                        textColor: "text-primary"
+                    });
+                }
+            });
+        }
 
         return {
           id: lesProgress.id,
@@ -342,18 +345,19 @@ const useAssignment = () => {
       isSelf: true
     });
   }
-  if (activeMod?.partner) {
-    const p = activeMod.partner;
-    studyGroup.push({
-      id: p.userId || p.id,
-      name: p.name,
-      avatar: p.avatarUrl,
-      initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-      status: "online",
-      email: p.email || "Chưa cập nhật email",
-      goal: p.description || "Chưa đặt mục tiêu",
-      bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
-      currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+  if (activeMod?.partners && activeMod.partners.length > 0) {
+    activeMod.partners.forEach(p => {
+      studyGroup.push({
+        id: p.partnerId || p.userId || p.id,
+        name: p.name,
+        avatar: p.avatarUrl,
+        initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+        status: "online",
+        email: p.email || "Chưa cập nhật email",
+        goal: p.description || "Chưa đặt mục tiêu",
+        bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
+        currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+      });
     });
   }
 
