@@ -101,6 +101,7 @@ public class CertificateService {
         return CertificateResponse.builder()
                 .isCompleted(isCompleted)
                 .isAlreadyMentor(isAlreadyMentor)
+                .courseId(course.getId())
                 .userName(classMember.getUser().getFullName())
                 .courseTitle(course.getTitle())
                 .certificateId(certificate != null ? "EDU-CS-" + certificate.getId() : "")
