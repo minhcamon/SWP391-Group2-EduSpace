@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
@@ -44,11 +44,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        seedWaitlist();
-        if (userRepository.count() > 0) {
-            log.info("Database already initialized. Skipping seeding.");
-            return;
-        }
+        // DataInitializer disabled. CourseDataInitializer is active.
+        if (true) return;
 
         log.info("=== Initializing EduSpace demo database ===");
 

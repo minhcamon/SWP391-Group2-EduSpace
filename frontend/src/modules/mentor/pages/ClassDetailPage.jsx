@@ -30,15 +30,18 @@ const ClassDetailPage = () => {
   const selectedModuleRef = React.useRef(null)
 
   const handleCancelWithdraw = async () => {
-    if (!window.confirm('Bạn có chắc muốn hủy yêu cầu xin rút khỏi lớp học này?')) return;
+    if (
+      !window.confirm('Bạn có chắc muốn hủy yêu cầu xin rút khỏi lớp học này?')
+    )
+      return
     try {
-      await mentorService.cancelWithdrawRequest(classId);
-      toast.success('Hủy yêu cầu xin rút thành công!');
-      window.location.reload();
+      await mentorService.cancelWithdrawRequest(classId)
+      toast.success('Hủy yêu cầu xin rút thành công!')
+      window.location.reload()
     } catch (error) {
-      toast.error(error.message || 'Hủy yêu cầu thất bại!');
+      toast.error(error.message || 'Hủy yêu cầu thất bại!')
     }
-  };
+  }
 
   useEffect(() => {
     if (selectedModuleRef.current) {
@@ -169,49 +172,6 @@ const ClassDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
         {/* Left Column (7): Study Groups & System Alerts */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* System Reminder alert */}
-          {showReminder && (
-            <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4.5 flex items-start gap-3.5 shadow-sm hover:shadow-md transition-all duration-300">
-              <ShieldAlert
-                className="text-amber-600 shrink-0 mt-0.5"
-                size={20}
-              />
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm text-amber-800">
-                  Cảnh báo hệ thống: Kích hoạt học phần mới
-                </h4>
-                <p className="text-xs text-amber-700 font-semibold mt-1 leading-relaxed">
-                  Lớp học hiện tại đã hoàn thành khóa học phần{' '}
-                  <span className="font-bold text-amber-900">
-                    "{activeModule.title}"
-                  </span>{' '}
-                  đạt tỷ lệ{' '}
-                  <span className="font-bold text-amber-900">
-                    {activeModule.completionRate}%
-                  </span>
-                  . Bạn cần chuẩn bị kích hoạt học phần mới để tránh làm trễ
-                  tiến độ của lớp học.
-                </p>
-                {nextModule && (
-                  <button
-                    onClick={() =>
-                      handleStartNextModule(nextModule.id, nextModule.title)
-                    }
-                    disabled={isStartingModule}
-                    className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
-                  >
-                    <Play size={12} />
-                    <span>
-                      {isStartingModule
-                        ? 'Đang xử lý...'
-                        : `Bắt đầu ${nextModule.title.split(':')[0]}`}
-                    </span>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Study Groups List */}
           <StudyGroupsList
             pairs={pairs}

@@ -60,7 +60,6 @@ const LearningAreaPage = () => {
     studyGroupId
   } = useLearningArea()
 
-
   if (isLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-bg-base">
@@ -93,7 +92,6 @@ const LearningAreaPage = () => {
         </div>
 
         <div className="flex items-center gap-6">
-
           {/* Collapsible Chat Button */}
           <button
             onClick={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
@@ -204,7 +202,7 @@ const LearningAreaPage = () => {
             )}
 
             {/* Interactive Notes & Materials Section */}
-            <PairChat
+            {/* <PairChat
               activeTab={activeTab}
               onTabChange={setActiveTab}
               sharedNotes={sharedNotes}
@@ -213,7 +211,7 @@ const LearningAreaPage = () => {
               onDownloadMaterial={(file) =>
                 toast.success(`Đang tải file ${file.name}`)
               }
-            />
+            /> */}
 
             {/* Mark completed block */}
             <div className="mt-6 py-6 border-t border-border-light flex flex-col items-center gap-4 text-center">

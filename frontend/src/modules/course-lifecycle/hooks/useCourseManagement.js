@@ -61,6 +61,7 @@ export default function useCourseManagement() {
       const fullCourse = await courseService.getCourseById(id);
 
       const mappedModules = (fullCourse.modules || []).map(mod => ({
+        id: mod.id,
         title: mod.title,
         priority: mod.priority || 'LOW',
         days: mod.days || 7,
@@ -68,11 +69,13 @@ export default function useCourseManagement() {
         speedBonusExp: mod.speedBonusExp || 10,
         sortOrder: mod.sortOrder,
         assignment: (mod.assignment && mod.assignment.title?.trim()) ? {
+          id: mod.assignment.id,
           title: mod.assignment.title,
           description: mod.assignment.description,
           rubricCriteria: mod.assignment.rubricCriteria
         } : null,
         lessons: (mod.lessons || []).map(les => ({
+          id: les.id,
           title: les.title,
           contentType: les.contentType,
           contentUrl: les.contentUrl || 'N/A',
@@ -101,6 +104,7 @@ export default function useCourseManagement() {
       const fullCourse = await courseService.getCourseById(id);
 
       const mappedModules = (fullCourse.modules || []).map(mod => ({
+        id: mod.id,
         title: mod.title,
         priority: mod.priority || 'LOW',
         days: mod.days || 7,
@@ -108,11 +112,13 @@ export default function useCourseManagement() {
         speedBonusExp: mod.speedBonusExp || 10,
         sortOrder: mod.sortOrder,
         assignment: (mod.assignment && mod.assignment.title?.trim()) ? {
+          id: mod.assignment.id,
           title: mod.assignment.title,
           description: mod.assignment.description,
           rubricCriteria: mod.assignment.rubricCriteria
         } : null,
         lessons: (mod.lessons || []).map(les => ({
+          id: les.id,
           title: les.title,
           contentType: les.contentType,
           contentUrl: les.contentUrl || 'N/A',

@@ -808,6 +808,7 @@ public class CourseService {
     private void processModules(Course course, List<UpdateModuleRequest> moduleRequests) {
         Set<Long> incomingModuleIds = moduleRequests.stream()
                 .map(UpdateModuleRequest::getId)
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         List<CourseModule> currentModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
@@ -817,7 +818,15 @@ public class CourseService {
                 .collect(Collectors.toList());
 
         if (!modulesToDelete.isEmpty()) {
-            moduleRepository.deleteAllInBatch(modulesToDelete);
+            for (CourseModule module : modulesToDelete) {
+                assignmentRepository.findByModuleId(module.getId())
+                        .ifPresent(assignmentRepository::delete);
+                List<Lesson> lessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
+                if (!lessons.isEmpty()) {
+                    lessonRepository.deleteAllInBatch(lessons);
+                }
+            }
+            moduleRepository.deleteAll(modulesToDelete);
         }
 
         for (UpdateModuleRequest moduleRequest : moduleRequests) {
@@ -860,6 +869,7 @@ public class CourseService {
     private void processLessons(CourseModule module, List<UpdateLessonRequest> lessonRequests) {
         Set<Long> incomingLessonIds = lessonRequests.stream()
                 .map(UpdateLessonRequest::getId)
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         List<Lesson> currentLessons = lessonRepository.findByModuleIdOrderBySortOrder(module.getId());
