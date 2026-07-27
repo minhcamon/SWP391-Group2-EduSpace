@@ -59,6 +59,16 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
                         @Param("classMemberId") Long classMemberId,
                         @Param("moduleId") Long moduleId);
 
+        @Query("SELECT gm.studyGroup FROM GroupMember gm " +
+                        "WHERE gm.classMember.id = :classMemberId " +
+                        "AND gm.studyGroup.courseClass.id = :classId " +
+                        "AND gm.studyGroup.module.id = :moduleId " +
+                        "ORDER BY gm.studyGroup.id DESC")
+        List<org.eduspace.backend.entity.StudyGroup> findStudyGroupsByMemberAndClassAndModuleOrderByNewest(
+                        @Param("classMemberId") Long classMemberId,
+                        @Param("classId") Long classId,
+                        @Param("moduleId") Long moduleId);
+
         
         @Query("SELECT new org.eduspace.backend.dto.study_group.response.GroupMemberDTO(" +
                         "u.id, u.fullName, u.email, u.username, u.avatarUrl, u.totalExp) " +

@@ -337,10 +337,10 @@ public class ProgressService {
                     .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
             Set<Long> completedSet = new HashSet<>(completedLessonIds);
             // Find partner and build partner response
-            List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(classMember.getId());
-            StudyGroup studyGroup = userGroupMembers.stream()
-                    .map(GroupMember::getStudyGroup)
-                    .filter(g -> g.getModule() != null && g.getModule().getId().equals(module.getId()))
+            StudyGroup studyGroup = groupMemberRepository
+                    .findStudyGroupsByMemberAndClassAndModuleOrderByNewest(
+                            classMember.getId(), classId, module.getId())
+                    .stream()
                     .findFirst()
                     .orElse(null);
 
