@@ -12,7 +12,8 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
     const [checkingCompletion, setCheckingCompletion] = useState(false);
     const [redirectUrl, setRedirectUrl] = useState(null);
 
-    const isMentorUser = user?.isMentor || user?.role === "CREATOR" || user?.role === "ADMIN";
+    const isMentorUser = user?.isMentor || user?.role === "CREATOR" || user?.role === "MENTOR";
+
     const isStaffUser = user?.role === "CREATOR" || user?.role === "ADMIN";
     const isAlreadyOnCertificate = pathname.endsWith("/certificate");
     const isLearnerRoute = pathname.startsWith("/courses") || pathname.startsWith("/classes");
@@ -27,7 +28,7 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
             try {
                 setCheckingCompletion(true);
                 const myCourses = await learnService.getMyLearningCourses();
-                
+
                 let targetCourse = null;
                 if (activeCourseId) {
                     targetCourse = myCourses.find(c => c.courseId?.toString() === activeCourseId.toString());
@@ -53,7 +54,7 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
         } else {
             setRedirectUrl(null);
         }
-    }, [user, activeCourseId, classId, isMentorUser]);
+    }, [user, activeCourseId, classId, isMentorUser, isStaffUser, isAlreadyOnCertificate, isLearnerRoute]);
 
     if (isLoading || checkingCompletion) {
         return (
@@ -65,7 +66,7 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
         );
     }
 
-    if (redirectUrl) {
+    if (redirectUrl && pathname !== redirectUrl) {
         return <Navigate to={redirectUrl} replace />;
     }
 

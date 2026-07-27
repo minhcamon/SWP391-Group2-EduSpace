@@ -29,6 +29,7 @@ export const AssignmentPage = () => {
     myReviewResult,
     peerReviewTask,
     peerReviewGraded,
+    partnerSubmissionStatus,
     handleEssayChange,
     handleSubmitDraft,
     submitPeerReview,
@@ -250,6 +251,7 @@ export const AssignmentPage = () => {
                   handleSubmitDraft={handleSubmitDraft}
                   isSubmitting={isSubmitting}
                   peerReviewTask={peerReviewTask}
+                  partnerSubmissionStatus={partnerSubmissionStatus}
                   partnerAvatar={partnerAvatar}
                 />
               ) : (

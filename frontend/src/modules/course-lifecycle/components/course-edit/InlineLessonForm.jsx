@@ -34,18 +34,19 @@ export default function InlineLessonForm({
           type="text"
           placeholder={isText ? "Tên Chủ đề nhỏ..." : "Tiêu đề bài học..."}
           value={inlineData.title}
-          onChange={(e) => setInlineData({ ...inlineData, title: e.target.value })}
-          className="w-full p-2 text-xs bg-white border border-border-light/40 rounded-lg outline-none"
+          onChange={(e) => setInlineData(prev => ({ ...prev, title: e.target.value }))}
+          className="w-full p-2 text-xs bg-white border border-border-light/40 rounded-lg outline-none focus:border-primary"
         />
         {!isText && (
           <div className="space-y-1">
             <InputFile
-              accept={ACCEPT_MAP[activeConfig.type] || undefined}
+              value={inlineData.url}
+              accept={ACCEPT_MAP[activeConfig.type] || "*"}
               maxSize={50 * 1024 * 1024} // 50MB limit
               multiple={false}
               autoUpload={true}
               onChange={(data) => {
-                setInlineData({ ...inlineData, url: data.url || '' });
+                setInlineData(prev => ({ ...prev, url: data?.url || '' }));
               }}
               variant="default"
               split="3-7"
@@ -57,11 +58,17 @@ export default function InlineLessonForm({
       </div>
 
       <div className="flex justify-end gap-2">
-        <button onClick={() => setActiveConfig(null)} className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[10px] font-bold text-gray-500 cursor-pointer">Hủy</button>
         <button
+          type="button"
+          onClick={() => setActiveConfig(null)}
+          className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[10px] font-bold text-gray-500 hover:bg-gray-50 cursor-pointer"
+        >
+          Hủy
+        </button>
+        <button
+          type="button"
           onClick={() => handleSaveInlineLesson(modId)}
-          disabled={!isText && !inlineData.url}
-          className="px-3 py-1 bg-primary text-white rounded-md text-[10px] font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-md text-xs font-bold cursor-pointer shadow-xs transition-all active:scale-95"
         >
           Xác nhận
         </button>

@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +30,7 @@ public class IncidentController {
     private final IncidentService incidentService;
 
     @GetMapping
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get list of incidents", description = "Lấy danh sách các sự cố do mentor phụ trách (IN_PROGRESS)")
     public ResponseEntity<APIResponse<List<IncidentListResponse>>> getIncidents() {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -58,7 +57,7 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}/accept")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Accept an incident", description = "Mentor tiếp nhận xử lý một sự cố")
     public ResponseEntity<APIResponse<String>> acceptIncident(@PathVariable("id") Long incidentId) {
         Long userId = SecurityUtil.getCurrentUserId();
@@ -67,7 +66,7 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}/resolve")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Resolve an incident", description = "Mentor hoàn tất xử lý sự cố (Đã giải quyết xong)")
     public ResponseEntity<APIResponse<String>> resolveIncident(
             @PathVariable("id") Long incidentId,
@@ -79,7 +78,7 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Reject an incident", description = "Mentor từ chối xử lý sự cố (ví dụ: tranh chấp không hợp lệ)")
     public ResponseEntity<APIResponse<String>> rejectIncident(
             @PathVariable("id") Long incidentId,
@@ -90,7 +89,7 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}/warn")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Warn learner in incident", description = "Mentor cảnh báo/nhắc nhở học viên và giữ sự cố ở trạng thái đang xử lý")
     public ResponseEntity<APIResponse<String>> warnIncident(
             @PathVariable("id") Long incidentId,
@@ -101,7 +100,7 @@ public class IncidentController {
     }
 
     @GetMapping("/history")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get history of resolved incidents", description = "Lấy lịch sử các sự cố đã được mentor xử lý")
     public ResponseEntity<APIResponse<List<IncidentListResponse>>> getIncidentHistory() {
         Long userId = SecurityUtil.getCurrentUserId();

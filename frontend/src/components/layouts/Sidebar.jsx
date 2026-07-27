@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
     LayoutDashboard,
     BookOpen,
@@ -10,6 +10,8 @@ import {
     Form,
     Menu,
     X,
+    ArrowLeftRight,
+    ShieldCheck,
 } from "lucide-react";
 import Logo from "../common/Logo";
 import Avatar from "../common/Avatar";
@@ -17,12 +19,27 @@ import LogoutButton from "../ui/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleMapping } from "../../lib/data.js";
 import Badge from "../ui/Badge";
+import api from "@/lib/axios";
 
 const Sidebar = () => {
-    const { user } = useAuth();
+    const { user, setMode } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [isCreatorMentor, setIsCreatorMentor] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const currentPath = location.pathname;
+
+    // Real-time check: does this Creator have any mentor classes?
+    useEffect(() => {
+        if (user?.role === 'CREATOR') {
+            api.get('/mentor/classes')
+                .then(res => {
+                    const classes = res.data?.data;
+                    setIsCreatorMentor(Array.isArray(classes) && classes.length > 0);
+                })
+                .catch(() => setIsCreatorMentor(false));
+        }
+    }, [user?.role, user?.id]);
 
     // Close the sidebar when navigation occurs
     useEffect(() => {
@@ -94,11 +111,6 @@ const Sidebar = () => {
                     text: "Quản lý đơn mentor",
                     icon: Users,
                     path: "/creator/mentor-applications",
-                },
-                {
-                    text: "Yêu cầu rút lui",
-                    icon: Form,
-                    path: "/creator/withdraw-requests",
                 },
             ],
         },
@@ -203,6 +215,22 @@ const Sidebar = () => {
                 </div>
 
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                    {/* Creator: Switch to Mentor mode button */}
+                    {user.role === 'CREATOR' && isCreatorMentor && (
+                        <button
+                            onClick={() => {
+                                setMode('MENTOR');
+                                navigate('/mentor');
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer group mb-3"
+                        >
+                            <ShieldCheck
+                                size={18}
+                                className="text-indigo-400 group-hover:text-indigo-600 transition-colors"
+                            />
+                            Trang quản lý Mentor
+                        </button>
+                    )}
                     <div className="flex items-center gap-3 p-2 mb-3 rounded-xl">
                         <Link to="/profile">
                             <Avatar

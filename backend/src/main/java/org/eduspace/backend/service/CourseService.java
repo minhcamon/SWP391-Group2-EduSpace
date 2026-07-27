@@ -16,6 +16,7 @@ import org.eduspace.backend.dto.course.response.AssignmentResponse;
 import org.eduspace.backend.dto.course.response.CourseResponse;
 import org.eduspace.backend.dto.course.response.LessonResponse;
 import org.eduspace.backend.dto.course.response.ModuleResponse;
+import org.eduspace.backend.dto.course.RubricCriteriaDto;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.ClassMember;
 import org.eduspace.backend.entity.Course;
@@ -25,9 +26,11 @@ import org.eduspace.backend.entity.Lesson;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.CourseStatus;
 import org.eduspace.backend.enums.LearnerStatus;
+import org.eduspace.backend.enums.LessonContentType;
 import org.eduspace.backend.enums.NotificationType;
 import org.eduspace.backend.enums.RequestStatus;
 import org.eduspace.backend.enums.Role;
+import org.eduspace.backend.exception.BadRequestException;
 import org.eduspace.backend.repository.AssignmentRepository;
 import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.CourseRepository;
@@ -63,13 +66,24 @@ public class CourseService {
         List<Course> courses = courseRepository.getCoursesByCreatorId(creatorId);
 
         return courses.stream()
-                .map(course -> CourseResponse.builder()
-                        .id(course.getId())
-                        .title(course.getTitle())
-                        .description(course.getDescription())
-                        .status(course.getStatus().name())
-                        .createdAt(course.getCreatedAt())
-                        .build())
+                .map(course -> {
+                    String reason = null;
+                    if (course.getStatus() == CourseStatus.REJECTED) {
+                        List<CourseRequest> rejectedRequests = courseRequestRepository
+                                .findByCourseIdAndStatusOrderByCreatedAtDesc(course.getId(), RequestStatus.REJECTED);
+                        if (!rejectedRequests.isEmpty()) {
+                            reason = rejectedRequests.get(0).getReason();
+                        }
+                    }
+                    return CourseResponse.builder()
+                            .id(course.getId())
+                            .title(course.getTitle())
+                            .description(course.getDescription())
+                            .status(course.getStatus().name())
+                            .createdAt(course.getCreatedAt())
+                            .reason(reason)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -98,7 +112,7 @@ public class CourseService {
 
                     if (userId != null) {
                         Optional<ClassMember> activeMember = classMemberRepository
-                                .findActiveMember(userId, course.getId(), LearnerStatus.ACTIVE);
+                                .findActiveEnrollment(userId, course.getId(), LearnerStatus.ACTIVE);
 
                         if (activeMember.isPresent()) {
                             enrollmentStatus = "ENROLLED";
@@ -121,7 +135,6 @@ public class CourseService {
                 })
                 .collect(Collectors.toList());
 
-        // Build paged response
         return PagedResponse.<CourseResponse>builder()
                 .content(courseResponses)
                 .currentPage(page)
@@ -156,6 +169,10 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
+
+        if (course.getStatus() != CourseStatus.PENDING) {
+            throw new RuntimeException("Only pending courses can be approved");
+        }
 
         course.setStatus(CourseStatus.PUBLISHED);
         courseRepository.save(course);
@@ -194,6 +211,10 @@ public class CourseService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin user not found"));
 
+        if (course.getStatus() != CourseStatus.PENDING) {
+            throw new RuntimeException("Only pending courses can be rejected");
+        }
+
         course.setStatus(CourseStatus.REJECTED);
         courseRepository.save(course);
 
@@ -229,20 +250,18 @@ public class CourseService {
         User creator = userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        validateCreateCourseContent(request);
+
         Course course = Course.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .creator(creator)
-                .status(CourseStatus.valueOf(request.getStatus()))
+                .status(CourseStatus.valueOf(request.getStatus().toUpperCase()))
                 .createdAt(LocalDateTime.now())
                 .isDeleted(false)
                 .build();
 
         courseRepository.save(course);
-
-        if (request.getModules() == null) {
-            return course.getId();
-        }
 
         for (CreateModuleRequest moduleRequest : request.getModules()) {
 
@@ -431,7 +450,8 @@ public class CourseService {
             if (isCompleted) {
                 // Find any classId they participated in
                 Optional<ClassMember> member = classMemberRepository.findByUserId(userId).stream()
-                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null && cm.getCourseClass().getCourse().getId().equals(courseId))
+                        .filter(cm -> cm.getCourseClass() != null && cm.getCourseClass().getCourse() != null
+                                && cm.getCourseClass().getCourse().getId().equals(courseId))
                         .findFirst();
                 if (member.isPresent()) {
                     targetClassId = member.get().getCourseClass().getId();
@@ -508,9 +528,18 @@ public class CourseService {
                 .build();
     }
 
-    public void deleteCourse(Long courseId) {
+    public void deleteCourse(Long courseId, Long currentUserId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isOwner = course.getCreator().getId().equals(currentUserId);
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("Only course creator or admin can delete this course");
+        }
 
         course.setDeleted(true);
         courseRepository.save(course);
@@ -522,6 +551,7 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         validateCourseAccess(course, creatorId);
+        validateUpdateCourseContent(request);
 
         boolean statusChangedToPending = request.getStatus() != null &&
                 request.getStatus().equalsIgnoreCase("PENDING") &&
@@ -562,6 +592,217 @@ public class CourseService {
                 course.getStatus() != CourseStatus.ARCHIVED) {
             throw new RuntimeException("Can only update courses in DRAFT, REJECTED, or ARCHIVED status");
         }
+    }
+
+    private void validateCreateCourseContent(CreateCourseRequest request) {
+        if (isBlank(request.getTitle())) {
+            throw new BadRequestException("Tên khóa học không được để trống.");
+        }
+
+        if (isBlank(request.getDescription())) {
+            throw new BadRequestException("Mô tả khóa học không được để trống.");
+        }
+
+        validateCourseStatus(request.getStatus());
+        if (request.getModules() == null || request.getModules().isEmpty()) {
+            throw new BadRequestException("Khóa học phải có ít nhất một module.");
+        }
+
+        for (int i = 0; i < request.getModules().size(); i++) {
+            validateCreateModule(request.getModules().get(i), i + 1);
+        }
+    }
+
+    private void validateUpdateCourseContent(UpdateCourseRequest request) {
+        if (request.getTitle() != null && isBlank(request.getTitle())) {
+            throw new BadRequestException("Tên khóa học không được để trống.");
+        }
+
+        if (request.getDescription() != null && isBlank(request.getDescription())) {
+            throw new BadRequestException("Mô tả khóa học không được để trống.");
+        }
+
+        if (request.getStatus() != null) {
+            validateCourseStatus(request.getStatus());
+        }
+        if (request.getModules() != null && request.getModules().isEmpty()) {
+            throw new BadRequestException("Khóa học phải có ít nhất một module.");
+        }
+
+        if (request.getModules() == null) {
+            return;
+        }
+
+        for (int i = 0; i < request.getModules().size(); i++) {
+            validateUpdateModule(request.getModules().get(i), i + 1);
+        }
+    }
+
+    private void validateCourseStatus(String status) {
+        if (isBlank(status)) {
+            throw new BadRequestException("Trạng thái khóa học không được để trống.");
+        }
+
+        try {
+            CourseStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Trạng thái khóa học không hợp lệ.");
+        }
+    }
+
+    private void validateCreateModule(CreateModuleRequest moduleRequest, int moduleIndex) {
+        String moduleLabel = formatModuleLabel(moduleRequest != null ? moduleRequest.getTitle() : null, moduleIndex);
+
+        if (moduleRequest == null) {
+            throw new BadRequestException("Module " + moduleIndex + " không hợp lệ.");
+        }
+
+        validateModuleFields(moduleRequest.getTitle(), moduleRequest.getPriority(), moduleRequest.getDays(),
+                moduleRequest.getBaseExp(), moduleRequest.getSpeedBonusExp(), moduleLabel);
+        validateCreateLessons(moduleRequest.getLessons(), moduleLabel);
+        validateCreateAssignment(moduleRequest.getAssignment(), moduleLabel);
+    }
+
+    private void validateUpdateModule(UpdateModuleRequest moduleRequest, int moduleIndex) {
+        String moduleLabel = formatModuleLabel(moduleRequest != null ? moduleRequest.getTitle() : null, moduleIndex);
+
+        if (moduleRequest == null) {
+            throw new BadRequestException("Module " + moduleIndex + " không hợp lệ.");
+        }
+
+        validateModuleFields(moduleRequest.getTitle(), moduleRequest.getPriority(), moduleRequest.getDays(),
+                moduleRequest.getBaseExp(), moduleRequest.getSpeedBonusExp(), moduleLabel);
+        validateUpdateLessons(moduleRequest.getLessons(), moduleLabel);
+        validateUpdateAssignment(moduleRequest.getAssignment(), moduleLabel);
+    }
+
+    private void validateModuleFields(String title, Object priority, Integer days, Integer baseExp,
+            Integer speedBonusExp, String moduleLabel) {
+        if (isBlank(title)) {
+            throw new BadRequestException("Tên " + moduleLabel + " không được để trống.");
+        }
+
+        if (priority == null) {
+            throw new BadRequestException("Độ khó của " + moduleLabel + " không được để trống.");
+        }
+
+        if (days == null || days <= 0) {
+            throw new BadRequestException("Thời lượng của " + moduleLabel + " phải lớn hơn 0 ngày.");
+        }
+
+        if (baseExp == null || baseExp <= 0) {
+            throw new BadRequestException("Base EXP của " + moduleLabel + " phải lớn hơn 0.");
+        }
+
+        if (speedBonusExp == null || speedBonusExp < 0) {
+            throw new BadRequestException("Bonus EXP của " + moduleLabel + " không được âm.");
+        }
+    }
+
+    private void validateCreateLessons(List<CreateLessonRequest> lessons, String moduleLabel) {
+        if (lessons == null || lessons.isEmpty()) {
+            throw new BadRequestException(moduleLabel + " phải có ít nhất một bài học.");
+        }
+
+        for (int i = 0; i < lessons.size(); i++) {
+            CreateLessonRequest lesson = lessons.get(i);
+            validateLessonFields(
+                    lesson != null ? lesson.getTitle() : null,
+                    lesson != null ? lesson.getContentType() : null,
+                    lesson != null ? lesson.getContentUrl() : null,
+                    moduleLabel,
+                    i + 1);
+        }
+    }
+
+    private void validateUpdateLessons(List<UpdateLessonRequest> lessons, String moduleLabel) {
+        if (lessons == null || lessons.isEmpty()) {
+            throw new BadRequestException(moduleLabel + " phải có ít nhất một bài học.");
+        }
+
+        for (int i = 0; i < lessons.size(); i++) {
+            UpdateLessonRequest lesson = lessons.get(i);
+            validateLessonFields(
+                    lesson != null ? lesson.getTitle() : null,
+                    lesson != null ? lesson.getContentType() : null,
+                    lesson != null ? lesson.getContentUrl() : null,
+                    moduleLabel,
+                    i + 1);
+        }
+    }
+
+    private void validateLessonFields(String title, LessonContentType contentType, String contentUrl,
+            String moduleLabel, int lessonIndex) {
+        String lessonLabel = "Bài học " + lessonIndex + " của " + moduleLabel;
+
+        if (isBlank(title)) {
+            throw new BadRequestException(lessonLabel + " phải có tiêu đề.");
+        }
+
+        if (contentType == null) {
+            throw new BadRequestException(lessonLabel + " phải có loại nội dung.");
+        }
+
+        if (contentType != LessonContentType.TEXT && isBlank(contentUrl)) {
+            throw new BadRequestException(lessonLabel + " phải có URL hoặc tài liệu đính kèm.");
+        }
+    }
+
+    private void validateCreateAssignment(CreateAssignmentRequest assignmentRequest, String moduleLabel) {
+        if (assignmentRequest == null) {
+            throw new BadRequestException(moduleLabel + " phải có bài tập cuối module.");
+        }
+
+        validateAssignmentFields(assignmentRequest.getTitle(), assignmentRequest.getDescription(),
+                assignmentRequest.getRubricCriteria(), moduleLabel);
+    }
+
+    private void validateUpdateAssignment(UpdateAssignmentRequest assignmentRequest, String moduleLabel) {
+        if (assignmentRequest == null) {
+            throw new BadRequestException(moduleLabel + " phải có bài tập cuối module.");
+        }
+
+        validateAssignmentFields(assignmentRequest.getTitle(), assignmentRequest.getDescription(),
+                assignmentRequest.getRubricCriteria(), moduleLabel);
+    }
+
+    private void validateAssignmentFields(String title, String description, List<RubricCriteriaDto> rubricCriteria,
+            String moduleLabel) {
+        if (isBlank(title)) {
+            throw new BadRequestException("Bài tập của " + moduleLabel + " phải có tiêu đề.");
+        }
+
+        if (isBlank(description)) {
+            throw new BadRequestException("Bài tập của " + moduleLabel + " phải có yêu cầu hoặc mô tả.");
+        }
+
+        validateRubricCriteria(moduleLabel, rubricCriteria);
+    }
+
+    private String formatModuleLabel(String moduleTitle, int moduleIndex) {
+        return isBlank(moduleTitle) ? "module " + moduleIndex : "module '" + moduleTitle.trim() + "'";
+    }
+
+    private void validateRubricCriteria(String moduleLabel, List<RubricCriteriaDto> rubricCriteria) {
+        if (rubricCriteria == null || rubricCriteria.isEmpty()) {
+            throw new BadRequestException("Bài tập của " + moduleLabel
+                    + " phải có ít nhất một tiêu chí chấm điểm.");
+        }
+
+        boolean hasInvalidCriterion = rubricCriteria.stream()
+                .anyMatch(criteria -> criteria == null
+                        || isBlank(criteria.getCriterionName())
+                        || criteria.getMaxPoint() == null
+                        || criteria.getMaxPoint() <= 0);
+
+        if (hasInvalidCriterion) {
+            throw new BadRequestException("Tiêu chí chấm điểm của " + moduleLabel
+                    + " phải có tên tiêu chí và điểm tối đa lớn hơn 0.");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void processModules(Course course, List<UpdateModuleRequest> moduleRequests) {

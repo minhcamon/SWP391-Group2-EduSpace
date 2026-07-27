@@ -2,19 +2,13 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.incident.response.MentorDashboardResponse;
-import org.eduspace.backend.dto.mentor.request.WithdrawRequestDto;
 import org.eduspace.backend.dto.mentor.response.MentorClassResponse;
 import org.eduspace.backend.dto.mentor.response.MentorClassDetailResponse;
-import org.eduspace.backend.dto.mentor.response.WithdrawDetailResponse;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.mentor.response.MentorModuleResponse;
 import org.eduspace.backend.dto.mentor.response.MentorModuleContentResponse;
 import org.eduspace.backend.dto.study_group.response.StudyGroupResponse;
-import org.eduspace.backend.dto.course.RubricCriteriaDto;
 import org.eduspace.backend.enums.IncidentStatus;
-import org.eduspace.backend.enums.SubmissionStatus;
-import org.eduspace.backend.enums.WithdrawStatus;
-import org.eduspace.backend.enums.Role;
 import org.eduspace.backend.enums.MentorStatus;
 import org.eduspace.backend.dto.mentor.response.ActiveMentorResponse;
 import org.eduspace.backend.exception.BadRequestException;
@@ -42,11 +36,9 @@ public class MentorService {
     private final CourseRepository courseRepository;
     private final CertificateRepository certificateRepository;
     private final ClassRepository classRepository;
-    private final WithdrawRequestRepository withdrawRequestRepository;
     private final StudyGroupRepository studyGroupRepository;
     private final StudyGroupService studyGroupService;
     private final SubmissionRepository submissionRepository;
-    private final PeerReviewRepository peerReviewRepository;
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
@@ -55,25 +47,50 @@ public class MentorService {
 
     @Transactional
     public void assignMentorToCourse(Long userId, Long courseId) {
-        // Enforce the business rule: only users who completed the course can be mentors
+        // 1. Kiểm tra điều kiện: Chỉ những người đã hoàn thành khóa học (có chứng chỉ) mới được làm Mentor
         boolean hasCompleted = certificateRepository.existsByUserIdAndCourseId(userId, courseId);
         if (!hasCompleted) {
-            throw new RuntimeException("Người dùng chưa hoàn thành khóa học này, không thể làm Mentor!");
+            throw new BadRequestException("Bạn chưa hoàn thành khóa học này, không thể đăng ký làm Mentor!");
         }
 
-        // Fetch User and Course
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        // 2. Kiểm tra giới hạn 2 lớp đang hoạt động của Mentor
+        long activeClassesCount = classMemberRepository.countActiveClassesForMentor(userId);
+        if (activeClassesCount >= 2) {
+            throw new BadRequestException("Bạn đã đạt giới hạn tối đa 2 lớp học hoạt động đồng thời!");
+        }
 
-        // Save ActiveMentor
-        ActiveMentor activeMentor = ActiveMentor.builder()
-                .user(user)
-                .course(course)
-                .mentorStatus(org.eduspace.backend.enums.MentorStatus.AVAILABLE)
-                .build();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin người dùng"));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy khóa học"));
+
+        // 3. Đăng ký / Cập nhật cấu hình ActiveMentor
+        ActiveMentor activeMentor = activeMentorRepository.findByUserIdAndCourseId(userId, courseId)
+                .orElse(ActiveMentor.builder().user(user).course(course).build());
+        activeMentor.setMentorStatus(MentorStatus.AVAILABLE);
         activeMentorRepository.save(activeMentor);
+
+        // 4. Tự động sắp xếp Mentor vào 1 lớp học phù hợp thuộc khóa học này
+        List<CourseClass> candidateClasses = classRepository.findByCourseId(courseId).stream()
+                .filter(cc -> cc.getStatus() != org.eduspace.backend.enums.ClassStatus.COMPLETED)
+                .filter(cc -> classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(cc.getId(), userId, "MENTOR").isEmpty())
+                .sorted((c1, c2) -> {
+                    long count1 = classMemberRepository.countActiveMentorsInClass(c1.getId());
+                    long count2 = classMemberRepository.countActiveMentorsInClass(c2.getId());
+                    return Long.compare(count1, count2);
+                })
+                .toList();
+
+        if (!candidateClasses.isEmpty()) {
+            CourseClass targetClass = candidateClasses.get(0);
+            classMemberRepository.save(ClassMember.builder()
+                    .courseClass(targetClass)
+                    .user(user)
+                    .contextRole("MENTOR")
+                    .learnerStatus(org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                    .joinedAt(LocalDateTime.now())
+                    .build());
+        }
     }
 
     public MentorDashboardResponse getDashboardData(Long userId) {
@@ -86,7 +103,10 @@ public class MentorService {
         long resolvedIncidents = incidentRepository.countByResolvedByUserIdAndStatusIn(userId,
                 resolvedStatuses);
 
-        long assignedClasses = classMemberRepository.countByUserIdAndContextRole(userId, "MENTOR");
+        // Count classes where user is MENTOR or acting as CREATOR-mentor
+        long mentorClasses = classMemberRepository.countByUserIdAndContextRole(userId, "MENTOR");
+        long creatorMentorClasses = classMemberRepository.countByUserIdAndContextRole(userId, "CREATOR");
+        long assignedClasses = mentorClasses + creatorMentorClasses;
 
         long assignedCourses = activeMentorRepository.countByUserId(userId);
 
@@ -99,7 +119,8 @@ public class MentorService {
     }
 
     public List<MentorClassResponse> getMentorClasses(Long userId) {
-        List<ClassMember> classMembers = classMemberRepository.findByUserIdAndContextRole(userId, "MENTOR");
+        List<ClassMember> classMembers = classMemberRepository.findByUserIdAndContextRoleIn(userId,
+                Arrays.asList("MENTOR", "CREATOR"));
         return classMembers.stream()
                 .map(cm -> {
                     CourseClass cc = cm.getCourseClass();
@@ -114,12 +135,12 @@ public class MentorService {
                             .courseTitle(cc.getCourse().getTitle())
                             .numberOfPairs(numberOfPairs)
                             .studyGroups(
-                                groups.stream()
-                                    .map(group -> StudyGroupResponse.builder()
-                                        .studyGroupId(group.getId())
-                                        .status(group.getChatStatus())
-                                        .build())
-                                    .collect(Collectors.toList()))
+                                    groups.stream()
+                                            .map(group -> StudyGroupResponse.builder()
+                                                    .studyGroupId(group.getId())
+                                                    .status(group.getChatStatus())
+                                                    .build())
+                                            .collect(Collectors.toList()))
                             .membershipStatus(cm.getLearnerStatus())
                             .build();
                 })
@@ -127,14 +148,16 @@ public class MentorService {
     }
 
     public MentorClassDetailResponse getMentorClassDetail(Long classId, Long userId) {
-        // Check if user is mentor in this class
-        ClassMember currentCm = classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
+        // Check if user is mentor or creator-acting-as-mentor in this class
+        ClassMember currentCm = classMemberRepository
+                .findByUserIdAndCourseClassIdAndContextRoleIn(userId, classId, Arrays.asList("MENTOR", "CREATOR"))
                 .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
 
         CourseClass cc = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
 
-        List<ClassMember> mentors = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
+        List<ClassMember> mentors = classMemberRepository.findAllMentorsInClass(classId);
+
         List<MentorResponse> mentorResponses = mentors.stream()
                 .map(m -> MentorResponse.builder()
                         .id(m.getUser().getId())
@@ -148,10 +171,11 @@ public class MentorService {
 
         // Fetch Modules for the Course
         List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(cc.getCourse().getId());
-        
+
         // Fetch Active learners in class to calculate completion rate
         List<ClassMember> activeLearners = classMemberRepository.findByCourseClassId(classId).stream()
-                .filter(cm -> cm.getContextRole().equals("LEARNER") && cm.getLearnerStatus() == org.eduspace.backend.enums.LearnerStatus.ACTIVE)
+                .filter(cm -> cm.getContextRole().equals("LEARNER")
+                        && cm.getLearnerStatus() == org.eduspace.backend.enums.LearnerStatus.ACTIVE)
                 .collect(Collectors.toList());
 
         List<MentorModuleResponse> moduleResponses = new java.util.ArrayList<>();
@@ -160,7 +184,7 @@ public class MentorService {
 
         for (int idx = 0; idx < courseModules.size(); idx++) {
             CourseModule module = courseModules.get(idx);
-            
+
             // Calculate Status
             String status = "LOCKED";
             LocalDateTime dueDate = classTimelineRepository.findByCourseClassIdAndModuleId(classId, module.getId());
@@ -171,7 +195,8 @@ public class MentorService {
                     status = "ACTIVE";
                 }
             } else {
-                if (idx == 0) status = "ACTIVE";
+                if (idx == 0)
+                    status = "ACTIVE";
             }
             previousCompleted = "COMPLETED".equals(status);
 
@@ -185,11 +210,15 @@ public class MentorService {
                 if (totalUnitsPerLearner > 0) {
                     double totalProgressSum = 0.0;
                     for (ClassMember cm : activeLearners) {
-                        long completedLessons = lessonProgressRepository.countCompletedLessonsByClassMemberIdAndModuleId(cm.getId(), module.getId());
+                        long completedLessons = lessonProgressRepository
+                                .countCompletedLessonsByClassMemberIdAndModuleId(cm.getId(), module.getId());
                         long completedAssignments = 0;
                         if (assignOpt.isPresent()) {
-                            completedAssignments = submissionRepository.findByMemberIdAndAssignmentId(cm.getId(), assignOpt.get().getId())
-                                    .map(sub -> sub.getStatus() == org.eduspace.backend.enums.SubmissionStatus.GRADED ? 1 : 0)
+                            completedAssignments = submissionRepository
+                                    .findByMemberIdAndAssignmentId(cm.getId(), assignOpt.get().getId())
+                                    .map(sub -> sub.getStatus() == org.eduspace.backend.enums.SubmissionStatus.GRADED
+                                            ? 1
+                                            : 0)
                                     .orElse(0);
                         }
                         totalProgressSum += (double) (completedLessons + completedAssignments) / totalUnitsPerLearner;
@@ -205,7 +234,8 @@ public class MentorService {
             for (Lesson lesson : lessons) {
                 String type = "Bài học";
                 String titleLower = lesson.getTitle().toLowerCase();
-                if (titleLower.contains("thực hành") || titleLower.contains("thuc hanh") || titleLower.contains("practice") || titleLower.contains("lab")) {
+                if (titleLower.contains("thực hành") || titleLower.contains("thuc hanh")
+                        || titleLower.contains("practice") || titleLower.contains("lab")) {
                     type = "Thực hành";
                 }
                 contents.add(new MentorModuleContentResponse(type, lesson.getTitle()));
@@ -241,11 +271,13 @@ public class MentorService {
     }
 
     public List<StudyGroupResponse> getMentorClassPairs(Long classId, Long userId) {
-        classMemberRepository.findByUserIdAndCourseClassIdAndContextRole(userId, classId, "MENTOR")
+        classMemberRepository
+                .findByUserIdAndCourseClassIdAndContextRoleIn(userId, classId, Arrays.asList("MENTOR", "CREATOR"))
                 .orElseThrow(() -> new RuntimeException("Bạn không phải là mentor của lớp học này"));
 
         return studyGroupService.getAllStudyGroup(classId);
     }
+
     public List<ActiveMentorResponse> getActiveCoursesForMentor(Long userId) {
         List<Certificate> certificates = certificateRepository.findByUserId(userId);
         List<Course> completedCourses = certificates.stream().map(Certificate::getCourse).toList();
@@ -255,8 +287,7 @@ public class MentorService {
                 .collect(Collectors.toMap(
                         am -> am.getCourse().getId(),
                         am -> am,
-                        (existing, replacement) -> existing
-                ));
+                        (existing, replacement) -> existing));
 
         Set<Course> allCourses = new LinkedHashSet<>(completedCourses);
         for (ActiveMentor am : activeRegistrations) {

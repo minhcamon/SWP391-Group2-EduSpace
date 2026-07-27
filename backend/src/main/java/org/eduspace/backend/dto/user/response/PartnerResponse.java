@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class PartnerResponse {
     private Long partnerId;
     private String name;
+    private String email;
     private String avatarUrl;
     private String description;
     private PartnerLocationDTO location;

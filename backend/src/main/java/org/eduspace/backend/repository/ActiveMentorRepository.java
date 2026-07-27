@@ -1,6 +1,7 @@
 package org.eduspace.backend.repository;
 
 import org.eduspace.backend.entity.ActiveMentor;
+import org.eduspace.backend.enums.MentorStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +16,5 @@ public interface ActiveMentorRepository extends JpaRepository<ActiveMentor, Long
     List<ActiveMentor> findByUserId(Long userId);
     List<ActiveMentor> findByCourseId(Long courseId);
     Optional<ActiveMentor> findByUserIdAndCourseId(Long userId, Long courseId);
+    List<ActiveMentor> findByCourseIdAndMentorStatusOrderByUpdatedAtAsc(Long courseId, MentorStatus status);
 }
-

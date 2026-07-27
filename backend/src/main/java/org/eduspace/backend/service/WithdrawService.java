@@ -41,8 +41,9 @@ public class WithdrawService {
     @Transactional
     public WithdrawRequest submitWithdrawRequest(Long mentorId, Long classId, SubmitWithdrawRequestDto dto) {
         // Lock membership row to prevent race conditions during mentor count validation
+        // Accept both MENTOR and CREATOR contextRole (Creator can act as mentor when class has insufficient mentors)
         ClassMember membership = classMemberRepository
-                .findByCourseClassIdAndUserIdAndContextRoleForWrite(classId, mentorId, "MENTOR")
+                .findMentorOrCreatorInClass(classId, mentorId)
                 .orElseThrow(() -> new BadRequestException("Bạn không phải là mentor của lớp học này"));
 
         if (membership.getLearnerStatus() != LearnerStatus.ACTIVE) {
@@ -108,8 +109,9 @@ public class WithdrawService {
 
     @Transactional
     public void cancelWithdrawRequest(Long mentorUserId, Long classId) {
+        // Accept both MENTOR and CREATOR contextRole
         ClassMember membership = classMemberRepository
-                .findByCourseClassIdAndUserIdAndContextRole(classId, mentorUserId, "MENTOR")
+                .findMentorOrCreatorInClass(classId, mentorUserId)
                 .orElseThrow(() -> new BadRequestException("Bạn không thuộc lớp này"));
 
         if (membership.getLearnerStatus() != LearnerStatus.PENDING_WITHDRAWAL) {

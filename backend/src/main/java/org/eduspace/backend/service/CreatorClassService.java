@@ -3,8 +3,8 @@ package org.eduspace.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.dto.mentor.response.MentorResponse;
 import org.eduspace.backend.dto.creator.response.CreatorAnalyticsResponse;
+import org.eduspace.backend.dto.creator.response.ClassTimelineResponse;
 import org.eduspace.backend.entity.*;
-import org.eduspace.backend.enums.WithdrawStatus;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.repository.*;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,9 @@ public class CreatorClassService {
     private final ClassMemberRepository classMemberRepository;
     private final ActiveMentorRepository activeMentorRepository;
     private final UserRepository userRepository;
-    private final WithdrawRequestRepository withdrawRequestRepository;
     private final CourseRepository courseRepository;
+    private final ClassTimelineRepository classTimelineRepository;
+    private final StudyGroupRepository studyGroupRepository;
 
     private CourseClass checkCreatorOwnershipAndGetClass(Long classId, Long creatorId) {
         CourseClass cc = classRepository.findById(classId)
@@ -39,7 +40,7 @@ public class CreatorClassService {
     public List<MentorResponse> getClassMentors(Long classId, Long creatorId) {
         checkCreatorOwnershipAndGetClass(classId, creatorId);
 
-        List<ClassMember> classMembers = classMemberRepository.findByCourseClassIdAndContextRole(classId, "MENTOR");
+        List<ClassMember> classMembers = classMemberRepository.findAllMentorsInClass(classId);
         return classMembers.stream()
                 .map(cm -> MentorResponse.builder()
                         .id(cm.getUser().getId())
@@ -71,6 +72,15 @@ public class CreatorClassService {
             throw new RuntimeException("Mentor này đã được gán vào lớp học rồi!");
         }
 
+        // Check if mentor has reached class limit of 2
+        long activeClasses = classMemberRepository.countActiveClassesByMentor(
+                mentorId,
+                "MENTOR",
+                org.eduspace.backend.enums.ClassStatus.RUNNING);
+        if (activeClasses >= 2) {
+            throw new RuntimeException("Mentor này đã đạt giới hạn quản lý tối đa 2 lớp học!");
+        }
+
         ClassMember newMember = ClassMember.builder()
                 .courseClass(cc)
                 .user(mentor)
@@ -91,8 +101,6 @@ public class CreatorClassService {
 
         classMemberRepository.delete(member);
     }
-
-
 
     public CreatorAnalyticsResponse getCreatorAnalytics(Long creatorId, String courseId, String timeRange) {
         // 1. Get courses created by this creator
@@ -126,7 +134,6 @@ public class CreatorClassService {
             limitDate = LocalDateTime.now().minusDays(30);
         }
 
-        // 2. Fetch all class members (learners) in selected courses
         List<ClassMember> allLearners = new ArrayList<>();
         for (Course c : targetCourses) {
             List<CourseClass> classes = classRepository.findByCourseId(c.getId());
@@ -182,7 +189,6 @@ public class CreatorClassService {
                 .avgScore(total > 0 ? 8.2 : 0.0)
                 .build();
 
-        // Build monthly trends dynamically from actual joinedAt dates
         List<CreatorAnalyticsResponse.MonthlyTrend> trends = new ArrayList<>();
         LocalDate now = LocalDate.now();
         for (int i = 4; i >= 0; i--) {
@@ -208,5 +214,50 @@ public class CreatorClassService {
                 .stats(stats)
                 .monthlyTrends(trends)
                 .build();
+    }
+
+    public List<ClassTimelineResponse> getClassesTimeline(Long courseId, Long creatorId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        if (!course.getCreator().getId().equals(creatorId)) {
+            throw new RuntimeException("Bạn không có quyền quản lý khóa học này");
+        }
+
+        List<CourseClass> classes = classRepository.findByCourseId(courseId).stream()
+                .filter(cc -> cc.getStatus() == org.eduspace.backend.enums.ClassStatus.RUNNING
+                        || cc.getStatus() == org.eduspace.backend.enums.ClassStatus.COMPLETED)
+                .collect(Collectors.toList());
+        List<ClassTimelineResponse> response = new ArrayList<>();
+
+        for (CourseClass cc : classes) {
+            List<ClassTimeline> timelines = classTimelineRepository.findByCourseClassId(cc.getId());
+            List<ClassTimelineResponse.ModuleTimelineItem> items = new ArrayList<>();
+
+            for (ClassTimeline ct : timelines) {
+                List<StudyGroup> groups = studyGroupRepository.findByCourseClassIdAndModuleId(cc.getId(),
+                        ct.getModule().getId());
+                boolean isStarted = !groups.isEmpty();
+
+                items.add(ClassTimelineResponse.ModuleTimelineItem.builder()
+                        .moduleId(ct.getModule().getId())
+                        .moduleTitle(ct.getModule().getTitle())
+                        .sortOrder(ct.getModule().getSortOrder())
+                        .dueDate(ct.getDueDate())
+                        .isStarted(isStarted)
+                        .groupCount(groups.size())
+                        .build());
+            }
+
+            items.sort((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()));
+
+            response.add(ClassTimelineResponse.builder()
+                    .classId(cc.getId())
+                    .className(cc.getName())
+                    .classStatus(cc.getStatus().name())
+                    .timeline(items)
+                    .build());
+        }
+
+        return response;
     }
 }

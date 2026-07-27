@@ -6,11 +6,13 @@ import {
   MessageSquare,
   Send,
   X,
-  LifeBuoy
+  LifeBuoy,
+  Bookmark
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import VideoPlayer from '../components/VideoPlayer'
+import PdfViewer from '../components/PdfViewer'
 import PairChat from '../components/PairChat'
 import CourseSidebar from '../components/CourseSidebar'
 import StudyGroup from '../components/StudyGroup'
@@ -151,24 +153,46 @@ const LearningAreaPage = () => {
         {/* Main Content Area (Video & Tabs) */}
         <div className="grow flex flex-col overflow-y-auto min-w-0 bg-white z-10">
           <div className="py-6 px-4 md:px-8 w-full flex flex-col gap-6">
-            <VideoPlayer
-              isPlaying={isPlaying}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              isSynced={isSynced}
-              onToggleSync={() => setIsSynced(!isSynced)}
-              lesson={lesson}
-            />
+            {/* Media or Document or Text Display Area */}
+            {lesson?.contentType === 'TEXT' ? (
+              <div className="w-full bg-linear-to-r from-primary/10 via-primary/5 to-transparent p-6 sm:p-8 rounded-2xl border border-primary/20 shadow-xs flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wide">
+                  <Bookmark size={16} /> Chủ đề bài học
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-neutral-dark">
+                  {lesson.title}
+                </h2>
+                <p className="text-sm text-neutral-medium leading-relaxed">
+                  {lesson.description || `Nội dung phần học ${lesson.title}`}
+                </p>
+              </div>
+            ) : lesson?.contentType === 'DOCUMENT' ? (
+              <PdfViewer
+                pdfUrl={lesson.pdfUrl || lesson.contentUrl}
+                title={`${lesson.title} - Tài liệu PDF`}
+              />
+            ) : (
+              <VideoPlayer
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                isSynced={isSynced}
+                onToggleSync={() => setIsSynced(!isSynced)}
+                lesson={lesson}
+              />
+            )}
 
-            {/* Lesson Title & Desc */}
-            {lesson && (
+            {/* Lesson Title & Desc (for Video & Document) */}
+            {lesson && lesson.contentType !== 'TEXT' && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
                   <span className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-xs font-bold">
                     {lesson.module}
                   </span>
-                  <span className="text-neutral-light text-xs font-semibold flex items-center gap-1">
-                    <Clock size={14} /> {lesson.duration}
-                  </span>
+                  {lesson.duration && (
+                    <span className="text-neutral-light text-xs font-semibold flex items-center gap-1">
+                      <Clock size={14} /> {lesson.duration}
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-2xl font-bold text-neutral-dark">
                   {lesson.title}
@@ -179,7 +203,8 @@ const LearningAreaPage = () => {
               </div>
             )}
 
-            {/* <PairChat
+            {/* Interactive Notes & Materials Section */}
+            <PairChat
               activeTab={activeTab}
               onTabChange={setActiveTab}
               sharedNotes={sharedNotes}
@@ -188,7 +213,7 @@ const LearningAreaPage = () => {
               onDownloadMaterial={(file) =>
                 toast.success(`Đang tải file ${file.name}`)
               }
-            /> */}
+            />
 
             {/* Mark completed block */}
             <div className="mt-6 py-6 border-t border-border-light flex flex-col items-center gap-4 text-center">

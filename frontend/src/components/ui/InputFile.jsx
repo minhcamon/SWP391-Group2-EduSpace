@@ -4,6 +4,7 @@ import { useInputFile } from "./useInputFile";
 import { cn } from "@/lib/utils";
 
 export function InputFile({
+    value,
     onChange,
     accept = "*",
     maxSize = 10 * 1024 * 1024,
@@ -14,7 +15,7 @@ export function InputFile({
     split = "3-7", // "3-7" (30/70 split) or "4-6" (40/60 split)
     size = "default" // "default" (44px) or "sm" (32px to match standard input)
 }) {
-    const hook = useInputFile({ accept, maxSize, onChange });
+    const hook = useInputFile({ value, accept, maxSize, onChange });
 
     const isCreator = variant === "creator";
     const isSm = size === "sm";

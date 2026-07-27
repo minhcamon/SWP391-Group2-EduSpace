@@ -16,7 +16,6 @@ public class CourseRequestService {
 
     private final CourseRequestRepository courseRequestRepository;
 
-    // Lịch sử duyệt Course của 1 Admin
     public List<CourseRequestHistoryResponse> getHistoryCourseRequestsByAdminId(Long adminId) {
         List<CourseRequest> courseRequests = courseRequestRepository.getHistoryCourseRequestsByAdminId(adminId);
 

@@ -86,7 +86,7 @@ public class CertificateService {
 
     @Transactional
     public CertificateResponse getCertificateDetails(Long classId, Long userId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Thành viên không thuộc lớp học này"));
 
         Course course = classMember.getCourseClass().getCourse();
@@ -101,6 +101,7 @@ public class CertificateService {
         return CertificateResponse.builder()
                 .isCompleted(isCompleted)
                 .isAlreadyMentor(isAlreadyMentor)
+                .courseId(course.getId())
                 .userName(classMember.getUser().getFullName())
                 .courseTitle(course.getTitle())
                 .certificateId(certificate != null ? "EDU-CS-" + certificate.getId() : "")

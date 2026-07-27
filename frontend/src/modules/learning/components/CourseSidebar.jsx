@@ -9,6 +9,7 @@ import {
   ChevronUp,
   FileText,
   XCircle,
+  Bookmark,
 } from "lucide-react"
 import Avatar from "@/components/common/Avatar"
 
@@ -211,6 +212,11 @@ const CourseSidebar = ({
                                     size={iconSize}
                                     className='text-neutral-light'
                                   />
+                                ) : item.contentType === "TEXT" ? (
+                                  <Bookmark
+                                    size={iconSize}
+                                    className='text-primary'
+                                  />
                                 ) : (
                                   <PlayCircle
                                     size={iconSize}
@@ -226,7 +232,9 @@ const CourseSidebar = ({
                                 <p className={`${textClass} truncate group-hover:text-primary`}>
                                   {item.title}
                                 </p>
-                                <span className={infoClass}>Thời lượng: {item.duration}</span>
+                                {item.contentType !== "TEXT" && item.duration && (
+                                  <span className={infoClass}>Thời lượng: {item.duration}</span>
+                                )}
                               </div>
                             </div>
 

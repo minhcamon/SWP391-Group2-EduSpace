@@ -36,13 +36,12 @@ public class ProgressHelper {
 
   /**
    * Xử lý và map danh sách bài học (Lessons) sang DTO kèm theo trạng thái khóa/mở
-   * và vị trí của Partner
+   * và vị trí của các Partner
    */
   public List<LessonProgressResponse> buildLessonProgressResponses(
       List<Lesson> lessons,
       Set<Long> completedSet,
-      Set<Long> partnerCompletedSet,
-      Long partnerCurrentLessonId) {
+      List<PartnerResponse> partners) {
 
     return lessons.stream().map(lesson -> {
       int currentIndex = lessons.indexOf(lesson);
@@ -58,62 +57,83 @@ public class ProgressHelper {
         }
       }
 
-      boolean isPartnerCurrent = partnerCurrentLessonId != null
-          && partnerCurrentLessonId.equals(lesson.getId());
-      boolean completedByPartner = partnerCompletedSet.contains(lesson.getId());
+      List<Long> completedByPartnerIds = new java.util.ArrayList<>();
+      List<Long> currentPartnerIds = new java.util.ArrayList<>();
+
+      if (partners != null) {
+        for (PartnerResponse partner : partners) {
+          if (partner.getCompletedLessons() != null && partner.getCompletedLessons().contains(lesson.getId())) {
+            completedByPartnerIds.add(partner.getPartnerId());
+          }
+          if (partner.getLocation() != null && partner.getLocation().getLessonId() != null
+              && partner.getLocation().getLessonId().equals(lesson.getId())) {
+            currentPartnerIds.add(partner.getPartnerId());
+          }
+        }
+      }
 
       return LessonProgressResponse.builder()
           .id(lesson.getId())
           .title(lesson.getTitle())
+          .contentType(lesson.getContentType() != null ? lesson.getContentType().name() : "VIDEO")
+          .contentUrl(lesson.getContentUrl())
           .isCompleted(isCompleted)
           .isLocked(isLessonLocked)
-          .completedByPartner(completedByPartner)
-          .isPartnerCurrent(isPartnerCurrent)
+          .completedByPartnerIds(completedByPartnerIds)
+          .currentPartnerIds(currentPartnerIds)
           .sortOrder(lesson.getSortOrder())
           .build();
     }).toList();
   }
 
   /**
-   * Build PartnerResponse từ partner ClassMember, tính vị trí hiện tại của
-   * partner
-   * trong module
+   * Build danh sách PartnerResponse từ các partner ClassMember
    */
-  public PartnerResponse buildPartnerResponse(
-      ClassMember partnerClassMember,
+  public List<PartnerResponse> buildPartnerResponses(
+      List<ClassMember> partnerClassMembers,
       List<Lesson> lessons,
       Long moduleId) {
 
-    if (partnerClassMember == null) {
-      return null;
+    if (partnerClassMembers == null || partnerClassMembers.isEmpty()) {
+      return new java.util.ArrayList<>();
     }
 
-    List<Long> partnerCompletedLessonIds = lessonProgressRepository
-        .findCompletedLessonIdsByClassMemberIdAndModuleId(partnerClassMember.getId(), moduleId);
-    Set<Long> partnerCompletedSet = new HashSet<>(partnerCompletedLessonIds);
+    return partnerClassMembers.stream().map(partnerClassMember -> {
+      List<Long> partnerCompletedLessonIds = lessonProgressRepository
+          .findCompletedLessonIdsByClassMemberIdAndModuleId(partnerClassMember.getId(), moduleId);
+      Set<Long> partnerCompletedSet = new HashSet<>(partnerCompletedLessonIds);
 
-    Long partnerCurrentLessonId = null;
-    for (Lesson lesson : lessons) {
-      if (!partnerCompletedSet.contains(lesson.getId())) {
-        partnerCurrentLessonId = lesson.getId();
-        break;
+      Long partnerCurrentLessonId = null;
+      for (Lesson lesson : lessons) {
+        if (!partnerCompletedSet.contains(lesson.getId())) {
+          partnerCurrentLessonId = lesson.getId();
+          break;
+        }
       }
-    }
 
-    User partnerUser = partnerClassMember.getUser();
+      String lessonName = null;
+      if (partnerCurrentLessonId != null) {
+        lessonName = findLessonTitle(lessons, partnerCurrentLessonId);
+      } else if (lessons != null && partnerCompletedSet.size() == lessons.size() && !lessons.isEmpty()) {
+        lessonName = "Làm bài tập / Hoàn thành";
+      }
 
-    return PartnerResponse.builder()
-        .partnerId(partnerUser.getId())
-        .name(partnerUser.getFullName())
-        .avatarUrl(partnerUser.getAvatarUrl())
-        .description(partnerUser.getBio())
-        .location(partnerCurrentLessonId != null ? PartnerLocationDTO.builder()
-            .moduleId(moduleId)
-            .lessonId(partnerCurrentLessonId)
-            .lessonName(findLessonTitle(lessons, partnerCurrentLessonId))
-            .build() : null)
-        .completedLessons(partnerCompletedLessonIds)
-        .build();
+      User partnerUser = partnerClassMember.getUser();
+
+      return PartnerResponse.builder()
+          .partnerId(partnerUser.getId())
+          .name(partnerUser.getFullName())
+          .email(partnerUser.getEmail())
+          .avatarUrl(partnerUser.getAvatarUrl())
+          .description(partnerUser.getBio())
+          .location((partnerCurrentLessonId != null || lessonName != null) ? PartnerLocationDTO.builder()
+              .moduleId(moduleId)
+              .lessonId(partnerCurrentLessonId)
+              .lessonName(lessonName)
+              .build() : null)
+          .completedLessons(partnerCompletedLessonIds)
+          .build();
+    }).toList();
   }
 
   private String findLessonTitle(List<Lesson> lessons, Long lessonId) {

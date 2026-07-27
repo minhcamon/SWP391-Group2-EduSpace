@@ -9,7 +9,7 @@ import FloatingMentorSupport from "../components/FloatingMentorSupport";
 
 const ProgressDashboardPage = () => {
   const navigate = useNavigate();
-  const { isLoading, partner, modules, currentModule, handleSayHi, courseId, classId } =
+  const { isLoading, partners, modules, currentModule, handleSayHi, courseId, classId } =
     useProgressDashboard();
 
   const handleContinueLearning = () => {
@@ -44,8 +44,8 @@ const ProgressDashboardPage = () => {
             onClick={() => navigate(`/classes/${classId}`)}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/15 text-primary text-xs font-bold rounded-xl border border-primary/20 cursor-pointer shadow-xs transition-all active:scale-[0.98]"
           >
-            <ArrowLeft size={14} />
-            Quay về lớp học hiện tại
+            <ArrowLeft size={16} />
+            Trở về Lớp học
           </button>
         )}
       </div>
@@ -55,7 +55,9 @@ const ProgressDashboardPage = () => {
           {/* Left Sidebar */}
           <aside className="lg:col-span-3 space-y-6">
             {/* My Partner Card */}
-            <PartnerCard partner={partner} handleSayHi={handleSayHi} />
+            {partners.map(partner => (
+                <PartnerCard key={partner.partnerId} partner={partner} handleSayHi={() => handleSayHi(partner.name)} />
+            ))}
 
             {/* Module Status List (All Modules) */}
             <SidebarModulesList modules={modules} />
@@ -65,7 +67,7 @@ const ProgressDashboardPage = () => {
           <section className="lg:col-span-7">
             <CurrentModuleFocus
               currentModule={currentModule}
-              partner={partner}
+              partners={partners}
               handleContinueLearning={handleContinueLearning}
               classId={classId}
             />
