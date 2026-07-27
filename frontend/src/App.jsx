@@ -52,7 +52,6 @@ function App() {
         />
         <Routes>
           {/* public route */}
-          <Route path="/" element={<Home />}></Route>
           <Route path="/signup" element={<Register />}></Route>
           <Route path="/login" element={<Login />}></Route>
           <Route path="/verify-email" element={<VerifyEmail />}></Route>
@@ -67,6 +66,7 @@ function App() {
             element={<Courses />}
           ></Route>
           <Route element={<ProtectedRoute allowGuest={true} />}>
+            <Route path="/" element={<Home />}></Route>
             <Route
               path="/courses/:id"
               element={<LearnerCourseDetail />}

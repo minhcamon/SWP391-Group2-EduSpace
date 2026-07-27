@@ -53,7 +53,7 @@ const Home = () => {
     const fetchCourses = async () => {
       try {
         setCoursesLoading(true)
-        const data = await courseService.getPublishedCourses(0, 4)
+        const data = await courseService.getPublishedCourses(0, 3)
         setCourses(data.content || [])
       } catch (error) {
         console.error('Lỗi fetch khóa học tại Home: ', error)
@@ -427,8 +427,8 @@ const Home = () => {
           </div>
 
           {coursesLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
                 <div
                   key={i}
                   className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl h-60 animate-pulse"
@@ -442,7 +442,7 @@ const Home = () => {
               </EmptyState>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((course) => (
                 <CourseItem
                   key={course.id}

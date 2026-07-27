@@ -84,6 +84,13 @@ const ProtectedRoute = ({ allowedRoles, requireMentorMode, allowGuest = false })
         return <Navigate to="/creator/courses" replace />;
     }
 
+    // Centralized Admin Redirect
+    const isAdminRoute = allowedRoles && allowedRoles.includes("ADMIN");
+    if (user.role === "ADMIN" && !isAdminRoute && !requireMentorMode) {
+        console.warn(`Admin redirected to admin dashboard.`);
+        return <Navigate to="/admin" replace />;
+    }
+
     // Centralized Mentor Redirect
     if (currentMode === "MENTOR" && !requireMentorMode && !isCreatorRoute && (!allowedRoles || !allowedRoles.includes("ADMIN"))) {
         console.warn(`Mentor redirected to teaching config page.`);
