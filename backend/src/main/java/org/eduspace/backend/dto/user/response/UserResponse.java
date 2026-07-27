@@ -18,5 +18,6 @@ public class UserResponse {
     private String avatarUrl;
     private String bio;
     private String role;
+    private boolean isMentor;
 }
 

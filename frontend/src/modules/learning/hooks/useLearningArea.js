@@ -40,7 +40,6 @@ const useLearningArea = () => {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const [sharedNotes, setSharedNotes] = useState("");
-    const [materials] = useState([]); // Empty since backend doesn't support yet
 
     // Fetch initial details
     useEffect(() => {
@@ -54,7 +53,7 @@ const useLearningArea = () => {
                     const currentCourse = inProgressCourses.find(
                         (c) => c.courseId.toString() === courseId.toString()
                     );
-                    
+
                     if (!currentCourse) {
                         throw new Error("Bạn chưa tham gia lớp học nào cho khóa học này.");
                     }
@@ -74,7 +73,7 @@ const useLearningArea = () => {
                     if (dashboard.focusLessonId) {
                         setActiveLessonId(dashboard.focusLessonId);
                         // Find module containing the focused lesson
-                        const matchedMod = dashboard.modules?.find(m => 
+                        const matchedMod = dashboard.modules?.find(m =>
                             m.lessons?.some(l => l.id.toString() === dashboard.focusLessonId.toString())
                         );
                         if (matchedMod) {
@@ -106,8 +105,16 @@ const useLearningArea = () => {
 
     // Handle selecting a lesson from the sidebar
     const handleSelectLesson = async (lessonId, moduleId) => {
-        setActiveLessonId(lessonId);
+        const targetModule = progressDashboard?.modules?.find(m => m.id?.toString() === moduleId?.toString());
+        const targetLesson = targetModule?.lessons?.find(l => l.id?.toString() === lessonId?.toString());
         
+        if (targetModule?.isLocked || targetLesson?.isLocked || targetLesson?.locked) {
+            toast.error("Bài học này đang bị khóa. Vui lòng hoàn thành bài học trước hoặc đợi Creator/Mentor kích hoạt!");
+            return;
+        }
+
+        setActiveLessonId(lessonId);
+
         // If changing module, fetch its progress data from backend
         if (moduleId !== activeModuleId && resolvedClassId) {
             setActiveModuleId(moduleId);
@@ -116,7 +123,7 @@ const useLearningArea = () => {
                 setProgressDashboard(prev => {
                     if (!prev) return subDashboard;
                     // Merge or update the module list
-                    const updatedModules = prev.modules.map(mod => 
+                    const updatedModules = prev.modules.map(mod =>
                         mod.id === moduleId ? subDashboard.modules.find(m => m.id === moduleId) || mod : mod
                     );
                     return {
@@ -146,7 +153,7 @@ const useLearningArea = () => {
 
     // Computed properties
     const activeModule = progressDashboard?.modules?.find(m => m.id === activeModuleId);
-    
+
     // Callback to handle incoming WebSocket messages
     const handleIncomingWebSocketMessage = useCallback((msg) => {
         const formattedMsg = {
@@ -225,10 +232,13 @@ const useLearningArea = () => {
                     }
                 ] : [];
 
+                const lesType = lesProgress.contentType || "VIDEO";
                 return {
                     id: lesProgress.id,
                     title: lesProgress.title,
-                    duration: "15 phút",
+                    contentType: lesType,
+                    contentUrl: lesProgress.contentUrl || "",
+                    duration: lesType === "TEXT" ? null : "15 phút",
                     isCompleted: completedLessonsLocal[lesProgress.id] || lesProgress.completed || lesProgress.isCompleted,
                     isLocked: lesProgress.locked || lesProgress.isLocked,
                     isActive: isThisLessonActive,
@@ -258,20 +268,36 @@ const useLearningArea = () => {
     const activeStaticLesson = findStaticLesson(activeLessonId);
 
     const isCompleted = activeLessonId ? (!!completedLessonsLocal[activeLessonId] || !!activeLessonProgress?.completed || !!activeLessonProgress?.isCompleted) : false;
-    
-    const lesson = activeStaticLesson ? {
-        id: activeStaticLesson.id,
+
+    const activeItem = activeStaticLesson || activeLessonProgress;
+    const lessonType = activeItem?.contentType || "VIDEO";
+    const lessonUrl = activeItem?.contentUrl || null;
+
+    const lesson = activeItem ? {
+        id: activeLessonId,
         module: activeModule?.title || "Module",
-        title: activeStaticLesson.title,
-        duration: "15 phút",
-        description: `Nội dung chi tiết của bài học ${activeStaticLesson.title}.`,
-        videoUrl: activeStaticLesson.contentUrl,
-        videoDuration: "15:00",
-        videoProgressPercent: isCompleted ? 100 : 0,
-        videoCurrentTime: isCompleted ? "15:00" : "00:00",
+        title: activeItem.title || "Bài học",
+        contentType: lessonType,
+        contentUrl: lessonUrl,
+        videoUrl: lessonType === "VIDEO" ? lessonUrl : null,
+        pdfUrl: lessonType === "DOCUMENT" ? lessonUrl : null,
+        duration: lessonType === "TEXT" ? null : "15 phút",
+        description: `Nội dung chi tiết của phần học ${activeItem.title || ""}.`,
         isCompleted: isCompleted,
-        partnerName: activeModule?.partner?.name || "Bạn đồng hành"
+        partnerName: (activeModule?.partners && activeModule.partners.length > 0) 
+            ? activeModule.partners.map(p => p.name).join(" và ") 
+            : "Bạn đồng hành"
     } : null;
+
+    const materials = (lesson && lesson.contentType === "DOCUMENT") ? [
+        {
+            id: 1,
+            name: `${lesson.title}.pdf`,
+            url: lesson.contentUrl,
+            type: "pdf",
+            size: "Tài liệu học tập"
+        }
+    ] : [];
 
     // Construct studyGroup members
     const studyGroup = [];
@@ -288,18 +314,19 @@ const useLearningArea = () => {
             currentLesson: activeStaticLesson ? activeStaticLesson.title : ""
         });
     }
-    if (activeModule?.partner) {
-        const p = activeModule.partner;
-        studyGroup.push({
-            id: p.partnerId,
-            name: p.name,
-            avatar: p.avatarUrl,
-            initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-            status: "online",
-            email: p.email || `${p.name.toLowerCase().replace(/\s+/g, '')}@eduspace.com`,
-            goal: p.description || "Chưa đặt mục tiêu",
-            bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
-            currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+    if (activeModule?.partners && activeModule.partners.length > 0) {
+        activeModule.partners.forEach(p => {
+            studyGroup.push({
+                id: p.partnerId,
+                name: p.name,
+                avatar: p.avatarUrl,
+                initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+                status: "online",
+                email: p.email || "Chưa cập nhật email",
+                goal: p.description || "Chưa đặt mục tiêu",
+                bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
+                currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+            });
         });
     }
 
@@ -335,14 +362,14 @@ const useLearningArea = () => {
         try {
             await learnService.completeLesson(activeLessonId, resolvedClassId);
             setCompletedLessonsLocal(prev => ({ ...prev, [activeLessonId]: true }));
-            
+
             // Refresh progress dashboard data from backend
             const updatedDashboard = await learnService.getProgressDashboard(resolvedClassId);
             setProgressDashboard(updatedDashboard);
 
             // Automatically switch to the next focus lesson if available
             let nextLessonId = updatedDashboard.focusLessonId;
-            
+
             // Fallback: If backend didn't return focusLessonId, find the next lesson in sequence manually
             if (!nextLessonId) {
                 const allLessons = updatedDashboard.modules
@@ -366,9 +393,9 @@ const useLearningArea = () => {
 
             if (nextLessonId && nextLessonId.toString() !== activeLessonId.toString()) {
                 setActiveLessonId(nextLessonId);
-                
+
                 // Find and update active module if the next lesson belongs to a different module
-                const matchedMod = updatedDashboard.modules?.find(m => 
+                const matchedMod = updatedDashboard.modules?.find(m =>
                     m.lessons?.some(l => l.id.toString() === nextLessonId.toString())
                 );
                 if (matchedMod) {
@@ -401,8 +428,8 @@ const useLearningArea = () => {
             completedLessonsCount += mod.completedLessons || 0;
         });
     }
-    const progressPercent = totalLessonsCount > 0 
-        ? Math.round((completedLessonsCount / totalLessonsCount) * 100) 
+    const progressPercent = totalLessonsCount > 0
+        ? Math.round((completedLessonsCount / totalLessonsCount) * 100)
         : 0;
 
     return {

@@ -374,54 +374,54 @@ export default function MentorApplicationsPage() {
           {selectedApp && (
             <>
               {/* Modal Header */}
-              <header className="bg-neutral-dark p-6 text-white flex items-center justify-between">
-                <div>
-                  <DialogTitle className="text-lg font-black flex items-center gap-2">
-                    Đơn ứng tuyển làm Mentor:{' '}
-                    <span className="text-secondary">{selectedApp.userName}</span>
+              <header className="bg-neutral-dark p-5 sm:p-6 text-white flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="text-base sm:text-lg font-black flex flex-wrap items-center gap-1.5 sm:gap-2 break-words">
+                    <span>Đơn ứng tuyển làm Mentor:</span>{' '}
+                    <span className="text-secondary font-extrabold">{selectedApp.userName}</span>
                   </DialogTitle>
-                  <DialogDescription className="text-[10px] text-slate-300 font-semibold mt-1">
+                  <DialogDescription className="text-xs text-slate-300 font-semibold mt-1 truncate">
                     Khóa học: {selectedApp.courseTitle}
                   </DialogDescription>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsDetailOpen(false)}
-                  className="p-1.5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-white"
+                  className="p-1.5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer text-white shrink-0"
                 >
                   <X size={20} />
                 </button>
               </header>
 
               {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 {/* Applicant Info Banner */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-secondary/10 text-secondary rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-100 text-xs">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="p-2.5 bg-secondary/10 text-secondary rounded-xl shrink-0 mt-0.5">
                       <Users size={16} />
                     </div>
-                    <div>
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">Họ và tên</span>
-                      <span className="font-bold text-neutral-dark">{selectedApp.userName}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Họ và tên</span>
+                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">{selectedApp.userName}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl shrink-0 mt-0.5">
                       <Mail size={16} />
                     </div>
-                    <div>
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">Địa chỉ Email</span>
-                      <span className="font-bold text-neutral-dark">{selectedApp.userEmail}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Địa chỉ Email</span>
+                      <span className="font-bold text-neutral-dark break-all text-xs leading-snug block mt-0.5">{selectedApp.userEmail}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl shrink-0 mt-0.5">
                       <Calendar size={16} />
                     </div>
-                    <div>
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase">Ngày nộp đơn</span>
-                      <span className="font-bold text-neutral-dark">{formatDate(selectedApp.createdAt)}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Ngày nộp đơn</span>
+                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">{formatDate(selectedApp.createdAt)}</span>
                     </div>
                   </div>
                 </div>

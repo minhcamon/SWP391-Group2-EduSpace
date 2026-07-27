@@ -53,17 +53,17 @@ const useProgressDashboard = () => {
     const currentModule = modules.find((m) => m.id === focusModuleId) || modules.find((m) => m.status === "IN_PROGRESS") || modules[0];
 
     // Đối tác đồng hành nằm ở trong module tiêu điểm hiện tại
-    const partner = currentModule?.partner || null;
+    const partners = currentModule?.partners || [];
 
-    const handleSayHi = () => {
-        toast.success(`Đã gửi lời chào đến ${partner?.name || "bạn đồng hành"}!`, {
-            description: `${partner?.name || "Bạn đồng hành"} sẽ nhận được thông báo chào hỏi của bạn.`
+    const handleSayHi = (partnerName) => {
+        toast.success(`Đã gửi lời chào đến ${partnerName || "bạn đồng hành"}!`, {
+            description: `${partnerName || "Bạn đồng hành"} sẽ nhận được thông báo chào hỏi của bạn.`
         });
     };
 
     return {
         isLoading,
-        partner,
+        partners,
         modules,
         currentModule,
         handleSayHi,

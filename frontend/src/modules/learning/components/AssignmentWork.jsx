@@ -11,8 +11,12 @@ const AssignmentWork = ({
   handleSubmitDraft,
   isSubmitting,
   peerReviewTask,
+  partnerSubmissionStatus,
   partnerAvatar,
 }) => {
+  const partnerHasSubmitted = !!peerReviewTask || partnerSubmissionStatus?.submitted
+  const partnerName = peerReviewTask?.submitterName || partnerSubmissionStatus?.partnerName || "Báº¡n cÃ¹ng tiáº¿n"
+
   return (
     <div className='grid grid-cols-1 lg:grid-cols-10 gap-8'>
       {/* Left side: Essay Input Form (Col-span 6) */}
@@ -90,17 +94,17 @@ const AssignmentWork = ({
           </div>
 
           <div className='bg-bg-base/40 rounded-xl p-5 border border-border-light/20 flex flex-col gap-4'>
-            {peerReviewTask ? (
+            {partnerHasSubmitted ? (
               <>
                 <div className='flex items-center gap-4'>
                   <Avatar
                     src={partnerAvatar}
-                    alt={peerReviewTask.submitterName}
+                    alt={partnerName}
                     className='w-12 h-12 border-2 border-primary-container bg-primary/10'
                   />
                   <div>
                     <h3 className='text-sm font-bold text-neutral-dark'>
-                      {peerReviewTask.submitterName}
+                      {partnerName}
                     </h3>
                     <p className='text-xs text-neutral-medium mt-0.5'>Bạn đồng hành lớp học</p>
                   </div>
@@ -140,11 +144,11 @@ const AssignmentWork = ({
 
                 <div className='flex flex-col gap-1.5'>
                   <div className='flex justify-between items-center text-xs font-bold'>
-                    <span className='text-neutral-medium'>Đang hoàn thành bài luận...</span>
-                    <span className='text-slate-400'>50%</span>
+                    <span className='text-neutral-medium'>Chưa nộp bài viết</span>
+                    <span className='text-slate-400'>0%</span>
                   </div>
                   <div className='w-full h-2 bg-slate-200/60 rounded-full overflow-hidden'>
-                    <div className='h-full bg-primary/40 rounded-full w-1/2' />
+                    <div className='h-full bg-primary/40 rounded-full w-0' />
                   </div>
                 </div>
 

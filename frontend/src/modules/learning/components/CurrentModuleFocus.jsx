@@ -68,7 +68,7 @@ const getLessonStateConfig = (lesson, isUnlocked) => {
 
 const CurrentModuleFocus = ({
   currentModule,
-  partner,
+  partners,
   handleContinueLearning,
   classId,
 }) => {
@@ -152,7 +152,8 @@ const CurrentModuleFocus = ({
             // Lesson is unlocked if it is not locked by backend and all previous lessons are completed
             const isUnlocked = !(lesson.isLocked ?? lesson.locked ?? false) && (index === 0 || arr.slice(0, index).every((l) => l.isCompleted ?? l.completed));
             const config = getLessonStateConfig(lesson, isUnlocked);
-            const isPartnerCurrent = lesson.partnerCurrent ?? lesson.isPartnerCurrent;
+            const currentPartners = partners?.filter(p => lesson.currentPartnerIds?.includes(p.partnerId)) || [];
+            const completedPartners = partners?.filter(p => lesson.completedByPartnerIds?.includes(p.partnerId) && !lesson.currentPartnerIds?.includes(p.partnerId)) || [];
 
             return (
               <div
@@ -183,30 +184,40 @@ const CurrentModuleFocus = ({
 
                 <div className="flex items-center gap-3">
                   {/* Partner Status representation */}
-                  {isPartnerCurrent && partner && (
+                  {currentPartners.length > 0 && (
                     <div className="flex items-center gap-1.5 bg-sky-50 border border-sky-100 px-2 py-1 rounded-full text-[10px] font-bold text-primary animate-pulse">
-                      <Avatar
-                        src={partner.avatarUrl || partner.avatar}
-                        alt="Partner current learning"
-                        className="w-5 h-5 border border-primary"
-                      />
+                      <div className="flex -space-x-2">
+                          {currentPartners.map(p => (
+                              <Avatar
+                                key={p.partnerId}
+                                src={p.avatarUrl || p.avatar}
+                                alt={p.name}
+                                className="w-5 h-5 border border-primary"
+                                title={p.name}
+                              />
+                          ))}
+                      </div>
                       <span className="hidden sm:inline">
-                        Đối tác đang ở đây
+                        Đang ở đây
                       </span>
                     </div>
                   )}
 
-                  {lesson.completedByPartner &&
-                    !isPartnerCurrent &&
-                    partner && (
+                  {completedPartners.length > 0 && (
                       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-full text-[10px] font-semibold text-neutral-medium">
-                        <Avatar
-                          src={partner.avatarUrl || partner.avatar}
-                          alt="Partner completed"
-                          className="w-4 h-4 grayscale opacity-70"
-                        />
+                        <div className="flex -space-x-2">
+                          {completedPartners.map(p => (
+                            <Avatar
+                              key={p.partnerId}
+                              src={p.avatarUrl || p.avatar}
+                              alt={p.name}
+                              className="w-4 h-4 grayscale opacity-70"
+                              title={p.name}
+                            />
+                          ))}
+                        </div>
                         <span className="hidden sm:inline text-[9px]">
-                          Đối tác xong
+                          Đã xong
                         </span>
                       </div>
                     )}

@@ -30,10 +30,6 @@ public class CloudinaryService {
         return result.get("secure_url").toString();
     }
 
-    /**
-     * Upload avatar lên Cloudinary với transformation để tối ưu kích thước.
-     * Avatar sẽ được resize về 400x400 và lưu vào folder eduspace/avatars
-     */
     public String uploadAvatar(MultipartFile file) throws IOException {
         Map<?, ?> result = cloudinary.uploader().upload(
                 file.getBytes(),
@@ -43,8 +39,7 @@ public class CloudinaryService {
                         "width", 400,
                         "height", 400,
                         "crop", "fill",
-                        "gravity", "face"
-                ));
+                        "gravity", "face"));
 
         return result.get("secure_url").toString();
     }

@@ -1,8 +1,10 @@
 import React from "react";
-import { Play, Pause, Volume2, Settings, Maximize, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import useVideoPlayer from "@/modules/learning/hooks/useVideoPlayer";
 
 const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }) => {
+    const videoUrl = lesson?.videoUrl || lesson?.contentUrl || "https://www.youtube.com/embed/dQw4w9WgXcQ";
+
     const {
         iframeRef,
         videoRef,
@@ -11,12 +13,11 @@ const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }
         handleHtml5Play,
         handleHtml5Pause
     } = useVideoPlayer({
-        videoUrl: lesson?.videoUrl,
+        videoUrl,
         isPlaying,
         onTogglePlay
     });
 
-    // Hàm render phần Player dựa trên URL video
     const renderPlayerContent = () => {
         if (youtubeId) {
             return (
@@ -31,7 +32,7 @@ const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }
                 <div className="w-full h-full aspect-video bg-neutral-dark rounded-xl overflow-hidden shadow-md">
                     <video
                         ref={videoRef}
-                        src={lesson?.videoUrl}
+                        src={videoUrl}
                         className="w-full h-full object-contain"
                         controls
                         onPlay={handleHtml5Play}
@@ -41,60 +42,22 @@ const VideoPlayer = ({ isPlaying, onTogglePlay, isSynced, onToggleSync, lesson }
             );
         }
 
-        // Fallback: Giao diện Mock Player nguyên bản
+        // Generic iframe embed for embeddable video links
         return (
-            <div className="aspect-video bg-neutral-dark rounded-xl relative group overflow-hidden shadow-md">
-                <img
-                    alt="Lesson Video Thumbnail"
-                    className="w-full h-full object-cover opacity-70 group-hover:scale-[1.02] transition-transform duration-700"
-                    src={lesson?.videoUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800"}
+            <div className="w-full aspect-video bg-neutral-dark rounded-xl overflow-hidden shadow-md">
+                <iframe
+                    src={videoUrl}
+                    title={lesson?.title || "Video bài giảng"}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
                 />
-                {/* Overlay Play/Pause Button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <button
-                        onClick={onTogglePlay}
-                        className="w-16 h-16 bg-primary/95 text-white rounded-full flex items-center justify-center hover:scale-115 hover:bg-primary transition-all duration-300 shadow-lg cursor-pointer"
-                    >
-                        {isPlaying ? (
-                            <Pause size={32} className="fill-white" />
-                        ) : (
-                            <Play size={32} className="fill-white translate-x-0.5" />
-                        )}
-                    </button>
-                </div>
-                {/* Bottom Control Bar */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/80 to-transparent flex items-center gap-4 text-white opacity-90 group-hover:opacity-100 transition-opacity">
-                    <button
-                        onClick={onTogglePlay}
-                        className="hover:text-primary transition-colors cursor-pointer"
-                    >
-                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                    </button>
-                    <div className="text-xs font-semibold">
-                        {lesson?.videoCurrentTime || "00:00"} / {lesson?.videoDuration || "00:00"}
-                    </div>
-                    <div className="grow h-1.5 bg-white/20 rounded-full cursor-pointer relative">
-                        <div
-                            className="absolute top-0 left-0 h-full bg-primary rounded-full"
-                            style={{ width: `${lesson?.videoProgressPercent || 0}%` }}
-                        ></div>
-                    </div>
-                    <button className="hover:text-primary transition-colors cursor-pointer">
-                        <Volume2 size={18} />
-                    </button>
-                    <button className="hover:text-primary transition-colors cursor-pointer">
-                        <Settings size={18} />
-                    </button>
-                    <button className="hover:text-primary transition-colors cursor-pointer">
-                        <Maximize size={18} />
-                    </button>
-                </div>
             </div>
         );
     };
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
             {renderPlayerContent()}
 
             {/* Co-watching details */}

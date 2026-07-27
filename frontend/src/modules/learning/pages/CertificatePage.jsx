@@ -6,6 +6,9 @@ import MentorInvitation from '../components/MentorInvitation'
 export const CertificatePage = () => {
   const { isLoading, certificateData, navigate, classId } = useCertificate()
   const [showMentorModal, setShowMentorModal] = useState(false)
+  const continueLearningPath = certificateData?.courseId
+    ? `/courses/${certificateData.courseId}/learn`
+    : `/classes/${classId}`
 
   // Confetti Particle Effect in React
   useEffect(() => {
@@ -116,7 +119,7 @@ export const CertificatePage = () => {
           </div>
 
           <button
-            onClick={() => navigate(`/classes/${classId}`)}
+            onClick={() => navigate(continueLearningPath)}
             className="w-full py-3 bg-primary hover:bg-primary/95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
           >
             <ChevronLeft className="w-4 h-4" />

@@ -2,6 +2,7 @@ package org.eduspace.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.eduspace.backend.entity.Submission;
+import org.eduspace.backend.entity.User;
 import org.eduspace.backend.enums.LearnerStatus;
 import org.eduspace.backend.enums.SubmissionStatus;
 
@@ -11,6 +12,7 @@ import org.eduspace.backend.dto.assignment.request.SubmitAssignmentRequest;
 import org.eduspace.backend.dto.assignment.response.SubmissionResponseDTO;
 import org.eduspace.backend.dto.submission.request.PeerReviewGradeRequest;
 import org.eduspace.backend.dto.submission.response.PeerReviewAssignmentResponse;
+import org.eduspace.backend.dto.submission.response.PartnerSubmissionStatusResponse;
 import org.eduspace.backend.dto.submission.response.SubmissionReviewResponse;
 import org.eduspace.backend.entity.Assignment;
 import org.eduspace.backend.entity.ClassMember;
@@ -22,6 +24,8 @@ import org.eduspace.backend.repository.ClassMemberRepository;
 import org.eduspace.backend.repository.GroupMemberRepository;
 import org.eduspace.backend.repository.PeerReviewRepository;
 import org.eduspace.backend.repository.SubmissionRepository;
+import org.eduspace.backend.repository.UserRepository;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +46,7 @@ public class SubmissionService {
     private final PeerReviewRepository peerReviewRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Lazy
     @Autowired
@@ -51,12 +56,13 @@ public class SubmissionService {
     private double peerReviewPassRatio;
 
     @Transactional
-    public SubmissionResponseDTO submitAssignment(Long learnerId, SubmitAssignmentRequest request) {
+    public SubmissionResponseDTO submitAssignment(Long classId, Long userId, SubmitAssignmentRequest request) {
 
         Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
                 .orElseThrow(() -> new RuntimeException("Assignment not found!"));
 
-        ClassMember member = classMemberRepository.findById(learnerId)
+        ClassMember member = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = Submission.builder()
@@ -82,7 +88,8 @@ public class SubmissionService {
     }
 
     public SubmissionReviewResponse getSubmissionReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         Submission submission = submissionRepository
@@ -106,7 +113,8 @@ public class SubmissionService {
     }
 
     public PeerReviewAssignmentResponse getAssignedPeerReview(Long classId, Long userId, Long assignmentId) {
-        ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember reviewerMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
             throw new RuntimeException("Invalid learner!");
@@ -143,10 +151,56 @@ public class SubmissionService {
                 .build();
     }
 
+    public PartnerSubmissionStatusResponse getPartnerSubmissionStatus(Long classId, Long userId, Long assignmentId) {
+        ClassMember currentMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
+                .orElseThrow(() -> new RuntimeException("Invalid learner!"));
+
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found!"));
+        if (assignment.getModule() == null) {
+            throw new RuntimeException("Assignment module not found!");
+        }
+
+        List<org.eduspace.backend.entity.StudyGroup> studyGroups = groupMemberRepository
+                .findStudyGroupsByMemberAndClassAndModuleOrderByNewest(
+                        currentMember.getId(), classId, assignment.getModule().getId());
+        if (studyGroups.isEmpty()) {
+            return PartnerSubmissionStatusResponse.builder()
+                    .submitted(false)
+                    .build();
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroups.get(0).getId());
+        Optional<ClassMember> partnerMember = groupMembers.stream()
+                .map(GroupMember::getClassMember)
+                .filter(member -> member != null && !member.getId().equals(currentMember.getId()))
+                .findFirst();
+
+        if (partnerMember.isEmpty()) {
+            return PartnerSubmissionStatusResponse.builder()
+                    .submitted(false)
+                    .build();
+        }
+
+        ClassMember partner = partnerMember.get();
+        Optional<Submission> partnerSubmission = submissionRepository
+                .findByMemberIdAndAssignmentId(partner.getId(), assignmentId);
+
+        return PartnerSubmissionStatusResponse.builder()
+                .partnerId(partner.getUser() != null ? partner.getUser().getId() : null)
+                .partnerName(partner.getUser() != null ? partner.getUser().getFullName() : null)
+                .partnerAvatarUrl(partner.getUser() != null ? partner.getUser().getAvatarUrl() : null)
+                .submitted(partnerSubmission.isPresent())
+                .submittedAt(partnerSubmission.map(Submission::getSubmittedAt).orElse(null))
+                .build();
+    }
+
     @Transactional
     public SubmissionReviewResponse gradePeerReview(Long classId, Long userId, Long reviewId,
             PeerReviewGradeRequest request) {
-        ClassMember reviewerMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember reviewerMember = classMemberRepository
+                .findByCourseClassIdAndUserIdAndContextRole(classId, userId, "LEARNER")
                 .orElseThrow(() -> new RuntimeException("Invalid learner!"));
 
         if (reviewerMember.getLearnerStatus() != LearnerStatus.ACTIVE) {
@@ -189,7 +243,6 @@ public class SubmissionService {
                     .sum();
         }
 
-        double passThreshold = maxPossibleScore > 0 ? maxPossibleScore : 0.0;
         double passRatio = maxPossibleScore > 0 ? (double) totalScore / maxPossibleScore : 0.0;
         Submission submission = peerReview.getSubmission();
         submission.setStatus(
@@ -221,6 +274,18 @@ public class SubmissionService {
                 NotificationType.PEER_REVIEW,
                 savedReview.getId());
 
+        // 1. Cộng EXP cho người nộp bài dựa trên finalScore
+        User submitterUser = submission.getMember().getUser();
+        int currentSubmitterExp = submitterUser.getTotalExp() != null ? submitterUser.getTotalExp() : 0;
+        submitterUser.setTotalExp(currentSubmitterExp + totalScore);
+        userRepository.save(submitterUser);
+
+        // 2. Thưởng EXP cho người đi chấm bài (reviewer)
+        User reviewerUser = reviewerMember.getUser();
+        int currentReviewerExp = reviewerUser.getTotalExp() != null ? reviewerUser.getTotalExp() : 0;
+        reviewerUser.setTotalExp(currentReviewerExp + 20);
+        userRepository.save(reviewerUser);
+
         return response;
     }
 
@@ -240,17 +305,16 @@ public class SubmissionService {
         Long moduleId = assignment.getModule().getId();
         Long classMemberId = submission.getMember().getId();
 
-        Optional<Long> studyGroupIdOpt = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
+        List<Long> studyGroupIdList = groupMemberRepository.findStudyGroupIdByMemberAndModule(classMemberId,
                 moduleId);
-        if (studyGroupIdOpt.isEmpty())
+        if (studyGroupIdList.isEmpty())
             return;
 
-        Long studyGroupId = studyGroupIdOpt.get();
+        Long studyGroupId = studyGroupIdList.get(0);
         List<GroupMember> members = groupMemberRepository.findByStudyGroupId(studyGroupId);
         if (members == null || members.isEmpty())
             return;
 
-        // stable order
         members.sort(Comparator.comparing(GroupMember::getId));
 
         int ownerIndex = -1;

@@ -156,26 +156,6 @@ const ClassDetailPage = () => {
           <ArrowLeft size={16} />
           <span>Quay lại Quản lý Lớp học</span>
         </Link>
-
-        {classDetail.status !== 'INACTIVE' && (
-          classDetail.membershipStatus === 'PENDING_WITHDRAWAL' ? (
-            <button
-              onClick={handleCancelWithdraw}
-              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200/50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
-            >
-              <ShieldAlert size={14} />
-              <span>Hủy yêu cầu rút lui</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsWithdrawOpen(true)}
-              className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200/50 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
-            >
-              <ShieldAlert size={14} />
-              <span>Xin rút khỏi lớp</span>
-            </button>
-          )
-        )}
       </div>
 
       {/* Hero Class Banner */}
@@ -272,15 +252,6 @@ const ClassDetailPage = () => {
                     </Card> */}
         </div>
       </div>
-      <WithdrawRequestModal
-        isOpen={isWithdrawOpen}
-        onClose={() => setIsWithdrawOpen(false)}
-        classId={classId}
-        className={classDetail.name}
-        onSubmitted={() => {
-          window.location.reload();
-        }}
-      />
     </div>
   )
 }

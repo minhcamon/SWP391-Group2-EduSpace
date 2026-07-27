@@ -16,11 +16,11 @@ const buildCoursePayload = (formData, modules, status) => {
         modules: modules.map((mod, modIdx) => {
             const moduleId = parseDbId(mod.id);
             const assignmentId = typeof mod.assignment?.id === 'number' ? mod.assignment.id : null;
-            const assignmentPayload = (mod.assignment && mod.assignment.title?.trim()) ? {
+            const assignmentPayload = mod.assignment ? {
                 id: assignmentId,
                 title: mod.assignment.title,
                 description: mod.assignment.description,
-                rubricCriteria: mod.assignment.rubricCriteria
+                rubricCriteria: mod.assignment.rubricCriteria || []
             } : null;
 
             return {
@@ -42,6 +42,126 @@ const buildCoursePayload = (formData, modules, status) => {
             };
         })
     };
+};
+
+const validateCourseContent = (formData, modules) => {
+    if (!formData.title.trim()) {
+        return "Vui lòng nhập tên khóa học!";
+    }
+
+    if (modules.length === 0) {
+        return "Khóa học phải có ít nhất một module.";
+    }
+
+    const invalidAssignmentModule = modules.find((mod) => {
+        const assignment = mod.assignment;
+        if (!assignment?.title?.trim()) return false;
+
+        const validRubrics = (assignment.rubricCriteria || []).filter((rub) =>
+            rub?.criterionName?.trim() && Number(rub.maxPoint) > 0
+        );
+
+        return validRubrics.length === 0;
+    });
+
+    if (invalidAssignmentModule) {
+        return `Bài tập của ${invalidAssignmentModule.title || "module này"} phải có ít nhất một tiêu chí chấm điểm.`;
+    }
+
+    const invalidRubricModule = modules.find((mod) =>
+        (mod.assignment?.rubricCriteria || []).some((rub) =>
+            !rub?.criterionName?.trim() || Number(rub.maxPoint) <= 0
+        )
+    );
+
+    if (invalidRubricModule) {
+        return `Tiêu chí chấm điểm của ${invalidRubricModule.title || "module này"} phải có tên và điểm tối đa lớn hơn 0.`;
+    }
+
+    return null;
+};
+
+const validateRequiredCourseContent = (formData, modules) => {
+    if (!formData.title.trim()) {
+        return "Vui lòng nhập tên khóa học!";
+    }
+
+    if (!formData.description.trim()) {
+        return "Vui lòng nhập mô tả khóa học!";
+    }
+
+    if (modules.length === 0) {
+        return "Khóa học phải có ít nhất một module.";
+    }
+
+    for (let index = 0; index < modules.length; index += 1) {
+        const mod = modules[index];
+        const moduleName = mod.title?.trim() || `Module ${index + 1}`;
+
+        if (!mod.title?.trim()) {
+            return `Vui lòng nhập tên cho Module ${index + 1}.`;
+        }
+
+        if (!mod.priority) {
+            return `${moduleName} phải có độ khó.`;
+        }
+
+        if (!Number.isFinite(Number(mod.days)) || Number(mod.days) <= 0) {
+            return `Thời lượng của ${moduleName} phải lớn hơn 0 ngày.`;
+        }
+
+        if (!Number.isFinite(Number(mod.baseExp)) || Number(mod.baseExp) <= 0) {
+            return `Base EXP của ${moduleName} phải lớn hơn 0.`;
+        }
+
+        if (!Number.isFinite(Number(mod.speedBonusExp)) || Number(mod.speedBonusExp) < 0) {
+            return `Bonus EXP của ${moduleName} không được âm.`;
+        }
+
+        if (!mod.lessons?.length) {
+            return `${moduleName} phải có ít nhất một bài học.`;
+        }
+
+        const invalidLesson = mod.lessons.find((lesson) => {
+            if (!lesson?.title?.trim() || !lesson?.content_type) return true;
+            return lesson.content_type !== 'TEXT' && !lesson.content_url?.trim();
+        });
+
+        if (invalidLesson) {
+            return `Các bài học trong ${moduleName} phải có tiêu đề, loại nội dung và URL/tài liệu khi cần.`;
+        }
+
+        const assignment = mod.assignment;
+        if (!assignment) {
+            return `${moduleName} phải có bài tập cuối module.`;
+        }
+
+        if (!assignment.title?.trim()) {
+            return `Bài tập của ${moduleName} phải có tiêu đề.`;
+        }
+
+        if (!assignment.description?.trim()) {
+            return `Bài tập của ${moduleName} phải có yêu cầu hoặc mô tả.`;
+        }
+
+        const validRubrics = (assignment.rubricCriteria || []).filter((rub) =>
+            rub?.criterionName?.trim() && Number(rub.maxPoint) > 0
+        );
+
+        if (validRubrics.length === 0) {
+            return `Bài tập của ${moduleName} phải có ít nhất một tiêu chí chấm điểm.`;
+        }
+
+        const invalidRubric = (assignment.rubricCriteria || []).some((rub) =>
+            !rub?.criterionName?.trim() || Number(rub.maxPoint) <= 0
+        );
+
+        if (invalidRubric) {
+            return `Tiêu chí chấm điểm của ${moduleName} phải có tên và điểm tối đa lớn hơn 0.`;
+        }
+    }
+
+    return null;
 };
 
 export default function useCourseCreate(propMode) {
@@ -124,8 +244,9 @@ export default function useCourseCreate(propMode) {
     }, [id, resolvedMode]);
 
     const handleCreateCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateRequiredCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
 
@@ -143,8 +264,9 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleSaveCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateRequiredCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
         try {
@@ -166,8 +288,9 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleUpdateCourse = async () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateRequiredCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
 
@@ -185,14 +308,21 @@ export default function useCourseCreate(propMode) {
     };
 
     const handleOpenConfirmModal = () => {
-        if (!formData.title.trim()) {
-            toast.error("Vui lòng nhập tên khóa học!");
+        const validationMessage = validateRequiredCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
             return;
         }
         setIsConfirmModalOpen(true);
     };
 
     const handleConfirmSubmit = async (status) => {
+        const validationMessage = validateRequiredCourseContent(formData, modules);
+        if (validationMessage) {
+            toast.error(validationMessage);
+            return;
+        }
+
         try {
             const payload = buildCoursePayload(formData, modules, status);
             console.log(`${resolvedMode} Course Payload (${status}):`, JSON.stringify(payload, null, 2));
@@ -246,20 +376,47 @@ export default function useCourseCreate(propMode) {
         }]);
     };
 
+    const handleDeleteModule = (moduleId) => {
+        const updatedModules = modules
+            .filter(mod => mod.id.toString() !== moduleId.toString())
+            .map((mod, index) => ({
+                ...mod,
+                sortOrder: index + 1
+            }));
+
+        setModules(updatedModules);
+
+        if (activeConfig?.moduleId?.toString() === moduleId.toString()) {
+            setActiveConfig(null);
+            setInlineData({ title: '', url: '' });
+        }
+
+        toast.success("Đã xóa module khỏi chương trình học.");
+    };
+
     const handleSaveInlineLesson = (moduleId) => {
-        if (!inlineData.title.trim()) return;
+        if (!inlineData.title || !inlineData.title.trim()) {
+            toast.error("Vui lòng nhập tiêu đề bài học!");
+            return;
+        }
+
+        const isText = activeConfig?.type === 'TEXT';
+        if (!isText && (!inlineData.url || !inlineData.url.trim())) {
+            toast.error("Vui lòng dán URL video/tài liệu hoặc tải tệp lên!");
+            return;
+        }
 
         setModules(modules.map(mod => {
-            if (mod.id === moduleId) {
+            if (mod.id.toString() === moduleId.toString()) {
                 return {
                     ...mod,
                     lessons: [
                         ...mod.lessons,
                         {
                             id: `les-${Date.now()}`,
-                            title: inlineData.title,
+                            title: inlineData.title.trim(),
                             content_type: activeConfig.type,
-                            content_url: activeConfig.type === 'TOPIC_HEADER' ? 'N/A' : inlineData.url,
+                            content_url: isText ? 'N/A' : inlineData.url.trim(),
                             sortOrder: mod.lessons.length + 1
                         }
                     ]
@@ -268,14 +425,15 @@ export default function useCourseCreate(propMode) {
             return mod;
         }));
 
+        toast.success("Thêm bài học mới thành công!");
         setInlineData({ title: '', url: '' });
         setActiveConfig(null);
     };
 
     const handleDeleteLesson = (moduleId, lessonId) => {
         const updated = modules.map(mod => {
-            if (mod.id === moduleId) {
-                const filteredLessons = mod.lessons.filter(l => l.id !== lessonId);
+            if (mod.id.toString() === moduleId.toString()) {
+                const filteredLessons = mod.lessons.filter(l => l.id.toString() !== lessonId.toString());
                 const updatedLessons = filteredLessons.map((l, index) => ({
                     ...l,
                     sortOrder: index + 1
@@ -400,6 +558,7 @@ export default function useCourseCreate(propMode) {
         setIsConfirmModalOpen,
         handlePriorityChange,
         handleAddModule,
+        handleDeleteModule,
         handleSaveInlineLesson,
         handleDeleteLesson,
         handleDragEnd,

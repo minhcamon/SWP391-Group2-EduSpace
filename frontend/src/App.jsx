@@ -139,10 +139,6 @@ function App() {
               path="/creator/mentor-applications"
               element={<CreatorMentorApplications />}
             ></Route>
-            <Route
-              path="/creator/withdraw-requests"
-              element={<CreatorWithdrawRequests />}
-            ></Route>
             {/* <Route
               path="/creator/courses/:id"
               element={<CreatorCourseDetail />}

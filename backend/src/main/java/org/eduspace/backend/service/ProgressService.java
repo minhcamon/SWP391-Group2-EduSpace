@@ -245,20 +245,19 @@ public class ProgressService {
     }
 
     public CourseProgressDashboardResponse getProgressDashboard(Long classId, Long userId, Long moduleId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId)
+        ClassMember classMember = classMemberRepository.findFirstByUserIdAndCourseClassId(userId, classId)
                 .orElseThrow(() -> new RuntimeException("This member does not belong to this class"));
 
         Course course = classMember.getCourseClass().getCourse();
 
         List<CourseModule> courseModules = moduleRepository.findByCourseIdOrderBySortOrder(course.getId());
+        int firstUncompletedIndex = -1;
+        boolean previousModuleIsOverdue = false;
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime timeline = null;
 
         List<ModuleProgressResponse> modulesProgress = new ArrayList<>();
-
-        int firstUncompletedIndex = -1;
-        boolean previousModuleAllowsNext = true;
 
         for (int i = 0; i < courseModules.size(); i++) {
             CourseModule module = courseModules.get(i);
@@ -283,6 +282,8 @@ public class ProgressService {
                     if (submission.getStatus() == SubmissionStatus.GRADED) {
                         assignCompleted = true;
                         completedAssignments = 1;
+                    } else if (submission.getStatus() == SubmissionStatus.SUBMITTED) {
+                        assignCompleted = true;
                     }
                 }
                 assignmentResponse = AssignmentProgressResponse.builder()
@@ -302,10 +303,15 @@ public class ProgressService {
 
             String status = "NOT_STARTED";
             boolean isLocked = true;
-            boolean isOverdue = timeline != null && now.isAfter(timeline);
             boolean isCompletedModule = (totalUnits > 0 && completedUnits == totalUnits);
 
-            if (previousModuleAllowsNext) {
+            // Kiểm tra xem Creator/Mentor đã thực sự ấn Bắt đầu / mở nhóm học cho Module
+            // này chưa
+            boolean isModuleStartedByCreator = !studyGroupRepository
+                    .findByCourseClassIdAndModuleId(classId, module.getId()).isEmpty();
+
+            // Module mở khóa nếu Creator đã Start HOẶC module trước đó đã quá hạn (Overdue)
+            if (isModuleStartedByCreator || previousModuleIsOverdue) {
                 isLocked = false;
                 status = progressHelper.determineModuleStatus(isCompletedModule);
 
@@ -316,7 +322,9 @@ public class ProgressService {
                 status = "NOT_STARTED";
                 isLocked = true;
             }
-            previousModuleAllowsNext = isOverdue;
+
+            boolean isOverdue = timeline != null && now.isAfter(timeline);
+            previousModuleIsOverdue = isOverdue;
 
             boolean isAssignmentLocked = isLocked || (totalLessons > 0 && completedLessons < totalLessons);
             if (assignmentResponse != null) {
@@ -329,53 +337,35 @@ public class ProgressService {
                     .findCompletedLessonIdsByClassMemberIdAndModuleId(classMember.getId(), module.getId());
             Set<Long> completedSet = new HashSet<>(completedLessonIds);
             // Find partner and build partner response
-            List<GroupMember> userGroupMembers = groupMemberRepository.findByClassMemberId(classMember.getId());
-            StudyGroup studyGroup = userGroupMembers.stream()
-                    .map(GroupMember::getStudyGroup)
-                    .filter(g -> g.getModule() != null && g.getModule().getId().equals(module.getId()))
+            StudyGroup studyGroup = groupMemberRepository
+                    .findStudyGroupsByMemberAndClassAndModuleOrderByNewest(
+                            classMember.getId(), classId, module.getId())
+                    .stream()
                     .findFirst()
                     .orElse(null);
 
-            ClassMember partnerClassMember = null;
+            List<ClassMember> partnerClassMembers = new java.util.ArrayList<>();
             if (studyGroup != null) {
                 List<GroupMember> groupMembers = groupMemberRepository.findByStudyGroupId(studyGroup.getId());
-                partnerClassMember = groupMembers.stream()
+                partnerClassMembers = groupMembers.stream()
                         .map(GroupMember::getClassMember)
                         .filter(m -> !m.getId().equals(classMember.getId()))
-                        .findFirst()
-                        .orElse(null);
+                        .toList();
             }
-            PartnerResponse partnerResponse = progressHelper.buildPartnerResponse(partnerClassMember, lessons,
+            List<PartnerResponse> partnerResponses = progressHelper.buildPartnerResponses(partnerClassMembers, lessons,
                     module.getId());
 
-            Set<Long> partnerCompletedSet = new HashSet<>();
-            Long partnerCurrentLessonId = null;
-
-            if (partnerResponse != null) {
-                partnerCompletedSet = new HashSet<>(partnerResponse.getCompletedLessons());
-                if (partnerResponse.getLocation() != null) {
-                    partnerCurrentLessonId = partnerResponse.getLocation().getLessonId();
-                }
-            }
-
-            // Build lesson responses with partner progress info
             List<LessonProgressResponse> lessonResponses = progressHelper.buildLessonProgressResponses(
-                    lessons, completedSet, partnerCompletedSet, partnerCurrentLessonId);
+                    lessons, completedSet, partnerResponses);
 
             if (isLocked) {
                 lessonResponses.forEach(l -> l.setLocked(true));
             }
 
             Long studyGroupId = null;
-
-            if (!isLocked && partnerClassMember != null) {
-                studyGroupId = groupMemberRepository
-                        .findStudyGroupIdByMemberAndModule(classMember.getId(), module.getId())
-                        .orElse(null);
+            if (studyGroup != null) {
+                studyGroupId = studyGroup.getId();
             }
-
-            List<LessonProgressResponse> finalLessonResponses = lessonResponses;
-            PartnerResponse finalPartnerResponse = isLocked ? null : partnerResponse;
 
             modulesProgress.add(ModuleProgressResponse.builder()
                     .id(module.getId())
@@ -386,9 +376,9 @@ public class ProgressService {
                     .sortOrder(module.getSortOrder())
                     .completedLessons((int) completedLessons)
                     .totalLessons((int) totalLessons)
-                    .lessons(finalLessonResponses)
+                    .lessons(lessonResponses)
                     .assignment(assignmentResponse)
-                    .partner(finalPartnerResponse)
+                    .partners(partnerResponses)
                     .studyGroupId(studyGroupId)
                     .build());
         }
@@ -452,14 +442,13 @@ public class ProgressService {
 
     @Transactional
     public boolean completeLesson(Long lessonId, Long userId, Long classId) {
-        ClassMember classMember = classMemberRepository.findByUserIdAndCourseClassId(userId, classId).stream()
+        ClassMember classMember = classMemberRepository.findFirstByUserIdAndCourseClassId(userId, classId).stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("User is not a member of this class"));
 
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new RuntimeException("Lesson not found"));
 
-        // Check if the lesson belongs to the same course as the class member
         if (!lesson.getModule().getCourse().getId().equals(classMember.getCourseClass().getCourse().getId())) {
             throw new RuntimeException("Lesson does not belong to the same course as the class member");
         }
@@ -467,7 +456,6 @@ public class ProgressService {
         // Mark the lesson as completed for the user
         boolean result = progressHelper.markLessonAsCompleted(lesson, classMember);
 
-        // Check if the whole course is completed and issue cert & notification
         if (result) {
             certificateService.checkAndIssueCertificate(classMember);
         }
@@ -480,7 +468,7 @@ public class ProgressService {
                 .orElseThrow(() -> new RuntimeException("Pair not found"));
 
         ClassMember mentorMembership = classMemberRepository
-                .findByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
+                .findFirstByUserIdAndCourseClassId(mentorUserId, studyGroup.getCourseClass().getId())
                 .orElseThrow(() -> new RuntimeException("You are not a mentor in this class"));
 
         if (!"MENTOR".equals(mentorMembership.getContextRole())) {

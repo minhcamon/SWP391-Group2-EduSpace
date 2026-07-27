@@ -52,4 +52,6 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
        Optional<StudyGroup> findTopByCourseClassIdAndModuleIdOrderByIdDesc(Long classId, Long moduleId);
 
        List<StudyGroup> findByCourseClassId(Long classId);
+
+       List<StudyGroup> findByCourseClassIdAndModuleId(Long classId, Long moduleId);
 }

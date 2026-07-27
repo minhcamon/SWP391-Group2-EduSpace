@@ -6,6 +6,7 @@ import org.eduspace.backend.entity.Course;
 import org.eduspace.backend.entity.User;
 import org.eduspace.backend.entity.Waitlist;
 import org.eduspace.backend.entity.WaitlistEntry;
+import org.eduspace.backend.enums.CourseStatus;
 import org.eduspace.backend.enums.WaitlistStatus;
 import org.eduspace.backend.repository.CourseRepository;
 import org.eduspace.backend.repository.UserRepository;
@@ -31,11 +32,11 @@ public class WaitlistService {
         private final UserRepository userRepository;
         private final SystemService systemService;
 
-        // Sĩ số tối đa của waitlist trước khi tự động tạo lớp, cấu hình ở application.properties
+        // Sĩ số tối đa của waitlist trước khi tự động tạo lớp, cấu hình ở
+        // application.properties
         @Value("${app.waitlist.capacity:10}")
         private int waitlistCapacity;
 
-        
         public List<UserResponse> getMembersInWaitlist(Long userId, Long courseId) {
                 Long waitlistId = waitlistRepository.findWaitlistByUserAndCourse(userId, courseId)
                                 .orElseThrow(() -> new RuntimeException("Error at finding your waitlist"));
@@ -76,6 +77,10 @@ public class WaitlistService {
                 Course course = courseRepository.findByIdForUpdate(courseId)
                                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
+                if (course.getStatus() != CourseStatus.PUBLISHED) {
+                        throw new RuntimeException("Only published courses can be enrolled.");
+                }
+
                 boolean isAlreadyWaiting = waitlistEntryRepository.isUserAlreadyWaiting(courseId, userId);
                 if (isAlreadyWaiting) {
                         throw new RuntimeException("Conflict: You are already in the waitlist for this course.");
@@ -103,7 +108,6 @@ public class WaitlistService {
 
                 int currentCount = waitlistEntryRepository.countByWaitlistId(activeWaitlist.getId());
 
-        
                 if (currentCount >= waitlistCapacity) {
                         systemService.createClassFromWaitlist(activeWaitlist.getId());
                         return true;
@@ -131,7 +135,8 @@ public class WaitlistService {
                 List<Waitlist> waitlists = waitlistRepository.findByCreatorId(creatorId);
                 return waitlists.stream()
                                 .map(w -> {
-                                        List<WaitlistEntry> entries = waitlistEntryRepository.findByWaitlistId(w.getId());
+                                        List<WaitlistEntry> entries = waitlistEntryRepository
+                                                        .findByWaitlistId(w.getId());
                                         return mapToWaitlistResponse(w, entries);
                                 })
                                 .toList();
@@ -140,7 +145,7 @@ public class WaitlistService {
         public WaitlistResponse getWaitlistDetails(Long waitlistId) {
                 Waitlist waitlist = waitlistRepository.findById(waitlistId)
                                 .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + waitlistId));
-                
+
                 if (waitlist.getStatus() != WaitlistStatus.OPENING) {
                         throw new RuntimeException("Hàng chờ này đã đóng hoặc đã được mở thành lớp học.");
                 }

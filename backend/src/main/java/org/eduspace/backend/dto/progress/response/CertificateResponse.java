@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class CertificateResponse {
     private Boolean isCompleted;
     private Boolean isAlreadyMentor;
+    private Long courseId;
     private String userName;
     private String courseTitle;
     private String certificateId;

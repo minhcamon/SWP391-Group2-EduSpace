@@ -38,25 +38,18 @@ public class SystemController {
         }
     }
 
-    @Operation(summary = "Kích hoạt ghép cặp nhóm học", description = "Ghép cặp Đầu-Cuối cho các thành viên trong lớp ở module tương ứng.")
-    @PostMapping("/match-groups")
-    public ResponseEntity<APIResponse<String>> triggerMatchGroupsOnly(@RequestParam Long classId,
+    @Operation(summary = "Ghép lại nhóm cho lớp học", description = "Chia cặp Đầu - Cuối cho các thành viên trong lớp ở module tương ứng. Nếu lẻ thì dồn người lẻ vào nhóm đầu.")
+    @PostMapping("/rematch-group/{classId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CREATOR')")
+    public ResponseEntity<APIResponse<String>> rematchGroup(
+            @PathVariable Long classId,
             @RequestParam Long moduleId) {
         try {
             systemService.splitExistingClassIntoPairs(classId, moduleId);
             return ResponseEntity
-                    .ok(APIResponse.success("Chạy riêng thuật toán ghép cặp Đầu - Cuối thành công!", null));
+                    .ok(APIResponse.success("Tạo lại nhóm học viên thành công!", null));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(APIResponse.error(400, "Lỗi: " + e.getMessage(), null));
         }
     }
-
-    // Endpoint test luồng xử lý dồn dịch người lẻ khi có học viên bị Drop giữa chừng
-    @Operation(summary = "Ghép nhóm lại sau khi có người bỏ học", description = "Xử lý dồn dịch nhóm khi có học viên out giữa chừng.")
-    @PostMapping("/rematch-after-drop/{classId}")
-    public ResponseEntity<String> rematchAfterDrop(@PathVariable Long classId, @RequestParam Long moduleId) {
-        systemService.reMatchGroupsAfterDrop(classId, moduleId);
-        return ResponseEntity.ok("Xử lý dồn dịch nhóm sau khi học viên out thành công!");
-    }
-
 }

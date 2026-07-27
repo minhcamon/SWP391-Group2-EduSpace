@@ -236,6 +236,60 @@ export const mentorService = {
     },
 
     /**
+     * Fetches all arbitrations.
+     */
+    getArbitrations: async () => {
+        try {
+            const response = await api.get(`/mentor/arbitrations`);
+            return response.data.data;
+        } catch (error) {
+            console.error('getArbitrations error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải danh sách đơn phân xử!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Fetches arbitration by ID.
+     */
+    getArbitrationById: async (id) => {
+        try {
+            const response = await api.get(`/mentor/arbitrations/${id}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('getArbitrationById error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải chi tiết đơn phân xử!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
+     * Submits final score for arbitration.
+     */
+    submitArbitrationGrade: async (id, finalScore, comment) => {
+        try {
+            const normalizedScore = Number(finalScore);
+            const response = await api.post(`/mentor/arbitrations/${id}/grade`, {
+                finalScore: normalizedScore,
+                comments: comment,
+                criteriaScores: [
+                    {
+                        criterionName: 'Mentor final review',
+                        description: 'Final score submitted by mentor after arbitration review',
+                        maxPoint: 10,
+                        score: normalizedScore
+                    }
+                ]
+            });
+            return response.data.message;
+        } catch (error) {
+            console.error('submitArbitrationGrade error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể chấm điểm phân xử!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    /**
      * Fetches pair details by ID.
      */
     getPairById: async (id) => {
@@ -268,6 +322,39 @@ export const mentorService = {
             console.error('applyToBecomeMentor error at mentorService:', error);
             const errorMsg = error.response?.data?.message || 'Không thể gửi đơn đăng ký làm Mentor!';
             throw new Error(errorMsg, { cause: error });
+        }
+    },
+
+    getActiveCourses: async () => {
+        try {
+            const response = await api.get('/mentor/active-courses');
+            return response.data.data;
+        } catch (error) {
+            console.error('getActiveCourses error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Không thể tải cấu hình giảng dạy!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    registerActiveCourse: async (courseId) => {
+        try {
+            const response = await api.post('/mentor/active-courses', { courseId });
+            return response.data.message;
+        } catch (error) {
+            console.error('registerActiveCourse error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Đăng ký làm mentor cho khóa học thất bại!';
+            throw new Error(errorMsg);
+        }
+    },
+
+    updateActiveCourseStatus: async (courseId, status) => {
+        try {
+            const response = await api.put(`/mentor/active-courses/${courseId}/status`, { status });
+            return response.data.message;
+        } catch (error) {
+            console.error('updateActiveCourseStatus error at mentorService:', error);
+            const errorMsg = error.response?.data?.message || 'Cập nhật trạng thái nhận lớp thất bại!';
+            throw new Error(errorMsg);
         }
     }
 };

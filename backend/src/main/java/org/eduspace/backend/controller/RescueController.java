@@ -23,7 +23,7 @@ public class RescueController {
     private final RescueService rescueService;
 
     @PostMapping("/initiate")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Initiate a rescue", description = "Mentor chủ động mở vòng cứu trợ 48h cho học viên")
     public ResponseEntity<APIResponse<String>> initiateRescue(
             @Valid @RequestBody InitiateRescueRequest request) {
@@ -33,7 +33,7 @@ public class RescueController {
     }
 
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Close a rescue case", description = "Mentor đóng ca cứu trợ (đánh giá học viên pass hay fail)")
     public ResponseEntity<APIResponse<String>> closeRescue(
             @PathVariable("id") Long rescueId,
@@ -44,7 +44,7 @@ public class RescueController {
     }
 
     @GetMapping("/mentor")
-    @PreAuthorize("hasRole('MENTOR')")
+    @PreAuthorize("hasAnyRole('MENTOR', 'CREATOR', 'ADMIN')")
     @Operation(summary = "Get mentor's rescue cases", description = "Lấy danh sách các ca cứu trợ mà mentor đang phụ trách")
     public ResponseEntity<APIResponse<List<org.eduspace.backend.dto.rescue.response.RescueListResponse>>> getMentorRescues() {
         Long mentorUserId = SecurityUtil.getCurrentUserId();

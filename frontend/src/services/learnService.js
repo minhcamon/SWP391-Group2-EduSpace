@@ -94,9 +94,9 @@ const learnService = {
     }
   },
 
-  submitAssignment: async (learnerId, assignmentId, submissionContent) => {
+  submitAssignment: async (classId, assignmentId, submissionContent) => {
     try {
-      const response = await api.post(`/submission/assignment/submit/${learnerId}`, {
+      const response = await api.post(`/submission/${classId}/assignment/submit`, {
         assignmentId,
         submissionContent,
       })
@@ -130,6 +130,20 @@ const learnService = {
     } catch (error) {
       console.error("Lỗi lấy bài chấm chéo tại learnService:", error)
       throw new Error(error.response?.data?.message || "Không thể lấy bài chấm chéo", {
+        cause: error,
+      })
+    }
+  },
+
+  getPartnerSubmissionStatus: async (classId, assignmentId) => {
+    try {
+      const response = await api.get(
+        `/submission/${classId}/assignment/${assignmentId}/partner-submission-status`,
+      )
+      return response.data.data
+    } catch (error) {
+      console.error("Lá»—i láº¥y tráº¡ng thÃ¡i ná»™p bÃ i cá»§a báº¡n cÃ¹ng tiáº¿n táº¡i learnService:", error)
+      throw new Error(error.response?.data?.message || "KhÃ´ng thá»ƒ láº¥y tráº¡ng thÃ¡i ná»™p bÃ i cá»§a báº¡n cÃ¹ng tiáº¿n", {
         cause: error,
       })
     }

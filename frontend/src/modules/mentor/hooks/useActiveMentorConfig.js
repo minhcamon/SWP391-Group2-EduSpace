@@ -6,6 +6,8 @@ import { toast } from "sonner";
 export const useActiveMentorConfig = () => {
     const [activeCourses, setActiveCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [submittingCourseId, setSubmittingCourseId] = useState(null);
+    const [updatingCourseId, setUpdatingCourseId] = useState(null);
 
     const fetchActiveCourses = async () => {
         try {
@@ -19,22 +21,30 @@ export const useActiveMentorConfig = () => {
     };
 
     const handleRegisterActiveCourse = async (courseId) => {
+        if (submittingCourseId) return;
+        setSubmittingCourseId(courseId);
         try {
             await mentorService.registerActiveCourse(courseId);
             toast.success("Đăng ký nhận lớp giảng dạy thành công!");
             await fetchActiveCourses();
         } catch (err) {
             toast.error(err.message || "Đăng ký nhận lớp thất bại!");
+        } finally {
+            setSubmittingCourseId(null);
         }
     };
 
     const handleUpdateActiveCourseStatus = async (courseId, status) => {
+        if (updatingCourseId) return;
+        setUpdatingCourseId(courseId);
         try {
             await mentorService.updateActiveCourseStatus(courseId, status);
             toast.success("Cập nhật trạng thái hoạt động thành công!");
             await fetchActiveCourses();
         } catch (err) {
             toast.error(err.message || "Cập nhật trạng thái thất bại!");
+        } finally {
+            setUpdatingCourseId(null);
         }
     };
 
@@ -45,6 +55,8 @@ export const useActiveMentorConfig = () => {
     return {
         activeCourses,
         isLoading,
+        submittingCourseId,
+        updatingCourseId,
         handleRegisterActiveCourse,
         handleUpdateActiveCourseStatus,
         refresh: fetchActiveCourses

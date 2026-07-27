@@ -24,6 +24,7 @@ const useAssignment = () => {
 
   const [peerReviewTask, setPeerReviewTask] = useState(null)
   const [peerReviewGraded, setPeerReviewGraded] = useState(false)
+  const [partnerSubmissionStatus, setPartnerSubmissionStatus] = useState(null)
   const [partnerAvatar, setPartnerAvatar] = useState("")
 
   // Layout States
@@ -35,18 +36,27 @@ const useAssignment = () => {
   const [messages, setMessages] = useState([])
   const [inputText, setInputText] = useState("")
 
-  // Cache classMemberId in localStorage after first successful submit
-  const classMemberIdKey = classId ? `classMemberId_${classId}` : null
-  const getCachedClassMemberId = () => {
-    if (!classMemberIdKey) return null
-    const cached = localStorage.getItem(classMemberIdKey)
-    return cached ? Number(cached) : null
-  }
+
+
+  const [courseInfo, setCourseInfo] = useState({ courseId: null, courseTitle: "" })
 
   const fetchAssignmentAndStatus = useCallback(async () => {
     if (!user) return
     try {
       let details = null
+
+      try {
+        const myCourses = await learnService.getMyLearningCourses()
+        const matched = (myCourses || []).find(c => c.classId?.toString() === classId?.toString())
+        if (matched) {
+          setCourseInfo({
+            courseId: matched.courseId,
+            courseTitle: matched.courseName
+          })
+        }
+      } catch (err) {
+        console.error("Lỗi lấy thông tin khóa học từ my-learning:", err)
+      }
 
       try {
         const review = await learnService.getSubmissionReview(classId, assignmentId)
@@ -89,6 +99,16 @@ const useAssignment = () => {
       }
 
       try {
+        const partnerStatus = await learnService.getPartnerSubmissionStatus(classId, assignmentId)
+        setPartnerSubmissionStatus(partnerStatus)
+        if (partnerStatus?.partnerAvatarUrl) {
+          setPartnerAvatar(partnerStatus.partnerAvatarUrl)
+        }
+      } catch {
+        setPartnerSubmissionStatus(null)
+      }
+
+      try {
         const peerTask = await learnService.getPeerReviewAssignment(classId, assignmentId)
         setPeerReviewTask(peerTask)
 
@@ -118,26 +138,26 @@ const useAssignment = () => {
       try {
         const dashboard = await learnService.getProgressDashboard(classId)
         setProgressDashboard(dashboard)
-        
-        const firstModuleWithPartner = dashboard?.modules?.find((m) => m.partner)
-        if (firstModuleWithPartner?.partner?.avatarUrl) {
-          setPartnerAvatar(firstModuleWithPartner.partner.avatarUrl)
+
+        const firstModuleWithPartner = dashboard?.modules?.find((m) => m.partners && m.partners.length > 0)
+        if (firstModuleWithPartner?.partners?.[0]?.avatarUrl) {
+          setPartnerAvatar(firstModuleWithPartner.partners[0].avatarUrl)
         }
 
         // Fetch group messages for the active module's study group
         const activeMod = dashboard?.modules?.find(m =>
           m.assignment?.id?.toString() === assignmentId?.toString()
         ) || dashboard?.modules?.[0];
-        
+
         if (activeMod?.studyGroupId) {
           const msgData = await learnService.getGroupMessages(activeMod.studyGroupId, classId);
           const formatted = (msgData || []).map(msg => ({
-              id: msg.id,
-              sender: msg.senderName,
-              avatar: msg.senderAvatar,
-              text: msg.content,
-              timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              isMe: msg.senderUserId?.toString() === user?.id?.toString()
+            id: msg.id,
+            sender: msg.senderName,
+            avatar: msg.senderAvatar,
+            text: msg.content,
+            timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isMe: msg.senderUserId?.toString() === user?.id?.toString()
           }));
           setMessages(formatted);
         }
@@ -168,20 +188,9 @@ const useAssignment = () => {
       return
     }
 
-    // Prefer cached classMemberId; fall back to user.id-3 for test environments
-    const learnerId = getCachedClassMemberId() ?? (user ? user.id - 3 : null)
-    if (!learnerId || learnerId <= 0) {
-      toast.error("Không thể xác định mã học viên. Vui lòng thử lại sau!")
-      return
-    }
-
     await runWithLoading(setIsSubmitting, async () => {
       try {
-        const result = await learnService.submitAssignment(learnerId, assignmentId, essay)
-        // Cache the actual classMemberId returned by backend for future use
-        if (result?.data?.memberId && classMemberIdKey) {
-          localStorage.setItem(classMemberIdKey, String(result.data.memberId))
-        }
+        await learnService.submitAssignment(classId, assignmentId, essay)
         setIsSubmitted(true)
         setPeerReviewPending(true)
         toast.success("Nộp bài viết thành công!")
@@ -217,18 +226,18 @@ const useAssignment = () => {
 
   // WebSocket Chat Event Handlers
   const handleIncomingWebSocketMessage = useCallback((msg) => {
-      const formattedMsg = {
-          id: msg.id,
-          sender: msg.senderName,
-          avatar: msg.senderAvatar,
-          text: msg.content,
-          timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isMe: msg.senderUserId?.toString() === user?.id?.toString()
-      };
-      setMessages(prev => {
-          if (prev.some(m => m.id === formattedMsg.id)) return prev;
-          return [...prev, formattedMsg];
-      });
+    const formattedMsg = {
+      id: msg.id,
+      sender: msg.senderName,
+      avatar: msg.senderAvatar,
+      text: msg.content,
+      timestamp: new Date(msg.sendAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: msg.senderUserId?.toString() === user?.id?.toString()
+    };
+    setMessages(prev => {
+      if (prev.some(m => m.id === formattedMsg.id)) return prev;
+      return [...prev, formattedMsg];
+    });
   }, [user?.id]);
 
   const activeMod = progressDashboard?.modules?.find(m =>
@@ -241,126 +250,129 @@ const useAssignment = () => {
     e.preventDefault();
     if (!inputText.trim()) return;
     if (!classId || !activeMod?.studyGroupId) {
-        toast.error("Không tìm thấy nhóm học hoạt động để gửi tin nhắn.");
-        return;
+      toast.error("Không tìm thấy nhóm học hoạt động để gửi tin nhắn.");
+      return;
     }
 
     try {
-        await learnService.sendGroupMessage(
-            activeMod.studyGroupId,
-            classId,
-            inputText,
-            "TEXT"
-        );
-        setInputText("");
+      await learnService.sendGroupMessage(
+        activeMod.studyGroupId,
+        classId,
+        inputText,
+        "TEXT"
+      );
+      setInputText("");
     } catch (error) {
-        console.error("Gửi tin nhắn thất bại:", error);
-        toast.error(error.message || "Không thể gửi tin nhắn.");
+      console.error("Gửi tin nhắn thất bại:", error);
+      toast.error(error.message || "Không thể gửi tin nhắn.");
     }
   };
 
-  // Resolve Course Title and ID
-  const classInfo = mockClasses[classId] || mockClasses["1"];
-  const courseTitle = classInfo?.courseTitle || "";
-  const courseId = classInfo?.courseId || null;
+  // Resolve Course Title and ID dynamically
+  const courseTitle = courseInfo.courseTitle || assignmentDetails?.title || "Bài tập"
+  const courseId = courseInfo.courseId || null
 
   // Sidebar Sections
   const sidebarSections = progressDashboard?.modules?.map(modProgress => {
-      const isCompletedMod = modProgress.status === "COMPLETED";
-      const isInProgressMod = modProgress.status === "IN_PROGRESS";
-      let statusText;
-      if (isCompletedMod) {
-          statusText = `Module ${modProgress.sortOrder} • Đã Hoàn Thành`;
-      } else if (isInProgressMod) {
-          statusText = `Module ${modProgress.sortOrder} • Đang Học`;
-      } else {
-          statusText = `Module ${modProgress.sortOrder} • Chưa Bắt Đầu`;
-      }
+    const isCompletedMod = modProgress.status === "COMPLETED";
+    const isInProgressMod = modProgress.status === "IN_PROGRESS";
+    let statusText;
+    if (isCompletedMod) {
+      statusText = `Module ${modProgress.sortOrder} • Đã Hoàn Thành`;
+    } else if (isInProgressMod) {
+      statusText = `Module ${modProgress.sortOrder} • Đang Học`;
+    } else {
+      statusText = `Module ${modProgress.sortOrder} • Chưa Bắt Đầu`;
+    }
 
-      return {
-          id: modProgress.id,
-          title: modProgress.title,
-          status: modProgress.status,
-          statusText,
-          lessons: (modProgress.lessons || []).map(lesProgress => {
-              const partner = modProgress.partner;
-              const isPartnerAtThis = partner && partner.location && partner.location.lessonId?.toString() === lesProgress.id.toString();
-              const currentPartners = isPartnerAtThis ? [
-                  {
-                      name: partner.name,
-                      avatar: partner.avatarUrl,
-                      initials: partner.name ? partner.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-                      status: "online",
-                      bgColor: "bg-sky-100",
-                      textColor: "text-primary"
-                  }
-              ] : [];
+    return {
+      id: modProgress.id,
+      title: modProgress.title,
+      status: modProgress.status,
+      statusText,
+      lessons: (modProgress.lessons || []).map(lesProgress => {
+        const currentPartners = [];
+        if (modProgress.partners && modProgress.partners.length > 0) {
+            modProgress.partners.forEach(partner => {
+                if (partner.location && partner.location.lessonId?.toString() === lesProgress.id.toString()) {
+                    currentPartners.push({
+                        name: partner.name,
+                        avatar: partner.avatarUrl,
+                        initials: partner.name ? partner.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+                        status: "online",
+                        bgColor: "bg-sky-100",
+                        textColor: "text-primary"
+                    });
+                }
+            });
+        }
 
-              return {
-                  id: lesProgress.id,
-                  title: lesProgress.title,
-                  duration: "15 phút",
-                  isCompleted: lesProgress.completed || lesProgress.isCompleted,
-                  isLocked: lesProgress.locked || lesProgress.isLocked,
-                  isActive: false,
-                  currentPartners
-              };
-          }),
-          assignment: modProgress.assignment ? {
-              id: modProgress.assignment.id,
-              title: modProgress.assignment.title,
-              completed: modProgress.assignment.completed || modProgress.assignment.isCompleted,
-              locked: modProgress.assignment.locked || modProgress.assignment.isLocked,
-              isCompleted: modProgress.assignment.completed || modProgress.assignment.isCompleted,
-              isLocked: modProgress.assignment.locked || modProgress.assignment.isLocked,
-              status: modProgress.assignment.status,
-              isActive: modProgress.assignment.id?.toString() === assignmentId?.toString()
-          } : null
-      };
+        return {
+          id: lesProgress.id,
+          title: lesProgress.title,
+          duration: "15 phút",
+          isCompleted: lesProgress.completed || lesProgress.isCompleted,
+          isLocked: lesProgress.locked || lesProgress.isLocked,
+          isActive: false,
+          currentPartners
+        };
+      }),
+      assignment: modProgress.assignment ? {
+        id: modProgress.assignment.id,
+        title: modProgress.assignment.title,
+        completed: modProgress.assignment.completed || modProgress.assignment.isCompleted,
+        locked: modProgress.assignment.locked || modProgress.assignment.isLocked,
+        isCompleted: modProgress.assignment.completed || modProgress.assignment.isCompleted,
+        isLocked: modProgress.assignment.locked || modProgress.assignment.isLocked,
+        status: modProgress.assignment.status,
+        isActive: modProgress.assignment.id?.toString() === assignmentId?.toString()
+      } : null
+    };
   }) || [];
 
   // Study Group List
   const studyGroup = [];
   if (user) {
-      studyGroup.push({
-          id: user.id,
-          name: user.fullName || user.username,
-          avatar: user.avatarUrl,
-          initials: (user.fullName || user.username).split(" ").map(n => n[0]).join("").toUpperCase(),
-          status: "online",
-          email: user.email,
-          bgColor: "bg-primary/10",
-          textColor: "text-primary",
-          isSelf: true
-      });
+    studyGroup.push({
+      id: user.id,
+      name: user.fullName || user.username,
+      avatar: user.avatarUrl,
+      initials: (user.fullName || user.username).split(" ").map(n => n[0]).join("").toUpperCase(),
+      status: "online",
+      email: user.email,
+      bgColor: "bg-primary/10",
+      textColor: "text-primary",
+      isSelf: true
+    });
   }
-  if (activeMod?.partner) {
-      const p = activeMod.partner;
+  if (activeMod?.partners && activeMod.partners.length > 0) {
+    activeMod.partners.forEach(p => {
       studyGroup.push({
-          id: p.userId || p.id,
-          name: p.name,
-          avatar: p.avatarUrl,
-          initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
-          status: "online",
-          email: p.email || `${p.name.toLowerCase().replace(/\s+/g, '')}@eduspace.com`,
-          goal: p.description || "Chưa đặt mục tiêu",
-          bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
-          currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
+        id: p.partnerId || p.userId || p.id,
+        name: p.name,
+        avatar: p.avatarUrl,
+        initials: p.name ? p.name.split(" ").map(n => n[0]).join("").toUpperCase() : "PT",
+        status: "online",
+        email: p.email || "Chưa cập nhật email",
+        goal: p.description || "Chưa đặt mục tiêu",
+        bio: p.description || "Bạn đồng hành cùng tiến độ học tập.",
+        currentLesson: p.location ? p.location.lessonName : "Chưa vào bài học"
       });
+    });
   }
 
   // Calculate Progress Percent
   let totalLessonsCount = 0;
   let completedLessonsCount = 0;
   if (progressDashboard?.modules) {
-      progressDashboard.modules.forEach(mod => {
-          totalLessonsCount += mod.totalLessons || 0;
-          completedLessonsCount += mod.completedLessons || 0;
-      });
+    progressDashboard.modules.forEach(mod => {
+      totalLessonsCount += mod.totalLessons || 0;
+      completedLessonsCount += mod.completedLessons || 0;
+    });
   }
-  const progressPercent = totalLessonsCount > 0 
-      ? Math.round((completedLessonsCount / totalLessonsCount) * 100) 
-      : 0;
+  const progressPercent = totalLessonsCount > 0
+    ? Math.round((completedLessonsCount / totalLessonsCount) * 100)
+    : 0;
 
   return {
     classId,
@@ -378,6 +390,7 @@ const useAssignment = () => {
     myReviewResult,
     peerReviewTask,
     peerReviewGraded,
+    partnerSubmissionStatus,
     handleEssayChange,
     handleSubmitDraft,
     submitPeerReview,
