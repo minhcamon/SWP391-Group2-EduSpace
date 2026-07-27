@@ -124,8 +124,18 @@ public class MentorService {
         return classMembers.stream()
                 .map(cm -> {
                     CourseClass cc = cm.getCourseClass();
-                    List<StudyGroup> groups = studyGroupRepository.findByCourseClassId(cc.getId());
-                    long numberOfPairs = groups.size();
+                    List<StudyGroup> allGroups = studyGroupRepository.findByCourseClassId(cc.getId());
+                    Long latestModuleId = allGroups.stream()
+                            .map(g -> g.getModule().getId())
+                            .max(Long::compareTo)
+                            .orElse(null);
+
+                    List<StudyGroup> currentGroups = latestModuleId == null ? java.util.Collections.emptyList() :
+                            allGroups.stream().filter(g -> g.getModule().getId().equals(latestModuleId)).collect(Collectors.toList());
+
+                    long numberOfPairs = currentGroups.size();
+                    long numberOfLearners = classMemberRepository.findByCourseClassIdAndContextRole(cc.getId(), "LEARNER").size();
+
                     return MentorClassResponse.builder()
                             .id(cc.getId())
                             .name(cc.getName())
@@ -134,8 +144,9 @@ public class MentorService {
                             .courseId(cc.getCourse().getId())
                             .courseTitle(cc.getCourse().getTitle())
                             .numberOfPairs(numberOfPairs)
+                            .numberOfLearners(numberOfLearners)
                             .studyGroups(
-                                    groups.stream()
+                                    currentGroups.stream()
                                             .map(group -> StudyGroupResponse.builder()
                                                     .studyGroupId(group.getId())
                                                     .status(group.getChatStatus())

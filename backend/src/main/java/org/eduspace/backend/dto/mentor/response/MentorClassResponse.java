@@ -23,6 +23,7 @@ public class MentorClassResponse {
     private Long courseId;
     private String courseTitle;
     private long numberOfPairs;
+    private long numberOfLearners;
     private List<StudyGroupResponse> studyGroups;
     private LearnerStatus membershipStatus;
 }
