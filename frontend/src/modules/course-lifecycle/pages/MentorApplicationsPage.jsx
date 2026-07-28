@@ -18,9 +18,20 @@ import {
 import { toast } from 'sonner'
 import creatorService from '@/services/creatorService'
 import { runWithLoading } from '@/utils/utils'
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/Dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/Dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from '@/components/ui/Card'
 import EmptyState from '@/components/ui/EmptyState'
 
 export default function MentorApplicationsPage() {
@@ -133,8 +144,12 @@ export default function MentorApplicationsPage() {
   // Count stats
   const totalCount = applications.length
   const pendingCount = applications.filter((a) => a.status === 'PENDING').length
-  const approvedCount = applications.filter((a) => a.status === 'APPROVED').length
-  const rejectedCount = applications.filter((a) => a.status === 'REJECTED').length
+  const approvedCount = applications.filter(
+    (a) => a.status === 'APPROVED'
+  ).length
+  const rejectedCount = applications.filter(
+    (a) => a.status === 'REJECTED'
+  ).length
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A'
@@ -152,7 +167,11 @@ export default function MentorApplicationsPage() {
       case 'PENDING':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock size={12} className="animate-pulse" /> Chờ duyệt
+            <Clock
+              size={12}
+              className="animate-pulse"
+            />{' '}
+            Chờ duyệt
           </span>
         )
       case 'APPROVED':
@@ -174,7 +193,6 @@ export default function MentorApplicationsPage() {
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-300">
-
       {/* Header section — đồng bộ với CourseManagementPage */}
       <Card className="p-6 bg-white border border-gray-200 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
@@ -183,7 +201,8 @@ export default function MentorApplicationsPage() {
               Quản lý Đơn xin làm Mentor
             </CardTitle>
             <CardDescription className="text-sm text-neutral-medium mt-1">
-              Phê duyệt hoặc từ chối các yêu cầu trở thành Mentor từ học viên đã hoàn thành khóa học của bạn.
+              Phê duyệt hoặc từ chối các yêu cầu trở thành Mentor từ học viên đã
+              hoàn thành khóa học của bạn.
             </CardDescription>
           </CardHeader>
         </div>
@@ -200,7 +219,9 @@ export default function MentorApplicationsPage() {
               <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
                 Tổng số đơn
               </span>
-              <span className="text-2xl font-black text-neutral-dark">{totalCount}</span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {totalCount}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -208,13 +229,17 @@ export default function MentorApplicationsPage() {
         <Card className="bg-white border border-border-light/30 hover:shadow-[0px_10px_30px_rgba(242,128,32,0.03)] transition-all">
           <CardContent className="p-5 flex items-center gap-4">
             <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
-              <Clock className={`text-xl ${pendingCount > 0 ? 'animate-pulse' : ''}`} />
+              <Clock
+                className={`text-xl ${pendingCount > 0 ? 'animate-pulse' : ''}`}
+              />
             </div>
             <div>
               <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
                 Đang chờ duyệt
               </span>
-              <span className="text-2xl font-black text-neutral-dark">{pendingCount}</span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {pendingCount}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -228,7 +253,9 @@ export default function MentorApplicationsPage() {
               <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
                 Đã phê duyệt
               </span>
-              <span className="text-2xl font-black text-neutral-dark">{approvedCount}</span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {approvedCount}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -242,7 +269,9 @@ export default function MentorApplicationsPage() {
               <span className="text-[10px] text-neutral-medium font-bold uppercase tracking-wider block">
                 Đã từ chối
               </span>
-              <span className="text-2xl font-black text-neutral-dark">{rejectedCount}</span>
+              <span className="text-2xl font-black text-neutral-dark">
+                {rejectedCount}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -250,7 +279,11 @@ export default function MentorApplicationsPage() {
 
       {/* Filter Tabs & Search Bar Row — đồng bộ với CourseManagementPage */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white p-4 rounded-2xl border border-border-light/30 shadow-sm w-full">
-        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full lg:w-auto">
+        <Tabs
+          value={statusFilter}
+          onValueChange={setStatusFilter}
+          className="w-full lg:w-auto"
+        >
           <TabsList className="flex flex-row flex-wrap h-auto! gap-2 bg-transparent p-0 w-full justify-start py-1">
             {[
               { label: 'Tất cả', value: 'ALL', count: totalCount },
@@ -344,12 +377,25 @@ export default function MentorApplicationsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 font-semibold text-neutral-dark">
                   {filteredApps.map((app) => (
-                    <tr key={app.id} className="hover:bg-slate-50/45 transition-colors">
-                      <td className="py-4 px-6 font-bold text-sm text-secondary">{app.userName}</td>
-                      <td className="py-4 px-4 text-neutral-medium">{app.userEmail}</td>
-                      <td className="py-4 px-4 font-bold text-neutral-dark">{app.courseTitle}</td>
-                      <td className="py-4 px-4 text-neutral-medium">{formatDate(app.createdAt)}</td>
-                      <td className="py-4 px-4">{getStatusBadge(app.status)}</td>
+                    <tr
+                      key={app.id}
+                      className="hover:bg-slate-50/45 transition-colors"
+                    >
+                      <td className="py-4 px-6 font-bold text-sm text-secondary">
+                        {app.userName}
+                      </td>
+                      <td className="py-4 px-4 text-neutral-medium">
+                        {app.userEmail}
+                      </td>
+                      <td className="py-4 px-4 font-bold text-neutral-dark">
+                        {app.courseTitle}
+                      </td>
+                      <td className="py-4 px-4 text-neutral-medium">
+                        {formatDate(app.createdAt)}
+                      </td>
+                      <td className="py-4 px-4">
+                        {getStatusBadge(app.status)}
+                      </td>
                       <td className="py-4 px-6 text-center">
                         <button
                           onClick={() => handleViewDetails(app.id)}
@@ -369,8 +415,14 @@ export default function MentorApplicationsPage() {
       </Card>
 
       {/* Detail Modal */}
-      <Dialog open={isDetailOpen && !!selectedApp} onOpenChange={(open) => !open && setIsDetailOpen(false)}>
-        <DialogContent className="w-full max-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]" showCloseButton={false}>
+      <Dialog
+        open={isDetailOpen && !!selectedApp}
+        onOpenChange={(open) => !open && setIsDetailOpen(false)}
+      >
+        <DialogContent
+          className="w-full min-w-4xl bg-white dark:bg-card rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left flex flex-col max-h-[90vh]"
+          showCloseButton={false}
+        >
           {selectedApp && (
             <>
               {/* Modal Header */}
@@ -378,7 +430,9 @@ export default function MentorApplicationsPage() {
                 <div className="min-w-0 flex-1">
                   <DialogTitle className="text-base sm:text-lg font-black flex flex-wrap items-center gap-1.5 sm:gap-2 break-words">
                     <span>Đơn ứng tuyển làm Mentor:</span>{' '}
-                    <span className="text-secondary font-extrabold">{selectedApp.userName}</span>
+                    <span className="text-secondary font-extrabold">
+                      {selectedApp.userName}
+                    </span>
                   </DialogTitle>
                   <DialogDescription className="text-xs text-slate-300 font-semibold mt-1 truncate">
                     Khóa học: {selectedApp.courseTitle}
@@ -402,8 +456,12 @@ export default function MentorApplicationsPage() {
                       <Users size={16} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Họ và tên</span>
-                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">{selectedApp.userName}</span>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">
+                        Họ và tên
+                      </span>
+                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">
+                        {selectedApp.userName}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 min-w-0">
@@ -411,8 +469,12 @@ export default function MentorApplicationsPage() {
                       <Mail size={16} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Địa chỉ Email</span>
-                      <span className="font-bold text-neutral-dark break-all text-xs leading-snug block mt-0.5">{selectedApp.userEmail}</span>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">
+                        Địa chỉ Email
+                      </span>
+                      <span className="font-bold text-neutral-dark break-all text-xs leading-snug block mt-0.5">
+                        {selectedApp.userEmail}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 min-w-0">
@@ -420,21 +482,31 @@ export default function MentorApplicationsPage() {
                       <Calendar size={16} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">Ngày nộp đơn</span>
-                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">{formatDate(selectedApp.createdAt)}</span>
+                      <span className="text-[10px] text-neutral-medium font-bold block uppercase tracking-wider">
+                        Ngày nộp đơn
+                      </span>
+                      <span className="font-bold text-neutral-dark break-words text-xs leading-snug block mt-0.5">
+                        {formatDate(selectedApp.createdAt)}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {selectedApp.status === 'REJECTED' && selectedApp.rejectedReason && (
-                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex gap-3 text-rose-800 text-xs font-semibold">
-                    <AlertCircle size={18} className="shrink-0 text-rose-600" />
-                    <div>
-                      <p className="font-bold">Lý do từ chối:</p>
-                      <p className="mt-1 text-rose-700">{selectedApp.rejectedReason}</p>
+                {selectedApp.status === 'REJECTED' &&
+                  selectedApp.rejectedReason && (
+                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex gap-3 text-rose-800 text-xs font-semibold">
+                      <AlertCircle
+                        size={18}
+                        className="shrink-0 text-rose-600"
+                      />
+                      <div>
+                        <p className="font-bold">Lý do từ chối:</p>
+                        <p className="mt-1 text-rose-700">
+                          {selectedApp.rejectedReason}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Assignments / Submissions Details */}
                 <div className="space-y-4">
@@ -449,52 +521,82 @@ export default function MentorApplicationsPage() {
                     <div className="space-y-3">
                       {selectedApp.submissions.map((sub, idx) => {
                         const isExpanded = expandedSubmissions[idx]
-                        const totalRubricScore = sub.criteriaScores?.length > 0
-                          ? sub.criteriaScores.reduce((sum, item) => sum + (item.score || 0), 0)
-                          : sub.finalScore
-                        const totalRubricMax = sub.criteriaScores?.length > 0
-                          ? sub.criteriaScores.reduce((sum, item) => sum + (item.maxPoint || 0), 0)
-                          : 100
-                        const scorePercentage = totalRubricMax > 0 ? (totalRubricScore / totalRubricMax) * 100 : 0
+                        const totalRubricScore =
+                          sub.criteriaScores?.length > 0
+                            ? sub.criteriaScores.reduce(
+                                (sum, item) => sum + (item.score || 0),
+                                0
+                              )
+                            : sub.finalScore
+                        const totalRubricMax =
+                          sub.criteriaScores?.length > 0
+                            ? sub.criteriaScores.reduce(
+                                (sum, item) => sum + (item.maxPoint || 0),
+                                0
+                              )
+                            : 100
+                        const scorePercentage =
+                          totalRubricMax > 0
+                            ? (totalRubricScore / totalRubricMax) * 100
+                            : 0
 
                         return (
-                          <div key={idx} className="border border-slate-100 rounded-xl overflow-hidden shadow-2xs">
+                          <div
+                            key={idx}
+                            className="border border-slate-100 rounded-xl overflow-hidden shadow-2xs"
+                          >
                             <button
                               onClick={() => toggleSubmissionExpand(idx)}
                               className="w-full px-5 py-4 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between text-left cursor-pointer transition-colors"
                             >
                               <div className="grow pr-4">
-                                <h4 className="text-xs font-black text-neutral-dark">{sub.assignmentTitle}</h4>
-                                <p className="text-[10px] text-neutral-medium line-clamp-1 mt-0.5">{sub.assignmentDescription}</p>
+                                <h4 className="text-xs font-black text-neutral-dark">
+                                  {sub.assignmentTitle}
+                                </h4>
+                                <p className="text-[10px] text-neutral-medium line-clamp-1 mt-0.5">
+                                  {sub.assignmentDescription}
+                                </p>
                               </div>
                               <div className="flex items-center gap-4 shrink-0">
                                 {sub.finalScore !== null ? (
-                                  <span className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
-                                    scorePercentage >= 80
-                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                                      : scorePercentage >= 50
-                                        ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                                        : 'bg-rose-50 text-rose-700 border border-rose-100'
-                                  }`}>
+                                  <span
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
+                                      scorePercentage >= 80
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                        : scorePercentage >= 50
+                                          ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                                          : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                    }`}
+                                  >
                                     Điểm: {totalRubricScore}/{totalRubricMax}
                                   </span>
                                 ) : (
-                                  <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">Chưa chấm</span>
+                                  <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">
+                                    Chưa chấm
+                                  </span>
                                 )}
-                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                {isExpanded ? (
+                                  <ChevronUp size={16} />
+                                ) : (
+                                  <ChevronDown size={16} />
+                                )}
                               </div>
                             </button>
 
                             {isExpanded && (
                               <div className="p-5 border-t border-slate-100 bg-white space-y-4 text-xs font-medium">
                                 <div>
-                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">Mô tả đề bài</h5>
+                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
+                                    Mô tả đề bài
+                                  </h5>
                                   <p className="text-neutral-dark bg-slate-50/50 p-3 rounded-lg border border-slate-100 whitespace-pre-wrap font-semibold leading-relaxed">
                                     {sub.assignmentDescription}
                                   </p>
                                 </div>
                                 <div>
-                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">Nội dung bài làm</h5>
+                                  <h5 className="font-bold text-neutral-medium text-[10px] uppercase tracking-wider mb-1">
+                                    Nội dung bài làm
+                                  </h5>
                                   <div className="text-neutral-dark bg-slate-50 p-4 rounded-xl border border-slate-100 overflow-x-auto font-mono text-[11px] whitespace-pre-wrap">
                                     {sub.submissionContent}
                                   </div>
@@ -503,10 +605,14 @@ export default function MentorApplicationsPage() {
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                                     <div className="bg-secondary/5 p-4 rounded-xl border border-secondary/10 space-y-2">
                                       <h5 className="font-bold text-secondary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
-                                        <MessageSquare size={13} /> Góp ý & nhận xét của reviewer
+                                        <MessageSquare size={13} /> Góp ý & nhận
+                                        xét của reviewer
                                       </h5>
                                       <p className="text-neutral-dark font-semibold leading-relaxed italic whitespace-pre-wrap">
-                                        "{sub.comments || 'Không có nhận xét chi tiết.'}"
+                                        "
+                                        {sub.comments ||
+                                          'Không có nhận xét chi tiết.'}
+                                        "
                                       </p>
                                     </div>
                                     <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-100 space-y-2">
@@ -515,20 +621,32 @@ export default function MentorApplicationsPage() {
                                       </h5>
                                       {sub.criteriaScores?.length > 0 ? (
                                         <div className="space-y-1.5">
-                                          {sub.criteriaScores.map((criterion, cIdx) => (
-                                            <div key={cIdx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
-                                              <div>
-                                                <p className="font-bold text-neutral-dark text-[11px]">{criterion.criterionName}</p>
-                                                <p className="text-[9px] text-neutral-medium">{criterion.description}</p>
+                                          {sub.criteriaScores.map(
+                                            (criterion, cIdx) => (
+                                              <div
+                                                key={cIdx}
+                                                className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100"
+                                              >
+                                                <div>
+                                                  <p className="font-bold text-neutral-dark text-[11px]">
+                                                    {criterion.criterionName}
+                                                  </p>
+                                                  <p className="text-[9px] text-neutral-medium">
+                                                    {criterion.description}
+                                                  </p>
+                                                </div>
+                                                <span className="font-black text-secondary text-[11px] bg-secondary/10 px-2 py-0.5 rounded-md">
+                                                  {criterion.score}/
+                                                  {criterion.maxPoint}
+                                                </span>
                                               </div>
-                                              <span className="font-black text-secondary text-[11px] bg-secondary/10 px-2 py-0.5 rounded-md">
-                                                {criterion.score}/{criterion.maxPoint}
-                                              </span>
-                                            </div>
-                                          ))}
+                                            )
+                                          )}
                                         </div>
                                       ) : (
-                                        <p className="text-neutral-light italic text-[11px]">Không có thông tin rubrics chi tiết.</p>
+                                        <p className="text-neutral-light italic text-[11px]">
+                                          Không có thông tin rubrics chi tiết.
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -546,7 +664,9 @@ export default function MentorApplicationsPage() {
               {/* Modal Footer Actions */}
               <footer className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div>
-                  <span className="text-neutral-medium text-xs font-bold mr-2">Trạng thái hiện tại:</span>
+                  <span className="text-neutral-medium text-xs font-bold mr-2">
+                    Trạng thái hiện tại:
+                  </span>
                   {getStatusBadge(selectedApp.status)}
                 </div>
                 <div className="flex gap-2">
@@ -589,8 +709,16 @@ export default function MentorApplicationsPage() {
       </Dialog>
 
       {/* Reject Reason Dialog */}
-      <Dialog open={isRejectOpen} onOpenChange={(open) => !open && (setIsRejectOpen(false), setRejectReason(''))}>
-        <DialogContent className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left" showCloseButton={false}>
+      <Dialog
+        open={isRejectOpen}
+        onOpenChange={(open) =>
+          !open && (setIsRejectOpen(false), setRejectReason(''))
+        }
+      >
+        <DialogContent
+          className="w-full max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl p-0 gap-0 border border-slate-100 text-left"
+          showCloseButton={false}
+        >
           <header className="p-5 border-b border-gray-100 flex items-center justify-between">
             <DialogTitle className="text-sm font-black text-rose-700 flex items-center gap-1.5">
               <AlertCircle size={18} /> Nhập lý do từ chối đơn ứng tuyển
@@ -600,7 +728,10 @@ export default function MentorApplicationsPage() {
             </DialogDescription>
             <button
               type="button"
-              onClick={() => { setIsRejectOpen(false); setRejectReason('') }}
+              onClick={() => {
+                setIsRejectOpen(false)
+                setRejectReason('')
+              }}
               className="p-1 hover:bg-gray-100 rounded-lg cursor-pointer text-gray-500"
             >
               <X size={16} />
@@ -610,8 +741,10 @@ export default function MentorApplicationsPage() {
             <div className="p-5 space-y-4">
               <p className="text-xs text-neutral-medium leading-relaxed font-semibold">
                 Vui lòng cung cấp lý do chi tiết từ chối để gửi lại cho học viên{' '}
-                <span className="font-bold text-neutral-dark">{selectedApp?.userName}</span>.
-                Điều này giúp họ hiểu những gì cần cải thiện.
+                <span className="font-bold text-neutral-dark">
+                  {selectedApp?.userName}
+                </span>
+                . Điều này giúp họ hiểu những gì cần cải thiện.
               </p>
               <textarea
                 required
@@ -626,7 +759,10 @@ export default function MentorApplicationsPage() {
             <footer className="p-4 bg-slate-50 border-t border-gray-100 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => { setIsRejectOpen(false); setRejectReason('') }}
+                onClick={() => {
+                  setIsRejectOpen(false)
+                  setRejectReason('')
+                }}
                 disabled={isSubmitting}
                 className="px-4 py-2 border border-gray-200 hover:bg-slate-100 text-neutral-medium rounded-xl text-xs font-bold cursor-pointer"
               >

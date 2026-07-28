@@ -64,12 +64,19 @@ public class CreatorClassService {
             throw new RuntimeException("Người dùng này không phải là Mentor hoạt động của khóa học này!");
         }
 
-        // Check if already assigned to class
+        // Check if already assigned to class or studied as LEARNER in this class
         boolean alreadyAssigned = classMemberRepository
                 .findByUserIdAndCourseClassIdAndContextRole(mentorId, classId, "MENTOR")
                 .isPresent();
         if (alreadyAssigned) {
             throw new RuntimeException("Mentor này đã được gán vào lớp học rồi!");
+        }
+
+        boolean isLearnerInClass = classMemberRepository
+                .findByUserIdAndCourseClassIdAndContextRole(mentorId, classId, "LEARNER")
+                .isPresent();
+        if (isLearnerInClass) {
+            throw new RuntimeException("Người dùng này đã/đang học ở lớp học này với vai trò Learner, không thể làm Mentor cho chính lớp này!");
         }
 
         // Check if mentor has reached class limit of 2

@@ -353,11 +353,14 @@ public class SystemService {
 
                 List<ActiveMentor> selectedMentors = new ArrayList<>();
                 for (ActiveMentor am : availableCourseMentors) {
-                    // Check if already assigned to this class
+                    // Check if already assigned to this class as MENTOR or studied as LEARNER
                     boolean alreadyAssigned = classMemberRepository
                             .findByUserIdAndCourseClassIdAndContextRole(am.getUser().getId(), cc.getId(), "MENTOR")
                             .isPresent();
-                    if (alreadyAssigned) {
+                    boolean isLearnerInClass = classMemberRepository
+                            .findByUserIdAndCourseClassIdAndContextRole(am.getUser().getId(), cc.getId(), "LEARNER")
+                            .isPresent();
+                    if (alreadyAssigned || isLearnerInClass) {
                         continue;
                     }
 

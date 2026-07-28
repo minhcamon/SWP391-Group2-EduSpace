@@ -70,10 +70,11 @@ public class MentorService {
         activeMentor.setMentorStatus(MentorStatus.AVAILABLE);
         activeMentorRepository.save(activeMentor);
 
-        // 4. Tự động sắp xếp Mentor vào 1 lớp học phù hợp thuộc khóa học này
+        // 4. Tự động sắp xếp Mentor vào 1 lớp học phù hợp thuộc khóa học này (loại trừ lớp mà người dùng đã/đang học với vai trò LEARNER)
         List<CourseClass> candidateClasses = classRepository.findByCourseId(courseId).stream()
                 .filter(cc -> cc.getStatus() != org.eduspace.backend.enums.ClassStatus.COMPLETED)
                 .filter(cc -> classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(cc.getId(), userId, "MENTOR").isEmpty())
+                .filter(cc -> classMemberRepository.findByCourseClassIdAndUserIdAndContextRole(cc.getId(), userId, "LEARNER").isEmpty())
                 .sorted((c1, c2) -> {
                     long count1 = classMemberRepository.countActiveMentorsInClass(c1.getId());
                     long count2 = classMemberRepository.countActiveMentorsInClass(c2.getId());
