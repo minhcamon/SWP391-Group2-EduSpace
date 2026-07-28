@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Workflow 7: Course enrollment waitlist and automatic class creation using API calls. */
+/** Workflow 2: Course enrollment, waitlist, and automatic class creation using API calls. */
 @EnabledIfSystemProperty(named = "system.test.enabled", matches = "true")
-class EnrollmentSystemTest extends SystemTestSupport {
+class CourseEnrollmentSystemTest extends SystemTestSupport {
 
     @Test
     void scenarioA_learnerJoinsWaitlistFromCourseDetailAndTriggersClassCreationAtCapacity() throws Exception {

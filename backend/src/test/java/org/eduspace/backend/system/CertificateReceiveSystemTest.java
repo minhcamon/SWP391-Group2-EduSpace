@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Workflow 6: Certificate details and certificate access rules using API calls. */
+/** Workflow 6: Certificate receive, certificate details, and certificate access rules using API calls. */
 @EnabledIfSystemProperty(named = "system.test.enabled", matches = "true")
-class CertificateSystemTest extends SystemTestSupport {
+class CertificateReceiveSystemTest extends SystemTestSupport {
 
     @Test
     void scenarioA_completedLearnerCanReadCertificateDetails() throws Exception {

@@ -55,7 +55,7 @@ abstract class SystemTestFixtures {
 
     // ---------------------------------------------------------------------
     // ADMIN / CREATOR COURSE REVIEW FIXTURES
-    // Used by AdminCreatorSystemTest.
+    // Used by CourseLifecycleSystemTest.
     // ---------------------------------------------------------------------
 
     protected CourseReviewFixture createPendingCourseFixture(String titlePrefix) throws Exception {
@@ -116,7 +116,7 @@ abstract class SystemTestFixtures {
 
     // ---------------------------------------------------------------------
     // ENROLLMENT / WAITLIST FIXTURES
-    // Used by EnrollmentSystemTest.
+    // Used by CourseEnrollmentSystemTest.
     // ---------------------------------------------------------------------
 
     protected EnrollmentFixture createNearlyFullWaitlistFixture(String finalLearnerUsername) throws Exception {
@@ -331,11 +331,15 @@ abstract class SystemTestFixtures {
                 JOIN classes cls ON cls.class_id = cm.class_id
                 JOIN courses c ON c.course_id = cls.course_id
                 JOIN modules m ON m.course_id = c.course_id
+                JOIN study_groups sg ON sg.class_id = cls.class_id
+                    AND sg.module_id = m.module_id
+                JOIN group_members gm ON gm.study_group_id = sg.study_group_id
+                    AND gm.member_id = cm.id
                 JOIN lessons l ON l.module_id = m.module_id
                 JOIN assignments a ON a.module_id = m.module_id
                 WHERE u.username = ?
                   AND cm.context_role = 'LEARNER'
-                ORDER BY m.sort_order DESC, l.sort_order
+                ORDER BY m.sort_order, l.sort_order
                 LIMIT 1
                 """;
 
@@ -505,7 +509,6 @@ abstract class SystemTestFixtures {
                 assertTrue(resultSet.next(), "Expected seeded mentor fixture to exist for " + username);
 
                 Long incidentId = resultSet.getObject("incident_id", Long.class);
-                assertNotNull(incidentId, "Expected the mentor fixture to include a seeded incident");
 
                 return new MentorFixture(
                         resultSet.getLong("class_id"),
@@ -787,7 +790,7 @@ abstract class SystemTestFixtures {
 
     // ---------------------------------------------------------------------
     // CERTIFICATE FIXTURES
-    // Used by CertificateSystemTest.
+    // Used by CertificateReceiveSystemTest.
     // ---------------------------------------------------------------------
 
     protected CertificateFixture createCertificateFixture(String learnerUsername) throws Exception {

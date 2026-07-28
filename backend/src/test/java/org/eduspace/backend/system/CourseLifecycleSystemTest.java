@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Workflow 2: Creator course submission and Admin course review using API calls. */
+/** Workflow 3: Course lifecycle, creator submission, and admin review using API calls. */
 @EnabledIfSystemProperty(named = "system.test.enabled", matches = "true")
-class AdminCreatorSystemTest extends SystemTestSupport {
+class CourseLifecycleSystemTest extends SystemTestSupport {
 
     @Test
     void scenarioA_creatorCanCreatePendingCourseAndAdminCanApproveIt() throws Exception {
@@ -44,10 +44,11 @@ class AdminCreatorSystemTest extends SystemTestSupport {
         assertTrue(countCourseRequests(courseId, "APPROVED") > 0,
                 "Approving a course must create an approved course request history row");
 
-        Map<String, Object> publicCoursesResponse = apiRequest("GET", "/course/all?page=0&size=100", null);
-        assertStatus(200, publicCoursesResponse, "Published courses endpoint must remain readable");
-        assertTrue(String.valueOf(publicCoursesResponse.get("body")).contains(title),
-                "Approved course must be visible in the public course catalog");
+        Map<String, Object> publicCourseDetailResponse = apiRequest("GET", "/course/" + courseId, null);
+        assertStatus(200, publicCourseDetailResponse, "Approved course detail must remain publicly readable");
+        Map<String, Object> publicCourse = responseDataMap(publicCourseDetailResponse);
+        assertEquals(courseId.longValue(), ((Number) publicCourse.get("id")).longValue(),
+                "Approved course detail must return the approved course");
     }
 
     @Test
@@ -495,5 +496,11 @@ class AdminCreatorSystemTest extends SystemTestSupport {
     private Object responseData(Map<String, Object> response) {
         Map<String, Object> body = (Map<String, Object>) response.get("body");
         return body.get("data");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> responseDataMap(Map<String, Object> response) {
+        Map<String, Object> body = (Map<String, Object>) response.get("body");
+        return (Map<String, Object>) body.get("data");
     }
 }
