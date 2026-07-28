@@ -150,6 +150,20 @@ public class StudyGroupService {
                         return new ArrayList<>();
                 }
 
+                // Lọc lấy các nhóm/cặp học tập thuộc Module mới nhất của lớp học
+                java.util.Optional<Long> latestModuleIdOpt = studyGroups.stream()
+                                .filter(sg -> sg.getModule() != null)
+                                .max(java.util.Comparator.comparingInt((StudyGroup sg) -> sg.getModule().getSortOrder())
+                                                .thenComparingLong(StudyGroup::getId))
+                                .map(sg -> sg.getModule().getId());
+
+                if (latestModuleIdOpt.isPresent()) {
+                        Long latestModuleId = latestModuleIdOpt.get();
+                        studyGroups = studyGroups.stream()
+                                        .filter(sg -> sg.getModule() != null && sg.getModule().getId().equals(latestModuleId))
+                                        .toList();
+                }
+
                 List<StudyGroupResponse> groups = new ArrayList<>();
 
                 for (StudyGroup studyGroup : studyGroups) {
@@ -502,8 +516,21 @@ public class StudyGroupService {
                         individuals.get(i).setRank(i + 1);
                 }
 
-                // 2. Get study groups (pairs) in class
+                // 2. Get study groups (pairs) of the latest module in class
                 List<StudyGroup> groups = studyGroupRepository.findByCourseClassId(classId);
+                java.util.Optional<Long> latestModuleIdOpt = groups.stream()
+                                .filter(g -> g.getModule() != null)
+                                .max(java.util.Comparator.comparingInt((StudyGroup g) -> g.getModule().getSortOrder())
+                                                .thenComparingLong(StudyGroup::getId))
+                                .map(g -> g.getModule().getId());
+
+                if (latestModuleIdOpt.isPresent()) {
+                        Long latestModuleId = latestModuleIdOpt.get();
+                        groups = groups.stream()
+                                        .filter(g -> g.getModule() != null && g.getModule().getId().equals(latestModuleId))
+                                        .toList();
+                }
+
                 List<ClassLeaderboardResponse.PairEntry> pairs = new ArrayList<>();
 
                 for (StudyGroup g : groups) {
